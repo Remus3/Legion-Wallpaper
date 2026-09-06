@@ -11,6 +11,44 @@
 
 ---
 
+## 2026-09-06 - the license question, answered by refusing its premise
+
+One commit (`511f1d8`) plus a docs sync, all pushed. Suite **2501 passed / 18
+skipped / 1 pre-existing GPU failure**, ruff clean, `drift_guard` 0 breaches,
+CI green.
+
+- **No license change shipped, and that IS the result. Do not re-open it -
+  CLAUDE.md Settled + LEDGER 145 carry the full reasoning.** The operator asked
+  MIT vs Apache-2 wanting to block "downloaded + altered + commercialized".
+  Both are permissive and both allow exactly that, so the premise was void; the
+  governing axis is permissive vs copyleft and neither candidate was on it.
+  MIT, GPL-3.0, AGPL-3.0, MPL-2.0, BUSL-1.1, PolyForm NC and the whole CC
+  family were each weighed and each lost to the incumbent Apache-2.0.
+- **The GPL-3.0 probe was the sharp one and it still came back empty.**
+  CC BY-SA 4.0 -> GPLv3 is a real one-way bridge, but LW has nothing to carry
+  over it: `data/reference/wiki/` is `render/` + `splash/` IMAGE bytes
+  (gitignored, zero tracked) and BY-SA covers wiki TEXT, while the art is Riot
+  IP regardless; ComfyUI (GPL-3.0) is a headless SUBPROCESS, which is mere
+  aggregation and already fine under Apache-2. Copyleft binds on distribution
+  of a combined work only - never subprocess, private use, or optional deps.
+- **Visibility is metadata, not license.** All four levers set and verified
+  live: description, homepage -> `docs/adr`, 19 topics, and a 1280x640
+  social-preview card (`docs/assets/social-preview.png`, self-authored with
+  PIL, no corpus bytes). Social preview had to be uploaded by hand - GitHub has
+  no REST endpoint for it - and it is CONFIRMED landed because the page serves
+  `og:image` from the `repository-images` custom CDN, not the
+  `opengraph.githubassets.com` fallback. One topic slot is free.
+- **Do NOT redo:** the licensing exploration, the metadata levers, or the
+  social preview. All shipped and verified this session.
+- **Pre-existing, not mine:** `test_worker_spandrel_branch_produces_both_variants`
+  OOMs on an IDLE GPU (11105/12227 MiB free, no compute process), reproduced
+  twice. CI never sees it - no CUDA runner. Now tracked as ROADMAP
+  `usm-halo-probe-cuda-oom`.
+- **Next:** the 123f hand-clean (veil stage) in Photoshop - unchanged from the
+  last hand-off, this session never touched it.
+
+---
+
 ## 2026-09-05 - three ways to measure a watermark, all refused; plus a live permissions bug
 
 Six commits, all pushed. Suite **2501+ passed / 18 skipped**, ruff clean,
@@ -286,50 +324,3 @@ Ran `/first-pass` then `/cleaning-pass` over the 24 slugs in scratch.
   `1.First Pass Scratch` is down to `1000040081-...-375w-2x` alone - a 750x436
   source under the G0 floor, pre-existing since 2026-08-17, untouched.
   `verify: ok (596 images checked)`, anomalies 0.
-
----
-
-## 2026-09-01 (earlier) - intake grew a perceptual gate, and the pipeline grew a reverse
-
-Four commits, all pushed, CI green on each. Suite **2449 passed / 18 skipped**
-on a fresh full run (118s); baseline was 2408 and I added 41 tests. ruff clean
-repo-wide, drift_guard 0 breaches, `verify: ok (604 images checked)` with ZERO
-mismatches. Started as `/intake`, became four fixes the intake exposed.
-
-- **/intake ran: 24 intaken, 2 refused as byte-identical.** Tier-1 token decode
-  hit 24/24 and fetched 24/24. Read the gain honestly: 20 gained ~x1.2, 4 were
-  already at cap, and the ceiling is **1280px wide** - the quota-free
-  `intermediary` cap, NOT true originals. First pass upscales from ~1280, not
-  from an artist file.
-- **The byte-hash dedup had a hole and it is closed (`2fe8087`).** `unique_slug`
-  compared bytes, and only against the ONE colliding candidate slug - a
-  re-download under an unrelated filename was compared to NOTHING. Now every
-  incoming file is compared against all 605 backup originals, bands delegated to
-  `lw_recover.consensus_match` so intake and Tier-0 recovery cannot drift.
-  `--allow-near-dup` overrides; imagehash absent degrades to a noted no-op.
-- **Swept all 605 for rows the gap let through: exactly ONE** (academy-ahri).
-  The 4 review-band pairs sit at Hamming 12-14 between different champions -
-  noise floor, not pollution. Do not re-sweep.
-- **`remove` and `reopen` exist now (`3d81298`, `b2c932f`).** There was no
-  delete path and no reverse move, and the documented workaround moved folders
-  by hand - the one thing the single-writer rule forbids. Memory
-  `project-reprocess-done-slug` said "the pipeline has NO reverse command";
-  that is FALSE now and the memory is rewritten.
-- **academy-ahri twin rebuilt from the 1280x756.** Verified the source carried
-  REAL detail first (Lap variance 919.4 native vs 645.4 for the preview upscaled
-  to the same grid) rather than assuming a bigger render is a better one. G1
-  improved on every axis that moved: lap_ratio 1.1263 -> 1.3491, lpips 0.01981
-  -> 0.003643, msssim 0.99693 -> 0.999494. Cleaning re-triaged `no_detections`,
-  so the original pass-through was correct behavior, not a silent failure.
-- **The verify residue is fixed, not documented away (`fa56adc`).** Root cause:
-  `backup_put` numbers by ARRIVAL, so a supersede left the CANONICAL name
-  holding the old generation. Rejected the tempting fix (rename it so it stops
-  parsing and goes quiet) - `_milestone_key` already settled that: "the mismatch
-  is noise, the silence reads as a pass". Rotation now happens at reopen time;
-  `tools/lw_backfill_backup_generation.py` recovered the row already on disk.
-  This also cleared the LEDGER 77/78 residue - hence 604/604 clean.
-- **Do NOT redo:** the 605-slug near-dup sweep, the academy-ahri rebuild, the
-  backup-generation backfill (idempotent, 0 unexplained). All shipped.
-- **Still open, deliberately:** the 2 byte-identical dupes sit in `0.Originals`
-  and will report `pending_intake=2` on every scan until GC'd - operator call.
-  `data/recovery/fetched/...-pre-2/` staging kept after use.

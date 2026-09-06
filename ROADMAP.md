@@ -1354,6 +1354,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - Medium priority
 
+- **usm-halo-probe-cuda-oom - one GPU test OOMs on an idle GPU - OPEN
+  (found 2026-09-06, unowned).**
+  `tests/test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants`
+  fails with `torch.OutOfMemoryError` allocating 624 MiB inside the spandrel DAT
+  forward pass (`.venv-upscale/.../DAT/__arch/DAT.py:253`). NOT contention and
+  NOT flake: reproduced on two consecutive runs with `nvidia-smi` showing 11105
+  of 12227 MiB free and no compute process on the device, so the probe's own
+  working set is the suspect (tile size / batch in the spandrel branch), not the
+  box. Invisible to CI because no runner has CUDA, which is why it survived.
+  Next: re-run with `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` to
+  separate fragmentation from a genuine over-allocation, then cap the probe's
+  tile size if it is the latter.
+  Evidence: LEDGER 145.
+
 - **autonomy-phases-bc - promote autonomy per calibration ladder - LATER.**
   Next: after the Phase A shadow window accumulates >= 50 operator-reviewed
   images, promote per the ladder. Never skip the ladder.
@@ -1362,7 +1376,9 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 - **shareability-packaging - package the process as the deliverable - LATER.**
   Next: package pipeline code, gate ladder, rubric, golden-set protocol,
   manifests - never the cleaned third-party images. Prereq: licensing
-  re-check on detector/LaMa weights.
+  re-check on detector/LaMa weights - the PROJECT-license half is now
+  SETTLED (Apache-2.0 held after a full-spectrum re-evaluation,
+  2026-09-06, LEDGER 145); only the third-party WEIGHTS audit remains.
   Evidence: `docs/RESTORATION_PLAN.md` section 9.
 
 - **arm-scheduled-tasks - roster REVIEWED + acted on 2026-08-02. Every remaining

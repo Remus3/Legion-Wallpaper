@@ -27,6 +27,66 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+145. DONE **2026-09-06 (the license question, answered by refusing its premise;
+   plus the repo-visibility levers; `511f1d8` + docs sync).** Suite 2501 passed /
+   18 skipped / 1 pre-existing GPU failure, ruff clean, `drift_guard` 0 breaches,
+   CI green.
+
+   **No license change shipped, and that is the result.** The operator opened
+   with MIT vs Apache-2.0 under a stated goal of "not downloaded + altered +
+   commercialized by someone else". The premise is void: MIT and Apache-2.0 are
+   BOTH permissive and both grant exactly that. Naming the wrong axis was the
+   whole finding - the axis that governs the goal is permissive vs copyleft, and
+   neither candidate sat on the copyleft side of it. Apache-2.0 additionally
+   dominates MIT on the merits (express patent grant plus retaliation, trademark
+   denial, state-your-changes), so MIT was never an upgrade in any direction.
+
+   **Explored and rejected in turn.** CC BY-SA: Creative Commons themselves
+   advise against CC for software, CC 4.0 sec 2(b)(2) WITHHOLDS patent and
+   trademark rights (a strict downgrade from Apache-2), and ShareAlike is
+   copyleft, so it is not the loose option it appears to be - and it permits
+   commercial use anyway. GPL-3.0 was the sharpest probe, since CC BY-SA 4.0 is
+   one-way compatible with GPLv3 and that is a real bridge. It buys LW nothing:
+   measured this session, `data/reference/wiki/` holds `render/` + `splash/`
+   image bytes (gitignored, zero tracked files) and wiki BY-SA covers article
+   TEXT, while the splash art is Riot IP that no license on our side launders;
+   the only GPL code candidate, ComfyUI, appears solely in
+   `docs/research/UPSCALE_TOOLCHAIN.md` and `.claude/commands/final-pass.md` as a
+   headless subprocess, which is mere aggregation and already permitted.
+   `tools/dwpose_onnx/` is Apache-2 and already ingestible.
+
+   **The general shape, recorded because it is reusable:** ingest capacity RISES
+   monotonically down the openness spectrum to AGPL-3.0 (the greediest license on
+   the board, able to absorb everything above it) and then COLLAPSES at
+   source-available and proprietary, which are strictly worse than permissive in
+   BOTH directions. Copyleft also binds only on DISTRIBUTION of a combined work -
+   never on subprocess invocation, private use, or optional deps - so LW's ingest
+   goal was already satisfied architecturally at Apache-2.0. And as sole
+   copyright holder the operator can relicense any day, so permissive-now is the
+   only choice that keeps both doors open.
+
+   **Visibility, measured not assumed.** GitHub has no license-based ranking;
+   `license:` is a filter nobody browses. Going copyleft for ingest would have
+   CUT reach (AGPL is banned outright at many companies) while unlocking nothing.
+   The levers that do move discovery are metadata, and all four are now set and
+   independently verified live via `gh repo view` and the rendered page: repo
+   description, homepage -> `docs/adr` (11 ADRs including the 010/011 reversal
+   pair, the most distinctive artifact in the repo), 19 topics, and a 1280x640
+   social-preview card. The card is committed as
+   `docs/assets/social-preview.png`, fully self-authored with PIL and Windows
+   system fonts, carrying NO corpus bytes - the tracked-binary release decision
+   CLAUDE.md requires. Upload was manual because GitHub exposes no REST endpoint
+   for social preview; confirmed landed because the page now serves `og:image`
+   from the `repository-images` custom-upload CDN rather than the
+   `opengraph.githubassets.com` auto-generated fallback.
+
+   **Pre-existing, NOT from this session:**
+   `tests/test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants`
+   fails with `torch.OutOfMemoryError` in the spandrel DAT forward pass.
+   Reproducible across two runs with the GPU verified idle (11105 of 12227 MiB
+   free, no compute process). This session touched one PNG and zero Python, and
+   CI is green because no runner has CUDA. Unowned; see ROADMAP.
+
 144. DONE **2026-09-05 (three ways to measure a watermark, all refused; and a
    live permissions bug on two sibling projects; `dd0e418` `9718e05` `60461ae`
    `17db253` `7ea5707`).** Suite 2501+ passed / 18 skipped, ruff clean,

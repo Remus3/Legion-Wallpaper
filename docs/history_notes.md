@@ -373,6 +373,53 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-01 (earlier) - intake grew a perceptual gate, and the pipeline grew a reverse
+
+Four commits, all pushed, CI green on each. Suite **2449 passed / 18 skipped**
+on a fresh full run (118s); baseline was 2408 and I added 41 tests. ruff clean
+repo-wide, drift_guard 0 breaches, `verify: ok (604 images checked)` with ZERO
+mismatches. Started as `/intake`, became four fixes the intake exposed.
+
+- **/intake ran: 24 intaken, 2 refused as byte-identical.** Tier-1 token decode
+  hit 24/24 and fetched 24/24. Read the gain honestly: 20 gained ~x1.2, 4 were
+  already at cap, and the ceiling is **1280px wide** - the quota-free
+  `intermediary` cap, NOT true originals. First pass upscales from ~1280, not
+  from an artist file.
+- **The byte-hash dedup had a hole and it is closed (`2fe8087`).** `unique_slug`
+  compared bytes, and only against the ONE colliding candidate slug - a
+  re-download under an unrelated filename was compared to NOTHING. Now every
+  incoming file is compared against all 605 backup originals, bands delegated to
+  `lw_recover.consensus_match` so intake and Tier-0 recovery cannot drift.
+  `--allow-near-dup` overrides; imagehash absent degrades to a noted no-op.
+- **Swept all 605 for rows the gap let through: exactly ONE** (academy-ahri).
+  The 4 review-band pairs sit at Hamming 12-14 between different champions -
+  noise floor, not pollution. Do not re-sweep.
+- **`remove` and `reopen` exist now (`3d81298`, `b2c932f`).** There was no
+  delete path and no reverse move, and the documented workaround moved folders
+  by hand - the one thing the single-writer rule forbids. Memory
+  `project-reprocess-done-slug` said "the pipeline has NO reverse command";
+  that is FALSE now and the memory is rewritten.
+- **academy-ahri twin rebuilt from the 1280x756.** Verified the source carried
+  REAL detail first (Lap variance 919.4 native vs 645.4 for the preview upscaled
+  to the same grid) rather than assuming a bigger render is a better one. G1
+  improved on every axis that moved: lap_ratio 1.1263 -> 1.3491, lpips 0.01981
+  -> 0.003643, msssim 0.99693 -> 0.999494. Cleaning re-triaged `no_detections`,
+  so the original pass-through was correct behavior, not a silent failure.
+- **The verify residue is fixed, not documented away (`fa56adc`).** Root cause:
+  `backup_put` numbers by ARRIVAL, so a supersede left the CANONICAL name
+  holding the old generation. Rejected the tempting fix (rename it so it stops
+  parsing and goes quiet) - `_milestone_key` already settled that: "the mismatch
+  is noise, the silence reads as a pass". Rotation now happens at reopen time;
+  `tools/lw_backfill_backup_generation.py` recovered the row already on disk.
+  This also cleared the LEDGER 77/78 residue - hence 604/604 clean.
+- **Do NOT redo:** the 605-slug near-dup sweep, the academy-ahri rebuild, the
+  backup-generation backfill (idempotent, 0 unexplained). All shipped.
+- **Still open, deliberately:** the 2 byte-identical dupes sit in `0.Originals`
+  and will report `pending_intake=2` on every scan until GC'd - operator call.
+  `data/recovery/fetched/...-pre-2/` staging kept after use.
+
+---
+
 ## 2026-08-30 (second session) - both framings were wrong
 
 One commit plus this doc sync. Suite **2408 passed / 18 skipped, exit 0** on a
