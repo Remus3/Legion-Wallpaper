@@ -27,6 +27,74 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+144. DONE **2026-09-05 (three ways to measure a watermark, all refused; and a
+   live permissions bug on two sibling projects; `dd0e418` `9718e05` `60461ae`
+   `17db253` `7ea5707`).** Suite 2501+ passed / 18 skipped, ruff clean,
+   `drift_guard` 0 breaches.
+
+   **The veil resisted three independent attacks, all recorded in
+   `docs/POOLED_VEIL_RESULT_2026-09-05.md` so none is retried blind.** The
+   62-frame POOLED estimate (123f held out) established that registration is NOT
+   the problem - every sampled frame sits at scale 1.00 with shift within +-3 px
+   and correlation 0.35-0.58 - and that pooling cancels the art cleanly. It
+   still failed, structurally: `estimate_template`/`estimate_matte` are built on
+   `highpass`, which discards the DC band a flat veil lives in, so they recover
+   the mark's EDGES and are blind to its FILL. Applied to the held-out frame it
+   darkened the logo outline and left the interior. More frames cannot fix a
+   band the transform threw away.
+
+   **The operator proposed analysis-by-synthesis and it is the better
+   formulation** - synthesise the mark onto clean art and fit, since DA's
+   generator has ~a dozen parameters and a dozen parameters cannot absorb a hand
+   reconstruction the way a free per-pixel alpha does. It needs a matched pair
+   and three routes to one are now closed: no clean/watermarked duplicate exists
+   in the corpus (all 63 watermarked frames against all 517 cleaned, closest
+   consensus distance 18 against an accept threshold of 8 and a recorded noise
+   floor of 12-14 between DIFFERENT champions); DA watermarks every render size
+   down to the 300px thumb, scaling with the render; and two sizes do not
+   separate it because each is independently JPEG'd so resampling noise
+   dominates. Shape-from-pool plus amplitude-from-ring then measured
+   **alpha = 0.0578 +- 0.0046 over 62 frames**, independently matching the ~0.06
+   already in LEDGER, and damaged nothing - but it cannot be validated per frame:
+   6 of 62 frames measure a physically impossible NEGATIVE alpha, and 123f's own
+   boundary step is -1.33 levels, so the pooled value over-corrected it.
+
+   **Correction issued mid-session.** A whole-frame `residual_mae` of 0.028 was
+   read as evidence the hand-clean inverted rather than reconstructed. It was
+   dilution across untouched pixels: on touched pixels the hand-finished line
+   fits the alpha model NO BETTER than the known-invented LaMa layer (7.00 vs
+   6.12 median levels, 94.0 vs 94.3 percent unexplained). Hand-cleans are the
+   ACCEPTANCE TARGET, never fitting data.
+
+   **Pulled a canonical LoL wiki reference set for lw-gen:** 173 champions x 2
+   axes (isolated render + HD splash, median 6000px), 346/346 resolved, 0
+   missing, 1.2 GB under gitignored `data/reference/wiki/`, sha256 provenance
+   spot-checked 6/6. The champion universe is the `OriginalSkin` file rather
+   than the render category, and the difference was measured:
+   `Category:Champion renders` omits `Kayle Render.png`, so a render-derived
+   universe lost Kayle outright while carrying four of her forms as champions.
+
+   **Evaluated ECC/AgentShield: declined the framework, mined the check list.**
+   Declined because ADR-001 settles the operating system, 286 skills is a
+   permanent context tax against a deliberately constrained budget, and stacking
+   a second plugin-managed hook system onto a hook chain with a documented
+   history of silently not firing trades a known-good gate for an unknown
+   interaction. The mined checks found the 2026-08-01 trust-key bug LIVE on two
+   sibling projects - Clockspeed [True, True, False] and Lanternlight
+   [True, False] - with the SUBSTANTIVE entry (30 and 27 fields) untrusted while
+   a 7-field stub held the trust. Both fixed machine-wide after a backup, all 26
+   project keys and both field counts verified intact.
+
+   **CI went RED once and the lesson is worth more than the fix.**
+   `test_other_projects_key_collisions` read the operator's real
+   `~/.claude.json`, so it passed locally and failed on a runner where that file
+   does not exist. Projects are now injected. A local green on a test that
+   touches machine state proves nothing about CI. Two other self-inflicted
+   findings the same day: the scanner reported ITSELF three times (it contains
+   its own detection strings, so a scanner must never scan the file defining its
+   patterns), and severity is now scoped so another repo's broken key is a note
+   rather than a breach that would wedge LW's `/done`.
+
 143. DONE **2026-09-01 (twenty of twenty-four through first pass, and the
    apostrophe that ate a slug; `ad99249`).** Ran `/first-pass` then
    `/cleaning-pass` over the 24 slugs sitting in `1.First Pass Scratch`.

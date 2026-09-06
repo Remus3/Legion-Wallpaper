@@ -341,18 +341,28 @@ def check_agent_config() -> None:
                 warn(issue)
 
 
-def check_claude_path_keys() -> None:
-    """Cross-project: one bad spelling here silently disarms a headless run."""
+def check_claude_path_keys(projects: dict | None = None) -> None:
+    """Cross-project: one bad spelling here silently disarms a headless run.
+
+    `projects` is injectable so this is testable without a real ~/.claude.json.
+    Reading the operator's live file made the first version of the test pass
+    locally and fail in CI, where the file does not exist - a machine-dependent
+    test, which is the failure this repo's verification discipline exists to
+    catch.
+    """
     import json as _json
-    if not CLAUDE_HOME_JSON.is_file():
-        return
-    try:
-        d = _json.loads(CLAUDE_HOME_JSON.read_text(encoding="utf-8", errors="replace"))
-    except ValueError:
-        warn("~/.claude.json: invalid JSON")
-        return
+    if projects is None:
+        if not CLAUDE_HOME_JSON.is_file():
+            return
+        try:
+            d = _json.loads(
+                CLAUDE_HOME_JSON.read_text(encoding="utf-8", errors="replace"))
+        except ValueError:
+            warn("~/.claude.json: invalid JSON")
+            return
+        projects = d.get("projects") or {}
     mine = str(ROOT).replace("/", "\\").rstrip("\\").lower()
-    for n, keys, trusts in collide_path_keys(d.get("projects") or {}):
+    for n, keys, trusts in collide_path_keys(projects):
         msg = (f"~/.claude.json: {n} has {len(keys)} spellings with DISAGREEING "
                f"trust {trusts} - a headless run on the False one drops permissions")
         # A breach only when it is THIS project: another repo's key is worth

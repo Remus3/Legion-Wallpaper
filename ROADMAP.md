@@ -37,6 +37,23 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
     painted signature carries no information about what is under it), and where
     conditioning fires it makes the frame worse.
     `docs/CLEAN_CONDITIONING_DECISION_2026-08-22.md`, LEDGER 128.
+  - **F (DA overlay: pooled / analysis-by-synthesis) - CLOSED 2026-09-05, three
+    attempts, all refused.** The DA preview overlay is TWO objects - an
+    artist-specific credit line and a common logo veil - and the veil defeated
+    (1) a 62-frame pooled matte, structurally: the estimators run on `highpass`,
+    which discards the DC band a flat veil lives in, so they recover EDGES and
+    are blind to the FILL; (2) analysis-by-synthesis, for want of a matched pair
+    - no clean/watermarked duplicate exists in the corpus (closest consensus
+    distance 18 vs accept 8), DA watermarks every render size down to the 300px
+    thumb, and two sizes do not separate it; (3) shape-from-pool plus
+    amplitude-from-ring, which measured `alpha = 0.0578 +- 0.0046` over 62
+    frames (matching LEDGER's independent ~0.06) and damaged nothing, but cannot
+    be validated per frame - 6 of 62 frames measure a NEGATIVE alpha.
+    **Do NOT retry** the pooled path with more frames or looser thresholds: the
+    blindness is in the transform, not the sample size. Registration is settled
+    and is NOT the problem (every frame scale 1.00, shift +-3 px).
+    `docs/POOLED_VEIL_RESULT_2026-09-05.md`, LEDGER 144.
+
   **Where it stands:** the FILL is settled on LaMa, now on an engine comparison
   rather than a single-engine replay. Mask generation is the remaining problem -
   see `clean-maskgen` below. **Corrected anchor:** the operator's brush is only

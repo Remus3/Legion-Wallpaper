@@ -11,6 +11,56 @@
 
 ---
 
+## 2026-09-05 - three ways to measure a watermark, all refused; plus a live permissions bug
+
+Six commits, all pushed. Suite **2501+ passed / 18 skipped**, ruff clean,
+`drift_guard` 0 breaches. CI went RED once and the cause is recorded below -
+read it before writing another test that touches machine state.
+
+- **The veil resisted three independent attacks. All three are written up in
+  `docs/POOLED_VEIL_RESULT_2026-09-05.md`; do not retry them blind.**
+  (1) 62-frame POOLED estimate, 123f held out: registration is NOT the problem
+  (every sampled frame at scale 1.00, shift within +-3 px, correlation
+  0.35-0.58) and pooling cancels the art cleanly, but the estimators are built
+  on `highpass`, which discards the DC band the veil lives in - so it recovers
+  EDGES and is blind to the FILL. Applied, it darkened the logo outline and left
+  the interior. (2) The operator's ANALYSIS-BY-SYNTHESIS proposal, which is the
+  better formulation - a ~12-parameter generator cannot absorb a hand
+  reconstruction the way a free per-pixel alpha does - but it needs a matched
+  pair and none exists: no clean/watermarked duplicate in the corpus (closest
+  consensus distance 18 against accept 8), DA watermarks every render size down
+  to the 300px thumb, and two sizes do not separate it because each is
+  independently JPEG'd. (3) Shape-from-pool + amplitude-from-ring gave
+  **alpha = 0.0578 +- 0.0046 over 62 frames**, matching LEDGER's independent
+  ~0.06, and damaged nothing - but it cannot be validated per frame (6 of 62
+  frames measure NEGATIVE alpha, and 123f's own step is -1.33 levels, so the
+  pooled value over-corrected it).
+- **Correction carried from earlier in the session:** a whole-frame
+  `residual_mae` of 0.028 does NOT show the hand-clean inverted rather than
+  reconstructed - that was dilution over untouched pixels. On touched pixels the
+  hand-finished line fits the alpha model NO BETTER than the known-invented LaMa
+  layer (7.00 vs 6.12 median levels). Hand-cleans are the ACCEPTANCE TARGET,
+  never fitting data.
+- **Pulled a canonical wiki reference set for lw-gen (`60461ae`, `17db253`):**
+  173 champions x 2 axes, 346/346 files, 0 missing, 1.2 GB in
+  `data/reference/wiki/` (gitignored). The champion universe is the
+  `OriginalSkin` file, NOT the render category - `Category:Champion renders` is
+  incomplete (it omits `Kayle Render.png`, so a render-derived universe lost
+  Kayle while keeping four of her forms).
+- **Evaluated ECC/AgentShield: declined the framework, took the check list
+  (`7ea5707`).** Reasons in the commit body. The mined checks
+  (`drift_guard.check_agent_config` + `check_claude_path_keys`) immediately
+  found the 2026-08-01 trust-key bug LIVE on two sibling projects - Clockspeed
+  [True, True, False] and Lanternlight [True, False], with the SUBSTANTIVE entry
+  (30 and 27 fields) untrusted while a 7-field stub held the trust. **Both fixed
+  machine-wide; all 7 collision groups now agree.**
+- **CI RED, and the lesson is the point.** `test_other_projects_key_collisions`
+  read the operator's real `~/.claude.json`, so it passed locally and failed on
+  a runner where that file does not exist. Projects are now INJECTED. A local
+  green on a test that touches machine state proves nothing about CI.
+
+---
+
 ## 2026-09-01 (later) - twenty through first pass, and the watermark under the queue
 
 One commit (`ad99249`), pushed. Suite **2450 passed / 18 skipped** on a fresh
@@ -283,111 +333,3 @@ mismatches. Started as `/intake`, became four fixes the intake exposed.
 - **Still open, deliberately:** the 2 byte-identical dupes sit in `0.Originals`
   and will report `pending_intake=2` on every scan until GC'd - operator call.
   `data/recovery/fetched/...-pre-2/` staging kept after use.
-
----
-
-## 2026-08-30 (second session) - both framings were wrong
-
-One commit plus this doc sync. Suite **2408 passed / 18 skipped, exit 0** on a
-fresh full run (128s, nothing deselected); baseline was 2400/18 and I added 8
-tests. ruff clean repo-wide, drift_guard 0 breaches. Detail:
-`docs/CLEAN_CREDITLINE_EDGES_2026-08-30.md`, LEDGER 140.
-
-- **Built the rebuild harness first and it is exact:** every one of the 39
-  recorded masks reproduces from its recorded box at `reach=0`, 39 of 39. That
-  is the pre-`escaped_ink` lane, so the recorded outputs are stale by one fix -
-  worth knowing before reading any of them.
-- **The right edge truncates on 4 of 39, not 2.** viego-the-ruined-king (52px
-  short), 261f (117), aidraw-...-watercolornessie (56), 266f (152). And
-  `syndra-dlsfckr`, named in the hand-off as a right-edge case, is NOT one - its
-  `.COM` is fully covered.
-- **The right-edge WALK is FALSIFIED. Do not retry it.** Five rule families,
-  60+ configurations: the `left_extent` mirror, band-calibrated, walk-only ink at
-  lower beta, a leading-row guard, a geodesic `escaped_ink` strip, an
-  edge-adjacency gate. Nothing reaches 4 of 4 without moving over half the 35
-  controls; nothing reaches 3 of 4 for under a control p90 of 57px of mask growth
-  into artwork. `easyocr` re-run before any filtering returns NO read right of
-  the box on any of the four, and `local_ink` cannot see the tails at all.
-  **The ends are not mirrors:** left is the `(c)` ring, one compact object in the
-  leading; right is more of the same text in several glyphs, and the hops needed
-  to cross them are exactly what walks into art.
-- **The mid-line holes are the REVERT, not the mask.** Inside the mark's own row
-  band the shipped mask's gaps on syndra are max 3px, and `escaped_ink` reaches
-  0px inside the read box on 37 of 39. The `R` and `X` come back because the
-  scoped corridor hands back 1048 byte-identical pixels that sit exactly on those
-  glyphs. Known 1.80-percent handback; nobody had asked WHERE it lands.
-- **Shipped, moving no pixel:** `handed_back_px` per step and `handed_back` per
-  plan / lane record / summary / REVIEW.md, sorted above repaint width. Not the
-  same as `reverted_px` - a commit hands back whatever the filler returned
-  unchanged and `reverted_px` is 0 there. Queue total 18,835 px.
-- **Also falsified, recorded:** a `.COM` suffix predicate on the read text; glyph
-  pitch from the read length; and stroke contrast at the handed-back pixels as a
-  legibility gate (259f keeps 84.6 percent with a CLEAN output - the corridor
-  restored an art streak, not a mark).
-- **Still an operator call:** refusing a corridor that hands a legible letter
-  back falls through to a WHOLE revert today (28.13 percent against 1.80);
-  making refusal mean COMMIT is one line plus a lane re-run.
-- **THEN RE-RAN THE QUEUE UNDER THE SHIPPING DEFAULT** (LEDGER 141):
-  `ops/runtime/clean/creditline/run_shipdefault/`, 39 slugs, exit 0, ~6 min,
-  plain defaults. First run ever under `88e1ac7`. `box_px` identical to
-  `run_ringfix` (2,057,596) so it is like for like: **mask 1,092,590 -> 948,500
-  (-13.2 percent, reproducing LEDGER 139 live)**, blobs 403 -> 430, committed
-  383 -> 415, partial 20 -> **15**, held 0, still_reads 0, handed back
-  **17,171 px**.
-- **The mid-line holes were ALREADY FIXED - there was no lever to build.**
-  `syndra-dlsfckr` hands back **1048 -> 46 px** and at 1:1 the whole line, `R`
-  and `X` included, is gone. The escape changed the blob structure so the
-  corridor no longer crosses the glyphs.
-- **`handed_back` is the ONLY field ordering this review** - `held` and
-  `still_reads` are 0 on all 39. Top two checked at 1:1, both zero-residue FAILS
-  that every older field called clean: `soraka` (2641px) reads `(c) .VE?ENINE`
-  and a legible `.COM`; `105-cleanup` (2037px) carries a faint `L ... WALL`
-  ghost. Correct first try. n=2 by eye - useful ordering, still not a gate.
-- **NEXT is NOT a code task:** the operator's eye over
-  `run_shipdefault/REVIEW.md`, worst first. Approve zero-residue frames into
-  `4.Cleaning Done`, route the rest to manual IOPaint. ADR-008: a vision pass may
-  FLAG, never approve. The right-edge four are unaffected and stay falsified.
-
----
-
-## 2026-08-30 (first session) - the ring, then the damage under it
-
-Five commits: 3c4e704, a469624, 47903a2, c8eb152, 88e1ac7, plus this doc sync.
-Suite 2400 passed / 18 skipped, exit 0, nothing deselected. ruff clean,
-drift_guard 0 breaches.
-
-- **Paid the ledger the interrupted session owed** (LEDGER 134-136 for 6fffd74 /
-  78a0521 / d13cdfc). `tools/lw_clean_fr.py` is NOT unwired despite nothing
-  importing it - it is a PRODUCER, `--out` writes the audit and `lw_pipeline
-  annotate --metrics @path` eats it. Do not "fix" the missing import.
-- **Looked at all 39 credit-line sheets, flag-only (LEDGER 137).** The reader is
-  near-blind: `still_reads` fired on 2, the eye read a line on 28. That
-  direction was already known; the magnitude was not.
-- **Fixed the (c) ring (LEDGER 138, 47903a2).** Root cause was NOT "OCR skips
-  the symbol" - the mask's left edge was `box_x0 - PAD` and the mark's true left
-  extent is not a constant (20-21px small type, 35 large, 43-44 at scale 1.2,
-  76-96 where OCR drops leading letters). `left_extent()` measures it.
-  Second separable cause fixed too: `glyph_mask`'s box-global p88 was set by the
-  brightest thing in the box. Ring ink outside the mask 6923 -> 1871 px.
-- **Re-ran the lane (run_ringfix) and re-triaged all 39.** Ring GONE on 28,
-  residue LEGIBLE 28 -> 19, NONE 4 -> 8, held and still_reads both to 0. Only
-  `107-cleanup` is unflagged outright.
-- **Then fixed the damage (LEDGER 139, 88e1ac7).** Three of my framings died to
-  measurement: lines are NOT cut at the seam (82.6 percent of damage is 5+ px
-  deep), the rollback has NO no-chord blind spot (it fired on the worst blobs
-  and bought 1.2-7.3 percent), and nothing leaks outside the mask (0 px on all
-  39). Real cause: `glyph_mask` takes the top 12 percent of high-pass inside the
-  box and on busy art that IS the art. `escaped_ink()` follows ink back in from
-  outside and subtracts it - mask -13.2 percent, strong edges -17.0, ridges
-  -16.7, ZERO registered logo ink lost.
-- **NEXT: the RIGHT edge and the mid-line holes.** The re-run exposed that
-  `left_extent` fixed one end of a three-ended problem - `viego-the-ruined-king`
-  stops at x577 leaving `COM` intact, `261f` stops at x499, `syndra-dlsfckr`
-  leaves holes mid-span. The machinery exists; mirror it.
-- **Do NOT redo** (all measured, all in ROADMAP + LEDGER): the achromatic gate,
-  median+k*MAD thresholding, unbounded leftward walk, whole-structure
-  containment ratio, morphological separation, and "revert more" - the revert
-  trade curve has no knee at any slug.
-- **One operator call waiting:** `LIMB_REACH` 24 removes 17 percent of the art
-  damage; 32 reaches 24 percent with still no measured mark loss; first loss at
-  36. One number, pinned by a test.

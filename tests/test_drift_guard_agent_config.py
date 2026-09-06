@@ -142,11 +142,31 @@ def test_check_agent_config_does_not_report_the_scanner_itself():
 def test_other_projects_key_collisions_are_notes_not_breaches():
     """Another repo's broken key is worth surfacing but must not wedge LW's
     /done behind a fix nobody in this repo owns. Only LW's own key breaches.
+
+    Projects are INJECTED. The first version of this test read the operator's
+    real ~/.claude.json, so it passed locally and failed in CI where no such
+    file exists - a machine-dependent test, and the exact failure the repo's
+    verification discipline is written to prevent.
     """
+    projects = {
+        r"C:\Lanternlight": {"hasTrustDialogAccepted": True},
+        "C:/Lanternlight": {"hasTrustDialogAccepted": False},
+    }
     DG.problems.clear()
     DG.notes.clear()
-    DG.check_claude_path_keys()
-    joined = " ".join(DG.problems)
-    assert "lanternlight" not in joined.lower()
-    assert "clockspeed" not in joined.lower()
-    assert any("claude.json" in n for n in DG.notes)
+    DG.check_claude_path_keys(projects)
+    assert DG.problems == []
+    assert any("lanternlight" in n.lower() for n in DG.notes)
+
+
+def test_this_projects_key_collision_is_a_breach():
+    """LW's own key IS a breach - it disarms this repo's own headless runs."""
+    root = str(DG.ROOT).replace("/", "\\").rstrip("\\")
+    projects = {
+        root: {"hasTrustDialogAccepted": True},
+        root.replace("\\", "/"): {"hasTrustDialogAccepted": False},
+    }
+    DG.problems.clear()
+    DG.notes.clear()
+    DG.check_claude_path_keys(projects)
+    assert len(DG.problems) == 1 and "DISAGREEING" in DG.problems[0]
