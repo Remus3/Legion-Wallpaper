@@ -1,6 +1,6 @@
 {
-  "repo_root": "C:\\LegionWallpaper",
-  "control_dir": "C:\\LegionWallpaper\\ops\\loop\\control",
+  "repo_root": "C:\\Legion-Wallpaper",
+  "control_dir": "C:\\Legion-Wallpaper\\ops\\loop\\control",
   "ceiling_usd": 200.0,
   "_ceiling_note": "ceiling_usd caps GEMINI spend only (director+auditor calls). Claude/executor spend is UNCAPPED per operator. Rail carried from the RC ancestor (operator set NO spend limit; 200 is a runaway backstop only).",
   "max_cycles": 1,
@@ -20,7 +20,7 @@
   "claude_window_title": "Image",
   "gemini_model": "gemini-3-pro-preview",
   "gemini_cmd": "gemini",
-  "transcript_dir": "C:\\Users\\Administrator\\.claude\\projects\\C--LegionWallpaper",
+  "transcript_dir": "C:\\Users\\Administrator\\.claude\\projects\\C--Legion-Wallpaper",
   "gemini_price_per_mtok": {
     "input": 2.0,
     "output": 12.0

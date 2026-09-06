@@ -49,7 +49,7 @@ Five operator rulings (the QA doc's open decisions, now settled):
    section 2 (first = recovery + single upscale; clean = masked watermark/
    artifact inpaint; final = face/eye repair + debanding + conformance;
    last = fresh-eyes regression).
-4. PIPELINE ROOT: `C:\LegionWallpaper\images\` (not the QA doc's proposed
+4. PIPELINE ROOT: `C:\Legion-Wallpaper\images\` (not the QA doc's proposed
    `pipeline\` default). Stage folders exactly: `0.Originals`,
    `1.First Pass Scratch`, `2.First Pass Done`, `3.Cleaning Scratch`,
    `4.Cleaning Done`, `5.Final Scratch`, `6.Final Done`, `7.Last Scratch`,

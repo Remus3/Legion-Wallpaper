@@ -22,7 +22,7 @@ any product VERSION, does NOT restart any LW service, and does NOT touch `data/`
 1. Run the generator with the canonical interpreter (NOT the `py` launcher):
 
    ```
-   "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\LegionWallpaper\tools\repo_insights.py" --days 30
+   "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion-Wallpaper\tools\repo_insights.py" --days 30
    ```
 
    - Pass `--days N` to widen/narrow the window (default 30).

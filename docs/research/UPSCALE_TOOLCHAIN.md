@@ -294,7 +294,7 @@ Components:
 - spandrel (latest; PyPI page fetch failed today - version UNVERIFIED,
   check pip).
 - Pillow (Lanczos + UnsharpMask) or OpenCV; Pillow is lighter and enough.
-- Models (download to C:\LegionWallpaper\tools\models\):
+- Models (download to C:\Legion-Wallpaper\tools\models\):
   - 4x_IllustrationJaNai_V3detail (DAT2 variant) - primary quality model.
   - 4x_IllustrationJaNai_V3denoise (DAT2) - for the compression/banding
     subset.
@@ -306,7 +306,7 @@ Components:
 
 Install steps (new venv, PowerShell):
 
-    cd C:\LegionWallpaper
+    cd C:\Legion-Wallpaper
     & "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m venv .venv-upscale
     .\.venv-upscale\Scripts\python.exe -m pip install --upgrade pip
     .\.venv-upscale\Scripts\pip.exe install torch torchvision --index-url https://download.pytorch.org/whl/cu128

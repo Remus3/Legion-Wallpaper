@@ -54,7 +54,7 @@ from skimage.registration import phase_cross_correlation
 KERNEL_SIZE = 3
 MASK_THRESHOLD = 128
 
-ROOT = r"C:\LegionWallpaper"
+ROOT = r"C:\Legion-Wallpaper"
 CLEAN_SCRATCH = os.path.join(ROOT, "images", "3.Cleaning Scratch")
 
 # namakx repeated-watermark cluster (5 slugs); input per slug is <slug>_cleaninitial.png.
@@ -71,7 +71,7 @@ DEFAULT_REGION = (848, 1122, 1712, 1430)
 DEFAULT_PAD = 20
 
 _SCRATCH_DEBUG = os.path.join(
-    r"C:\Users\ADMINI~1\AppData\Local\Temp\claude\C--LegionWallpaper",
+    r"C:\Users\ADMINI~1\AppData\Local\Temp\claude\C--Legion-Wallpaper",
     "a29d4376-03d2-40f2-85f9-719b5a3dfe9e", "scratchpad", "dekel_debug", "namakx",
 )
 

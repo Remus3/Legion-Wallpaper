@@ -51,7 +51,7 @@ slots = _bind("lw_loop_slots", "slots.py")
 winmutex = _bind("lw_loop_winmutex", "winmutex.py")
 
 # Module-RELATIVE, not an absolute path only this machine has. The previous
-# fallback hardcoded C:\LegionWallpaper\...\config.json, and the comment below
+# fallback hardcoded C:\Legion-Wallpaper\...\config.json, and the comment below
 # justified the empty-CFG branch with "a clean checkout has no config.json" -
 # which is false: all four ops/loop/config*.json are tracked. The file was
 # always there; it was addressed by a path that only resolves on Legion. So a
@@ -72,9 +72,9 @@ def _cfg_path(key, default):
     """Adopt a config-supplied path ONLY when it is absolute on THIS platform.
 
     A drive-letter string is absolute on Windows and a RELATIVE single-component
-    name on POSIX: Path("C:\\LegionWallpaper").is_absolute() is False there, and
+    name on POSIX: Path("C:\\Legion-Wallpaper").is_absolute() is False there, and
     the name keeps its backslashes. Adopting one would make the mkdir below mint
-    a literal `C:\\LegionWallpaper\\ops\\loop\\control` directory inside whatever
+    a literal `C:\\Legion-Wallpaper\\ops\\loop\\control` directory inside whatever
     CWD imported this module.
 
     That became reachable only when the config started loading off Legion. While

@@ -221,8 +221,8 @@ def main(argv=None):
     ap.add_argument("--mask", help="explicit detect-mask PNG")
     ap.add_argument("--no-mask", action="store_true",
                     help="score the whole frame (records mask_pct null)")
-    ap.add_argument("--root", default=r"C:\LegionWallpaper\images")
-    ap.add_argument("--runtime", default=r"C:\LegionWallpaper\ops\runtime\clean")
+    ap.add_argument("--root", default=r"C:\Legion-Wallpaper\images")
+    ap.add_argument("--runtime", default=r"C:\Legion-Wallpaper\ops\runtime\clean")
     ap.add_argument("--out", help="write the audit JSON here (atomic)")
     args = ap.parse_args(argv)
 

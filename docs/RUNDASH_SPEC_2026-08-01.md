@@ -28,7 +28,7 @@ timestamp" as NEEDS INSTRUMENTATION. The census lane refuted that by
 reconstructing the entire 2026-07-30 fleet - all 8 agents, with type, worktree
 branch, start time, elapsed and token spend - from files that already exist:
 
-- `~/.claude/projects/C--LegionWallpaper/<session>/subagents/agent-<id>.meta.json`
+- `~/.claude/projects/C--Legion-Wallpaper/<session>/subagents/agent-<id>.meta.json`
   carries `agentType`, `worktreePath`, `worktreeBranch`, `description`,
   `toolUseId`, `spawnDepth`. Presence of `worktreePath` IS the
   worktree-agent-vs-verifier discriminator.

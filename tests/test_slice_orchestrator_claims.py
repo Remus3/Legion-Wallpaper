@@ -70,7 +70,7 @@ def test_separator_case_and_prefix_variants_are_one_key(variant):
 
 @pytest.mark.parametrize("bad", [
     "", "   ", None, 42,
-    "C:/LegionWallpaper/tools/x.py",     # absolute, drive letter
+    "C:/Legion-Wallpaper/tools/x.py",     # absolute, drive letter
     "/etc/passwd",                        # absolute, posix
     "../sibling/x.py",                    # escapes the repo
     "tools/../../x.py",                   # escapes after collapsing

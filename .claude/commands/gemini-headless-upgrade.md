@@ -35,7 +35,7 @@ LW-GeminiAudit scheduled task is a SEPARATE nightly task, not the loop's interac
 
 ### A2. Launch the loop (detached)
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\LegionWallpaper\ops\loop\launch_loop.ps1" -Mode live
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Legion-Wallpaper\ops\loop\launch_loop.ps1" -Mode live
 ```
 This auto-detects the Claude window PID, writes `ops/loop/control/{target_pid.txt,ahk_mode.txt=live}`,
 starts the AHK bridge + the controller (config.json), and pre-cleans stale sentinels (incl. a
@@ -75,7 +75,7 @@ proceed. Caveman ULTRA output default (compress ~90 percent; code/paths/numbers 
   parallel per task, each ONE slice on a DISJOINT file set. Dispatch concurrent agents in a
   SINGLE message with multiple Agent blocks (true concurrency).
 - Merge order: the foundational / version-bump slice (TBD) FIRST, then dependents, living-docs
-  sync LAST. Merge via `git -C "C:/LegionWallpaper" merge --no-ff origin/<branch>` (CWD hazard:
+  sync LAST. Merge via `git -C "C:/Legion-Wallpaper" merge --no-ff origin/<branch>` (CWD hazard:
   the shell CWD persists between Bash calls; a merge fired from a worktree dir lands wrong).
 - VERIFIER GATE before any merge (ground truth, not the slice agent's word): dispatch the
   read-only `verifier` subagent with the claim + cited test cmd + cited files. Merge only on
@@ -266,7 +266,7 @@ READ-ONLY - it DECIDES and DIRECTS; the next Claude cycle does every file write.
 "physically implements" anything.
 
 1. SYNCHRONOUS advice (preferred for a question you can resolve mid-cycle without ending it):
-   `powershell -NoProfile -File "C:\LegionWallpaper\tools\gemini_ask.ps1" -Question "<terse grounded question>"`
+   `powershell -NoProfile -File "C:\Legion-Wallpaper\tools\gemini_ask.ps1" -Question "<terse grounded question>"`
    Read-only Gemini answers on stdout (also saved to `gemini_io/answer_<id>.md`). Take its recommendation,
    log the choice in the synopsis + WAKEUP_NOTES, and PROCEED. Do not wait/block.
 

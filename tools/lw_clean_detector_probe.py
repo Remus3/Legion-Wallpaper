@@ -39,7 +39,7 @@ import json
 import os
 import sys
 
-ROOT = r"C:\LegionWallpaper"
+ROOT = r"C:\Legion-Wallpaper"
 STAGES = (
     os.path.join(ROOT, "images", "3.Cleaning Scratch"),
     os.path.join(ROOT, "images", "4.Cleaning Done"),

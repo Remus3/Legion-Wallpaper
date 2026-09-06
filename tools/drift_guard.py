@@ -35,7 +35,7 @@ DOC_BUDGETS_ADVISORY = {"ROADMAP.md": 81920}
 COMMANDS_DIR = ".claude/commands"
 COMMANDS_MARKER = "SUBAGENT-FIRST"
 MEMORY_DIR = pathlib.Path(
-    r"C:\Users\Administrator\.claude\projects\C--LegionWallpaper\memory"
+    r"C:\Users\Administrator\.claude\projects\C--Legion-Wallpaper\memory"
 )
 MEMORY_INDEX = "MEMORY.md"
 MEMORY_UNINDEXED_OK = ()

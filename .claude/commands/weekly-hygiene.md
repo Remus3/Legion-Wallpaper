@@ -41,7 +41,7 @@ CLAUDE.md; touch CLAUDE.md itself ONLY for rule / frozen-list / Settled changes.
 
 ### 3. Memory staleness scan
 
-Scan `C:\Users\Administrator\.claude\projects\C--LegionWallpaper\memory\` for
+Scan `C:\Users\Administrator\.claude\projects\C--Legion-Wallpaper\memory\` for
 facts that reference removed or changed infra (e.g. a retired service or
 endpoint, an old machine/topology, a stale file:line). For each suspect:
 - HIGH confidence + low blast radius (names retired infra) -> update the file AND

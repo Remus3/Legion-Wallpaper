@@ -1,6 +1,6 @@
 # Legion Wallpaper
 
-[![ci](https://github.com/Remus3/LegionWallpaper/actions/workflows/ci.yml/badge.svg)](https://github.com/Remus3/LegionWallpaper/actions/workflows/ci.yml)
+[![ci](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml/badge.svg)](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 A staged, self-auditing **image restoration pipeline**, and the agent operating

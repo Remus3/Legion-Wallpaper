@@ -480,15 +480,15 @@ def test_history_limit_keeps_the_newest(tmp_path):
 
 
 WT_LIST = (
-    "worktree C:/LegionWallpaper\n"
+    "worktree C:/Legion-Wallpaper\n"
     "HEAD 55b9e9500000000000000000000000000000aaaa\n"
     "branch refs/heads/main\n"
     "\n"
-    "worktree C:/LegionWallpaper/.claude/worktrees/agent-B2\n"
+    "worktree C:/Legion-Wallpaper/.claude/worktrees/agent-B2\n"
     "HEAD 1111111111111111111111111111111111111111\n"
     "branch refs/heads/worktree-agent-B2\n"
     "\n"
-    "worktree C:/LegionWallpaper/.claude/worktrees/agent-lost\n"
+    "worktree C:/Legion-Wallpaper/.claude/worktrees/agent-lost\n"
     "HEAD 2222222222222222222222222222222222222222\n"
     "detached\n"
 )
@@ -526,7 +526,7 @@ def test_worktree_inventory_parses_list_and_status():
         ("agent-lost status", (0, CLEAN_STATUS, "")),
         ("status", (0, CLEAN_STATUS, "")),
     ])
-    inv = rd.worktree_inventory("C:/LegionWallpaper", runner=run)
+    inv = rd.worktree_inventory("C:/Legion-Wallpaper", runner=run)
     assert inv["ok"] is True and len(inv["worktrees"]) == 3
     primary, agent, lost = inv["worktrees"]
     assert primary["primary"] is True and primary["branch"] == "main"
@@ -553,7 +553,7 @@ def test_worktree_inventory_status_failure_is_per_worktree():
         ("agent-lost status", (1, "", "fatal: cannot chdir")),
         ("status", (0, CLEAN_STATUS, "")),
     ])
-    inv = rd.worktree_inventory("C:/LegionWallpaper", runner=run)
+    inv = rd.worktree_inventory("C:/Legion-Wallpaper", runner=run)
     assert inv["ok"] is True
     lost = inv["worktrees"][2]
     assert lost["status_ok"] is False and "cannot chdir" in lost["status_error"]
@@ -564,7 +564,7 @@ def test_worktree_inventory_runner_that_raises_is_contained():
     def boom(argv):
         raise OSError("git not found")
 
-    inv = rd.worktree_inventory("C:/LegionWallpaper", runner=boom)
+    inv = rd.worktree_inventory("C:/Legion-Wallpaper", runner=boom)
     assert inv["ok"] is False and "git not found" in inv["error"]
 
 
@@ -595,7 +595,7 @@ def test_worktree_inventory_passes_create_no_window():
 
 
 def inventory_from(run):
-    return rd.worktree_inventory("C:/LegionWallpaper", runner=run)
+    return rd.worktree_inventory("C:/Legion-Wallpaper", runner=run)
 
 
 def test_resume_safe_when_nothing_is_stranded(tmp_path):
@@ -641,7 +641,7 @@ def test_salvage_on_unpushed_commits_with_a_clean_tree():
 
 def test_resume_ignores_a_dirty_primary_worktree_by_default():
     run = fake_runner([("worktree list", (0, WT_LIST, "")),
-                       ("LegionWallpaper status", (0, DIRTY_STATUS, "")),
+                       ("Legion-Wallpaper status", (0, DIRTY_STATUS, "")),
                        ("status", (0, CLEAN_STATUS, ""))])
     inv = inventory_from(run)
     assert rd.resume_verdict({}, inv, None)["verdict"] == "RESUME SAFE"
@@ -653,7 +653,7 @@ def test_resume_reports_orphan_worktrees_no_slice_claims(tmp_path):
     m = rd.read_slice_manifest(write_manifest(tmp_path, sample_manifest()), now_ts=T, cache={})
     v = rd.resume_verdict(m, inventory_from(run), None, now_ts=T)
     orphans = [o["path"] for o in v["orphan_worktrees"]]
-    assert orphans == ["C:/LegionWallpaper/.claude/worktrees/agent-lost"]
+    assert orphans == ["C:/Legion-Wallpaper/.claude/worktrees/agent-lost"]
 
 
 def test_resume_verdict_survives_junk_inputs():
@@ -702,7 +702,7 @@ def build_fleet(tmp_path):
     subs.mkdir(parents=True)
     write_agent(subs, "a8701dbad981ba8dc", {
         "agentType": "general-purpose",
-        "worktreePath": "C:\\LegionWallpaper\\.claude\\worktrees\\agent-a8701dbad981ba8dc",
+        "worktreePath": "C:\\Legion-Wallpaper\\.claude\\worktrees\\agent-a8701dbad981ba8dc",
         "worktreeBranch": "worktree-agent-a8701dbad981ba8dc",
         "description": "R11 charter md-hygiene slice", "spawnDepth": 1,
     }, [event("2026-07-30T10:00:00.000Z"), event("2026-07-30T10:20:00.000Z", 120),

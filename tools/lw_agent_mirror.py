@@ -5,7 +5,7 @@ Spec docs/RUNDASH_SPEC_2026-08-01.md, instrumentation backlog item 6.
 
 Every fleet fact the dashboard shows - which agent owned which worktree, when it
 started, what it spent - is reconstructed live from
-`~/.claude/projects/C--LegionWallpaper/<session>/subagents/`. The spec's census
+`~/.claude/projects/C--Legion-Wallpaper/<session>/subagents/`. The spec's census
 lane proved that works by rebuilding the whole 2026-07-30 fleet from it. The
 same lane found the catch: `~/.claude/settings.json` sets no `cleanupPeriodDays`,
 so Claude Code's default reaping can delete all of it without warning, and the
@@ -42,7 +42,7 @@ import lw_rundash_state as rundash_state  # noqa: E402  (sibling tool, not a pac
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TARGET = ROOT / "ops" / "runtime" / "agent_fleet_mirror.json"
-PROJECT_SESSIONS = (Path.home() / ".claude" / "projects" / "C--LegionWallpaper")
+PROJECT_SESSIONS = (Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper")
 
 SCHEMA = 1
 

@@ -7,7 +7,7 @@ API-Key-*.txt
 !.env.example
 
 # Claude Desktop app data lives INSIDE this project folder on this machine
-# (C:\LegionWallpaper\Claude\). It is app data, not project content - NEVER
+# (C:\Legion-Wallpaper\Claude\). It is app data, not project content - NEVER
 # track it.
 /Claude/
 

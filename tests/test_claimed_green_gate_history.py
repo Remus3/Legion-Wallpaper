@@ -229,7 +229,7 @@ def test_a_plain_green_claim_after_a_red_run_is_still_caught(tmp_path):
 
 # ------------------------------------------------- the subagent result shape
 def test_a_subagent_run_result_is_joined_from_the_tool_result_part(tmp_path):
-    # Measured on C--LegionWallpaper/<session>/subagents/*.jsonl: 16 tool_use,
+    # Measured on C--Legion-Wallpaper/<session>/subagents/*.jsonl: 16 tool_use,
     # 16 tool_result parts, ZERO entry-level toolUseResult. Before this, the
     # first sweep read 172 no-counts findings that were mostly this bug.
     t = _transcript(tmp_path, _subagent_run(PYTEST, PASS), _claim("1640 passed"))

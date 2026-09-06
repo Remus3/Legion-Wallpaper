@@ -275,12 +275,12 @@ The server (not the page) does the grouping, exactly as RC's
 ### 5.1 GET /api/thumb?path=...
 
 - Query `path` may be absolute or repo-relative; repo-relative resolves
-  against `C:\LegionWallpaper`.
+  against `C:\Legion-Wallpaper`.
 - VALIDATION (all must pass, else 403 `{ok:false}`; no path echo in errors):
   1. `resolved = Path(p).resolve()` (resolves `..` and symlinks).
   2. `resolved.is_relative_to(root)` for at least one configured root.
-     Default roots: `C:\LegionWallpaper\data` and
-     `C:\LegionWallpaper\ops\runtime\thumbs`. Overridable via
+     Default roots: `C:\Legion-Wallpaper\data` and
+     `C:\Legion-Wallpaper\ops\runtime\thumbs`. Overridable via
      `--images-root` (repeatable). NOTE: the corpus location is not final -
      when the state-machine agent fixes the intake/output folders, add them
      here. Windows is case-insensitive: compare case-folded, which
@@ -474,8 +474,8 @@ console flash. Analysis of the launcher options:
 
 Shortcut spec:
 
-- Target: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe "C:\LegionWallpaper\tools\lw_monitor.py" --open`
-- Start in: `C:\LegionWallpaper`
+- Target: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe "C:\Legion-Wallpaper\tools\lw_monitor.py" --open`
+- Start in: `C:\Legion-Wallpaper`
 - Icon: `imageres.dll,109` (monitor glyph) - cosmetic, optional.
 
 Exact one-time creation commands (PowerShell 5.1 safe, ASCII only):
@@ -484,8 +484,8 @@ Exact one-time creation commands (PowerShell 5.1 safe, ASCII only):
 $ws  = New-Object -ComObject WScript.Shell
 $lnk = $ws.CreateShortcut("$env:USERPROFILE\Desktop\LW Monitor.lnk")
 $lnk.TargetPath       = "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe"
-$lnk.Arguments        = '"C:\LegionWallpaper\tools\lw_monitor.py" --open'
-$lnk.WorkingDirectory = "C:\LegionWallpaper"
+$lnk.Arguments        = '"C:\Legion-Wallpaper\tools\lw_monitor.py" --open'
+$lnk.WorkingDirectory = "C:\Legion-Wallpaper"
 $lnk.IconLocation     = "C:\Windows\System32\imageres.dll,109"
 $lnk.Description      = "Legion Wallpaper pipeline monitor (127.0.0.1:8901)"
 $lnk.Save()

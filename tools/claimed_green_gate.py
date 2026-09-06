@@ -109,8 +109,8 @@ def _read_payload() -> dict:
 def _tokens(command: str) -> list:
     """Split a command line into tokens, tolerating Windows backslash paths.
 
-    shlex on posix=True eats backslashes, which turns C:\\LegionWallpaper into
-    C:LegionWallpaper and can drop a flag. posix=False keeps them.
+    shlex on posix=True eats backslashes, which turns C:\\Legion-Wallpaper into
+    C:Legion-Wallpaper and can drop a flag. posix=False keeps them.
     """
     try:
         return shlex.split(command, posix=False)
@@ -452,7 +452,7 @@ def evaluate(payload: dict) -> str | None:
 # It REPORTS. Exit stays 0 whatever it finds: a historical audit that failed its
 # caller would be unrunnable in CI, and the number is the deliverable.
 # ===========================================================================
-PROJECT_SESSIONS = Path.home() / ".claude" / "projects" / "C--LegionWallpaper"
+PROJECT_SESSIONS = Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper"
 
 CLAIM_EXCERPT = 220
 

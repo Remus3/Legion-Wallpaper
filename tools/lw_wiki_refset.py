@@ -257,7 +257,7 @@ def main(argv=None):
     p = argparse.ArgumentParser(
         prog="lw_wiki_refset",
         description="Pull canonical LoL wiki renders + HD splashes as generator reference")
-    p.add_argument("--out", default=r"C:\LegionWallpaper\data\reference\wiki")
+    p.add_argument("--out", default=r"C:\Legion-Wallpaper\data\reference\wiki")
     p.add_argument("--limit", type=int, help="cap the number of champions")
     p.add_argument("--kinds", default="render,splash",
                    help="comma list: render, splash")

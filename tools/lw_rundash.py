@@ -99,7 +99,7 @@ FLEET_HISTORY_N = 20
 # Where Claude Code keeps this project's sessions, and with them the only record
 # of which agent owned which worktree. AVAILABLE, NOT DURABLE - no
 # cleanupPeriodDays is set, so absent is a normal answer here.
-TRANSCRIPT_DIR = Path.home() / ".claude" / "projects" / "C--LegionWallpaper"
+TRANSCRIPT_DIR = Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper"
 
 # A slice sitting in one status this long, or an agent silent this long while
 # the run is still LIVE, is the thing the operator came to the page to find.

@@ -1515,7 +1515,7 @@ def _mirrored_agents(mirror_path, now_ts, session_root=None):
 
 def read_agent_fleet(session_dir, now_ts=None, *, running_within_s=AGENT_RUNNING_WITHIN_S,
                      mirror_path=None):
-    r"""The agent fleet from ~/.claude/projects/C--LegionWallpaper/<session>/subagents/.
+    r"""The agent fleet from ~/.claude/projects/C--Legion-Wallpaper/<session>/subagents/.
 
     Accepts either the session dir or the subagents dir - the caller's notion of
     "session" varies and guessing wrong would silently return an empty fleet.

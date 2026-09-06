@@ -1615,7 +1615,7 @@ via a read-only investigation subagent, verified independently before any edit.
 Suite **1800 passed / 17 skipped**, ruff clean, drift_guard 0 breaches / 4 notes.
 Nine commits `15844aa`..`3a3f6f7`, CI green on every one.
 
-- **Repo is now `Remus3/LegionWallpaper`** (was `legion-wallpaper`). `origin`
+- **Repo is now `Remus3/Legion-Wallpaper`** (was `legion-wallpaper`). `origin`
   updated; WAKEUP + LEDGER 88 URLs follow. Old URL redirects, but the old name
   is claimable by anyone - do not rely on the redirect.
 - **README rewritten for a stranger** (`7809618`): CI + license badges, mermaid
@@ -1656,7 +1656,7 @@ Suite **1760 passed / 16 skipped**, ruff clean, drift_guard 0 breaches / 25 note
 (the notes are the 43 intentionally-dead shas in the new map doc - expected, not drift).
 LEDGER 88. Commits `4e3b617` + `f9cd7a1`.
 
-- **<https://github.com/Remus3/LegionWallpaper> is PUBLIC.** Audited first: all
+- **<https://github.com/Remus3/Legion-Wallpaper> is PUBLIC.** Audited first: all
   306 commits scanned as full diffs for keys / tokens / PEM headers / the
   operator email - zero hits, and no secret-named file was ever tracked.
 - **`style.jpg` + `style2.jpg` purged from all history** (`git filter-repo`),
@@ -1970,7 +1970,7 @@ and is still the product work.
   backslashes are not valid JSON escapes, so it silently never parsed), and the
   trust bug below. Both make a live hook look dead. Both are now named in the rule.
 - **Trust bug found by RM, reproduced and FIXED on LW.** `~/.claude.json` held
-  THREE keys for one directory - `C:\LegionWallpaper` True, `C:/LegionWallpaper`
+  THREE keys for one directory - `C:\Legion-Wallpaper` True, `C:/Legion-Wallpaper`
   **False** (what headless reads), `C:/legionwallpaper` True - so headless was
   silently discarding `permissions.allow`. Fixed LW's key only; backup at
   `.claude.json.lwbak-2026-08-01`; RC and RM keys verified untouched.
@@ -2583,7 +2583,7 @@ Commits `ff4098f`..`7ea35e6` (9). Detail: LEDGER 44. CI green at `7ea35e6`
 - **One was a regression I had just created.** Making the config resolve
   module-relative meant it LOADS off Legion, so its drive-letter paths got
   adopted where `is_absolute()` is False, and `CTL.mkdir()` at import time would
-  have minted a directory named `C:\LegionWallpaper\...` inside a Linux
+  have minted a directory named `C:\Legion-Wallpaper\...` inside a Linux
   checkout. Fixing one path exposed the other.
 - **THREE misses of mine, all the same class the work was fixing.** (1) Dismissed
   a SyntaxWarning after re-running against a stale `.pyc` - checked where the
@@ -3362,11 +3362,11 @@ first real work item is the scope decision (ROADMAP.md, top item).
 - `docs/DEEP_AUDIT_CHARTER.md`: RC's three-lens audit charter as a DORMANT
   template, authorization slots UNSET.
 
-**Where things live:** repo root `C:\LegionWallpaper\`; rules in `CLAUDE.md`;
+**Where things live:** repo root `C:\Legion-Wallpaper\`; rules in `CLAUDE.md`;
 docs in `docs/`; harness in `.claude/`; canonical Python
 `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`
 (`pythonw.exe` for hooks/daemons; bare `py` is BANNED - pytest-less launcher
-runtime). Do NOT touch `C:\LegionWallpaper\Claude\` - that is Claude Desktop
+runtime). Do NOT touch `C:\Legion-Wallpaper\Claude\` - that is Claude Desktop
 app data, not project content.
 
 **What is TBD (do not invent):** the product itself (engine, rendering,
@@ -3398,13 +3398,13 @@ lane runs the operator's local py3.11 iopaint 1.6.0 install, WAKEUP
 > Consolidated from the research docs' install-now lists. Order matters.
 >
 > 1. `winget install Python.Python.3.12` (side-install; does not touch 3.14).
-> 2. Upscale venv (`C:\LegionWallpaper\.venv-upscale`, py 3.12 preferred; 3.14
+> 2. Upscale venv (`C:\Legion-Wallpaper\.venv-upscale`, py 3.12 preferred; 3.14
 >    acceptable for torch itself if cp314 cu128 wheels resolve):
 >    - `pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128`
 >    - `pip install spandrel pillow numpy`
 >    - smoke test: `torch.cuda.is_available()` True + device name contains 5070;
 >      spandrel load + 64x64 forward pass per downloaded model.
-> 3. Models to `C:\LegionWallpaper\tools\models\`: 4x IllustrationJaNai V3detail
+> 3. Models to `C:\Legion-Wallpaper\tools\models\`: 4x IllustrationJaNai V3detail
 >    (DAT2), V3denoise (DAT2), 4x AnimeSharp (cross-check). V3detail DAT2 is the
 >    PRIMARY first-pass upscaler as of ADR-004 (spandrel-loaded, sha eb9faf6a);
 >    4x_IllustrationJaNai_V1_DAT2_190k.pth is the spandrel-confirmed fallback.

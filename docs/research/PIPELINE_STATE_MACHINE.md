@@ -157,7 +157,7 @@ fixes inside tools/lw_pipeline.py; FM-10 needs an operator yes/no.
 
 ### 2.1 Canonical layout
 
-Pipeline root (PROPOSED default, configurable): C:\LegionWallpaper\pipeline\
+Pipeline root (PROPOSED default, configurable): C:\Legion-Wallpaper\pipeline\
 
 ```
 <ROOT>\
@@ -460,7 +460,7 @@ never needs it), so append is not required to be transactional.
   "schema": 1,
   "generated_ts": "2026-07-03T21:14:10Z",
   "scan_verify": false,
-  "root": "C:\\LegionWallpaper\\pipeline",
+  "root": "C:\\Legion-Wallpaper\\pipeline",
   "counts": {"pending_intake": 3, "first_scratch": 1, "first_done": 0,
              "clean_scratch": 2, "clean_done": 5, "final_scratch": 0,
              "final_done": 1, "last_scratch": 0, "end_review": 4,
@@ -524,6 +524,6 @@ image: every tool, every parameter, every hash).
 2. FM-02 GC rule: confirm deleting the Done N copy after Done N+1 verifies
    (keeps one authoritative location; the alternative is documented duplication).
 3. Section 2.8 stage semantics: confirm first/clean/final/last content definitions.
-4. Pipeline root location (default C:\LegionWallpaper\pipeline\) and whether
+4. Pipeline root location (default C:\Legion-Wallpaper\pipeline\) and whether
    Pictures delivery uses the sequential ###.png rename by default.
 5. FM-08: OK to set LongPathsEnabled=1 machine-wide (safe, reversible)?

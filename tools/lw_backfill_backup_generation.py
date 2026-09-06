@@ -91,7 +91,7 @@ def plan(ctx):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--root", default=str(lp.DEFAULT_ROOT),
-                    help="pipeline root (default C:\\LegionWallpaper\\images)")
+                    help="pipeline root (default C:\\Legion-Wallpaper\\images)")
     ap.add_argument("--apply", action="store_true",
                     help="write; default is dry-run")
     args = ap.parse_args(argv)

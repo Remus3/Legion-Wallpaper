@@ -1,7 +1,7 @@
 # Retrospective: how often was a green claim in this repo unbacked?
 
 Date: 2026-08-01. Tool: `tools/claimed_green_gate.py --history [--json]`.
-Corpus: `~/.claude/projects/C--LegionWallpaper/**/*.jsonl` - **387 transcripts**
+Corpus: `~/.claude/projects/C--Legion-Wallpaper/**/*.jsonl` - **387 transcripts**
 (81 top-level sessions plus their `<session>/subagents/` files).
 
 This is L2's second half. P1 shipped the LIVE gate, which starts counting today

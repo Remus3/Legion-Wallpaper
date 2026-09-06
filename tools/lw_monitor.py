@@ -582,7 +582,7 @@ def main(argv=None):
                     help="open the monitor page in the default browser")
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--images-root", action="append", default=None,
-                    help="allowed thumbnail root (repeatable); default C:\\LegionWallpaper\\images")
+                    help="allowed thumbnail root (repeatable); default C:\\Legion-Wallpaper\\images")
     ap.add_argument("--log-file", default=None, help="PIPELINE_LOG path override")
     ap.add_argument("--state-file", default=None, help="pipeline_state.json path override")
     args = ap.parse_args(argv)

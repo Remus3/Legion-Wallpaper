@@ -4,7 +4,7 @@ SetTitleMatchMode 2
 ; gemini-headless-upgrade GUI bridge (the HANDS). The ONLY GUI actor.
 ; LW port of the RC bridge under the RC 81636382 collision contract:
 ; live targeting is PID-ONLY (no title fallback) - RC's launcher self-defers
-; while any LegionWallpaper bridge is alive, and each repo's launcher kills
+; while any Legion-Wallpaper bridge is alive, and each repo's launcher kills
 ; only its own cmdline-scoped bridge instances.
 ; Polls control\gemini.ready; types its lines into the TARGET window; ack =
 ; deleting gemini.ready. Target is FILE-DRIVEN (config not code):
@@ -17,7 +17,7 @@ SetTitleMatchMode 2
 ; Live mode with a missing/empty target_hwnd.txt ABORTS the bridge outright.
 ; Exits when control\STOP appears.
 
-CTL := "C:\LegionWallpaper\ops\loop\control"
+CTL := "C:\Legion-Wallpaper\ops\loop\control"
 READY := CTL "\gemini.ready"
 TYPED := CTL "\typed.flag"
 STOPF := CTL "\STOP"

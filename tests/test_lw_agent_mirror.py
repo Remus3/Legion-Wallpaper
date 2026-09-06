@@ -2,7 +2,7 @@
 
 Spec item 6. Every fleet fact the dashboard shows - which agent owned which
 worktree, when it started, what it spent - is reconstructed live from
-`~/.claude/projects/C--LegionWallpaper/<session>/subagents/`. That directory is
+`~/.claude/projects/C--Legion-Wallpaper/<session>/subagents/`. That directory is
 AVAILABLE, NOT DURABLE: `~/.claude/settings.json` sets no `cleanupPeriodDays`,
 so Claude Code's default reaping can delete the whole 2026-07-30 fleet without
 warning, and the dir was already 596 MB when the spec was written.
@@ -47,7 +47,7 @@ def event(ts, out_tokens=0):
 
 
 WORKER = {"agentType": "general-purpose", "description": "slice B4",
-          "worktreePath": "C:/LegionWallpaper/worktrees/b4",
+          "worktreePath": "C:/Legion-Wallpaper/worktrees/b4",
           "worktreeBranch": "slice/b4", "spawnDepth": 1}
 
 

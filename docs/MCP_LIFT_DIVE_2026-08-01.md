@@ -312,9 +312,9 @@ design rests on.
    dropped**. And `path.split("/").pop()` for the session id is a no-op on
    backslash paths, so `--session <uuid>` can never match a bare uuid prefix.
 4. **It would still find LW's sessions today**, measured on this machine:
-   `flattenPath` turns `C:\LegionWallpaper` into `C--LegionWallpaper`, which is
+   `flattenPath` turns `C:\Legion-Wallpaper` into `C--Legion-Wallpaper`, which is
    the directory that exists, and every LW transcript records
-   `"cwd":"C:\\LegionWallpaper"` - the exact root. Root-level sessions match;
+   `"cwd":"C:\\Legion-Wallpaper"` - the exact root. Root-level sessions match;
    subdirectory sessions do not.
 
 **It is not read-only as advertised.** `audit` is; `hook install` writes

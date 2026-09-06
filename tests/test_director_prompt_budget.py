@@ -115,7 +115,7 @@ def test_live_director_prompt_still_carries_its_dedup_evidence(marker):
 # ---- the config the controller loads when nobody passes one -----------------
 
 def test_the_no_argv_config_fallback_is_module_relative():
-    r"""A hardcoded C:\LegionWallpaper path resolves on exactly one machine.
+    r"""A hardcoded C:\Legion-Wallpaper path resolves on exactly one machine.
 
     Everywhere else the read throws and the module runs with CFG = {}, so every
     import-time consumer of CFG tests a configuration that never runs in
@@ -129,7 +129,7 @@ def test_the_no_argv_config_fallback_is_module_relative():
     window = src[i:i + 400]
     assert "Path(__file__).resolve().parent" in window, (
         "the no-argv config fallback must resolve module-relative")
-    assert r"C:\LegionWallpaper" not in window, (
+    assert r"C:\Legion-Wallpaper" not in window, (
         "a machine-specific absolute path here means CI loads no config at all")
 
 
@@ -163,7 +163,7 @@ ALLOWED_ABSOLUTES = {
     ("ops/loop/loop_controller.py", "docstring"),
     ("ops/loop/executor.py", "FINAL STEP"),
 }
-_BANNED_PREFIXES = (r"C:\LegionWallpaper", r"C:\Users" + "\\")
+_BANNED_PREFIXES = (r"C:\Legion-Wallpaper", r"C:\Users" + "\\")
 
 
 def _hardcoded_path_sites():
