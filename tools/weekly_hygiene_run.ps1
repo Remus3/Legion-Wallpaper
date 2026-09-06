@@ -11,7 +11,7 @@
 # `claude -p` invocation pattern (RC lineage: tools/headless_run.ps1).
 #
 # Usage (manual):
-#   powershell -ExecutionPolicy Bypass -File "C:\Legion-Wallpaper\tools\weekly_hygiene_run.ps1"
+#   powershell -ExecutionPolicy Bypass -File "C:\Legion Wallpaper\tools\weekly_hygiene_run.ps1"
 
 param(
     # 2026-08-02: was claude-sonnet-4-6, which is not a current model id - this

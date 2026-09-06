@@ -14,7 +14,7 @@ The user wants to end the session cleanly so the next one starts with a fresh co
 
 Versioning is cheap; lost work is not. The operator never passes up a commit + push. So the DEFAULT is: always commit + push when local checks are green. Do NOT leave authored work uncommitted at session end just because a change feels small or unfinished - if it passes its checks, it ships.
 
-- Identify the files authored this session: `git -C "C:/Legion-Wallpaper" status -s`.
+- Identify the files authored this session: `git -C "C:/Legion Wallpaper" status -s`.
 - Run the cheap local gate on the touched surface:
   - `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m ruff check .` (must report ALL CHECKS PASSED)
   - `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m py_compile <each touched .py>` (syntax - silent-crash guard per CLAUDE.md hard rule)
@@ -40,7 +40,7 @@ Until such a package exists: skip this section.
 
 ### 1. Auto-commit any pending changes
 
-- `git -C "C:/Legion-Wallpaper" status -s`
+- `git -C "C:/Legion Wallpaper" status -s`
 - If output is empty: skip to section 2.
 - Otherwise:
   - **Audit before staging**: refuse to auto-commit any path matching `*SECRET*`, `*HANDSHAKE*`, `*PIVOT*`, `*REPLY*`, `*TOKEN*`, `*KEY*`, `.env*`, `local_paths.json`, or anything that looks like credentials. If matched: stop and ask the operator before proceeding.
@@ -52,9 +52,9 @@ Until such a package exists: skip this section.
 
 ### 2. Push
 
-- `git -C "C:/Legion-Wallpaper" log @{u}.. --oneline` - list local commits not on origin.
+- `git -C "C:/Legion Wallpaper" log @{u}.. --oneline` - list local commits not on origin.
 - If empty: skip.
-- Otherwise: `git -C "C:/Legion-Wallpaper" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual.
+- Otherwise: `git -C "C:/Legion Wallpaper" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual.
 - Surface the push result (e.g. `23854e1..b56f247 main -> main`) in the final summary.
 - Only ask the operator if the push fails (auth, conflict, hook).
 
@@ -74,11 +74,11 @@ Until such a package exists: skip this section.
 
 ### 4. LW restart pending
 
-- Check `C:/Legion-Wallpaper/restart_trigger.txt` - if non-empty, the LW runtime may still be reloading. Confirm `ops/runtime/health.json` shows `alive=true` AND `last_reload_ok=true` before declaring done. (Skip if `ops/runtime/health.json` does not exist yet - no LW runtime is live until the product is defined.)
+- Check `C:/Legion Wallpaper/restart_trigger.txt` - if non-empty, the LW runtime may still be reloading. Confirm `ops/runtime/health.json` shows `alive=true` AND `last_reload_ok=true` before declaring done. (Skip if `ops/runtime/health.json` does not exist yet - no LW runtime is live until the product is defined.)
 
 ### 6. WAKEUP_NOTES update
 
-- The next session will bootstrap from `C:/Legion-Wallpaper/WAKEUP_NOTES.md` + `MEMORY.md` + git log. Make sure tomorrow-you can pick up cleanly.
+- The next session will bootstrap from `C:/Legion Wallpaper/WAKEUP_NOTES.md` + `MEMORY.md` + git log. Make sure tomorrow-you can pick up cleanly.
 - Append a short entry (<=20 lines) describing this session's work: commits shipped, key decisions, what's next. Don't rewrite history; just append.
 - Note explicitly any blockers or things tomorrow-you should NOT redo (e.g. "fix X already shipped in <sha> - don't re-investigate").
 
@@ -113,7 +113,7 @@ Keep WAKEUP_NOTES.md to last 2-3 full sessions only. Headless spawn overhead gro
 Run the auto-prune helper:
 
 ```
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion-Wallpaper/scripts/wakeup_prune.py" --keep 3
+"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3
 ```
 
 This moves any session block past the 3 most recent into `docs/history_notes.md` (newest-first, atomic write). It is a no-op when WAKEUP_NOTES already has <=3 sessions, so always-safe to run. Add `--dry-run` first if you want to preview what would move.

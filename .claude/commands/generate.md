@@ -48,9 +48,9 @@ any numbered stage, and the human 8.End Review stays the final arbiter.
 ### 2. Run the generator (chains QA + promote automatically)
 
 ```
-C:\Legion-Wallpaper\.venv-gen\Scripts\python.exe tools\lw_gen_run.py --subject "<Champion>" --style splash --n 4
+C:\Legion Wallpaper\.venv-gen\Scripts\python.exe tools\lw_gen_run.py --subject "<Champion>" --style splash --n 4
 # or, from a brief:
-C:\Legion-Wallpaper\.venv-gen\Scripts\python.exe tools\lw_gen_run.py --brief briefs\<champion>.json
+C:\Legion Wallpaper\.venv-gen\Scripts\python.exe tools\lw_gen_run.py --brief briefs\<champion>.json
 ```
 
 - lw_gen_run generates N candidates into `images/_gen_scratch/<batch-id>/` (gitignored,

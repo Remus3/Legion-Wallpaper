@@ -55,7 +55,7 @@
 - `0` - review written, or benign skip (no new commits / external Gemini
   emptiness after all retries - degraded-not-broken, logged loudly).
 - `2` - `GEMINI_API_KEY` missing in User scope (genuine config fault, stays red).
-- `3` - no git repo at `C:\Legion-Wallpaper` yet (LW-only guard: the audit arms
+- `3` - no git repo at `C:\Legion Wallpaper` yet (LW-only guard: the audit arms
   when the product has code; a prematurely registered task stays diagnosable).
 
 ## Scheduled task (documented, DO NOT register yet)
@@ -65,12 +65,12 @@ nightly task is NOT registered. It ARMS when the product has code (git repo
 with commits exists). When that day comes, register with:
 
 ```
-schtasks /Create /TN "LW-GeminiAudit" /SC DAILY /ST 03:00 /RL LIMITED /F /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Legion-Wallpaper\tools\gemini_audit.ps1"
+schtasks /Create /TN "LW-GeminiAudit" /SC DAILY /ST 03:00 /RL LIMITED /F /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\Legion Wallpaper\tools\gemini_audit.ps1\""
 ```
 
 Matches the LW-* scheduled-task naming convention and the RC ancestor's
 nightly 03:00 night-watch slot. Until registered, run by hand:
-`powershell -NoProfile -ExecutionPolicy Bypass -File C:\Legion-Wallpaper\tools\gemini_audit.ps1`
+`powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Legion Wallpaper\tools\gemini_audit.ps1"`
 
 ## Cost (verified 2026-06-04 in the RC ancestor - re-verify before arming)
 
@@ -140,6 +140,6 @@ PID-ONLY via `control\target_pid.txt` (no title fallback; bridge aborts
 without a pid), the launcher pid-binds to exactly ONE `claude` window whose
 title equals config `claude_window_title` ("Image"), each repo's launcher
 kills only its own cmdline-scoped `AutoHotkey64` instances, and RC's launcher
-self-defers while any Legion-Wallpaper bridge is alive (LW may start first).
+self-defers while any Legion Wallpaper bridge is alive (LW may start first).
 Dry-run mode types into a Notepad window titled `LW-LOOP-DRYRUN`; fired lines
 log to `control\ahk_bridge.log`; kill = `control\STOP`.

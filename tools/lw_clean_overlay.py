@@ -106,9 +106,9 @@ W_REF = (250.0, 250.0, 250.0)
 GAIN_GRID = (0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 3.0)
 
 TEMPLATE_PATH = os.path.join(
-    r"C:\Legion-Wallpaper", "ops", "runtime", "clean", "overlay_template.npz")
+    r"C:\Legion Wallpaper", "ops", "runtime", "clean", "overlay_template.npz")
 MATTE_PATH = os.path.join(
-    r"C:\Legion-Wallpaper", "ops", "runtime", "clean", "overlay_matte.npz")
+    r"C:\Legion Wallpaper", "ops", "runtime", "clean", "overlay_matte.npz")
 
 # REMOVAL needs a WIDER band than DETECTION does, and the difference is measured:
 # BAND starts at 0.55h, but the DA logo's top edge sits at y/h ~ 0.506 on
@@ -120,10 +120,10 @@ MATTE_PATH = os.path.join(
 # gets its own band + its own cached pair rather than moving that constant.
 REMOVAL_BAND = (0.45, 0.85)
 WIDE_TEMPLATE_PATH = os.path.join(
-    r"C:\Legion-Wallpaper", "ops", "runtime", "clean",
+    r"C:\Legion Wallpaper", "ops", "runtime", "clean",
     "overlay_template_wide.npz")
 WIDE_MATTE_PATH = os.path.join(
-    r"C:\Legion-Wallpaper", "ops", "runtime", "clean", "overlay_matte_wide.npz")
+    r"C:\Legion Wallpaper", "ops", "runtime", "clean", "overlay_matte_wide.npz")
 
 
 def highpass(image, win: int = HP_WIN):

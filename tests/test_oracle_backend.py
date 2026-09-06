@@ -81,11 +81,11 @@ def test_claude_oracle_argv_is_read_only():
     """The director and auditor READ the tree and emit text. They must never get
     the executor's bypassPermissions - that channel exists to let the executor
     COMMIT, and an adjudicator that can write is not an adjudicator."""
-    argv = lc.claude_oracle_argv("Audit.", {"repo_root": "C:\\Legion-Wallpaper"})
+    argv = lc.claude_oracle_argv("Audit.", {"repo_root": "C:\\Legion Wallpaper"})
     assert "bypassPermissions" not in argv
     assert argv[argv.index("--permission-mode") + 1] == "plan"
     assert "-p" in argv
-    assert argv[argv.index("--add-dir") + 1] == "C:\\Legion-Wallpaper"
+    assert argv[argv.index("--add-dir") + 1] == "C:\\Legion Wallpaper"
 
 
 def test_claude_oracle_argv_carries_the_instruction_and_model():

@@ -19,7 +19,7 @@ import html
 import json
 import os
 
-RUNTIME = r"C:\Legion-Wallpaper\ops\runtime\clean"
+RUNTIME = r"C:\Legion Wallpaper\ops\runtime\clean"
 
 
 def load_record(slug, runtime=RUNTIME):

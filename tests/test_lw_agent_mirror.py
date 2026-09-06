@@ -47,7 +47,7 @@ def event(ts, out_tokens=0):
 
 
 WORKER = {"agentType": "general-purpose", "description": "slice B4",
-          "worktreePath": "C:/Legion-Wallpaper/worktrees/b4",
+          "worktreePath": "C:/Legion Wallpaper/worktrees/b4",
           "worktreeBranch": "slice/b4", "spawnDepth": 1}
 
 

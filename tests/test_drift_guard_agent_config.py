@@ -108,8 +108,8 @@ def test_collide_path_keys_ignores_agreeing_duplicates():
     """Duplicate spellings that agree are untidy but harmless - reporting them
     would bury the one case that actually breaks a run."""
     projects = {
-        r"C:\Legion-Wallpaper": {"hasTrustDialogAccepted": True},
-        "C:/Legion-Wallpaper": {"hasTrustDialogAccepted": True},
+        r"C:\Legion Wallpaper": {"hasTrustDialogAccepted": True},
+        "C:/Legion Wallpaper": {"hasTrustDialogAccepted": True},
         "C:/legionwallpaper": {"hasTrustDialogAccepted": True},
     }
     assert DG.collide_path_keys(projects) == []

@@ -31,7 +31,7 @@ Read these authoritative sources and write the values down. Every doc must match
 | Repo test count | `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m pytest tests/ -q --co 2>$null` -> count collected; **collect, don't trust the doc** |
 | Product VERSION | TBD - product not yet defined. When LW gains an authoritative VERSION constant, read the assignment in source; cross-check the live health endpoint if a service is up |
 | Product data facts (counts, coverage, registries) | TBD - product not yet defined. Recompute from the authoritative data/registries at runtime, never from a doc; **drop any `_meta` key before counting** |
-| Latest session + commits | `git -C "C:/Legion-Wallpaper" log --oneline -15` + the top block of `WAKEUP_NOTES.md` + the highest-numbered item in `docs/LEDGER.md` |
+| Latest session + commits | `git -C "C:/Legion Wallpaper" log --oneline -15` + the top block of `WAKEUP_NOTES.md` + the highest-numbered item in `docs/LEDGER.md` |
 
 Produce a **Canonical Facts table** in your working notes. This is the contract for sections 3-5. If a live service is down, derive values from source files and note "service offline - values from source, not /health" in the report.
 
@@ -101,7 +101,7 @@ Never delete a `.md`. Quarantine is the only removal.
 
 ### 8. Append-only / history protection (hard invariant)
 
-Before any write, re-confirm the target is in the LIVING set. If a fact is wrong in `WAKEUP_NOTES.md`, `docs/history_notes.md`, `docs/_archive/**`, an ADR, or any dated artifact: **do not fix it there.** History records what was true *then*. Note the discrepancy in the report and fix only the LIVING doc. The only sanctioned WAKEUP mutation is `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion-Wallpaper/scripts/wakeup_prune.py" --keep 3` (idempotent; run only if WAKEUP has >3 sessions and the operator asked for a prune - otherwise just report the count).
+Before any write, re-confirm the target is in the LIVING set. If a fact is wrong in `WAKEUP_NOTES.md`, `docs/history_notes.md`, `docs/_archive/**`, an ADR, or any dated artifact: **do not fix it there.** History records what was true *then*. Note the discrepancy in the report and fix only the LIVING doc. The only sanctioned WAKEUP mutation is `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3` (idempotent; run only if WAKEUP has >3 sessions and the operator asked for a prune - otherwise just report the count).
 
 ### 9. Self-congruence
 

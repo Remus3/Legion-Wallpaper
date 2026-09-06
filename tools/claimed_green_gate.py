@@ -109,8 +109,9 @@ def _read_payload() -> dict:
 def _tokens(command: str) -> list:
     """Split a command line into tokens, tolerating Windows backslash paths.
 
-    shlex on posix=True eats backslashes, which turns C:\\Legion-Wallpaper into
-    C:Legion-Wallpaper and can drop a flag. posix=False keeps them.
+    shlex on posix=True eats backslashes, which turns C:\\Legion Wallpaper into
+    C:Legion Wallpaper, which then also splits on the space and can drop
+    a flag. posix=False keeps them.
     """
     try:
         return shlex.split(command, posix=False)

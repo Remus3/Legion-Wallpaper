@@ -165,7 +165,7 @@ def gpu_lock(device="cuda", log=None):
             f"GPU busy elsewhere for more than {GPU_MUTEX_TIMEOUT_S}s") from exc
 
 
-# Checkpoint registry: name -> path relative to the repo root (C:/Legion-Wallpaper).
+# Checkpoint registry: name -> path relative to the repo root (C:/Legion Wallpaper).
 #   animagine   = the anime SDXL finetune the reconstruction proof used (single
 #                 opt .safetensors; from_single_file).
 #   dreamshaper = general SDXL diffusers folder (from_pretrained).

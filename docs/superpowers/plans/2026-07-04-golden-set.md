@@ -13,7 +13,7 @@
 - 7-bit ASCII only in all authored text; no em/en dashes, no smart quotes; " - " for clause breaks. Enforced by the precommit hook.
 - Atomic writes: write tmp then `os.replace`.
 - CI (python 3.12) has only pytest, ruff, numpy, Pillow. `lw_golden.py` must import ONLY stdlib + numpy + PIL at module top level. NEVER import torch/pyiqa/spandrel at top level; inject them. Tests use `pytest.importorskip` for any heavy path.
-- System python (tests): `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`. Metrics venv: `C:\Legion-Wallpaper\.venv-metrics\Scripts\python.exe`. Upscale venv: `C:\Legion-Wallpaper\.venv-upscale\Scripts\python.exe`.
+- System python (tests): `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`. Metrics venv: `C:\Legion Wallpaper\.venv-metrics\Scripts\python.exe`. Upscale venv: `C:\Legion Wallpaper\.venv-upscale\Scripts\python.exe`.
 - Privacy: `data/golden/golden_set.json` is TRACKED; `data/golden/inputs/**` and `data/golden/baseline/**` are gitignored. Never commit image bytes.
 - Spec: `docs/research/GOLDEN_SET.md`. Epsilon (section 5): MS-SSIM 0.01, LPIPS 0.02, lap_ratio 5 percent (relative), halo_pct 0.02.
 
@@ -432,7 +432,7 @@ This task operates on real data; no unit test. The 10 blessed IJN outputs live i
 - [ ] **Step 2: Operator bless.** Operator names any case to DROP (bad baseline). Build `cases.json` = the kept cases: `[{"slug","input_path" (the 2.First Pass Done/<slug>/<slug>_firstinitial.*),"baseline_path" (scratchpad <slug>_ijn.png),"defect_axes"}]`. Wait for the operator's keep/drop list before proceeding.
 
 - [ ] **Step 3: Live freeze.** Run under `.venv-metrics`:
-`& "C:\Legion-Wallpaper\.venv-metrics\Scripts\python.exe" tools/lw_golden.py freeze --cases-json <scratch>/cases.json --model tools/models/4x_IllustrationJaNai_V1_DAT2_190k.pth`
+`& "C:\Legion Wallpaper\.venv-metrics\Scripts\python.exe" tools/lw_golden.py freeze --cases-json <scratch>/cases.json --model tools/models/4x_IllustrationJaNai_V1_DAT2_190k.pth`
 Verify: `data/golden/golden_set.json` written (tracked), `data/golden/{inputs,baseline}/` populated (gitignored), N == blessed count, pipeline_version present.
 
 - [ ] **Step 4: Regress self-check.** Produce candidates by re-running first_pass on the golden inputs under `.venv-upscale` into a temp dir (reuse the QA Phase A pattern: `lw_upscale.first_pass(input, tmp/<slug>_ijn.png, backend="spandrel", model_path=...)`), then run `lw_golden.py regress --candidates-dir <tmp> --model tools/models/4x_IllustrationJaNai_V1_DAT2_190k.pth` under `.venv-metrics`. Expected: PASS (deltas within epsilon vs the just-frozen baseline; pv_changed=False). This validates freeze+regress end-to-end and upscale determinism.

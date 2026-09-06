@@ -5,7 +5,7 @@
 # prompt is piped via STDIN to dodge the Windows command-line length limit.
 param(
   [string]$Model = $(if ($env:LW_GEMINI_MODEL) { $env:LW_GEMINI_MODEL } elseif ([Environment]::GetEnvironmentVariable("LW_GEMINI_MODEL", "User")) { [Environment]::GetEnvironmentVariable("LW_GEMINI_MODEL", "User") } else { "gemini-2.5-flash" }),
-  [string]$RepoRoot = "C:\Legion-Wallpaper",
+  [string]$RepoRoot = "C:\Legion Wallpaper",
   [string]$Since = "",
   [int]$MaxWaitSec = 180
 )

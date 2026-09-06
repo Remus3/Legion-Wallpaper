@@ -37,7 +37,7 @@ The bicubic up-to-8K round trip that softened batch 2 is dead forever.
 
 ## 2. The four stages
 
-Images move through the 10-folder scheme in `C:\Legion-Wallpaper\images\`
+Images move through the 10-folder scheme in `C:\Legion Wallpaper\images\`
 (ADR-003): `0.Originals` -> first -> clean -> final -> last -> `8.End Review`
 -> `9.Image Backup` (+ optional Pictures delivery). Each stage is
 scratch-then-done with the four phase tokens `_<stage>initial`,

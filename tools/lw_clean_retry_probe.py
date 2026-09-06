@@ -30,7 +30,7 @@ import os
 import re
 import sys
 
-ROOT = r"C:\Legion-Wallpaper"
+ROOT = r"C:\Legion Wallpaper"
 STAGES = (
     os.path.join(ROOT, "images", "3.Cleaning Scratch"),
     os.path.join(ROOT, "images", "4.Cleaning Done"),

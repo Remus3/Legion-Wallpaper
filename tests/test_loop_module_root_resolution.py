@@ -1,10 +1,10 @@
 r"""Config-supplied paths are adopted only when absolute ON THIS PLATFORM.
 
-`Path("C:\Legion-Wallpaper").is_absolute()` is True on Windows and False on
+`Path("C:\Legion Wallpaper").is_absolute()` is True on Windows and False on
 POSIX, where the whole thing is one relative component whose NAME contains
 backslashes. loop_controller does `CTL.mkdir(parents=True, exist_ok=True)` at
 IMPORT time, so adopting such a value on Linux mints a literal
-`C:\Legion-Wallpaper\ops\loop\control` directory inside whatever CWD imported it.
+`C:\Legion Wallpaper\ops\loop\control` directory inside whatever CWD imported it.
 
 This was not reachable while the config path itself was a hardcoded absolute:
 the read failed off Legion, CFG was {}, and the module-relative defaults always
@@ -36,14 +36,14 @@ def _cfg_path_impl():
 
 def test_a_windows_style_path_is_rejected_when_it_is_not_absolute_here():
     ns = _cfg_path_impl()
-    ns["CFG"] = {"control_dir": r"C:\Legion-Wallpaper\ops\loop\control"}
+    ns["CFG"] = {"control_dir": r"C:\Legion Wallpaper\ops\loop\control"}
     got = ns["_cfg_path"]("control_dir", Path("fallback"))
-    if Path(r"C:\Legion-Wallpaper").is_absolute():      # Windows
-        assert got == Path(r"C:\Legion-Wallpaper\ops\loop\control")
+    if Path(r"C:\Legion Wallpaper").is_absolute():      # Windows
+        assert got == Path(r"C:\Legion Wallpaper\ops\loop\control")
     else:                                              # POSIX
         assert got == Path("fallback"), (
             "a drive-letter string is RELATIVE here - adopting it would mkdir a "
-            "directory literally named C:\\Legion-Wallpaper\\...")
+            "directory literally named C:\\Legion Wallpaper\\...")
 
 
 def test_a_relative_value_is_rejected_on_every_platform():

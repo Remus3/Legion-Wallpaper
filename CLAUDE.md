@@ -10,11 +10,11 @@ This file is the operating contract - rules, tiers, gates, rituals - inherited 1
 
 ## Paths
 
-- Project root: `C:\Legion-Wallpaper\`
+- Project root: `C:\Legion Wallpaper\`
 - Python: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`
 - API keys: `API-Key-*.txt` in project root (gitignored)
-- Health: `C:\Legion-Wallpaper\ops\runtime\health.json`
-- Logs: `C:\Legion-Wallpaper\logs\YYYY-MM-DD.log`
+- Health: `C:\Legion Wallpaper\ops\runtime\health.json`
+- Logs: `C:\Legion Wallpaper\logs\YYYY-MM-DD.log`
 
 ## Hard rules
 

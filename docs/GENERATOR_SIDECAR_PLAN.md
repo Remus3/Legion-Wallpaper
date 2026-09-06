@@ -1,4 +1,4 @@
-# Legion-Wallpaper Generator Sidecar (lw-gen) - DURABLE SPEC
+# Legion Wallpaper Generator Sidecar (lw-gen) - DURABLE SPEC
 
 > INGEST: copied into the repo 2026-07-10 from
 > `C:\Users\Administrator\Desktop\LEGIONWALLPAPER_GENERATOR_SIDECAR_PLAN.md`
@@ -12,11 +12,11 @@
 
 ---
 
-# Legion-Wallpaper Generator Sidecar (lw-gen) - IMPLEMENTATION PLAN
+# Legion Wallpaper Generator Sidecar (lw-gen) - IMPLEMENTATION PLAN
 
 Durable planning doc. Strict 7-bit ASCII. Local-first on the RTX 5070 (12GB GDDR7,
 Blackwell sm_120). Authored 2026-07-06. All live claims below were probed against
-C:\Legion-Wallpaper (torch 2.11.0+cu128, get_device_capability()==(12,0), RTX 5070,
+C:\Legion Wallpaper (torch 2.11.0+cu128, get_device_capability()==(12,0), RTX 5070,
 12227 MiB, driver 610.62 - all CONFIRMED). This is a build spec, not a paste-prompt.
 
 --------------------------------------------------------------------------------
@@ -404,7 +404,7 @@ adversarial review:
 1. Take each promoted candidate; reuse `lw_pipeline.slugify` (lowercase, `[a-z0-9-]`,
    <=64, reserved-name guard) to build a pipeline-legal base name, e.g.
    `ambessa-splash-a1b2`.
-2. ATOMIC write into 0.Originals. Use Legion-Wallpaper's OWN primitives, not a Riot
+2. ATOMIC write into 0.Originals. Use Legion Wallpaper's OWN primitives, not a Riot
    Commander convention that does not exist here: prefer `Ops.safe_copy`
    (copy + fsync + SHA256-verify) or a local retry-wrapped `os.replace`. The repo's
    `Ops.write_json` uses a bare `os.replace` with NO retry - do not copy that; add the
@@ -474,22 +474,22 @@ upgrade needed.
 
 ```
 # 1. create the new side-venv (gitignored, like .venv-upscale / .venv-metrics)
-C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv C:\Legion-Wallpaper\.venv-gen
+C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
 
 # 2. install the SAME cu128 torch channel the box already runs (do NOT let pip pull a CPU/cu12x wheel)
-C:\Legion-Wallpaper\.venv-gen\Scripts\python.exe -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
 
 # 3. add the generation stack (pure-python / torch-dependent; no new CUDA toolkit; NO xformers)
-C:\Legion-Wallpaper\.venv-gen\Scripts\python.exe -m pip install diffusers transformers accelerate safetensors
+"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install diffusers transformers accelerate safetensors
 
 # 4. add a working CLIP into .venv-metrics (the existing pyiqa/clip import is BROKEN)
-C:\Legion-Wallpaper\.venv-metrics\Scripts\python.exe -m pip install open-clip-torch
+"C:\Legion Wallpaper\.venv-metrics\Scripts\python.exe" -m pip install open-clip-torch
 
 # 5. download ONE painterly/semi-realistic SDXL finetune (safetensors) into tools\models\ (gitignored)
 #    plus, if the spike shows anime leakage, one splash-art/key-art LoRA.
 
 # 6. LIVE PROOF (retire the runtime + attention risks before building on top):
-C:\Legion-Wallpaper\.venv-gen\Scripts\python.exe -c "import torch; print(torch.cuda.get_device_capability())"
+"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -c "import torch; print(torch.cuda.get_device_capability())"
    # MUST print (12, 0)  -> confirms sm_120 kernels load on the 5070
 ```
 
@@ -673,7 +673,7 @@ matching the repo's precommit hygiene lineage.
 
 --------------------------------------------------------------------------------
 
-## APPENDIX - cited source lines (verified live against C:\Legion-Wallpaper)
+## APPENDIX - cited source lines (verified live against C:\Legion Wallpaper)
 
 - `tools/lw_pipeline.py`: slugify (L129), cmd_intake (L626) + MIN_AGE_SECONDS (L67) +
   PROBE_SECONDS, eligibility_reason "modified too recently" (L609-623), unique_slug

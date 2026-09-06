@@ -5,7 +5,7 @@ standalone context -> offscreen FBO -> Pillow PNG. NO bone isolation: the whole
 mesh is drawn, textured.
 
 Runs in .venv-poc (moderngl + pyritofile + numpy + pillow), NOT the main env:
-  C:\\Legion-Wallpaper\\.venv-poc\\Scripts\\python.exe tools/lw_render_skn.py --help
+  C:\\Legion Wallpaper\\.venv-poc\\Scripts\\python.exe tools/lw_render_skn.py --help
 
 Provenance: rebuilt 2026-08-15 from the recipe in docs/research/crossbow_render_poc.md
 after the original POC code was lost with an ephemeral scratchpad (docs/LEDGER.md:2861).

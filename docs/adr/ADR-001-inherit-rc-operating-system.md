@@ -6,7 +6,7 @@
 ## Context
 
 Legion Wallpaper is a new project on the Legion machine (repo
-`C:\Legion-Wallpaper\`). The product - some kind of wallpaper app - is not yet
+`C:\Legion Wallpaper\`). The product - some kind of wallpaper app - is not yet
 defined. The operator's other project on this machine, Riot Commander (RC,
 `C:\Riot Commander\`), evolved a proven operating discipline over hundreds of
 ledgered items: TDD RED-first, tiered verification gates, subagent-first

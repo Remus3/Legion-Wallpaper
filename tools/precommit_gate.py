@@ -36,7 +36,7 @@ _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 # Anchor for the Legion Wallpaper repo - final fallback when the root cannot
 # be resolved from the command or the hook's CWD.
-_LW_ROOT = r"C:\Legion-Wallpaper"
+_LW_ROOT = r"C:\Legion Wallpaper"
 
 _BANNED = {
     chr(0x2014): "em-dash",

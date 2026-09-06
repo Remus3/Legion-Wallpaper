@@ -6,7 +6,7 @@ Implements docs/research/PIPELINE_STATE_MACHINE.md with the operator rulings:
 - End Review PASS: _lastdone is copied to 9.Image Backup (hash-verified) and
   the 8.End Review\\<slug> folder IS deleted (full milestone chain already
   lives in 9.Image Backup via the per-stage _initial copies).
-- Pipeline root defaults to C:\\Legion-Wallpaper\\images (.gitkeep tolerated).
+- Pipeline root defaults to C:\\Legion Wallpaper\\images (.gitkeep tolerated).
 - Delivery runs ONLY with an explicit --deliver flag, never by default.
 
 Exit codes: 0 ok, 1 anomalies found, 2 precondition/argument error,
@@ -24,7 +24,7 @@ import time
 import unicodedata
 from pathlib import Path
 
-DEFAULT_ROOT = Path(r"C:\Legion-Wallpaper\images")
+DEFAULT_ROOT = Path(r"C:\Legion Wallpaper\images")
 
 STAGES = ["first", "clean", "final", "last"]
 SCRATCH_DIR = {

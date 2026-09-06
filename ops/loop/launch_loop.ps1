@@ -6,7 +6,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $py = "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe"
-$root = "C:\Legion-Wallpaper"
+$root = "C:\Legion Wallpaper"
 $ctl = "$root\ops\loop\control"
 $ahk = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
 $bridge = "$root\ops\loop\claude_gui_bridge.ahk"
@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Force $ctl | Out-Null
 # kill would murder the sibling Riot Commander loop's bridge mid-run; RC holds
 # the mirror-image guard (RC commit 81636382). taskkill per repo rule.
 Get-CimInstance Win32_Process -Filter "Name='AutoHotkey64.exe'" -ErrorAction SilentlyContinue |
-  Where-Object { $_.CommandLine -like "*Legion-Wallpaper\ops\loop*" } |
+  Where-Object { $_.CommandLine -like "*Legion Wallpaper\ops\loop*" } |
   ForEach-Object { & taskkill /F /PID $_.ProcessId | Out-Null }
 Start-Sleep -Milliseconds 300
 

@@ -18,7 +18,7 @@ import json
 import os
 import sys
 
-ROOT = r"C:\Legion-Wallpaper"
+ROOT = r"C:\Legion Wallpaper"
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 

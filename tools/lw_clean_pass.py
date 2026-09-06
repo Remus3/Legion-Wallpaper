@@ -80,7 +80,7 @@ from lw_g1_gate import GpuBusy, _to_gray, gpu_lock  # noqa: E402,F401
 # --------------------------------------------------------------------------
 # Paths (Legion machine).
 # --------------------------------------------------------------------------
-ROOT = r"C:\Legion-Wallpaper"
+ROOT = r"C:\Legion Wallpaper"
 TOOLS = ROOT + r"\tools"
 IMAGES = ROOT + r"\images"
 CLEAN_SCRATCH = IMAGES + r"\3.Cleaning Scratch"

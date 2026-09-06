@@ -483,7 +483,7 @@ def test_snippets_survive_quote_chars_in_paths(monkeypatch):
         return {}
 
     monkeypatch.setattr(fp, "_run_json", fake_run_json)
-    src = (r"C:\Legion-Wallpaper\data\recovery\fetched\kai-sa"
+    src = (r"C:\Legion Wallpaper\data\recovery\fetched\kai-sa"
            r"\deviantart_1375265414_Kai'Sa.jpg")
     out = r"C:\Temp\lw_first_pass_ab12\kai-sa_firstpass_up.png"
 
