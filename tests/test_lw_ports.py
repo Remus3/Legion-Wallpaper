@@ -138,8 +138,11 @@ def _declared_boundaries():
 
 # ------------------------------------------------------- the neighbours
 def test_forbidden_names_every_neighbour_block():
-    """Six projects share Legion, not the three this file was written for."""
-    assert set(lw_ports.FORBIDDEN) == {"RM", "LL", "DS", "RC", "CS"}
+    """Seven blocks are drawn on Legion, not the three this file was written
+    for. RSC reserved 8790-8809 on 2026-09-06, after the 2026-08-29 registry
+    was drawn, which is exactly how it ended up scaffolded onto a port inside
+    Daemon Slayer's block with nothing listening to reveal it."""
+    assert set(lw_ports.FORBIDDEN) == {"RM", "LL", "DS", "RC", "CS", "RSC"}
     for code, blocks in lw_ports.FORBIDDEN.items():
         assert blocks, code
         for low, high in blocks:

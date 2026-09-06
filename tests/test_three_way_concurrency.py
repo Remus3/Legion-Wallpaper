@@ -17,7 +17,7 @@ prove the two things N=3 actually rests on:
 
 What this measures, stated honestly: the SHARED PRIMITIVES under genuine
 three-way contention from three separate OS processes. It does NOT run three
-repositories' real loops - LW cannot drive Riot Commander or Red Moon, and
+repositories' real loops - LW cannot drive Riot Commander or Resin Compute, and
 nothing here reads or writes a sibling tree. Every test injects its own slots
 root under tmp_path, so the machine-wide bucket at
 `C:\\ProgramData\\lw-loop\\slots` is never touched.

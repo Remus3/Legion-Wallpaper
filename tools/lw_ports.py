@@ -1,8 +1,9 @@
 """Legion Wallpaper - the TCP port block LW owns, and what sits in it.
 
-SIX projects share the Legion machine - not the three this file was written
-against in 2026-08 - and until 2026-08-01 none of them could answer "which
-ports are mine" without grepping bind sites and hand-filtering vendored noise.
+SEVEN blocks are now drawn on the Legion machine - not the three this file was
+written against in 2026-08 - and until 2026-08-01 none of them could answer
+"which ports are mine" without grepping bind sites and hand-filtering vendored
+noise.
 That is not academic: a sibling project came one step from assigning itself a
 block that would have collided with LW's monitor, and it was caught only
 because the operator asked it to read this tree first.
@@ -50,8 +51,21 @@ ALLOCATIONS = {
 # LL was 8810-8814 and is expanding to 8819 (operator, 2026-08-29); the wider
 # range is reserved here, because the failure this file exists to prevent is
 # LW taking a port a sibling is about to claim, not LW being conservative.
+# RSC reserved 8790-8809 on 2026-09-06, the seventh block. It was scaffolded
+# AFTER the 2026-08-29 registry was drawn, so it was never given one and put
+# its engine on 8870 - inside Daemon Slayer's block. Nothing was listening
+# there, so nothing failed and nothing warned: a live scan cannot prove a band
+# is free when the owner's server is an operator-launched GUI that is unbound
+# most of the time. Verify a band against the owning project's registry IN
+# SOURCE, never against netstat. That rule is Clockspeed's and the credit is
+# theirs. RM stays declared though Red Moon was archived read-only and its
+# working copy deleted on 2026-09-06 - Amberstone's core/ports.py still
+# declares RM_BLOCK = range(8770, 8790), so the boundary is still real and
+# dropping it here would only invite someone to take a band another registry
+# still claims.
 FORBIDDEN = {
-    "RM": ((8770, 8789),),          # Red Moon
+    "RM": ((8770, 8789),),          # Red Moon (archived 2026-09-06)
+    "RSC": ((8790, 8809),),         # Resin Compute
     "LL": ((8810, 8819),),          # Lanternlight
     "DS": ((8860, 8879),),          # Daemon Slayer
     "RC": ((2999, 2999), (8888, 8895)),   # Amberstone / Riot Commander
