@@ -15,7 +15,7 @@ calibration ladder (shadow -> spot-check -> full auto), never assumed: an
 unproven stage runs in shadow mode and every promotion is backed by a measured
 census, not a hunch.
 
-It restores a personal corpus of roughly 300 League-splash-style wallpapers on
+It restores a personal corpus of roughly 600 League-splash-style wallpapers on
 one Windows workstation (the "Legion machine"). **The images are not here and
 never will be.** They are third-party illustrations; `images/**` is gitignored
 and the restored output stays private. What this repo publishes is the
@@ -47,8 +47,17 @@ Design decisions live as numbered ADRs in `docs/adr/`: the product and
 architecture (ADR-002), the folder and state scheme (ADR-003), the primary
 upscaler chosen on a golden A/B sweep (ADR-004), signature removal (ADR-005),
 the downscale-only gate (ADR-006), the comparison pixel budget (ADR-007), the
-vision-reviewer authority limit (ADR-008), and one cleaning engine per
-submission (ADR-009). The operational plan is `docs/RESTORATION_PLAN.md`.
+vision-reviewer authority limit (ADR-008), one cleaning engine per submission
+(ADR-009), and the generator base (ADR-010, reversed the same day by ADR-011).
+The operational plan is `docs/RESTORATION_PLAN.md`.
+
+That reversal is left in the record on purpose, because it is the repo in
+miniature. ADR-010 flipped the image-generation base after a CLIP
+corpus-similarity measure ranked a challenger first; ADR-011 put it back once
+the operator inspected the actual frames. The measure reads rendering register
+and is blind to hands, weapon canon and likeness, so it had ranked the two
+failing bases above the working one. A number that disagrees with the pixels
+loses, and the losing number stays written down.
 
 ## What is reusable here
 
@@ -61,7 +70,8 @@ around it is general and is the reason the repo is public:
 | Multi-agent framework | `docs/AGENTS.md`, `.claude/` | Orchestrator plus worktree subagent slices plus a read-only verifier that must CONFIRM before any merge |
 | Verifier subagent | `.claude/agents/verifier.md` | Independently re-runs the suite and falsifies an implementing agent's "green" claim |
 | Commit and hygiene gates | `tools/precommit_gate.py`, `tools/install_git_hooks.py` | Blocks banned glyphs and net-new lint on staged lines; `--check` proves the hooks actually fire |
-| Drift guard | `tools/drift_guard.py` | Session-start probe that catches silently dead hooks, stale config, and doc drift |
+| Drift guard | `tools/drift_guard.py` | Wrap-up probe for doc and repo drift: budgets, memory index, cited SHAs, untracked authored files, and whether the git hooks actually fire |
+| Agent-config scanner | `tools/drift_guard.py` (`check_agent_config`, `check_claude_path_keys`) | Parses `.claude/settings.json` (invalid JSON is a breach: an unparsed config presents exactly as one with no hooks), flags hook scripts that suppress their own errors, and reports directories whose `~/.claude.json` spellings DISAGREE on trust |
 | Headless run loop | `ops/loop/` | Self-continuing `claude -p` executor with slot arbitration and a truth gate |
 | Pipeline state machine | `tools/lw_pipeline.py` | Atomic stage transitions, per-image manifests, append-only transition log |
 

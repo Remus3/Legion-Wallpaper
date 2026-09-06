@@ -49,7 +49,14 @@ This file is the operating contract - rules, tiers, gates, rituals - inherited 1
   probe; (b) an untrusted workspace makes headless DISCARD `permissions.allow`,
   and `~/.claude.json` keys are path-separator- and case-sensitive - LW carried
   THREE keys for one directory, the forward-slash one reading False, so headless
-  silently dropped permissions until it was fixed 2026-08-01.
+  silently dropped permissions until it was fixed 2026-08-01. **Both confounds
+  are now CHECKED, not just documented** - `drift_guard.check_agent_config`
+  parses `.claude/settings.json` (invalid JSON = breach, since an unparsed
+  config presents exactly as one with no hooks) and
+  `drift_guard.check_claude_path_keys` reports any directory whose spellings
+  DISAGREE on trust. That check immediately found the same bug live on two
+  sibling projects (Clockspeed, Lanternlight); the 2026-08-01 fix had been
+  applied to LW alone. Fixed machine-wide 2026-09-05.
   Two false-green traps, both hit on 2026-07-26: (1) `core.hooksPath`
   points at the tracked `.githooks`, so ANY hook written into `.git/hooks` is dead;
   (2) `.githooks/pre-commit` invoked `precommit_gate.py` with no args from 2026-07-03,

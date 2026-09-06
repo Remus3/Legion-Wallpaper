@@ -239,6 +239,130 @@ def check_git_hooks() -> None:
                         if (r.stderr or r.stdout).strip() else "git-hook gate drift")
 
 
+# --------------------------------------------------------------------------
+# Agent-config checks. Surface adapted from ECC/AgentShield's published scan
+# list (settings, hooks, agents, secrets), reduced to what maps to a failure
+# THIS box actually had. Both of the first two are written up in CLAUDE.md and
+# neither had a check afterwards, which is why they could recur silently.
+# --------------------------------------------------------------------------
+SETTINGS_REL = ".claude/settings.json"
+CLAUDE_HOME_JSON = pathlib.Path.home() / ".claude.json"
+HOOK_SCRIPT_GLOBS = ("tools/*guard*.py", ".githooks/*")
+
+
+def scan_settings(raw: str) -> list[str]:
+    """Issues in a `.claude/settings.json` body. Empty list = clean.
+
+    Validity is checked FIRST and short-circuits, because an unparsed config
+    presents exactly as a config with no hooks - the false "hooks do not fire"
+    reading recorded in CLAUDE.md. A single backslash before a drive letter is
+    not a valid JSON escape, and nothing warns you.
+    """
+    import json as _json
+    try:
+        d = _json.loads(raw)
+    except ValueError as exc:
+        return [f"{SETTINGS_REL}: invalid JSON, silently unparsed ({exc})"]
+    out: list[str] = []
+    perm = d.get("permissions") or {}
+    allow = perm.get("allow") or []
+    deny = perm.get("deny") or []
+    wild = [a for a in allow
+            if str(a).strip() in ("*", "Bash", "Bash(*)") or str(a).endswith("(*)")]
+    if wild:
+        out.append(f"{SETTINGS_REL}: wildcard allow entries {wild[:4]}")
+    if allow and not deny:
+        out.append(f"{SETTINGS_REL}: {len(allow)} allow rule(s) and an empty deny list")
+    return out
+
+
+def scan_hook_script(text: str, name: str) -> list[str]:
+    """Issues in a hook script body. A hook is a GATE; these make it fail open.
+
+    Silent suppression is the one with precedent: `.githooks/pre-commit` invoked
+    the gate with no args for weeks, and with no args the gate self-gates to a
+    no-op - it ran on every commit and gated nothing.
+    """
+    out: list[str] = []
+    if "2>/dev/null" in text or "2>$null" in text or "|| true" in text:
+        out.append(f"{name}: suppresses its own errors (gate can fail open)")
+    if re.search(r"\brequests\b|urllib\.request|\bcurl\b|\bwget\b|Invoke-WebRequest",
+                 text):
+        out.append(f"{name}: makes network calls from a hook")
+    if re.search(r"shell\s*=\s*True", text):
+        out.append(f"{name}: shell=True")
+    return out
+
+
+def collide_path_keys(projects: dict) -> list[tuple]:
+    """Project keys in ~/.claude.json that name ONE directory but disagree.
+
+    The keys are path-separator- and case-sensitive, so `C:/x` and `C:\\x` are
+    two entries for one project. Only DISAGREEING duplicates are returned:
+    agreeing ones are untidy but harmless, and reporting them would bury the
+    case that actually breaks a run - a headless session landing on the
+    spelling whose trust is False discards `permissions.allow` in silence.
+    """
+    norm: dict[str, list[str]] = {}
+    for k in projects:
+        n = str(k).replace("/", "\\").rstrip("\\").lower()
+        norm.setdefault(n, []).append(k)
+    out = []
+    for n, keys in sorted(norm.items()):
+        if len(keys) < 2:
+            continue
+        trusts = [(projects[k] or {}).get("hasTrustDialogAccepted") for k in keys]
+        if len(set(trusts)) > 1:
+            out.append((n, keys, trusts))
+    return out
+
+
+def check_agent_config() -> None:
+    p = ROOT / SETTINGS_REL
+    if p.is_file():
+        for issue in scan_settings(p.read_text(encoding="utf-8", errors="replace")):
+            # Invalid JSON is a BREACH: it disarms every hook without a word.
+            # Permission-shape findings are NOTES - this box deliberately runs
+            # bypassPermissions, so they are advice, not drift.
+            if "invalid JSON" in issue:
+                warn(issue)
+            else:
+                notes.append(issue)
+    me = pathlib.Path(__file__).resolve()
+    for g in HOOK_SCRIPT_GLOBS:
+        for f in sorted(ROOT.glob(g)):
+            # A scanner must not scan the file that DEFINES its patterns: every
+            # detection string appears there literally, so it would report
+            # itself for all three findings and bury the real ones.
+            if not f.is_file() or f.resolve() == me:
+                continue
+            for issue in scan_hook_script(
+                    f.read_text(encoding="utf-8", errors="replace"), f.name):
+                warn(issue)
+
+
+def check_claude_path_keys() -> None:
+    """Cross-project: one bad spelling here silently disarms a headless run."""
+    import json as _json
+    if not CLAUDE_HOME_JSON.is_file():
+        return
+    try:
+        d = _json.loads(CLAUDE_HOME_JSON.read_text(encoding="utf-8", errors="replace"))
+    except ValueError:
+        warn("~/.claude.json: invalid JSON")
+        return
+    mine = str(ROOT).replace("/", "\\").rstrip("\\").lower()
+    for n, keys, trusts in collide_path_keys(d.get("projects") or {}):
+        msg = (f"~/.claude.json: {n} has {len(keys)} spellings with DISAGREEING "
+               f"trust {trusts} - a headless run on the False one drops permissions")
+        # A breach only when it is THIS project: another repo's key is worth
+        # surfacing but must not wedge LW's /done behind a fix nobody here owns.
+        if n == mine:
+            warn(msg)
+        else:
+            notes.append(msg)
+
+
 def main() -> int:
     old_version = sys.argv[1] if len(sys.argv) > 1 else None
     check_doc_budgets()
@@ -250,6 +374,8 @@ def main() -> int:
     check_cited_shas()
     check_git_hooks()
     check_shared_loop_files()
+    check_agent_config()
+    check_claude_path_keys()
 
     for n in notes:
         print(f"  note   : {n}")
