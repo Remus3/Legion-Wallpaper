@@ -1,5 +1,44 @@
 # WAKEUP_NOTES - LW hand-off ledger
 
+## 2026-09-06 - root renamed to "C:\Legion Wallpaper", RM replaced by RSC
+
+Commits 1ef672e (inbox) and 81de837 (rename), both pushed. Suite green: ruff
+clean, 2501 passed, 19 skipped.
+
+**Two spellings, both deliberate - do not "fix" either.** The local root is
+`C:\Legion Wallpaper` WITH A SPACE. The GitHub repo is `Remus3/Legion-Wallpaper`
+with a HYPHEN, because a repo name cannot hold a space. The agent project slug
+`C--Legion-Wallpaper` is unchanged, since the slug hyphenates the space anyway.
+Rule of thumb: a filesystem path is anchored on `C:`; a bare `Legion-Wallpaper`
+token is the repo name. Any NEW hardcoded path needs QUOTING - an unquoted
+`-File C:\Legion Wallpaper\tools\x.ps1` is read as `-File C:\Legion` plus a
+stray positional, and fails silently.
+
+**drift_guard WILL report a slots.py divergence between LW and RC. That is
+correct and expected - do NOT revert it.** Red Moon is archived read-only and
+its working copy deleted; Resin Compute took the vacated third slot in the
+concurrency governor. LW authored the new bytes (docstring only, line 5,
+`MAX_CONCURRENT_SLOTS` still 3) and re-pinned from its own disk:
+
+    1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492
+    previous 5297f2d041030398a9ba240aad527b2b01a86d6e7f57a196719af8f0a91cb0a6
+
+RC copies those bytes verbatim next; RSC lands its vendored copy LAST, being
+the only participant with no pin to break. The flip cannot be atomic. Replies
+explaining the sequencing are in RC's and RSC's `moon_sync_inbox`.
+
+Also landed: `RSC: 8790-8809` recorded in `tools/lw_ports.py` FORBIDDEN (the
+seventh block). LW binds nothing in that band - checked against source, the
+registry and all three task definitions. `RM: 8770-8789` stays declared even
+though Red Moon is gone, because Amberstone's `core/ports.py` still declares
+`RM_BLOCK = range(8770, 8790)`.
+
+If the folder move has not run yet: close Claude Code and run
+`C:\finish-legion-rename.cmd`. It is idempotent and also repairs the three
+agreeing `~/.claude.json` trust spellings, the three `LW-*` scheduled tasks
+(quoting `-File` for the space), the agent memory directory, and checks that
+all four venvs still resolve.
+
 > Newest-first. Keep only the last 2-3 sessions here at FULL fidelity; archive
 > older sessions verbatim to `docs/history_notes.md` (append a pointer line to
 > this banner when you prune). Per-item completion records live in
