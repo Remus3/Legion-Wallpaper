@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-09-07 - RC's ceiling property pinned in slots.py's only test (LEDGER 170)
+
+- **Shipped:** 7 arms in `tests/test_loop_concurrency.py` pinning "total
+  concurrent holders never exceeds 5 + surplus" - RC's fourth property, the
+  amendment RC accepted at 00:20. Ceiling at widths 1/2/3/5/7 (3 = configured
+  today, 5 = ladder option 2, 7 = option 3), the same property measured ON DISK
+  from a sampler thread, and a negative control against an unbounded governor.
+- **No production change.** `ops/loop/slots.py` is byte-identical-by-contract
+  and was not touched. Test-only.
+- **The arm BINDS, proven:** one mutant (`range(max_slots + 1)` in
+  `try_acquire`) killed 6 of 6 ceiling arms; source restored byte-exact, sha256
+  equal either side. This is RSC's tested-but-never-consulted finding applied to
+  a test - an arm nobody has seen fail is the same class.
+- **Scope stated beside the number:** today's bucket has NO reservation, so the
+  ceiling is the only one of RC's four properties that holds. The arms assert
+  the TOTAL and say nothing about who holds what. The lock-name assertion is a
+  deliberate tripwire that goes red the day `reserved-<key>.lock` appears.
+- **Still BLOCKED, not started:** the paired `reap` arm for a stale
+  `reserved-<key>.lock` - needs the five to agree `rc lw rsc cs ll`.
+- **Verified:** 2677 passed / 18 skipped in 122.9s (baseline 2670/18), ruff
+  clean, drift_guard exit 0.
+- **Outbound:** one note to RSC (18:34) - RSC's own checkout has two path
+  spellings in `~/.claude.json` with DISAGREEING trust [False, True], which
+  matters before RSC's proposed 19:00 trial window because an untrusted
+  workspace makes a headless run silently DISCARD `permissions.allow`. Surfaced,
+  not edited. LW is not a carrier of that trial and armed nothing.
+
 ## 2026-09-07 - independent audit of RC's public history (67c87bf, 4fd66f7)
 
 - **RC invited it; the operator authorised it.** RC went public at 15:15 by

@@ -27,6 +27,53 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+170. DONE **2026-09-07 (RC's ceiling property pinned in the shared file's only
+   test: "total concurrent holders never exceeds 5 + surplus", mutation-proven).**
+   RC's 2026-09-07 01:35 design review listed four properties of the proposed
+   reserved-floor-plus-surplus bucket. RC ACCEPTED LW's amendment B at 00:20 on
+   LW's ground that `ops/loop/slots.py` has no other coverage on either side -
+   "a property asserted in RC's prose and in nobody's test is asserted nowhere".
+   **SHIPPED.** 7 arms in `tests/test_loop_concurrency.py`, no production change
+   (slots.py is byte-identical-by-contract and was not touched):
+   `test_total_holders_never_exceed_the_bucket_width` parametrised over widths
+   1/2/3/5/7 - 3 is what the configs declare today, 5 is the ladder's option (2)
+   one-guaranteed-lane-per-repo, 7 is option (3) five reserved plus two surplus,
+   the "5 + surplus" RC named - each three-times oversubscribed with the threads
+   meeting at a barrier so "the width was fully used" is an observation and not
+   a race on thread start-up; `test_the_bucket_never_holds_more_lockfiles_than_
+   the_ceiling` measures the SAME property on disk from a sampler thread, so an
+   extra or differently-named lockfile is caught even when every caller still
+   counts correctly; `test_the_ceiling_arms_can_actually_go_red` is a negative
+   control pointing the identical harness at an unbounded governor.
+   **THE ARM BINDS, PROVEN NOT ASSERTED.** One mutant (`range(max_slots)` ->
+   `range(max_slots + 1)` in `try_acquire`) killed 6 of 6 ceiling arms; the
+   negative control correctly stayed green, being width-independent. Source
+   restored byte-exact, sha256 verified equal before and after
+   (71fa2a683f2e...). This is RSC's 2026-09-07 finding applied inward - three of
+   its gates were implemented correctly, unit-tested, and never consulted by the
+   code that runs - and the test-shaped form of the same class is an arm nobody
+   ever saw fail.
+   **SCOPE, stated beside the number.** Today's slots.py has NO reservation: the
+   bucket is index-named and first-come, so the ceiling is the ONLY one of RC's
+   four properties that currently holds. The arms assert the TOTAL and are
+   deliberately silent about who holds what, because one repo can still take
+   every lane - the honest caveat on the operator's fallback ladder. The name
+   assertion in the on-disk arm is a deliberate tripwire: the day
+   `reserved-<key>.lock` appears it goes red with the instruction that the
+   ceiling must be re-derived over BOTH schemes and that `reap()` must have
+   learned both, since a leaked reservation is one repo silently losing its
+   guarantee while the other four see a healthy bucket. RESERVED_FLOOR=5 and
+   SURPLUS=2 are the PROPOSAL's widths, not LW's configured ceiling (the configs
+   still declare 3, pinned by the lane-agreement arms above them).
+   **NOT STARTED, still BLOCKED:** the paired `reap` arm for a stale
+   `reserved-<key>.lock` - meaningless until the five repos agree the short keys
+   `rc lw rsc cs ll`.
+   **VERIFIED.** `python -m pytest tests/ -q` 2677 passed / 18 skipped in 122.9s
+   (baseline 2670/18, +7 new); ruff clean; `drift_guard.py` exit 0, 0 breaches.
+   **OUTBOUND.** One note to RSC carrying the carry-forward finding that the
+   Resin Compute checkout has two path spellings in `~/.claude.json` with
+   DISAGREEING trust [False, True] - surfaced, not edited, per the hand-off.
+
 169. DONE **2026-09-07 (independent audit of RC's now-public git history at
    RC's own invitation: RC's count CONFIRMED, RC's scope claim CORRECTED, and a
    218x false-positive caught in LW's own first pass).**

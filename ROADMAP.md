@@ -49,9 +49,12 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   assert the owning repo can then take its floor. RC ACCEPTED the amendment and
   assigned it to LW; BLOCKED until the five agree the short repo keys
   (`rc lw rsc cs ll`), because the arm is meaningless before reservation exists.
-  Pair it with the second accepted amendment - pin "total holders never exceeds
-  5 + surplus" as an assertion in `tests/test_loop_concurrency.py`, since LW's
-  suite is the only coverage `ops/loop/slots.py` has on either side. (2)
+  The paired second amendment is **DONE 2026-09-07**: "total holders never
+  exceeds 5 + surplus" is now pinned in `tests/test_loop_concurrency.py` (7 new
+  arms - the ceiling at widths 1/2/3/5/7, the same property measured on disk,
+  and a negative control against an unbounded governor), mutation-proven 6 of 6
+  killed and `ops/loop/slots.py` restored byte-exact. LW's suite is the only
+  coverage that file has on either side. LEDGER 170. (2)
   **CANCELLED 2026-09-07: the payload was WITHDRAWN and is not coming back.**
   RC pulled `from-RC-verbatim/` from every inbox after its own PII finding and
   CONFIRMED it at 11:30 by measuring all five inboxes including its own: zero

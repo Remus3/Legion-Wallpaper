@@ -9,6 +9,7 @@ nothing here may assume LW paths; every test injects its own root.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import importlib.util
 import json
@@ -692,3 +693,163 @@ def test_a_real_open_reader_blocks_the_unlink_and_the_lane_still_comes_back(tmp_
         fh.close()
     assert slots.reap(tmp_path, 3, 3600) == 1
     assert not p.exists()
+
+
+# ---------------------------------------------------------------------------
+# the ceiling property: "total concurrent holders never exceeds 5 + surplus"
+#
+# RC's design review of 2026-09-07 01:35 proposed a reserved floor plus a shared
+# surplus - five reserved lanes, one per carrier repo, plus a first-come surplus
+# pool - and listed four properties worth pinning. Three are about reservation
+# and cannot be tested until the five repos agree the short repo keys; that work
+# is BLOCKED and deliberately not started here. The fourth is the machine-wide
+# ceiling, it is already true of today's bucket, and RC accepted LW's amendment
+# that it belongs in this file rather than in a note (RC, 2026-09-07 00:20):
+# "a property asserted in RC's prose and in nobody's test is asserted nowhere".
+#
+# SCOPE, stated beside the number so nobody reads more into these arms than they
+# prove. Today's slots.py has NO reservation: the bucket is index-named and
+# first-come, so the ceiling is the ONLY one of the four properties that holds.
+# One repo can still take every lane - that is the honest caveat on the
+# operator's fallback ladder, not a defect these arms are silent about. They
+# assert the TOTAL and say nothing about who holds what, because today nothing
+# does.
+#
+# The two constants below are the PROPOSAL's widths, not LW's configured
+# ceiling - the configs still declare 3 (pinned by the lane-agreement arms
+# above). They are here so the ceiling is exercised at the width the ladder
+# would run at, before anyone runs it.
+# ---------------------------------------------------------------------------
+
+RESERVED_FLOOR = 5      # one reserved lane per carrier repo
+SURPLUS = 2             # RC's option (3): five reserved, two free-for-all
+CEILING = RESERVED_FLOOR + SURPLUS
+
+
+def _peak_holders(contenders: int, acquire, dwell: float = 0.05):
+    """Drive `contenders` threads through `acquire(i)` and sample the peak.
+
+    `acquire` is a context-manager factory so the SAME harness can be pointed at
+    the real governor and at a deliberately unbounded one - see the negative
+    control below, which is what proves these arms can go red at all.
+
+    The threads meet at a barrier before contending, so "the width was fully
+    used" is a real observation rather than a race on thread start-up.
+    """
+    live = 0
+    peak = 0
+    lock = threading.Lock()
+    errors: list = []
+    gate = threading.Barrier(contenders, timeout=60)
+
+    def worker(i: int):
+        nonlocal live, peak
+        try:
+            gate.wait()
+            with acquire(i):
+                with lock:
+                    live += 1
+                    peak = max(peak, live)
+                time.sleep(dwell)
+                with lock:
+                    live -= 1
+        except Exception as e:  # noqa: BLE001 - surface, do not swallow
+            errors.append(e)
+
+    threads = [threading.Thread(target=worker, args=(i,)) for i in range(contenders)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=120)
+    return peak, errors
+
+
+@pytest.mark.parametrize("width", [1, 2, 3, RESERVED_FLOOR, CEILING])
+def test_total_holders_never_exceed_the_bucket_width(tmp_path: Path, width: int):
+    """The ceiling at every width on the operator's ladder, three-times-oversubscribed.
+
+    width 3 is what the configs declare today; RESERVED_FLOOR is option (2), one
+    guaranteed lane per repo with no surplus; CEILING is option (3), the "5 +
+    surplus" RC asked to have pinned.
+    """
+    def acquire(i: int):
+        return slots.hold(width, root=tmp_path, repo="lw", run_id=f"r{i}",
+                          cycle=i, backoff=0.02, jitter=0.02, timeout=60)
+
+    peak, errors = _peak_holders(3 * width, acquire)
+    assert not errors, errors
+    assert peak <= width, (
+        f"slot governor breached at width {width}: {peak} concurrent holders")
+    assert peak == width, (
+        f"width {width} was never fully used - the arm did not actually contend, "
+        f"so the ceiling above was not exercised")
+
+
+def test_the_bucket_never_holds_more_lockfiles_than_the_ceiling(tmp_path: Path):
+    """The same property measured ON DISK rather than through the callers.
+
+    The thread counter above trusts hold() to hand out what it created. This one
+    watches the bucket directory instead, so a try_acquire that created an extra
+    lockfile - or a scheme that added a differently-named one - is caught even if
+    every caller still counted correctly.
+    """
+    stop = threading.Event()
+    seen_max = 0
+    names: set[str] = set()
+
+    def sampler():
+        nonlocal seen_max
+        while not stop.is_set():
+            present = [q.name for q in tmp_path.glob("*.lock")]
+            names.update(present)
+            seen_max = max(seen_max, len(present))
+            time.sleep(0.001)
+
+    watcher = threading.Thread(target=sampler, daemon=True)
+    watcher.start()
+    try:
+        def acquire(i: int):
+            return slots.hold(CEILING, root=tmp_path, repo="lw", run_id=f"r{i}",
+                              cycle=i, backoff=0.02, jitter=0.02, timeout=60)
+
+        peak, errors = _peak_holders(3 * CEILING, acquire)
+    finally:
+        stop.set()
+        watcher.join(timeout=10)
+
+    assert not errors, errors
+    assert seen_max <= CEILING, (
+        f"the bucket grew to {seen_max} lockfiles at width {CEILING}: "
+        f"{sorted(names)}")
+    assert names == {f"{i}.lock" for i in range(CEILING)}, (
+        f"unexpected lock names in the bucket: {sorted(names)}. Today's scheme is "
+        f"index-named ONLY - if this went red because reserved-<key>.lock now "
+        f"exists, the ceiling arms here need re-deriving against BOTH schemes and "
+        f"reap() must have learned both too, or a repo loses its floor silently.")
+    assert peak == CEILING, (
+        f"width {CEILING} was never fully used - the arm did not actually contend")
+
+
+def test_the_ceiling_arms_can_actually_go_red(tmp_path: Path):
+    """Negative control: point the same harness at a governor with no bucket.
+
+    A passing arm proves nothing until something demonstrably fails it - RSC
+    found three of its own gates on 2026-09-07 that were implemented correctly,
+    unit-tested, and never consulted by the code that runs. The same class
+    applies to a test: if the sampler could not observe a breach, the greens
+    above would be indistinguishable from a governor that never governed.
+    """
+    @contextlib.contextmanager
+    def unbounded(i: int):
+        p = tmp_path / f"{i}.lock"
+        p.write_text("{}", encoding="utf-8")
+        try:
+            yield p
+        finally:
+            p.unlink()
+
+    peak, errors = _peak_holders(3 * CEILING, unbounded)
+    assert not errors, errors
+    assert peak > CEILING, (
+        f"the harness observed a peak of {peak} against an UNBOUNDED governor: "
+        f"it cannot see a breach, so the ceiling arms above assert nothing")
