@@ -82,6 +82,11 @@ ACQUIRE_SITES = [
     # resident for the whole worklist, so the hold spans load + every item.
     ("lw_clean_sdxl.py", "run_worklist"),
     ("lw_clean_sdxl.py", "selfcheck"),
+    # DWPose det + pose. Was exempt while the CPU-only onnxruntime wheel was
+    # installed; the CUDA EP binds since 2026-09-06, so the hold spans building
+    # the two sessions (that allocation is itself GPU work) and both inference
+    # calls. The image decode stays outside it - cv2.imread is CPU.
+    ("lw_gen_localizer_eval.py", "dwpose_backend"),
     # YOLO + EasyOCR (detect) and SimpleLama (inpaint) are two separate GPU
     # phases of one slug, called in sequence by process_slug - not nested.
     ("lw_clean_pass.py", "detect_image"),
@@ -139,9 +144,15 @@ BORROWERS = {
 # limited to PIL + numpy + stdlib at module top level.
 LOCK_OWNERS = [upscale, sdxl, g1, genrun]
 
-# Tools the ROADMAP listed as CUDA consumers that are not. DWPose is onnx-CPU by
-# settled decision (LEDGER 19); wiring them would serialize CPU work against the
-# other repos for nothing.
+# Tools the ROADMAP listed as CUDA consumers that are not. These two hold no
+# CUDA reference of their own: they reach the GPU only THROUGH dwpose_backend,
+# which takes the lock itself, so wiring them as well would double-acquire.
+#
+# The old justification here - "DWPose is onnx-CPU by settled decision
+# (LEDGER 19)" - expired on 2026-09-06. LEDGER 19 settled the LOCALIZER CHOICE
+# (DWPose over OpenPose and SDPose), not the execution provider, and the
+# provider was CPU only because the CPU-only onnxruntime wheel was installed by
+# accident. dwpose_backend now binds the CUDA EP and is in ACQUIRE_SITES.
 CPU_ONLY_TOOLS = ["lw_anat_probe.py", "lw_anat_metrics.py"]
 
 # lw_first_pass.py spawns .venv-upscale and .venv-metrics children that DO
@@ -392,7 +403,8 @@ def test_no_cuda_consumer_in_tools_is_left_unwired():
     .to("cuda") reopens the unserialized lane and no existing test says a word.
     This turns the answer into something the suite re-derives every run.
 
-    Exemptions are the two settled onnx-CPU tools (LEDGER 19), and the failure
+    Exemptions are the two tools that reach the GPU only through the wired
+    dwpose_backend leaf and hold no CUDA of their own, and the failure
     message names the two legitimate resolutions so nobody satisfies it by
     deleting the string.
     """

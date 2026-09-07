@@ -106,3 +106,87 @@ def test_end_to_end_into_weapon_roi():
     assert res.ok is True
     assert res.fallback is None
     assert res.mask_binary is not None
+
+
+# ---- execution provider selection ------------------------------------------
+#
+# The sessions were pinned to CPU with a hardcoded list, so the 5070 sat idle
+# while yolox_l and dw-ll ran on the 7700X. onnxruntime-gpu alone does not fix
+# that: the provider list is what binds a session, and a CPU-only list keeps
+# running on CPU no matter which package is installed.
+#
+# Availability is INJECTED rather than read from the machine, so this asserts
+# the policy on a CI runner with no GPU exactly as it does on Legion.
+
+
+def test_cuda_is_preferred_when_available():
+    provs = lle._dwpose_providers(available=["CUDAExecutionProvider",
+                                                  "CPUExecutionProvider"])
+    assert provs[0] == "CUDAExecutionProvider", "CUDA must be tried first"
+    assert provs[-1] == "CPUExecutionProvider", "CPU must stay as the fallback"
+
+
+def test_cpu_only_machine_gets_cpu_and_does_not_ask_for_cuda():
+    """A CUDA entry ORT cannot honour makes InferenceSession raise, so a
+    machine without the GPU build must not be handed one."""
+    provs = lle._dwpose_providers(available=["CPUExecutionProvider"])
+    assert provs == ["CPUExecutionProvider"]
+
+
+def test_provider_can_be_forced_to_cpu_for_reproducibility(monkeypatch):
+    """CUDA and CPU kernels are not bit-identical. Any measurement that has to
+    reproduce an earlier CPU number needs a way back without a reinstall."""
+    monkeypatch.setenv("LW_ORT_PROVIDER", "cpu")
+    provs = lle._dwpose_providers(available=["CUDAExecutionProvider",
+                                                  "CPUExecutionProvider"])
+    assert provs == ["CPUExecutionProvider"]
+
+
+# ---- CUDA DLL discovery ----------------------------------------------------
+#
+# Having onnxruntime-gpu installed is not enough on Windows. The CUDA EP needs
+# cudnn64_9.dll and the CUDA 12 runtime on the DLL search path, and pip drops
+# those inside site-packages, which Python does not search. When they are not
+# found ORT does NOT raise - it silently falls back to CPU, which is exactly
+# how the sessions ran on the CPU while reporting a healthy provider list.
+#
+# Layout is built under tmp_path so this asserts the search rule itself rather
+# than whatever happens to be installed on the machine running it.
+
+
+def _fake_site_packages(tmp_path):
+    for rel in ("nvidia/cudnn/bin", "nvidia/cublas/bin", "torch/lib"):
+        (tmp_path / rel).mkdir(parents=True)
+    return tmp_path
+
+
+def test_cuda_dll_dirs_finds_pip_nvidia_and_torch_libs(tmp_path):
+    dirs = [str(d) for d in lle._cuda_dll_dirs(_fake_site_packages(tmp_path))]
+    assert any(d.endswith("cudnn") or d.endswith("bin") for d in dirs)
+    assert sum("nvidia" in d for d in dirs) == 2, "both nvidia packages wanted"
+    assert any(d.replace(chr(92), "/").endswith("torch/lib") for d in dirs), (
+        "torch/lib carries a bundled CUDA runtime and cuDNN and is the reason "
+        "importing torch first made the CUDA EP bind")
+
+
+def test_cuda_dll_dirs_is_empty_when_nothing_is_installed(tmp_path):
+    assert lle._cuda_dll_dirs(tmp_path) == []
+
+
+def test_cuda_dll_dirs_skips_a_missing_nvidia_tree(tmp_path):
+    (tmp_path / "torch" / "lib").mkdir(parents=True)
+    dirs = [str(d) for d in lle._cuda_dll_dirs(tmp_path)]
+    assert len(dirs) == 1 and dirs[0].endswith("lib")
+
+
+def test_register_cuda_dlls_puts_them_on_path(monkeypatch, tmp_path):
+    """PATH is the mechanism that actually binds the CUDA EP - see the
+    docstring. Asserted here so a future tidy-up cannot quietly drop back to
+    add_dll_directory alone, which fails silently onto CPU."""
+    sp = _fake_site_packages(tmp_path)
+    monkeypatch.setenv("PATH", "C:" + chr(92) + "pre-existing")
+    lle._register_cuda_dlls(site_packages=sp)
+    parts = os.environ["PATH"].split(os.pathsep)
+    assert str(sp / "torch" / "lib") in parts
+    assert str(sp / "nvidia" / "cudnn" / "bin") in parts
+    assert "C:" + chr(92) + "pre-existing" in parts, "must not clobber PATH"

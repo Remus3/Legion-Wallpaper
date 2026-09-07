@@ -1,5 +1,7 @@
 # WAKEUP_NOTES - LW hand-off ledger
 
+---
+
 ## 2026-09-06 - root renamed to "C:\Legion Wallpaper", RM replaced by RSC
 
 Commits 1ef672e (inbox) and 81de837 (rename), both pushed. Suite green: ruff

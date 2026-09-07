@@ -21,7 +21,10 @@ diffusion backends) stays lazy inside its backend function.
 """
 from __future__ import annotations
 
+import contextlib
+import importlib.util
 import json
+import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -146,12 +149,145 @@ _DW_SESSIONS: dict = {}
 _KP6 = ("nose", "neck", "RElbow", "RWrist", "LElbow", "LWrist")
 
 
+# Machine-wide GPU serialization (ops/loop/winmutex.py GPU_MUTEX).
+#
+# DWPose ran on the CPU until 2026-09-06 and was exempt from the GPU mutex for
+# that reason (LEDGER 19 recorded it as "onnx-CPU"). Now that the sessions bind
+# the CUDA EP it is a real consumer of the single RTX 5070 that every headless
+# loop on this box shares, so it has to take the same lock as the upscaler and
+# the SDXL inpainter or it is an unserialized lane two repos contend on.
+GPU_MUTEX_TIMEOUT_S = 1800.0
+_WINMUTEX_MOD = "lw_loop_winmutex"
+
+
+def _winmutex():
+    """Bind ops/loop/winmutex.py BY PATH (the loop_controller._bind pattern).
+
+    ops/loop has no __init__.py and the venvs do not carry the repo root on
+    sys.path, so a package-style import would fail wherever this actually runs
+    while passing in CI.
+    """
+    mod = sys.modules.get(_WINMUTEX_MOD)
+    if mod is not None:
+        return mod
+    path = Path(__file__).resolve().parent.parent / "ops" / "loop" / "winmutex.py"
+    spec = importlib.util.spec_from_file_location(_WINMUTEX_MOD, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load winmutex from {path}")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[_WINMUTEX_MOD] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+@contextlib.contextmanager
+def gpu_lock(active):
+    """Hold GPU_MUTEX around real CUDA work. A no-op on the CPU fallback.
+
+    The CPU path must NOT take it: serializing CPU work across repos buys
+    nothing and costs throughput. An import failure DEGRADES to unheld rather
+    than raising - the mutex is a cross-repo governor, not a dependency of this
+    tool, and a venv that cannot see it must still be able to run a localizer.
+    """
+    if not active:
+        yield None
+        return
+    try:
+        wm = _winmutex()
+    except (ImportError, OSError):
+        yield None
+        return
+    with wm.hold(wm.GPU_MUTEX, timeout=GPU_MUTEX_TIMEOUT_S) as handle:
+        yield handle
+
+
+def _cuda_dll_dirs(site_packages):
+    """Directories holding the CUDA/cuDNN DLLs the CUDA EP loads at runtime.
+
+    onnxruntime-gpu does not vendor them. pip puts them under
+    site-packages/nvidia/<pkg>/bin, and torch ships a full CUDA runtime plus
+    cuDNN in torch/lib. Python does not add either to the DLL search path, so
+    ORT fails to load onnxruntime_providers_cuda.dll and SILENTLY falls back to
+    CPU - no exception, and get_available_providers() still lists CUDA.
+    Importing torch first happens to fix it by registering torch/lib, which is
+    why that worked; this does the same thing without the heavy import, since
+    the module must stay importable under base python with numpy only.
+    """
+    root = Path(site_packages)
+    dirs = [d for d in sorted((root / "nvidia").glob("*/bin")) if d.is_dir()]
+    torch_lib = root / "torch" / "lib"
+    if torch_lib.is_dir():
+        dirs.append(torch_lib)
+    return dirs
+
+
+def _register_cuda_dlls(site_packages=None):
+    """Put the CUDA DLL directories where ORT will actually find them.
+
+    MEASURED, because the obvious call is not the one that works:
+    os.add_dll_directory alone leaves the session on CPU. It only affects
+    LoadLibraryEx calls that opt into the altered search path, and ORT's
+    dependency resolution for onnxruntime_providers_cuda.dll does not. Adding
+    the same directories to PATH does bind CUDA. ctypes-preloading
+    cudnn64_9.dll does not work either. add_dll_directory is kept alongside
+    PATH because it costs nothing and covers loaders that do honour it.
+    """
+    if not hasattr(os, "add_dll_directory"):  # POSIX resolves via RPATH
+        return
+    if site_packages is None:  # injected by the tests
+        import onnxruntime as ort
+
+        site_packages = Path(ort.__file__).resolve().parent.parent
+    found = [str(d) for d in _cuda_dll_dirs(site_packages)]
+    if not found:
+        return
+    for d in found:
+        try:
+            os.add_dll_directory(d)
+        except OSError:
+            pass
+    current = os.environ.get("PATH", "")
+    missing = [d for d in found if d not in current.split(os.pathsep)]
+    if missing:
+        os.environ["PATH"] = os.pathsep.join(missing + [current])
+
+
+def _dwpose_providers(available=None):
+    """Pick the ONNX Runtime execution providers for the DWPose sessions.
+
+    These were pinned to CPU, which left yolox_l and dw-ll running on the CPU
+    while the GPU sat idle. Installing onnxruntime-gpu does not fix that on its
+    own: the provider list is what binds a session, so a CPU-only list stays on
+    the CPU whichever package is installed.
+
+    CUDA goes FIRST with CPU kept behind it, so ORT falls back per node instead
+    of failing outright. A provider ORT does not have is never requested -
+    InferenceSession raises on an unknown provider - so the order is filtered
+    against what is actually available.
+
+    `available` is injected by the tests, so the policy is asserted the same on
+    a CI runner with no GPU as on the box. LW_ORT_PROVIDER=cpu forces the old
+    behaviour, which matters because CUDA and CPU kernels are not bit-identical
+    and an earlier CPU-measured number may need reproducing exactly.
+    """
+    if os.environ.get("LW_ORT_PROVIDER", "").strip().lower() == "cpu":
+        return ["CPUExecutionProvider"]
+    if available is None:
+        import onnxruntime as ort
+
+        available = ort.get_available_providers()
+    order = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    return [p for p in order if p in available] or ["CPUExecutionProvider"]
+
+
 def _dwpose_sessions():
-    """Lazily build + cache the two CPU onnxruntime sessions (det + pose)."""
+    """Lazily build + cache the two onnxruntime sessions (det + pose)."""
     if not _DW_SESSIONS:
         import onnxruntime as ort
 
-        prov = ["CPUExecutionProvider"]
+        prov = _dwpose_providers()
+        if "CUDAExecutionProvider" in prov:
+            _register_cuda_dlls()
         _DW_SESSIONS["det"] = ort.InferenceSession(
             str(_DW_MODELS / "yolox_l.onnx"), providers=prov
         )
@@ -162,7 +298,7 @@ def _dwpose_sessions():
 
 
 def dwpose_backend(image_path: str, min_conf: float = 0.3) -> BackendOutput:
-    """DWPose onnx-CPU backend: yolox_l person box -> dw-ll 133-kpt wholebody.
+    """DWPose onnx backend: yolox_l person box -> dw-ll 133-kpt wholebody.
 
     Reads the image BGR (cv2, matching the reference impl), detects person
     boxes, runs pose, picks the highest-mean-score person, and feeds the raw
@@ -176,11 +312,15 @@ def dwpose_backend(image_path: str, min_conf: float = 0.3) -> BackendOutput:
 
     from tools.dwpose_onnx import onnxdet, onnxpose
 
-    det_sess, pose_sess = _dwpose_sessions()
     ori = cv2.imread(image_path)  # BGR, HxWx3
     H, W = ori.shape[:2]
-    boxes = onnxdet.inference_detector(det_sess, ori)
-    kpts, scores = onnxpose.inference_pose(pose_sess, boxes, ori)
+    # decided before the sessions exist, because building them is itself the
+    # allocation that needs serializing
+    on_gpu = "CUDAExecutionProvider" in _dwpose_providers()
+    with gpu_lock(on_gpu):
+        det_sess, pose_sess = _dwpose_sessions()
+        boxes = onnxdet.inference_detector(det_sess, ori)
+        kpts, scores = onnxpose.inference_pose(pose_sess, boxes, ori)
     if kpts is None or len(kpts) == 0:
         return BackendOutput(kp_map={k: None for k in _KP6}, meta={"n_boxes": 0})
     idx = int(np.argmax(scores.mean(axis=1)))
