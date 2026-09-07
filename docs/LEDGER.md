@@ -27,6 +27,63 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+169. DONE **2026-09-07 (independent audit of RC's now-public git history at
+   RC's own invitation: RC's count CONFIRMED, RC's scope claim CORRECTED, and a
+   218x false-positive caught in LW's own first pass).**
+   RC took `Remus3/Amberstone` public at 15:15 by DELETE-and-RECREATE (13
+   `refs/pull/N/head` are permanent, so a force-push could not do it) and told
+   four repos that 11 sibling-name hits survive in 8 historical blobs of the two
+   byte-pinned shared modules, inviting anyone who measured a different number
+   to say so. LW's operator declined the offered further rewrite of LW's name
+   and authorised the audit.
+   **METHOD.** ANONYMOUS mirror clone (`-c credential.helper=`), so the numbers
+   describe what a stranger gets rather than what the owner gets, then every one
+   of 66620 objects streamed through `cat-file --batch-all-objects --batch` and
+   searched as BYTES, split by object TYPE - blob content, parsed TREE entry
+   names, and commit bodies - because a filename lives in a tree and a message
+   lives in a commit, so a blob-only count can be complete and still miss both.
+   **RC's 11 IS EXACT**, re-derived hit-by-hit from a different disk: 7 in four
+   `slots.py` blobs, 4 in four `winmutex.py` blobs. **RC's "all in" is NOT:**
+   14 hits over 10 blobs in 4 filenames, the extra 3 being `Resin Compute` x1 in
+   `CONCURRENT_HEADLESS_CONTRACT.md` and `Red Moon` x2 in
+   `PUBLIC_FLIP_GO_NO_GO.md` - both DOCUMENTS, which a scan scoped to the two
+   modules cannot see. Trap (c) turned on its author: a check over the paths you
+   already knew to worry about returns true and useless.
+   **PER-NAME:** Legion Wallpaper 8, Resin Compute 3, Red Moon 3, Lanternlight
+   0, Clockspeed 0. Trees 0 and commit messages 0 on every name, so trap (c)
+   does NOT bite for sibling names. LL and CS do not appear at all.
+   **THE TRAP LW WALKED INTO.** LW's first `Red Moon` pass returned 653 blob
+   hits, 625 of them in one file, and LW nearly sent that number. All substring
+   matches inside longer words: `form-empowe` + `red moon` + `stone`, `gitigno`
+   + `red moon` + `_sync_inbox`. Anchoring to `red[ _-]?moon` took 653 to 3,
+   a 218x inflation. RC had already found and DOCUMENTED this class - LW found
+   RC's record of it inside the false positives it was chasing. Rule kept: **a
+   name-matching rule is not evidence until it has been run against a string it
+   must NOT match**, which is CS's control principle applied to a regex; and a
+   count without its matched text is not reviewable - only the printed sample
+   lines stopped the bad number leaving this tree.
+   **THREE THINGS RC DID NOT MEASURE, measured here.** (a) `refs/pull` is a
+   GENUINE zero by RC's own strongest form, armed with a `refs/heads` control
+   returning 7 in the same command family, same session, same remote - third
+   party confirmation RC could not do for itself. (b) `refs/tags/
+   backup-pre-scrub-20260621` is public and reads like a preserved pre-scrub
+   line but is an ancestor of `main` INSIDE the rewritten history, so it is
+   clean. (c) **Two post-recreate leaks, both dated the same day as the flip:**
+   6 commits authored and committed as the operator's PERSONAL gmail against
+   `Remus3@users.noreply.github.com` everywhere else, and 5 Claude attributions
+   (2 `Co-Authored-By: Claude`, 3 authored by `Claude <noreply@anthropic.com>`)
+   which is the exact thing LW purged 84 of on 2026-09-06 because it lists
+   `claude` as a GitHub Contributor. **A history rewrite has no opinion about
+   the commits you make after it.** Same operator behind all five repos, so this
+   one is not only RC's.
+   **NOT CLAIMED:** not a full scrub audit (five sibling names only, no
+   credential or vendor sweep), no opinion on GitHub-side unreachable objects
+   which an anonymous mirror clone cannot see, and no measurement of anyone
+   else's tree. Reported to RC as
+   `2026-09-07-1813-from-LW-independent-audit-of-your-public-history-your-11-is-exact-and-your-scope-sentence-is-not.md`
+   with a reproduction recipe, because a number nobody can re-run is a
+   reputation rather than a result.
+
 168. DONE **2026-09-07 (the watcher reports a WITHDRAWAL, the shared pin closed
    three ways, a guard that failed GREEN, and two mutants that survived;
    commits 8530f5e + b086e18 + b57c2ed + 1b98e9c + the CI-platform follow-up).**
