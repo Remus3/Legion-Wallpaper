@@ -221,7 +221,7 @@ def _cuda_dll_dirs(site_packages):
     return dirs
 
 
-def _register_cuda_dlls(site_packages=None):
+def _register_cuda_dlls(site_packages=None, windows=None):
     """Put the CUDA DLL directories where ORT will actually find them.
 
     MEASURED, because the obvious call is not the one that works:
@@ -232,18 +232,24 @@ def _register_cuda_dlls(site_packages=None):
     cudnn64_9.dll does not work either. add_dll_directory is kept alongside
     PATH because it costs nothing and covers loaders that do honour it.
     """
-    if not hasattr(os, "add_dll_directory"):  # POSIX resolves via RPATH
+    if windows is None:  # injected by the tests, so the PATH policy below is
+        # asserted on a POSIX runner too rather than skipped into a green
+        windows = hasattr(os, "add_dll_directory")
+    if not windows:  # POSIX resolves via RPATH
         return
-    if site_packages is None:  # injected by the tests
+    if site_packages is None:
         import onnxruntime as ort
 
         site_packages = Path(ort.__file__).resolve().parent.parent
     found = [str(d) for d in _cuda_dll_dirs(site_packages)]
     if not found:
         return
+    add_dll_directory = getattr(os, "add_dll_directory", None)
     for d in found:
+        if add_dll_directory is None:
+            break
         try:
-            os.add_dll_directory(d)
+            add_dll_directory(d)
         except OSError:
             pass
     current = os.environ.get("PATH", "")

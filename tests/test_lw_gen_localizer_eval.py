@@ -184,9 +184,11 @@ def test_register_cuda_dlls_puts_them_on_path(monkeypatch, tmp_path):
     docstring. Asserted here so a future tidy-up cannot quietly drop back to
     add_dll_directory alone, which fails silently onto CPU."""
     sp = _fake_site_packages(tmp_path)
-    monkeypatch.setenv("PATH", "C:" + chr(92) + "pre-existing")
-    lle._register_cuda_dlls(site_packages=sp)
+    # no drive letter: os.pathsep is ":" on a POSIX runner, which would split a
+    # Windows-style entry in half and fail for a reason that is not the policy
+    monkeypatch.setenv("PATH", "PRE_EXISTING_ENTRY")
+    lle._register_cuda_dlls(site_packages=sp, windows=True)
     parts = os.environ["PATH"].split(os.pathsep)
     assert str(sp / "torch" / "lib") in parts
     assert str(sp / "nvidia" / "cudnn" / "bin") in parts
-    assert "C:" + chr(92) + "pre-existing" in parts, "must not clobber PATH"
+    assert "PRE_EXISTING_ENTRY" in parts, "must not clobber PATH"
