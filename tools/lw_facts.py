@@ -45,6 +45,23 @@ _ROOT = Path(__file__).resolve().parent.parent
 _HEALTH = _ROOT / "ops" / "runtime" / "health.json"
 _WAKEUP = _ROOT / "WAKEUP_NOTES.md"
 
+# Cross-repo mail. UNREAD is a set of seen FILENAMES, never an mtime watermark:
+# a watermark advances on WRITE, so a session cleared or killed before anyone
+# read the output moves it past a note nobody saw, and it also loses to
+# timestamp-preserving delivery (cp -p, robocopy /COPY:T, restore-from-backup)
+# and to clock skew. All three fail as SILENCE, indistinguishable from "no
+# mail" - the exact failure class this channel produced twice on 2026-09-06.
+# The record is per-machine state and lives gitignored under ops/runtime/.
+# KNOWN COST, accepted rather than designed around (RC, 2026-09-07): a
+# RENAMED note reads as new mail, because the key is the name. Keying on a
+# content hash trades it for a worse failure - an EDITED note would then read
+# as already seen, and an edit is the case you most want surfaced. A false
+# 'new mail' costs one glance; a missed correction costs whatever it was for.
+# mark_inbox_seen() rewriting from the CURRENT listing makes this self-heal.
+_INBOX = _ROOT / "moon_sync_inbox"
+_SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
+_INBOX_SHOWN = 10
+
 # Shared wall-clock budget (seconds). The hook timeout is 8s; every
 # subprocess gets min(its own cap, whatever budget remains), so the
 # script as a whole finishes well under the hook limit even if some
@@ -258,6 +275,93 @@ def _pipeline_lines(anomalies: list[str], root: Path | None = None) -> list[str]
         return ["- pipeline: probe failed (treat as pipeline idle)"]
 
 
+def _inbox_names(inbox: Path) -> list[str]:
+    """Current listing: `.md` notes, `_`-prefixed drafts excluded."""
+    if not inbox.is_dir():
+        return []
+    return sorted(
+        p.name
+        for p in inbox.iterdir()
+        if p.is_file() and p.suffix.lower() == ".md" and not p.name.startswith("_")
+    )
+
+
+def _seen_names(seen_path: Path) -> set[str]:
+    """The acknowledged set. A missing or corrupt record reads as EMPTY, so
+    everything re-reports - degrading to noise, never to silence."""
+    try:
+        doc = json.loads(seen_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    names = doc.get("seen") if isinstance(doc, dict) else doc
+    if not isinstance(names, list):
+        return set()
+    return {n for n in names if isinstance(n, str)}
+
+
+def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
+                 seen_path: Path | None = None) -> list[str]:
+    """Unread cross-repo notes. REPORTS ONLY - never acknowledges.
+
+    Acknowledging here would make "unread" a property of whether this hook ran
+    rather than of whether anyone read the note, which is the watermark defect
+    in a different costume. `mark_inbox_seen()` is the separate action, so an
+    unacknowledged note re-reports next session instead of being lost.
+
+    Exception-proof by contract: this runs inside the SessionStart hook, and a
+    crash here would take the whole live-state block with it - worse than a
+    missed mail line.
+    """
+    inbox = _INBOX if inbox is None else inbox
+    seen_path = _SEEN if seen_path is None else seen_path
+    try:
+        if not inbox.is_dir():
+            return [f"- moon_sync_inbox: absent at {inbox} - no cross-repo mail channel"]
+        names = _inbox_names(inbox)
+        unread = [n for n in names if n not in _seen_names(seen_path)]
+        if not unread:
+            return [f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
+        lines = [f"- moon_sync_inbox: {len(unread)} UNREAD of {len(names)} notes"]
+        for n in unread[-_INBOX_SHOWN:]:
+            lines.append(f"  - {n}")
+        if len(unread) > _INBOX_SHOWN:
+            lines.append(f"  - ... and {len(unread) - _INBOX_SHOWN} more, oldest first")
+        lines.append("- acknowledge (only after reading): "
+                     "python tools/lw_facts.py --mark-inbox-seen")
+        # CHARTER v2 section 1 classifies in the title: REVIEW- wants a reply
+        # from all five before the sender proceeds and ACTION- is blocking, so
+        # an unread one of those is a real anomaly. FYI- is not.
+        wanted = [n for n in unread if "REVIEW-" in n or "ACTION-" in n]
+        if wanted:
+            anomalies.append(
+                f"{len(wanted)} unread REVIEW-/ACTION- inbox note(s) awaiting a "
+                f"response: {', '.join(wanted[-3:])}")
+        return lines
+    except Exception:  # noqa: BLE001 - a probe must never break the hook
+        anomalies.append("moon_sync_inbox probe crashed")
+        return ["- moon_sync_inbox: probe failed"]
+
+
+def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None) -> int:
+    """Acknowledge every note currently in the inbox. Returns the count.
+
+    REWRITES the set from the current listing rather than unioning into it, so
+    an archived note prunes automatically and the record cannot grow without
+    bound. Atomic write - the hook may read it mid-run.
+    """
+    inbox = _INBOX if inbox is None else inbox
+    seen_path = _SEEN if seen_path is None else seen_path
+    names = _inbox_names(inbox)
+    seen_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = seen_path.with_name(seen_path.name + ".tmp")
+    tmp.write_text(
+        json.dumps({"seen": names, "marked_at": time.strftime("%Y-%m-%dT%H:%M:%S")},
+                   indent=2) + "\n",
+        encoding="utf-8", newline="\n")
+    tmp.replace(seen_path)
+    return len(names)
+
+
 def _wakeup_lines(anomalies: list[str]) -> list[str]:
     try:
         if not _WAKEUP.is_file():
@@ -272,6 +376,13 @@ def _wakeup_lines(anomalies: list[str]) -> list[str]:
 
 
 def main() -> int:
+    # Acknowledgement is a SEPARATE action from the report, deliberately: the
+    # hook must never mark mail read on the session's behalf.
+    if "--mark-inbox-seen" in sys.argv[1:]:
+        n = mark_inbox_seen()
+        sys.stdout.write(f"marked {n} inbox note(s) seen -> {_SEEN}\n")
+        return 0
+
     out: list[str] = []
     out.append("# LW live state (lw_facts.py)\n")
     out.append(f"_probed at {time.strftime('%Y-%m-%d %H:%M:%S')}_\n")
@@ -289,6 +400,9 @@ def main() -> int:
 
     out.append("\n## Pipeline\n")
     out.extend(_pipeline_lines(anomalies))
+
+    out.append("\n## Sync inbox\n")
+    out.extend(_inbox_lines(anomalies))
 
     out.append("\n## Session notes\n")
     out.extend(_wakeup_lines(anomalies))
