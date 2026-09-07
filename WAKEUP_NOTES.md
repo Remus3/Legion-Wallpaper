@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-09-06 (late) - the 5/6 localizer number, re-measured on CUDA
+
+Commit `5f6f119` (+ this docs sync). Suite 2519 passed / 18 skipped, ruff
+clean, drift_guard 0 breaches. Ledger 151. ROADMAP's top open item is closed;
+`golden-overtarget-refreeze` moves to the top and is still the operator's.
+
+**The 5/6 holds, but say it as 5/6 frames / 10/12 WRISTS.** Positions are not
+the issue: CPU and CUDA agree within 2.8 px on a 1344x768 frame, CUDA is
+deterministic run-to-run, and today's CPU arm reproduces the 2026-07-11 run to
+0.0000 px, so that arm is an exact control. What moves is the CONFIDENCE score
+(about -0.015 on CUDA) and two of twelve wrists sit at 0.304 and 0.305 against
+`min_conf=0.3`. `seed22` left and `cand_02` right fall through; their ROIs go
+`missing_wrist`. `seed22` still has its RIGHT wrist on a weapon so the frame
+verdict holds, but the ROI it loses is the one over the PRIMARY crossbow. The
+floor is left at 0.3 on purpose - 0.25 would restore both, and that is a tuning
+call the measurement was not asked to make.
+
+**The transferable bit: a number is only as portable as its provenance.** LEDGER
+19's 5/6 had to be re-measured from scratch, at real cost, only because
+`summary.json` never recorded which execution provider produced it. `run()` now
+stamps a `_run` block with the providers actually BOUND - read off the live
+session, because ORT drops to CPU silently while still advertising CUDA in
+`get_available_providers()`.
+
+**QA of the previous hand-off, one correction.** "Settling the USM 70 -> 35
+question" reads as if USM were open. It is not: `USM_DEFAULT = (1.2, 35, 3)` is
+SETTLED (2026-08-02) and CLAUDE.md says so. The real entanglement is narrower
+and now written into the ROADMAP item: a 4096x2305 source is not exactly
+2560x1440, so `_usm_applies` is True and the over-target downscale-only branch
+DOES apply an unsharp mask, which makes the flagged `lap_ratio` directly
+USM-sensitive; the regress had to pin USM to 70 by hand, so the frozen set is
+currently validating a recipe that has not shipped since 2026-08-02. Re-freezing
+under the live default retires the pin. Still a blessing call, still untouched.
+
+---
+
 ## 2026-09-06 (evening) - driver bump, DWPose onto the GPU, and two silent guards
 
 Commits `1ef672e`, `81de837`, `a019586`, `0cce31a`, `6f07bd5`, `5715cf0`,

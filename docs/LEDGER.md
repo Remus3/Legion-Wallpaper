@@ -27,6 +27,46 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+151. DONE **2026-09-06 (the 5/6 localizer number re-measured on CUDA; `5f6f119`).**
+   LEDGER 19 adopted DWPose at 5/6 wrist-on-weapon measured on the ONNX **CPU**
+   provider; `0cce31a` moved DWPose onto CUDA, and one spot-checked frame is
+   parity evidence of one image. Re-ran the 6 `recall_gate` samples on both
+   providers from `.venv-gen` with `LW_ORT_PROVIDER=cpu` forcing the old path.
+   Providers confirmed BOUND off the live sessions (`['CUDAExecutionProvider',
+   'CPUExecutionProvider']` vs `['CPUExecutionProvider']`), not merely
+   requested - `get_available_providers()` stays green when the CUDA EP fails to
+   load. **RESULT: 5/6 frames CONFIRMED, restated as 5/6 frames / 10/12
+   WRISTS.** Three findings. (a) Today's CPU arm reproduces the 2026-07-11 run to
+   **0.0000 px on every joint of every frame**, so the CPU arm is an exact
+   control and any difference is the provider. (b) With the gate off, positions
+   agree within **2.8 px** on a 1344x768 frame (0.21 percent of width) and CUDA
+   is deterministic run-to-run (0.0000 px, byte-identical scores). (c) What
+   moves is the CONFIDENCE score, about -0.015 on CUDA, and two of twelve wrists
+   sit at 0.304 and 0.305 against the `min_conf=0.3` floor: `seed22` LWrist
+   0.304 -> 0.286 and `cand_02` RWrist 0.305 -> 0.293 fall through and their
+   ROIs become `missing_wrist`. No frame verdict flips - `seed22` keeps a wrist
+   on a weapon via the RIGHT ROI (the second crossbow, checked at 1:1 on both
+   overlays) while losing the LEFT ROI over the PRIMARY crossbow, and `cand_02`
+   was already the miss. Warm timing reproduces LEDGER 148: 0.299 -> 0.038
+   s/image (a 6-image run pays ~0.7s of one-off CUDA warmup, which reads as
+   0.16 s/image if the cold pass is counted). SHIPPED with it: `run()` stamps
+   `summary.json` with a `_run` block naming the providers actually BOUND, read
+   off the live session and never building one, so an ORT-free backend stamps
+   null and nothing allocates outside `gpu_lock()`. LEDGER 19's number had to be
+   re-measured from scratch precisely because its artifact did not record the
+   provider - a number is only as portable as its provenance. TDD RED-first: 3
+   tests failed on a missing `_run_provenance`, then green. SCOPE CALL: the
+   floor stays at 0.3. Lowering it to 0.25 would restore both wrists and make
+   the providers agree, but it is a tuning decision with a real cost (a
+   low-confidence wrist puts the weapon ROI on the wrong pixels), the
+   acceptance criterion was a measurement, and the M1 weapon pass is
+   operator-in-the-loop. FUTURE / do-not-redo: do not re-measure on more frames
+   expecting movement - the only provider-sensitive frames are those with a
+   wrist within ~0.02 of `min_conf`. Evidence
+   `docs/DWPOSE_CUDA_PARITY_2026-09-06.md`; artifacts (both stamped) in
+   `images/_gen_scratch/localizer_eval/dwpose_{cpu,cuda}_2026-09-06/`. Verified:
+   ruff clean, 2519 passed / 18 skipped, drift_guard 0 breaches.
+
 150. DONE **2026-09-06 (a renamed sibling repo must go red, not quiet; `1998e2b`).**
    Premise VERIFIED from this disk before acting: RC reported (Amberstone
    `e752e4edc`) that LW's root rename silently disarmed RC's cross-repo guards
