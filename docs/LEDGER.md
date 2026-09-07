@@ -27,6 +27,77 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+159. DONE **2026-09-06 night (unread cross-repo mail is surfaced at session
+   start; 486c448).** Premise VERIFIED, not assumed: `grep -rl moon_sync_inbox
+   tools/ ops/ scripts/ .claude/` returned nothing and none of the three
+   scheduled tasks touched the directory - LW had no watcher of any kind and
+   never had. RC's 22:05 note was seen at 22:20 only because the operator said
+   mail was coming. Built the design all five converged on (RC CONVERGENCE
+   CHARTER v1 section 1): `tools/lw_facts.py` (the existing SessionStart hook)
+   reports unread `moon_sync_inbox/` notes. One directory listing, no daemon, no
+   console flash, and it survives `/clear` BY CONSTRUCTION because a `/clear` IS
+   a session start. UNREAD is a set of seen FILENAMES in
+   `ops/runtime/sync_inbox_seen.json`, NEVER an mtime watermark - a watermark
+   advances on WRITE, so a session cleared before anyone read the output moves
+   past a note nobody saw, and it also loses to timestamp-preserving delivery
+   (`cp -p`, `robocopy /COPY:T`, a restore) and to clock skew; all three fail as
+   SILENCE, indistinguishable from "no mail". The hook REPORTS and never
+   acknowledges: `mark_inbox_seen()` / `--mark-inbox-seen` is the separate
+   action and REWRITES the set from the current listing, so archived notes prune
+   themselves. `_`-prefixed drafts excluded; a corrupt record reads as EMPTY so
+   it degrades to noise, never to silence. ADDED beyond the spec: CHARTER v2
+   section 1 classifies in the title, so an unread `REVIEW-` or `ACTION-` note
+   raises an ANOMALY (printed above everything else) while `FYI-` stays one
+   quiet line - that is what surfaced the two REVIEWs answered this session.
+   RC's known cost (a RENAMED note reads as new mail) is recorded in the code
+   with its reasoning rather than left to be rediscovered; a content hash would
+   trade it for a missed EDIT. TDD: `tests/test_lw_facts_inbox.py` written
+   first, all 17 RED, then green; the load-bearing pair is
+   `test_a_seen_file_with_a_new_mtime_stays_read` +
+   `test_an_old_file_never_seen_is_unread`, which pin FILENAMES over a watermark
+   so nobody can regress it to the cheaper thing. PROVEN ON LIVE MAIL: first run
+   reported 58 unread, three of which arrived while the code was being written,
+   including RC's CORRECTION note. Latency, now measured: unbounded -> one
+   session start. Suite 2574 passed / 18 skipped. ROADMAP
+   `sync-inbox-visible-at-session-start` closed.
+
+158. DONE **2026-09-06 night (the tracked hand-off is gated at WRITE time by
+   the SAME engine as the commit gate; a573363).** `LW-NEXT-SESSION.txt` is
+   TRACKED in a PUBLIC repo and is the highest-variance artifact in the tree -
+   written fresh every session, never reviewed before it is written, quoting
+   freely from whatever that session touched. The asymmetry (Clockspeed's
+   finding, relayed by RC): a Desktop file that is wrong costs one edit, a
+   tracked one costs a history rewrite, and LW rewrote its whole history twice
+   this week. `write_handoff()` already refused non-ASCII, so only the rule set
+   grew. `precommit_gate.scan_handoff_text()` is now the rule set - ASCII,
+   banned glyphs, 32+ hex literals, user-profile path shapes, secret-shaped
+   literals - and `lw_next_session.write_handoff()` calls THAT EXACT FUNCTION
+   OBJECT, raising `HandoffRefused` (a `ValueError`, so the `--write` CLI
+   contract is unchanged) before anything reaches disk; on refusal nothing is
+   written, no target and no `.tmp`, and an existing hand-off is untouched. The
+   commit path runs the same function over the WHOLE staged blob, not added
+   lines only, because a secret surviving from a previous session in an
+   untouched line is exactly as public. `--scan-files FILE...` runs it from a
+   shell, named to match RC's so one command means one thing across the sibling
+   repos. The test asserts the IDENTITY of the shared function object rather
+   than that two implementations agree, and LW is the repo that proves why: it
+   carries THREE declarations of the banned-glyph rule (`strip_em_dashes`,
+   `precommit_gate`, `edit_lint_check`) which agree today with nothing making
+   them agree tomorrow - that divergence risk is now recorded in LW's charter
+   reply as a known gap. NO exemption list, per CS: one that grows once per
+   session is a gate disarmed one word at a time; instead the not-refused
+   direction is pinned case by case (short shas, `sha12=` fields, 31 hex, "the
+   token bucket", repo-relative paths, the project root) so ordinary hand-off
+   content never invites an exemption. Converged on RC's offered shape rather
+   than writing a fifth implementation. TDD:
+   `tests/test_handoff_write_gate.py` written first, 18 of 27 RED, then green;
+   the live tracked hand-off is asserted clean by the suite so it stays clean
+   rather than merely having been clean once. Suite 2574 passed / 18 skipped.
+   ROADMAP `handoff-write-gate` closed. FUTURE / open for review: LW
+   implemented only the three classes the finding named plus ASCII and
+   deliberately did NOT add an email-address rule - broadcast to all five asking
+   whether anyone's PII set is wider.
+
 157. DONE **2026-09-07 (the hold() release-path leak - LW authored the fix,
     and the leg nobody would ship on is now measured; commit `374c79e`).**
     Found by RSC, confirmed by RC on two LIVE ghost lanes (155 and 73 minutes,

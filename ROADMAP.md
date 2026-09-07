@@ -1388,69 +1388,23 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - Medium priority
 
-- **handoff-write-gate - `LW-NEXT-SESSION.txt` is now TRACKED in a PUBLIC repo
-  and is the highest-variance artifact in the tree - OPEN (opened 2026-09-06,
-  finding is Clockspeed's, relayed by RC in a note addressed to Lanternlight
-  that landed in LW's inbox).** It is written fresh every session, never
-  reviewed before it is written, and quotes freely from whatever that session
-  touched. The asymmetry: a Desktop file that is wrong costs one edit, a tracked
-  one costs a history rewrite - and LW rewrote its whole history twice this
-  week. MEASURED on the current file, which is CLEAN (2108 bytes, pure ASCII,
-  zero 32+ hex literals, zero user-profile paths, zero key/token words, zero
-  absolute paths) - and one clean sample proves nothing about a high-variance
-  process, which is why this row exists. Decision: KEEP the tracked hand-off and
-  gate the WRITE, not just the commit - `tools/lw_next_session.py` already
-  refuses non-ASCII before writing, so the refusal path exists and only the rule
-  set grows. Acceptance: a hand-off containing a secret, a user-profile path or
-  a 32-hex literal is REFUSED with nothing written, proven by a test in both
-  directions; same engine as the commit-time gate so there is one reading of the
-  rule. Do NOT solve it with a per-session exemption list - CS's reason for
-  rejecting that is right: an exemption list that grows once per session is a
-  gate disarmed one word at a time. RC has offered its ~20-line implementation;
-  prefer converging on it over writing a fifth.
-
-- **charter-review-owed - RC's CONVERGENCE CHARTER v1 and REVIEW CHARTER v2 are
-  unreviewed by LW - OPEN (received 2026-09-06).** Both are operator-directed
-  proposals to all five repos: v1 covers broadcast-to-all-five and RC as
-  deadlock adjudicator; v2 supersedes v1 section 0(a) and establishes five-way
-  review on shared changes, with the explicit rule that SILENCE IS NOT
-  AGREEMENT. LW has read only section 0 of v1 and the directive in v2 and has
-  told all five to treat LW as NOT having reviewed them. Read both in full and
-  reply with agreement or dissent - dissent is stated to be the point.
-
-- **sync-inbox-visible-at-session-start - a cross-repo note sits unread until a
-  human mentions it - OPEN (opened 2026-09-06, answering RC's watcher question
-  in `moon_sync_inbox/2026-09-06-2205-from-RC-move-next-session-txt-*.md`).**
-  MEASURED, not assumed: `grep -rl moon_sync_inbox tools/ ops/ scripts/ .claude/`
-  returns nothing - LW has no watcher of any kind on the inbox, and none of the
-  three scheduled tasks (`LW-CIWatchdog`, `LW-Wallpaper`, `LW-WeeklyHygiene`)
-  touches it. RC's 22:05 note was seen at 22:20 only because the operator said
-  items were coming. Design: surface unread items in the existing
-  `tools/lw_facts.py` SessionStart hook. One directory listing, no daemon, no
-  console flash, and it survives `/clear` by construction (a `/clear` IS a
-  session start). **CORRECTED before any code was written (RC, 2026-09-06
-  22:15): the record is a set of seen FILENAMES in
-  `ops/runtime/sync_inbox_seen.json`, NOT an mtime watermark.** A watermark
-  makes "unread" a property of a number that has already moved, so a `/clear`
-  immediately after a session start - an ordinary act, and the exact moment
-  this design delivers - loses the note unrecoverably; a filename set makes
-  "unread" a property of the FILE, so a missed note is still there to find. It
-  also survives mtime-preserving delivery (`cp -p`, `robocopy /COPY:T`,
-  restore-from-backup) and clock skew, each of which a watermark loses in
-  SILENCE - indistinguishable from "no mail", which is the failure class this
-  channel produced twice on 2026-09-06. Settled sub-decisions: the hook REPORTS
-  and never acknowledges (a separate `--mark-inbox-seen` does that, so an
-  unacknowledged note re-reports rather than being lost); acknowledge rewrites
-  the set from the CURRENT listing, so pruning is automatic; `_`-prefixed
-  drafts are excluded; the record lands gitignored under `ops/runtime/`
-  (`.gitignore:66`) as per-machine state; O(notes) growth accepted. The inbox
-  probe goes behind the hook's shared 8s budget and its own try/except - a
-  crashed hook takes the whole live-state block with it, which is worse than a
-  missed mail line. It does NOT beat a poll for latency inside a long-running
-  session; RC's 45s session-scoped poll is the right tool for that and the two
-  compose. Acceptance: a note dropped into the inbox appears in the next
-  session's first context window; acknowledging is idempotent; a note deleted
-  from the inbox leaves no entry behind. Do NOT build a fourth daemon for this.
+- **one-glyph-engine - the banned-glyph rule is declared THREE times - OPEN
+  (opened 2026-09-06, LW's own finding, broadcast to all five in
+  `moon_sync_inbox/2026-09-06-2253-from-LW-REVIEW-charters-*`).** MEASURED:
+  `tools/strip_em_dashes.py` (the CI drift gate), `tools/precommit_gate.py`
+  (the git hook) and `tools/edit_lint_check.py` (the edit-time advisory) each
+  declare the same six codepoints independently. They AGREE today - diffed
+  2026-09-06 - and nothing makes them agree tomorrow. This is RSC's charter
+  row ("one rule must not have two readings") and LW is the counter-example
+  that proves it. The fix shape already exists in this tree and shipped the
+  same night: `precommit_gate.scan_handoff_text` is called by BOTH its
+  enforcement points and `tests/test_handoff_write_gate.py` asserts the
+  function-object IDENTITY rather than agreeing behaviour. Do the same for the
+  glyph set: one declaration, the other two import it, and a test pinning the
+  identity. Acceptance: exactly ONE literal declaration of the six codepoints
+  in the tree, proven by a test that greps for the others and fails on a
+  second. Do NOT settle for a test that merely asserts the three sets are
+  equal - that is agreement, not convergence, and it is what exists now.
 
 - **usm-halo-probe-cuda-oom - one GPU test OOMs on an idle GPU - OPEN
   (found 2026-09-06, unowned).**

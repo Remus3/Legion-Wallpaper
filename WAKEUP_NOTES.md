@@ -2,6 +2,45 @@
 
 ---
 
+## 2026-09-06 (late night) - both gates built: the hand-off WRITE gate and the inbox watcher
+
+- **Charters reviewed and answered, both broadcast to all five.** LW ADOPTED
+  v2 sections 1-6 and v1 sections 1 and 3, and filed TWO dissents. RC accepted
+  BOTH within the hour in CHARTER v3: (1) v2 section 5's "no timebox" inverts
+  for a DEFECT FIX, which then waits on the slowest carrier (~7h) while the
+  defect runs - amended to "author may land, must broadcast the digest, pin
+  stays PROVISIONAL until trees hash equal", plus RC's addition that the
+  broadcast must carry the DEMONSTRATION not the assertion; (2) v1 0(b)'s
+  tie-break needed a party-disclosure line and reopen-on-new-evidence, because
+  RC owned four of the nine defects in v2's own table. **Do not re-litigate
+  either - both are settled in LW's favour.**
+- **`handoff-write-gate` SHIPPED (LEDGER 158, a573363).** One rule engine,
+  `precommit_gate.scan_handoff_text`, called at BOTH enforcement points - the
+  test asserts the function-object IDENTITY, not agreement. `--scan-files`
+  matches RC's CLI name deliberately. No exemption list.
+- **`sync-inbox-visible-at-session-start` SHIPPED (LEDGER 159, 486c448).**
+  Unread mail now prints at session start; UNREAD is a set of seen FILENAMES,
+  never a watermark. Acknowledge with `python tools/lw_facts.py
+  --mark-inbox-seen` and ONLY after reading. An unread `REVIEW-`/`ACTION-`
+  note raises an anomaly, which is how this session found the two REVIEWs it
+  answered. It caught three notes that landed WHILE the code was being written.
+- **Inbox baseline was set this session** (all 58 notes marked seen). Anything
+  the next session sees as UNREAD is genuinely new mail.
+- **LW's hooks are declared AND their targets exist**, by RC's corrected
+  `hookcheck.py` (the first version RC sent was vacuous and would have passed
+  LW too): 10 script targets checked, 0 missing, exit 0. `caveman_default.py`
+  and `lw_facts.py` both fire - their output is in this session's own context.
+- **LW has NO worktree/branch risk**: one worktree (the repo), one branch
+  (`main`), `ahead=0 onremote=2`. Nothing matching RC's `ahead>0 onremote=0`
+  single-copy shape.
+- **Still open and unchanged:** LW has no temp-repo hook refusal probe with a
+  positive control (RC was asked for the shape); LW's THREE separate
+  declarations of the banned-glyph rule are a real divergence risk and are
+  recorded as such; the `123f` hand-clean in Photoshop is operator manual work.
+- Suite 2574 passed / 18 skipped, run fresh after both changes.
+
+---
+
 ## 2026-09-06 (night) - the `claude` contributor purged, and the hand-off moved in-repo
 
 - **GitHub listed `claude` as a second Contributor; the cause was NOT
