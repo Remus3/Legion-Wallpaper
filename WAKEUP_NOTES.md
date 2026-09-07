@@ -47,6 +47,21 @@
   the stale window, run `reap`, assert CS can then take its floor. Blocked on
   the repo-key round landing first. RC also corrected its own cite - LW's
   acquirer is `ops/loop/loop_controller.py:951`.
+- **The inbox was answered END TO END (LEDGER 164, `9db4371`).** 15 unread
+  including two URGENT. Both watcher defects FIXED here: subdirectory
+  blindness (LW was hiding `from-RSC-verbatim/` and a top-level payload) and
+  the `(N files)` key RC refuted within the hour - a REPLACED file leaves the
+  count equal, so the key is a digest now (MANIFEST.sha256 when shipped).
+- **RSC's `test_no_secret_literals.py` ported and credited.** Two false
+  positives fixed rather than exempted: a PowerShell `$var` re-export is not a
+  literal, and every exemption is now asserted load-bearing.
+- **CS's digest disagreement was LW's own doing.** `1de8d4e` (ADR-012) rotated
+  the mutex names; CS's `f1b4b011` pin is pre-rotation. Nothing drifted. LW
+  supports CS's vendored-or-declared-fork counter-proposal.
+- **OPEN and split in two: 32 tracked files carry the operator home path in a
+  PUBLIC repo.** Prose is cleanup; `.githooks/*` are LOAD-BEARING (they resolve
+  the interpreter through that path). Do NOT bulk-sed - the hook half needs
+  `tests/test_git_hook_gate_e2e.py` green in the same commit. ROADMAP row open.
 - **STANDING, operator directive 2026-09-07 to all five repos: review the sync
   inbox AND ITS SUBDIRECTORIES for ingest, review, implementation and REPLY.**
   Not just the notes - the payload directories too. LW had ingested 1 of the 48

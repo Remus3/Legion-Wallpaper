@@ -6,6 +6,24 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **account-path-in-a-public-repo - 32 TRACKED files carry the operator home
+  path - OPEN, and split in two on purpose.** Measured 2026-09-07 after CS
+  found the class in RC's broadcast payload and RC pulled it. LW has it
+  INDEPENDENTLY and LW is public: 12 `.claude/commands/*.md`, 8 in
+  `tools/slice_orchestrator.py`, 5 each in `scripts/wakeup_prune.py` and
+  `tools/repair_mojibake.py`, and the rest across tools and tests.
+  (a) **Prose and tool literals: straight cleanup.** A path in a comment or a
+  docstring buys nothing and can be parameterised or dropped outright.
+  (b) **`.githooks/{pre-commit,commit-msg}` are LOAD-BEARING, not prose** -
+  they resolve `PY="${PYTHON:-C:/Users/<account>/.../python.exe}"` and fall
+  back to `python` on PATH, so this is a change to the gate that guards every
+  commit. Fix by resolving from the environment with the PATH fallback kept,
+  and prove the gate still refuses with `tests/test_git_hook_gate_e2e.py`
+  (which already asserts a real commit is REFUSED, with a positive control).
+  Severity is hygiene and blast radius, not a credential leak - the account is
+  the built-in Windows one and `tests/test_no_secret_literals.py` now proves no
+  tracked file carries a key. Do NOT bulk-sed this; (b) needs the e2e probe green
+  in the same commit.
 - **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
   cheap and both named by RC.** (1) The `reap` arm for a stale
   `reserved-<key>.lock`: plant one older than the stale window, run `reap`,

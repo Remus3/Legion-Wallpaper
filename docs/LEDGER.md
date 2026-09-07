@@ -27,6 +27,78 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+164. DONE **2026-09-07 (the inbox answered end to end: the watcher's two
+   defects fixed, RSC's secret guard ported, CS's digest disagreement diagnosed,
+   and RC's pipeline REVIEW answered; commit 9db4371).**
+
+   **Watcher defect 1 - SUBDIRECTORY BLINDNESS.** `tools/lw_facts.py` globbed
+   top-level `*.md`, so a payload DIRECTORY was invisible. RC found it on its own
+   tree first (it reported zero of the 70 files CS sent) and asked everyone to
+   check what theirs GLOBS. LW had `from-RSC-verbatim/` (7 files) and a
+   top-level `slots.py.proposed-3repo` unreported. Fixed with RC's design: a
+   DIRECTORY is ONE entry, non-`.md` top-level files included, `_`-prefixed
+   still excluded.
+
+   **Watcher defect 2 - THE COUNT KEY.** RC proposed keying the entry on
+   `(N files)` and refuted it within the hour: a sender who REPLACES a file
+   leaves the count equal, so the payload reads as already seen - the mtime
+   watermark in a third costume. The key is a DIGEST now:
+   `MANIFEST.sha256` when the sender ships one (RC's proposed convention),
+   otherwise a walk over (relpath, size, mtime_ns) that needs no sender
+   cooperation. The count stays in the visible text because it is what a reader
+   acts on; it is no longer what the key rests on. 7 tests RED first, including
+   both defects by name.
+
+   **INGESTED from `from-RSC-verbatim/` (the payload the old watcher was
+   hiding): `tests/test_no_secret_literals.py`,** credited to RSC. LW is PUBLIC,
+   so a committed credential is one push from world-readable. RSC's argument for
+   the shape is the durable half: a naive long-random-string rule would flag the
+   sha256 pins that prove three repos carry identical bytes, and a guard people
+   delete is a property nobody checks - so it sweeps for a vendor prefix and for
+   a known secret NAME bound to a literal, over `git ls-files` rather than the
+   disk (LW's real keys live in gitignored files by design). Two false positives
+   fixed rather than exempted away: `tools/gemini_audit.ps1` re-exports the key
+   it read from the machine environment as `$env:GEMINI_API_KEY = $key`, which
+   the detector did not recognise (a bare `$name` is a variable, never a
+   literal), and a fixture file that plants a fake `sk-` literal is exempt by
+   name with the load-bearing assertion parametrized over EVERY exemption.
+
+   **CS's digest disagreement DIAGNOSED, and the cause was LW's own.** CS
+   measured RC's delivered `winmutex.py` at `0b112a4f` against its recorded
+   upstream `f1b4b011` and correctly reported the measurement without a
+   diagnosis. Nothing drifted: commit `1de8d4e` (2026-09-06, ADR-012) rotated
+   the mutex names to opaque strings after RSC reported that the shared files
+   disclosed repo internals through the OS namespace. CS's pin is PRE-rotation.
+   Told CS two things: re-take the fork against `0b112a4f`, and note that the
+   rotation may dissolve part of ADR-0017's rationale, since the names it
+   objects to carrying are now opaque. LW SUPPORTS CS's counter-proposal - bind
+   `slots.py` byte-identically, treat `winmutex.py` as vendored-or-declared-fork
+   with its own pinned digest.
+
+   **PII containment, measured here rather than trusted.** RC pulled its 48-file
+   payload after CS found the operator account path in it (19 of 48, not the 3 CS
+   first reported). LW confirmed nothing from the drop was copied out of the
+   inbox and that both of LW's adaptations are clean. **But LW carries the same
+   class independently: 32 TRACKED files, in a public repo.** Opened as a
+   ROADMAP row split in two, because `.githooks/{pre-commit,commit-msg}` are
+   LOAD-BEARING (they resolve the interpreter through that path) and must not be
+   bulk-sed - the fix has to keep `tests/test_git_hook_gate_e2e.py` green in the
+   same commit.
+
+   **RC's pre-public audit run on LW**, all checks: no credential ever tracked on
+   any ref, no `gist.github.com` in tracked files, no scraped third-party content
+   (the one tracked image is the self-authored social preview), 7.69 MiB packed
+   for the whole history against RC's 619 MB.
+
+   **RC's pipeline REVIEW answered** with measured facts: content is NEVER
+   tracked (the process is the deliverable), ten ADR-003 stages, a 5,635-line
+   append-only `PIPELINE_LOG.md` as the authority record, transactional
+   hash-verified deletion, and the 63-frame reversal recorded as the precedent
+   that made an enumeration a PROPOSAL rather than a licence.
+
+   Replies broadcast to all four inboxes (`2026-09-07-0001`, `2026-09-07-0130`).
+   Suite 2621 passed / 18 skipped.
+
 163. DONE **2026-09-07 (the whole `from-RC-verbatim/` payload reviewed file by
    file, not just the one file the hand-off named; commits df6f5bc + 77650b1).**
    Operator directive tonight, broadcast to all five main sessions: review the

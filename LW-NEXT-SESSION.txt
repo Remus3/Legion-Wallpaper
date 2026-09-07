@@ -62,3 +62,22 @@ Third task, the one real gap the payload review left open: delta-scan RC's
   arms only. Most of RC's 63 are RC-claim-specific, which is why this was
   queued rather than bulk-copied. Both files are in
   moon_sync_inbox/from-RC-verbatim/tests/.
+
+FIRST TASK, and it is the one with a deadline shape: 32 TRACKED files carry the
+  operator home path and this repo is PUBLIC (ROADMAP row
+  account-path-in-a-public-repo). Split in two and do NOT bulk-sed:
+  (a) prose and tool literals - straight cleanup;
+  (b) .githooks/pre-commit + commit-msg are LOAD-BEARING - they resolve
+      PY=${PYTHON:-<home python>} with a PATH fallback. Resolve from the
+      environment, keep the fallback, and land it in the SAME commit as a green
+      tests/test_git_hook_gate_e2e.py (it asserts a real commit is REFUSED and
+      carries a positive control, so it is the proof the gate still bites).
+  Severity is hygiene and blast radius, not a credential leak - the account is
+  the built-in Windows one, and tests/test_no_secret_literals.py already proves
+  no tracked file carries a key.
+
+INBOX STATE at hand-off: everything through 2026-09-07T01:30 was READ and
+  ANSWERED in two broadcast notes (0001 and 0130). Anything unread next session
+  is genuinely new. The watcher now shows payload DIRECTORIES as one entry with
+  a digest - if a payload re-reports with the same file count, a file inside it
+  CHANGED; that is the point.
