@@ -1,33 +1,34 @@
 NEXT SESSION
 ------------
-Shared-file state, VERIFIED by hashing all three trees at 04:55 (not taken on
-report) - re-verify before trusting it, siblings move independently:
-  ops/loop/winmutex.py 0b112a4f - LW + RC + RSC all landed. The mutex ROTATION
-    (ADR-012) is CLOSED and the loop-start block is LIFTED.
-  ops/loop/slots.py    629c3d51 - LW + RC landed. RSC still on 1c4f8af4, which
-    is non-blocking: RSC vendors the file and never acquires. Close the ROADMAP
-    row when RSC lands it.
-  Whether RC/RSC updated their own pinned digest CONSTANTS is theirs to confirm;
-  LW verified the file bytes only. drift_guard reads 0 breaches.
-Task: build ROADMAP `sync-inbox-visible-at-session-start` - surface UNREAD
-  moon_sync_inbox items in the SessionStart hook.
-Context: tools/lw_facts.py is the existing SessionStart hook (shared 8s budget,
-  every probe in its own try/except - keep it that way). Read the ROADMAP row
-  FIRST: the record is a set of seen FILENAMES in
-  ops/runtime/sync_inbox_seen.json, NOT an mtime watermark (corrected by RC
-  before any code was written). The hook REPORTS and never acknowledges; a
-  separate --mark-inbox-seen does, rewriting the set from the current listing so
-  pruning is automatic. Exclude _-prefixed drafts.
-Acceptance: a file dropped into moon_sync_inbox/ appears as unread in the NEXT
-  session's first context window; acknowledging is idempotent; a note deleted
-  from the inbox leaves no entry behind; no daemon; full suite green.
+FIRST: read the two RC charters in moon_sync_inbox (CONVERGENCE CHARTER v1
+  2325, REVIEW CHARTER v2 2340) and reply with agreement or DISSENT. LW has told
+  all five it has NOT reviewed them - silence is explicitly not agreement under
+  v2. Broadcast every reply to all four sibling inboxes (Riot Commander, Resin
+  Compute, Clockspeed, Lanternlight), not point-to-point.
+Task: ROADMAP `handoff-write-gate` - this file is TRACKED in a PUBLIC repo and
+  is the highest-variance artifact in the tree. Gate the WRITE, not just the
+  commit: tools/lw_next_session.py already refuses non-ASCII before writing, so
+  extend that refusal to secrets, user-profile paths and 32-hex literals, using
+  the same engine as the commit-time gate. RC has offered a ~20-line shape -
+  prefer converging on it. Do NOT use a per-session exemption list.
+  Then: ROADMAP `sync-inbox-visible-at-session-start` - surface UNREAD inbox
+  items in the tools/lw_facts.py SessionStart hook. The record is a set of seen
+  FILENAMES in ops/runtime/sync_inbox_seen.json, NOT an mtime watermark; the
+  hook REPORTS and never acknowledges.
+Verified state at 2026-09-06 22:50 - re-verify, siblings move independently:
+  ops/loop/winmutex.py 0b112a4f in LW + RC + RSC (rotation CLOSED, no block)
+  ops/loop/slots.py    629c3d51 in LW + RC; RSC on 1c4f8af4, non-blocking
+  .githooks/commit-msg + pre-commit both 100755; drift_guard 0 breaches
+  LW-NEXT-SESSION.txt scanned clean: ASCII, no hex literals, no user paths
 Do NOT redo, all shipped and pushed tonight:
-  - the Claude co-author trailer purge (LEDGER 154; all 483 shas moved,
-    aa99af3 -> 16bc443; map docs/_archive/2026-09-06-sha-rewrite-map.md)
-  - the hand-off move into the repo root (LEDGER 155)
-  - the mutex rotation + disclosure scrub (LEDGER 156, ADR-012) - operator
-    APPROVED and landed in all three repos
-  - the slots hold() release-path fix (LEDGER 157) - LW authored the bytes
+  - Claude co-author trailer purge (LEDGER 154; 483 shas moved; map in
+    docs/_archive/2026-09-06-sha-rewrite-map.md)
+  - hand-off moved into the repo root (LEDGER 155)
+  - mutex rotation + disclosure scrub (LEDGER 156, ADR-012) - operator approved
+  - slots hold() release-path fix (LEDGER 157) - LW authored the bytes
+Known-wrong, do not be confused by it: LW's sync notes from tonight are stamped
+  ~6 hours ahead of the box clock. Content is accurate, labels are not; the
+  correction table was broadcast to all five.
 Also open, unchanged: the 123f hand-clean (veil stage) in Photoshop - operator
   manual work.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
