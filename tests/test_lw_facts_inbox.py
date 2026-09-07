@@ -570,3 +570,86 @@ def test_a_withdrawal_alone_still_reports_when_nothing_is_unread(tmp_path):
     lines = _probe(box, rec)
     assert any("0 unread" in ln for ln in lines), lines
     assert any("WITHDRAWN" in ln for ln in lines), lines
+
+
+# ---------------------------------------------------------------------------
+# 7. the digest key is a CONTENT key - not a size key, not an mtime key
+# ---------------------------------------------------------------------------
+#
+# CS attacked the SUITE rather than the module on 2026-09-07 and found the
+# defect that every digest-key suite on this channel shipped at once: an arm
+# that proves "an edited note re-reports" edits the file, and an edit moves the
+# content, the size AND the mtime together, so the arm pins none of the three.
+#
+# Measured here before these arms existed, by mutating the shipped functions:
+#
+#   note digest    -> st_mtime_ns   KILLED   (the seen-file-new-mtime arm)
+#   payload digest -> st_size       SURVIVED 42 passed
+#   payload digest -> st_mtime_ns   SURVIVED 42 passed
+#
+# So LW's note leg was already sound and its PAYLOAD leg was green against both
+# a size key and an mtime key. The second of those is a mutant CS did not name.
+#
+# The technique is to hold everything else constant: edit IN PLACE at constant
+# byte length, then restore the timestamp. RSC's Windows caveat is why the
+# mtime is asserted to have MOVED before it is restored - filesystem timestamp
+# resolution is coarse enough that a fast rewrite can land on the same mtime by
+# accident, and an arm that restores an mtime that never moved is unarmed and
+# passes for the wrong reason.
+
+
+def _edit_holding_size_and_mtime(path, new_body: str) -> None:
+    """Rewrite `path` at CONSTANT byte length with its original mtime restored.
+
+    Bytes, never `write_text`: on Windows a text-mode write turns LF into CRLF,
+    so a "constant length" body silently gains a byte and the arm fails on the
+    seed rather than on the property. Same trap the shared-file pin is on.
+    """
+    before = path.stat()
+    payload = new_body.encode("ascii")
+    assert len(payload) == before.st_size, (
+        f"the arm is not constant-length: {len(payload)} vs {before.st_size}")
+    path.write_bytes(payload)
+    moved = path.stat().st_mtime_ns
+    assert moved != before.st_mtime_ns, (
+        "the rewrite did not move the mtime, so restoring it proves nothing - "
+        "this arm would pass against an mtime key for the wrong reason")
+    import os
+    os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
+    assert path.stat().st_mtime_ns == before.st_mtime_ns
+    assert path.stat().st_size == before.st_size
+
+
+def test_a_note_edited_at_constant_size_and_mtime_still_re_reports(tmp_path):
+    box = _inbox(tmp_path, "a.md")
+    note = box / "a.md"
+    note.write_bytes(b"aaaa" + NEWLINE.encode())
+    rec = _record(tmp_path, ["a.md"], box=box)
+    assert "UNREAD" not in "".join(_probe(box, rec))
+
+    _edit_holding_size_and_mtime(note, "bbbb" + NEWLINE)
+    assert "1 UNREAD" in "".join(_probe(box, rec)), (
+        "an edit invisible to size and mtime must still re-report - "
+        "otherwise the key is not a CONTENT key")
+
+
+def test_a_payload_file_edited_at_constant_size_and_mtime_still_re_reports(tmp_path):
+    """The leg that was measurably green against a size key AND an mtime key.
+
+    The concrete miss CS names: a payload file going from a value meaning allow
+    to one meaning deny at identical length. Nothing about that is exotic - it
+    is one byte of a config, and the watcher would have said the drop was
+    unchanged.
+    """
+    box = _payload(tmp_path, "from-RC-verbatim", "a.py")
+    target = box / "from-RC-verbatim" / "a.py"
+    target.write_bytes(b"MODE = 'allow'" + NEWLINE.encode())
+    rec = tmp_path / "sync_inbox_seen.json"
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert "UNREAD" not in "".join(_probe_r(box, rec, rep))
+
+    _edit_holding_size_and_mtime(target, "MODE = 'deny*'" + NEWLINE)
+    assert "1 UNREAD" in "".join(_probe_r(box, rec, rep)), (
+        "a payload edited at constant size and mtime must re-report")
