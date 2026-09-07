@@ -155,7 +155,7 @@ the list.
 | Worktrees | RC hardcodes `C:\rc-worktrees` | `<base>\<run_id>\<slice>` per run |
 | Gemini CLI quota | YES - one metered account | serialize via named mutex (below) |
 | Anthropic rate limit | YES - one account | slot governor (below) |
-| GPU (LW upscale / cleaning CUDA) | YES - one 5070 | named mutex `Global\LW_GPU` |
+| GPU (LW upscale / cleaning CUDA) | YES - one 5070 | named mutex `winmutex.GPU_MUTEX` |
 | Scheduled tasks spawning CLIs | YES - RC-GeminiAudit 03:00, RC-WeeklyHygiene Sun 04:17 | take a slot like any lane |
 | Ports | no - RC 8893/8888, LW none | unchanged |
 
@@ -179,12 +179,15 @@ long merge in one repo does not starve the other.
 
 `ops/loop/winmutex.py` - thin `CreateMutexW` / `WaitForSingleObject` wrapper via ctypes.
 
-- `Global\LWRC_GEMINI` - held around each adjudicator call. Gemini is one metered account;
-  two concurrent director calls burn quota in parallel and can trip RESOURCE_EXHAUSTED,
-  which the failover logic would then misread as real exhaustion and stickily swap the
-  backend for the rest of the run. Serializing is cheap (director calls are seconds).
-- `Global\LW_GPU` - held by any directive step that touches CUDA (LW upscale, cleaning,
-  lw-gen). Acquired by the tool, not the loop, so manual runs are protected too.
+- `winmutex.GEMINI_MUTEX` - held around each adjudicator call. The backend is
+  single-tenant, so two concurrent calls interfere. Serializing is cheap (director
+  calls are seconds). The specific failure mode is deliberately not described here.
+- `winmutex.GPU_MUTEX` - held by any directive step that touches CUDA (LW upscale,
+  cleaning, lw-gen). Acquired by the tool, not the loop, so manual runs are protected too.
+
+The name VALUES are opaque and are not reproduced in the docs - read them from
+`ops/loop/winmutex.py`. Rotated 2026-09-07 (ADR-012); anything in this repo dated
+before that names the retired pair.
 
 Abandoned-mutex (`WAIT_ABANDONED`) is treated as acquired-with-warning and logged; a
 crashed holder must not deadlock the other repo.

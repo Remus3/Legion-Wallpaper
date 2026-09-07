@@ -362,9 +362,18 @@ SHARED_SHA256 = {
     # digest forever - do not chase it.
     # Previous: 5297f2d041030398a9ba240aad527b2b01a86d6e7f57a196719af8f0a91cb0a6
     "slots.py": "1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492",
-    # re-pinned 2026-07-26 for f1-phase6 item 9 (POSIX branch now emits
-    # UNSERIALIZED); previous c21bfe4f309c9ed27e68f7cdf0458d001a9942e6a35c61869e6dedd16cc23b79
-    "winmutex.py": "f1b4b011112685efb88616c52752657cf896fbb0993b2d2d264e7b3edde8b4f4",
+    # Re-pinned 2026-09-07 (ADR-012): the two mutex NAMES are rotated to opaque
+    # strings and the header prose that described the vendor and a failover
+    # defect is scrubbed. This one is NOT docstring-only - the name VALUES move,
+    # which is the one change in this file that can silently break mutual
+    # exclusion, so it was made with every loop STOPPED (verified: zero
+    # loop_controller processes, empty slots bucket) and it must be pinned in
+    # every sibling BEFORE any loop starts. Bytes authored HERE, hashed from
+    # this disk, handed to RC and RSC verbatim. PROVISIONAL until both copy
+    # them; drift_guard reporting divergence until then is the expected
+    # transient, exactly as in the 2026-09-06 re-pin.
+    # previous f1b4b011112685efb88616c52752657cf896fbb0993b2d2d264e7b3edde8b4f4
+    "winmutex.py": "0b112a4f6bfa88cf5f537f8869225c1821ebfe97428b1e899979797ddd71a61e",
 }
 
 
@@ -559,8 +568,8 @@ def test_posix_no_op_branch_survives_a_caller_that_passes_no_log(monkeypatch):
 
 def test_mutex_names_are_the_shared_contract():
     """Both repos must use the SAME names or they serialize against nothing."""
-    assert winmutex.GEMINI_MUTEX == "Global\\LWRC_GEMINI"
-    assert winmutex.GPU_MUTEX == "Global\\LW_GPU"
+    assert winmutex.GEMINI_MUTEX == "Global\\MX-7C41A9E2"
+    assert winmutex.GPU_MUTEX == "Global\\MX-2E58D3B6"
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="windows mutex semantics")

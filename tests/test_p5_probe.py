@@ -24,7 +24,7 @@ p5 = importlib.util.module_from_spec(_spec)
 sys.modules["lw_p5_probe_under_test"] = p5
 _spec.loader.exec_module(p5)
 
-G = "Global\\LWRC_GEMINI"
+G = "Global\\MX-7C41A9E2"
 
 
 def _log(*rows: str) -> str:
@@ -132,3 +132,30 @@ def test_slot_wait_longer_than_deadline_fails(tmp_path: Path):
           _acq("20:30:01"), _rel("20:30:02")]
     assert _run(tmp_path, lw, [_cycle("20:00:05"), _acq("20:00:06"),
                                _rel("20:00:07")]) == 1
+
+
+# ---------------------------------------------------------------------------
+# the judge must key on the mutex VALUE, not on a descriptive fragment of it
+# ---------------------------------------------------------------------------
+def test_the_judge_reads_the_mutex_name_from_winmutex():
+    """ADR-012 made the names opaque. A substring match like "GEMINI" would then
+    match NOTHING, and the judge would find zero windows and zero unpaired holds
+    and call condition 4 green on no evidence - a vacuous pass, which is the
+    exact failure class this probe was written to close."""
+    wm_spec = importlib.util.spec_from_file_location(
+        "lw_winmutex_under_test", ROOT / "ops" / "loop" / "winmutex.py")
+    wm = importlib.util.module_from_spec(wm_spec)
+    wm_spec.loader.exec_module(wm)
+    assert p5.ADJUDICATOR_MUTEX == wm.GEMINI_MUTEX
+    assert G == wm.GEMINI_MUTEX, "this test file pins a stale mutex name"
+
+
+def test_a_window_logged_under_a_different_mutex_is_not_counted():
+    """Matching is by value: the GPU mutex, or a retired name, must not read as
+    an adjudicator window."""
+    other = "Global\SOME-OTHER-NAME"
+    rows = _log(
+        f"2026-07-26T00:00:01 winmutex: ACQUIRED {other}",
+        f"2026-07-26T00:00:09 winmutex: RELEASED {other}",
+    ).splitlines()
+    assert p5.gemini_windows(rows) == []

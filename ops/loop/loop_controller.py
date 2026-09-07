@@ -500,11 +500,10 @@ def _err_summary(txt, cap=400):
     return (" | ".join(hits) if hits else txt)[:cap]
 
 def gemini(prompt_body, instruction):
-    """Serialized machine-wide: Gemini is ONE metered account. Two concurrent
-    director calls burn quota in parallel and can trip RESOURCE_EXHAUSTED, which
-    the failover logic would misread as real credit exhaustion and stickily swap
-    the backend for the rest of the run. Director calls are seconds, so the
-    serialization costs nothing."""
+    """Serialized machine-wide: the director backend is single-tenant, so two
+    concurrent calls interfere. Director calls are seconds, so the
+    serialization costs nothing. The failure mode this prevents is deliberately
+    not described here - see ADR-012."""
     with winmutex.hold(winmutex.GEMINI_MUTEX, log=log):
         return _gemini_call(prompt_body, instruction)
 

@@ -300,7 +300,7 @@ def test_the_two_lw_clean_tools_reuse_one_copy_rather_than_forking_it():
 class _FakeWinmutex:
     """Stand-in for ops/loop/winmutex.py that records what it was asked to do."""
 
-    GPU_MUTEX = "Global\\LW_GPU"
+    GPU_MUTEX = "Global\\MX-2E58D3B6"
 
     class MutexTimeout(RuntimeError):
         pass
@@ -360,7 +360,7 @@ def test_cuda_path_takes_the_mutex_and_logs_the_window(mod, monkeypatch):
     fake, lines = _wire(mod, monkeypatch)
     with mod.gpu_lock("cuda") as handle:
         assert handle == "handle"
-    assert [c["name"] for c in fake.calls] == ["Global\\LW_GPU"]
+    assert [c["name"] for c in fake.calls] == ["Global\\MX-2E58D3B6"]
     assert any("ACQUIRED" in ln for ln in lines)
     assert any("RELEASED" in ln for ln in lines)
 
@@ -516,7 +516,7 @@ def test_path_binding_reaches_the_real_winmutex():
     import failure, it would do so SILENTLY.
     """
     wm = g1._winmutex()
-    assert wm.GPU_MUTEX == "Global\\LW_GPU"
+    assert wm.GPU_MUTEX == "Global\\MX-2E58D3B6"
     assert issubclass(wm.MutexTimeout, RuntimeError)
 
 
@@ -843,7 +843,7 @@ def test_qa_batch_takes_exactly_one_hold_for_the_whole_candidate_list(tmp_path,
     scorer = _StubScorer("cuda")
     genqa.score_batch(str(_qa_batch(tmp_path, n=3)), scorer=scorer, config={})
     assert scorer.calls == 3
-    assert [c["name"] for c in fake.calls] == ["Global\\LW_GPU"], (
+    assert [c["name"] for c in fake.calls] == ["Global\\MX-2E58D3B6"], (
         f"expected ONE hold for the batch, got {len(fake.calls)}")
     assert any("ACQUIRED" in ln for ln in lines)
 
@@ -880,7 +880,7 @@ def test_weapon_crop_report_holds_only_for_a_cuda_scorer(monkeypatch):
     genqa.weapon_crop_report("ignored.png", _StubScorer("cpu"))
     assert fake.calls == []
     genqa.weapon_crop_report("ignored.png", _StubScorer("cuda"))
-    assert [c["name"] for c in fake.calls] == ["Global\\LW_GPU"]
+    assert [c["name"] for c in fake.calls] == ["Global\\MX-2E58D3B6"]
 
 
 # ---- nesting + timeout semantics, against the REAL winmutex -----------------
@@ -888,7 +888,7 @@ def test_weapon_crop_report_holds_only_for_a_cuda_scorer(monkeypatch):
 class _NamedShim:
     """The real winmutex, renamed.
 
-    Exercising nesting against the live Global\\LW_GPU would contend with any
+    Exercising nesting against the live Global\\MX-2E58D3B6 would contend with any
     generation actually running on this machine, so these tests take a
     process-unique name through the same code path instead. The primitive under
     test is identical; only the string differs.
@@ -918,7 +918,7 @@ def test_nested_same_thread_acquisition_does_not_deadlock(monkeypatch):
     seconds instead of hanging the suite for the production 1800.
     """
     real = g1._winmutex()
-    name = f"Global\\LW_GPU_NESTTEST_{os.getpid()}"
+    name = f"Global\\MX-2E58D3B6_NESTTEST_{os.getpid()}"
     for mod in (g1, genrun):
         monkeypatch.setattr(mod, "_winmutex", lambda r=real, n=name: _NamedShim(r, n))
         monkeypatch.setattr(mod, "_gpu_log", lambda _msg: None)
@@ -948,7 +948,7 @@ def test_the_timeout_bounds_the_WAIT_not_the_HOLD(monkeypatch):
     30 minute mark with no other test noticing.
     """
     real = g1._winmutex()
-    name = f"Global\\LW_GPU_WAITTEST_{os.getpid()}"
+    name = f"Global\\MX-2E58D3B6_WAITTEST_{os.getpid()}"
     monkeypatch.setattr(g1, "_winmutex", lambda: _NamedShim(real, name))
     monkeypatch.setattr(g1, "_gpu_log", lambda _msg: None)
     monkeypatch.setattr(g1, "GPU_MUTEX_TIMEOUT_S", 0.01)

@@ -23,7 +23,7 @@ root under tmp_path, so the machine-wide bucket at
 `C:\\ProgramData\\lw-loop\\slots` is never touched.
 
 The GPU serialization test deliberately uses a TEST-ONLY mutex name rather than
-`winmutex.GPU_MUTEX`. Taking the real `Global\\LW_GPU` here would either block on
+`winmutex.GPU_MUTEX`. Taking the real `Global\\MX-2E58D3B6` here would either block on
 a live sibling run or starve one, which is a side effect a test has no business
 having.
 """
@@ -188,7 +188,7 @@ def test_a_stale_lock_is_reaped_under_live_contention(tmp_path):
 def test_the_gpu_mutex_serializes_three_processes_to_one(tmp_path):
     """Slots admit three; the GPU mutex must admit exactly one.
 
-    Test-only mutex name on purpose - taking the real Global\\LW_GPU would block
+    Test-only mutex name on purpose - taking the real Global\\MX-2E58D3B6 would block
     on, or starve, a live sibling run.
     """
     name = "Global\\LW_TEST_3WAY_" + str(int(time.time() * 1000) % 10_000_000)

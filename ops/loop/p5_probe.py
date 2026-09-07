@@ -19,6 +19,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import sys
@@ -27,6 +28,26 @@ from pathlib import Path
 
 SLOT_ROOT = Path(r"C:\ProgramData\lw-loop\slots")
 TS = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})")
+
+
+def _adjudicator_mutex_name() -> str:
+    """Read the name out of winmutex rather than hardcoding a fragment of it.
+
+    The names are OPAQUE by ADR-012, so matching a descriptive substring like
+    "GEMINI" stops matching anything the moment a name rotates - and this judge
+    would then find zero windows, zero unpaired holds, and report condition 4
+    GREEN on no evidence at all. That is precisely the silent-pass class this
+    file exists to close, so the coupling is to the VALUE and an import failure
+    is loud rather than defaulted.
+    """
+    src = Path(__file__).resolve().parent / "winmutex.py"
+    spec = importlib.util.spec_from_file_location("_lw_winmutex_for_p5", src)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.GEMINI_MUTEX
+
+
+ADJUDICATOR_MUTEX = _adjudicator_mutex_name()
 
 
 def sample(out: Path, interval: float, seconds: float, root: Path) -> int:
@@ -63,9 +84,9 @@ def gemini_windows(log_lines: list[str]) -> list[tuple[float, float]]:
     """ACQUIRED/RELEASED pairs for the gemini mutex, as epoch windows."""
     out, open_at = [], None
     for ln in log_lines:
-        if "winmutex: ACQUIRED" in ln and "GEMINI" in ln:
+        if "winmutex: ACQUIRED" in ln and ADJUDICATOR_MUTEX in ln:
             open_at = _epoch(ln)
-        elif "winmutex: RELEASED" in ln and "GEMINI" in ln and open_at is not None:
+        elif "winmutex: RELEASED" in ln and ADJUDICATOR_MUTEX in ln and open_at is not None:
             end = _epoch(ln)
             if end is not None:
                 out.append((open_at, end))
@@ -160,8 +181,8 @@ def judge(lw: Path, rc: Path, samples: Path, max_slots: int, deadline: float) ->
     unser = [x for x in lwl + rcl if "winmutex: UNSERIALIZED" in x]
 
     def unpaired(lines):
-        a = len([x for x in lines if "winmutex: ACQUIRED" in x and "GEMINI" in x])
-        r = len([x for x in lines if "winmutex: RELEASED" in x and "GEMINI" in x])
+        a = len([x for x in lines if "winmutex: ACQUIRED" in x and ADJUDICATOR_MUTEX in x])
+        r = len([x for x in lines if "winmutex: RELEASED" in x and ADJUDICATOR_MUTEX in x])
         return a - r
 
     up_lw, up_rc = unpaired(lwl), unpaired(rcl)
