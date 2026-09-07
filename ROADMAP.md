@@ -6,6 +6,30 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **dwpose-cuda-parity - re-measure the localizer numbers that were taken on the
+  CPU provider (opened 2026-09-06, LEDGER 148).** DWPose now binds the CUDA
+  execution provider, and CUDA and CPU kernels are not bit-identical. LEDGER 19's
+  headline "5/6 wrist-on-weapon vs OpenPose 1/6" was measured on CPU. One frame
+  gave identical keypoints on both providers, which is parity evidence of exactly
+  one image and is NOT enough to carry the old number forward. Re-run the
+  recall_gate samples on both providers and compare; `LW_ORT_PROVIDER=cpu` forces
+  the old path without a reinstall, so this is a measurement, not a migration.
+  Acceptance: the 5/6 claim is either confirmed under CUDA or restated with the
+  new number. Do NOT re-litigate the localizer CHOICE - LEDGER 19 settled DWPose
+  over OpenPose and SDPose, and only the provider changed.
+
+- **golden-overtarget-refreeze - one stale baseline needs an operator blessing
+  (opened 2026-09-06, LEDGER 149).** The 12-case golden regress passes 11 and
+  flags `1341679-banding` on `lap_ratio` (1.23367 vs 1.42409). It is NOT a
+  regression and NOT the driver: that case's 4096x2305 source takes the G0
+  over-target downscale-only branch, and its baseline was frozen 64 minutes
+  BEFORE that branch landed (`37741ea` then `6cffc3d`), so the baseline came from
+  the AI-4x path that case no longer takes. Re-freezing is a blessing call, which
+  is why it was not done unilaterally. Note that `pipeline_version` now correctly
+  reports the manifest as drifted (`ed249af6` vs `6d43a6d4`) because the USM
+  default moved on 2026-08-02 and the hash finally sees it - so a re-freeze
+  should decide the USM question at the same time rather than separately.
+
 - **clean-zero-watermark - the acceptance standard is ZERO watermark; ghost,
   banding and faint residue all FAIL (operator, 2026-08-22). All five tracks are
   now RESOLVED; the detail lives in the decision docs, not here.** The bar is

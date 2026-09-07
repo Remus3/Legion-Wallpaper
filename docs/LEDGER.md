@@ -27,6 +27,151 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+150. DONE **2026-09-06 (a renamed sibling repo must go red, not quiet; `1998e2b`).**
+   Premise VERIFIED from this disk before acting: RC reported (Amberstone
+   `e752e4edc`) that LW's root rename silently disarmed RC's cross-repo guards
+   for ~3 hours - RC held `LW_ROOT = C:\LegionWallpaper`, so after `81de837`
+   both guards took their skip-when-absent branch and compared NOTHING, moving
+   RC's suite 28 passed/0 skipped to 25/3 while staying GREEN. The bytes agreed
+   throughout, so nothing broke; that is the uncomfortable part, not the
+   reassuring one. Independently confirmed here: `slots.py` `1c4f8af4...` and
+   `winmutex.py` `f1b4b011...` are byte-equal across LW, RC and RSC, and
+   `C:\Resin Compute\ops\loop\` exists, so the ordered round is through all
+   three trees. LW carried the identical structure aimed at `C:\Riot Commander`
+   (`tests/test_loop_concurrency.py`, `tools/drift_guard.py:194`). TDD RED-first:
+   5 tests written against a non-existent `resolve_sibling_root`, all failing,
+   then implemented. It folds a directory name to what survives a re-spelling
+   (case, spaces, hyphens) and returns present / renamed / absent: `renamed` is
+   a BREACH in drift_guard and an assertion failure in the test, `absent` still
+   skips (a CI runner without the tree is not a defect), and an unrelated
+   neighbour is not mistaken for a rename. Both real shapes pinned - hyphenation
+   and the space-to-nospace form that actually happened. Scope call: NOT
+   "stop hardcoding the sibling path" - RC's own note says that is too broad and
+   `tests/test_three_way_concurrency.py` is already immune by being
+   self-contained on its own ROOT. FUTURE / do-not-redo: the transferable rule is
+   (a) a guard whose target can move must tell moved from missing, and (b) the
+   renaming party sweeps the SIBLING's constants in the rename commit - neither
+   side did that for the other. Reply filed to RC's inbox. Verified: ruff clean,
+   2516 passed / 18 skipped, `drift_guard` 0 breaches.
+
+149. DONE **2026-09-06 (golden regress answers the driver question; USM pinned to
+   the definition site; `5715cf0`).** Ran the full 12-case golden regress to test
+   whether the NVIDIA driver bump 610.62 -> 616.56 moved first-pass output.
+   RESULT: it did not - 11 of 12 pass within epsilon. The single flag
+   (`1341679-banding`, `lap_ratio` 1.23367 vs baseline 1.42409, 13.4% > 5%) is on
+   the ONLY case that never touches the GPU: its 4096x2305 source covers the
+   2560x1440 target so `first_pass` takes the G0 over-target downscale-only
+   branch (0.4s against ~32s for the others). Its baseline PREDATES that branch -
+   the golden set froze at `2026-07-05T04:39:42Z` (`37741ea`) and the gate landed
+   64 minutes later in `6cffc3d` - so the baseline was made by the AI-4x path and
+   every run since takes downscale-only. Stale baseline, not a regression, not the
+   driver. Premise CORRECTED twice: (a) `tests/test_lw_golden.py` does NOT
+   exercise the GPU - it tests the freeze/regress tool against tmp_path in 0.06s,
+   so running it before and after a driver change proves nothing; the real
+   baseline is `data/golden/golden_set.json`, which was frozen under the old
+   driver and therefore was never lost by updating first. (b)
+   `_pinned_from_config` HARDCODED the USM recipe `{1.2, 70, 3}` while
+   `lw_upscale.USM_DEFAULT` moved to percent 35 on 2026-08-02, so
+   `pipeline_version` reported "unchanged" straight through a real sharpening
+   change - a version hash blind to the version moving, the same failure mode as
+   a restated port literal. TDD RED-first, then fixed by reading the definition
+   site via `_pinned_usm()` (imports `lw_upscale`, which is PIL + numpy + stdlib
+   at module top level, so the module stays CI-importable without torch); `pv`
+   now correctly reads `ed249af6` against the manifest's `6d43a6d4`. The regress
+   run itself had to pin USM to 70 by hand or the sharpening change would have
+   been read as driver drift across all 12. FUTURE: re-freezing the over-target
+   case is a BLESSING call and is deliberately left to the operator. Verified:
+   ruff clean, 2511 passed / 18 skipped.
+
+148. DONE **2026-09-06 (DWPose onto the GPU, and into the GPU mutex; `0cce31a` +
+   `6f07bd5`).** Premise VERIFIED and then found INCOMPLETE: `.venv-gen` did carry
+   the CPU-only `onnxruntime` 1.27.0, but swapping the wheel alone would NOT have
+   moved a single node. Three things had to be true and only the first was
+   reported. (1) The wheel: now `onnxruntime-gpu` 1.27.0 CUDA-12 plus
+   `nvidia-cudnn-cu12` 9.25. The build matters - the default PyPI
+   `onnxruntime-gpu` is CUDA 13 against torch cu128, and a first install using
+   `--extra-index-url` duly took it and failed with "Require cuDNN 9.* and
+   CUDA 13.*"; reinstalled from the onnxruntime-cuda-12 index with `--no-deps` so
+   pip cannot substitute. (2) `tools/lw_gen_localizer_eval.py` HARDCODED
+   `["CPUExecutionProvider"]` - the provider list is what binds a session, so the
+   GPU package changed nothing. CUDA now goes first, filtered against what ORT
+   actually has, with `LW_ORT_PROVIDER=cpu` as an escape hatch since CUDA and CPU
+   kernels are not bit-identical. (3) The DLL search path, where the obvious fix
+   is the wrong one: MEASURED that `os.add_dll_directory` alone leaves the session
+   on CPU and ctypes-preloading `cudnn64_9.dll` does too, while adding the same
+   directories to PATH binds CUDA. ORT fails to load its CUDA provider and falls
+   back SILENTLY - no exception, and `get_available_providers()` still lists CUDA -
+   so following the original advice would have shown a healthy provider list while
+   every node still ran on the 7700X. TDD RED-first on both helpers (hermetic:
+   availability and site-packages layout injected, so the policy asserts identically
+   on a GPU-less runner). MEASURED 0.29s -> 0.03s per image; the 38s first run was
+   one-time sm_120 PTX JIT which the driver caches (next processes 2.0s then
+   0.55s), so break-even is ~3 images, not the ~146 the cold number implied. COST:
+   DWPose was exempt from the machine-wide GPU mutex BECAUSE it ran on CPU;
+   `tests/test_gpu_mutex_wiring` caught the change immediately. `dwpose_backend`
+   now holds `GPU_MUTEX` across building the sessions (that allocation is itself
+   GPU work) and both inference calls, with `cv2.imread` outside it. The exemption
+   comment cited LEDGER 19 as settling "onnx-CPU" - LEDGER 19 settled the
+   LOCALIZER CHOICE, not the execution provider, and the CPU provider was an
+   accident of the installed wheel; the comment now says so. FUTURE / not
+   established: LEDGER 19's 5/6 wrist-on-weapon was measured on the CPU provider
+   and one frame gave identical keypoints on both - parity evidence of exactly one
+   image. Verified: ruff clean, 2510 passed / 18 skipped.
+
+147. DONE **2026-09-06 (the `.git` directory destroyed by the move, rebuilt from
+   origin; docs-only + memory).** After the root move the tree arrived complete
+   (46 entries) with NO `.git`, and the three `C:\` helper files were gone too.
+   Root cause established, not guessed: `.git` carries the Windows HIDDEN
+   attribute (confirmed on two sibling repos) while `.gitignore`,
+   `.gitattributes`, `.githooks`, `.github` and `.claude` do not, so a copy that
+   skipped hidden items took the whole project and dropped exactly the repository -
+   damage that reads as "never a repo" rather than as a failed copy. No `$R`
+   directory in the Recycle Bin, so nothing to undelete. Recovered from origin
+   with `init -b main` + `remote add` + `fetch` + `reset --mixed origin/main`,
+   which restores HEAD and index WITHOUT touching a single working file, so
+   untracked and gitignored content (images, the four venvs, API keys) survived:
+   HEAD back at `a019586` with ZERO differences against `origin/main`, proving no
+   tracked content was lost. `core.hooksPath` had to be reinstalled separately - it
+   lived in the destroyed config and is not restored by the above; verified with
+   `tools/install_git_hooks.py --check`, never by looking at whether a hook file
+   exists. Reflog, stashes and local-only branches are gone for good. FUTURE:
+   prefer a real rename (`os.rename`, `move`) over copy-then-delete - a rename
+   cannot skip a hidden child. Recorded as memory `reference-git-dir-is-hidden`.
+
+146. DONE **2026-09-06 (local root re-spelled to `C:\Legion Wallpaper` with a real
+   space; RM and RSC inbox round; `1ef672e` + `81de837` + `a019586`).** Two
+   deliberate spellings that must not be "fixed" into each other: the local root
+   holds a SPACE (matching the operator's `C:\Resin Compute`) while the GitHub repo
+   keeps the hyphen as `Remus3/Legion-Wallpaper`, because a repo name cannot contain
+   one. The sweep is therefore anchored on the drive letter rather than the bare
+   name, so the repo name and the agent project slug `C--Legion-Wallpaper` both
+   survive untouched: 177 path spellings over 60 files. Three forms a plain replace
+   gets wrong were handled - a hook command in `.claude/settings.json` carries FOUR
+   backslashes (JSON escaping over an already-escaped shell string); `file://` URLs
+   need the space percent-encoded; and a bare `Legion-Wallpaper` token is ambiguous,
+   resolved case by case, of which two were functional path fragments (a
+   `fake_runner` matcher key and a process-commandline glob in `launch_loop.ps1`
+   that would otherwise match no running loop) and the rest prose naming the
+   project. A space is only dangerous unquoted, so all 17 bare command sites were
+   quoted, with escaped quotes inside a `schtasks /TR "..."` wrapper. Machine state
+   migrated with it: three agreeing `~/.claude.json` trust spellings, the agent
+   memory directory, and the three `LW-*` scheduled tasks (quoting `-File`, which
+   powershell would otherwise read as `-File C:\Legion` plus a stray positional).
+   The move itself cannot run from inside an open session - Windows refuses to
+   rename a directory that is a live process's cwd - which was proven by 180s of
+   1-second retries from a session-0 scheduled task never winning a gap. INBOX
+   ROUND, both verified against this tree first as RM asked: `ops/loop/slots.py`
+   now names Resin Compute where it named Red Moon (docstring only,
+   `MAX_CONCURRENT_SLOTS` still 3 - the bucket models one Anthropic account and the
+   participant count did not change), re-pinned from this disk to
+   `1c4f8af4...58c492` with the old `5297f2d0...` confirmed present before the edit;
+   and `RSC: 8790-8809` recorded in `tools/lw_ports.py` FORBIDDEN as the seventh
+   block, TDD RED-first on the contract assertion. LW binds nothing in that band -
+   checked against source, the registry and all three task definitions. `RM:
+   8770-8789` stays declared though Red Moon is archived, because Amberstone's
+   `core/ports.py` still declares `RM_BLOCK = range(8770, 8790)`. Verified: ruff
+   clean, 2501 passed / 19 skipped.
+
 145. DONE **2026-09-06 (the license question, answered by refusing its premise;
    plus the repo-visibility levers; `511f1d8` + docs sync).** Suite 2501 passed /
    18 skipped / 1 pre-existing GPU failure, ruff clean, `drift_guard` 0 breaches,
