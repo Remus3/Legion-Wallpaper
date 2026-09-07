@@ -164,6 +164,21 @@ def _real_compute_metrics(input_path, output_path):
     }
 
 
+def _pinned_usm():
+    """The USM recipe that goes into pipeline_version, read from the DEFINITION
+    SITE rather than restated here.
+
+    It WAS a hardcoded {1.2, 70, 3}. lw_upscale.USM_DEFAULT moved to percent 35
+    on 2026-08-02 and this copy did not, so pipeline_version reported
+    "unchanged" across a real sharpening change - the exact failure a version
+    hash exists to prevent. lw_upscale is PIL + numpy + stdlib at module top
+    level, so importing it here keeps this module CI-importable.
+    """
+    from tools import lw_upscale as up
+    radius, percent, threshold = up.USM_DEFAULT
+    return {"radius": radius, "percent": percent, "threshold": threshold}
+
+
 def _pinned_from_config(model_path):
     import torch
 
@@ -173,7 +188,7 @@ def _pinned_from_config(model_path):
         "model_sha256": _sha256_file(model_path),
         "backend": "spandrel", "torch": torch.__version__,
         "target": [2560, 1440],
-        "usm": {"radius": 1.2, "percent": 70, "threshold": 3},
+        "usm": _pinned_usm(),
         "thresholds": g1.DEFAULT_G1_THRESHOLDS,
     }
 

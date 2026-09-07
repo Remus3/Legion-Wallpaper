@@ -118,3 +118,23 @@ def test_gitignore_has_golden_rules():
 def test_real_compute_metrics_smoke():
     pytest.importorskip("pyiqa")  # skips in CI and on system python
     assert callable(lw_golden._real_compute_metrics)
+
+
+def test_pinned_usm_tracks_the_live_upscaler_default():
+    """pipeline_version must be pinned against the DEFINITION SITE, not a
+    restated literal.
+
+    _pinned_from_config hardcoded {radius 1.2, percent 70, threshold 3} while
+    lw_upscale.USM_DEFAULT moved to percent 35 on 2026-08-02. A hardcoded copy
+    makes pipeline_version report "unchanged" through a real pipeline change,
+    which is the whole thing it exists to detect - the same failure mode as
+    `assert MONITOR == 8901` passing forever while the server moves.
+
+    Found 2026-09-06 by a golden regress that had to pin USM by hand to keep
+    the sharpening change from being read as driver drift.
+    """
+    import tools.lw_upscale as up
+
+    radius, percent, threshold = up.USM_DEFAULT
+    assert lw_golden._pinned_usm() == {"radius": radius, "percent": percent,
+                                       "threshold": threshold}
