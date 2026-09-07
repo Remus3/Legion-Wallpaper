@@ -426,9 +426,21 @@ def test_the_code_default_matches_what_the_configs_declare():
 def test_riot_commander_agrees_on_the_lane_ceiling():
     """Cross-repo half. SKIPS on a CI runner by design - that is exactly why the
     internal half above exists and is not redundant with this one."""
-    rc_root = Path(r"C:\Riot Commander") / "ops" / "loop"
-    if not rc_root.is_dir():
+    sys.path.insert(0, str(ROOT / "tools"))
+    import drift_guard
+
+    # A RENAMED sibling must fail here, not skip. RC's copy of this guard held
+    # LW's old root through the 2026-09-06 rename and silently stopped
+    # comparing anything for three hours while staying green (Amberstone
+    # e752e4edc). Genuine absence - a CI runner - still skips.
+    sibling, status = drift_guard.resolve_sibling_root(Path(r"C:\Riot Commander"))
+    assert status != "renamed", (
+        f"Riot Commander moved to {sibling}: this guard is comparing nothing "
+        f"until the constant is updated, and would stay green while blind"
+    )
+    if status == "absent":
         pytest.skip("Riot Commander tree not present on this machine")
+    rc_root = sibling / "ops" / "loop"
     rc = {}
     for cfg in sorted(rc_root.glob("config*.json")):
         try:

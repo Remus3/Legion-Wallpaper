@@ -190,6 +190,47 @@ def check_cited_shas() -> None:
             notes.append(f"cited SHA {sha} does not resolve (worktree slice?)")
 
 
+def _name_key(name: str) -> str:
+    """Fold a directory name to what survives a re-spelling."""
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+def resolve_sibling_root(configured):
+    r"""Locate a sibling repo root, telling a RENAME apart from an ABSENCE.
+
+    Returns (path, status) with status one of:
+      present  - the configured path exists
+      renamed  - it does not, but a name-equivalent directory sits beside it
+      absent   - nothing resembling it is there (a CI runner, legitimately)
+
+    WHY THIS EXISTS. RC's cross-repo guards held C:\\LegionWallpaper. LW's
+    2026-09-06 rename to "C:\\Legion Wallpaper" turned both of them from
+    checking into SKIPPING, and RC's suite stayed green for about three hours
+    with nothing being compared. The bytes happened to agree, so nothing broke -
+    which is the uncomfortable part, not the reassuring one. A skip-when-absent
+    guard that loses its target does not go red, it goes QUIET.
+
+    The lesson is narrower than "stop hardcoding a sibling path": a sibling
+    that exists under another spelling is a BUG and must be loud, while one
+    that is genuinely missing is a runner without the tree and deserves its
+    skip. Those two were indistinguishable, and now they are not. Whoever does
+    the renaming is the only party positioned to notice, so a rename commit
+    should sweep the SIBLING's constants too.
+
+    Reported by RC 2026-09-06 (Amberstone e752e4edc), which fixed its own side.
+    """
+    configured = pathlib.Path(configured)
+    if configured.is_dir():
+        return configured, "present"
+    parent, want = configured.parent, _name_key(configured.name)
+    if not want or not parent.is_dir():
+        return None, "absent"
+    for entry in sorted(parent.iterdir()):
+        if entry.is_dir() and _name_key(entry.name) == want:
+            return entry, "renamed"
+    return None, "absent"
+
+
 SHARED_LOOP_FILES = ("ops/loop/slots.py", "ops/loop/winmutex.py")
 SIBLING_REPO = pathlib.Path(r"C:\Riot Commander")
 
@@ -205,8 +246,20 @@ def check_shared_loop_files() -> None:
     """
     import hashlib
 
+    sibling, status = resolve_sibling_root(SIBLING_REPO)
+    if status == "renamed":
+        problems.append(
+            f"sibling repo moved: {SIBLING_REPO} is now {sibling}. Until the "
+            f"constant is updated this check compares NOTHING and goes quiet "
+            f"rather than red - see resolve_sibling_root."
+        )
+        return
+    if status == "absent":
+        notes.append(f"sibling repo {SIBLING_REPO} not on this machine")
+        return
+
     for rel in SHARED_LOOP_FILES:
-        mine, theirs = ROOT / rel, SIBLING_REPO / rel
+        mine, theirs = ROOT / rel, sibling / rel
         if not mine.is_file():
             continue
         if not theirs.is_file():
