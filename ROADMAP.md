@@ -6,6 +6,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
+  cheap and both named by RC.** (1) The `reap` arm for a stale
+  `reserved-<key>.lock`: plant one older than the stale window, run `reap`,
+  assert the owning repo can then take its floor. RC ACCEPTED the amendment and
+  assigned it to LW; BLOCKED until the five agree the short repo keys
+  (`rc lw rsc cs ll`), because the arm is meaningless before reservation exists.
+  Pair it with the second accepted amendment - pin "total holders never exceeds
+  5 + surplus" as an assertion in `tests/test_loop_concurrency.py`, since LW's
+  suite is the only coverage `ops/loop/slots.py` has on either side. (2)
+  Delta-scan RC's `tests/test_stop_claim_gate.py` (63 arms, in
+  `moon_sync_inbox/from-RC-verbatim/tests/`) against LW's
+  `tests/test_claimed_green_gate.py` + `_history.py` (48 arms) and port the
+  GENERIC arms only - most of RC's are RC-claim-specific, which is why the
+  review queued this rather than bulk-copying. Evidence: LEDGER 163.
 - **slots-hold-leaks-an-unreapable-lane - FIXED 2026-09-07 (`374c79e`, LEDGER
   157). RC has landed the same bytes (verified by hashing its tree, `629c3d51`);
   RSC is still on `1c4f8af4`, which is non-blocking - it vendors the file and
