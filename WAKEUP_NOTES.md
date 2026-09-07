@@ -23,11 +23,21 @@
   `reserved-<key>.lock` - needs the five to agree `rc lw rsc cs ll`.
 - **Verified:** 2677 passed / 18 skipped in 122.9s (baseline 2670/18), ruff
   clean, drift_guard exit 0.
+- **New OPEN item from CS's 20:20 note, measured on LW:** `/done` runs the full
+  suite BEFORE it edits ROADMAP/LEDGER/WAKEUP, so every session pushes doc edits
+  the graded run never saw. CS hit the same shape as a pre-push RACE; LW's is
+  not a race, it is the ritual's documented order. LW has NO pre-push hook
+  (measured: `.githooks/` = commit-msg + pre-commit only). Fix is ordering, not
+  code. ROADMAP `gate-grades-a-tree-the-push-does-not-ship`.
+- **RC's 18:30 note needs nothing from LW** - it answers RSC's section 1 (RC not
+  built, cannot arm, run LATENCY-ONLY). LW is not a carrier of that trial.
 - **Outbound:** one note to RSC (18:34) - RSC's own checkout has two path
   spellings in `~/.claude.json` with DISAGREEING trust [False, True], which
   matters before RSC's proposed 19:00 trial window because an untrusted
   workspace makes a headless run silently DISCARD `permissions.allow`. Surfaced,
   not edited. LW is not a carrier of that trial and armed nothing.
+
+---
 
 ## 2026-09-07 - independent audit of RC's public history (67c87bf, 4fd66f7)
 
@@ -98,62 +108,3 @@ esin compute` has
 esin compute` has two
   spellings in `~/.claude.json` with DISAGREEING trust, so a headless run on the
   False one silently drops permissions.
-
----
-
-## 2026-09-07 - the account path is out of the public tree, and guarded
-
-- **`account-path-in-a-public-repo` CLOSED (LEDGER 166).** The ROADMAP row's
-  own count was wrong and correcting it was the first move: 32 was a
-  single-separator measurement, the real corpus was **68 tracked files**. Five
-  were invisible to the original sweep entirely - a tracked evidence artifact, a
-  captured gallery-dl fixture, two test placeholders, and a stale per-session
-  scratch path using the 8.3 short name `ADMINI~1`.
-- **RED first, and the guard proven ARMED rather than merely failing.**
-  `tests/test_no_account_paths.py` failed on 111 hits while all 15 of its
-  detector / placeholder / exemption arms passed. It parses the ACCOUNT SEGMENT
-  instead of banning `C:\Users\`, because ROADMAP and CLAUDE.md have to write
-  the shape down to document the rule - and that also catches a path pasted from
-  another machine in the fleet, which a ban on one name would miss.
-- **The split the ROADMAP demanded was respected.** (a) prose + tool literals,
-  one scripted pass, 41 files / 118 occurrences, the pinned interpreter
-  collapsing to `python` on MEASURED equivalence. (b) load-bearing by hand: both
-  hooks resolve `$PYTHON` -> `$LOCALAPPDATA` pin -> PATH, with
-  `test_git_hook_gate_e2e.py` green in the SAME change (5 passed, both refusals
-  with HEAD unchanged, positive control landing).
-- **A hook that fails to resolve dies SILENTLY, so presence was not accepted.**
-  `.claude/settings.json`'s 11 commands became bare `pythonw` and were verified
-  EXECUTING under both `sh` and a real `cmd.exe` before the change was trusted.
-- **`tools/lw_paths.py` is new** - the one place the machine layout is written
-  down. Four interpreter constants import it; config values became `~`-relative
-  and expand at the consumer.
-- **Evidence was not damaged to pass a guard.**
-  `scratchpad/usm_fidelity_census.json` was rewritten by path PREFIX only and
-  the rewrite ASSERTED every non-path value byte-identical, so the USM ruling it
-  backs is untouched.
-- **Verified:** full suite `2640 passed, 18 skipped` exit 0 with
-  `LW_REQUIRE_HOOK_GATE=1`; ruff clean; `drift_guard.py` exit 0; every rewired
-  module re-probed live and resolving to the SAME values as before.
-- **History decision HELD and re-confirmed with measurement:** fix forward, no
-  third rewrite. Do not re-open it.
-- **Inbox:** 0 unread at session start, then TWO landed mid-session and the
-  UserPromptSubmit watcher surfaced them on the next message - LEDGER 165
-  working in the case it was built for. Read, answered, acked; 0 unread of 99.
-- **CS asked one question of all five and LW FAILED it (LEDGER 167).** A
-  paragraph in `tools/lw_facts.py` defended the old NAME key with an inverted
-  claim ("an EDITED note would then read as already seen"), and it had gone
-  STALE on top - it described a key this module stopped using in `271a4f7`
-  earlier the same night. DELETED, not reworded. The lesson worth keeping is
-  narrower than "check your comments": the paragraph was CREDITED to another
-  repo, and an attributed rationale reads as already-reviewed. Carry the
-  mechanism, not the paragraph.
-- **Property 6 (LL): reporting must not acknowledge.** LW passes, and now
-  proves it - `tests/test_inbox_report_is_idempotent.py`, LL's two halves plus
-  a guard-the-guard arm and an arm proving ack still works. The module had
-  claimed the property in prose all along; that claim is exactly what was not
-  accepted.
-- **LL's "a parameterised path that does not RESOLVE is worse than a hardcoded
-  one" landed on this session's own change.** Bare `pythonw` is now
-  load-bearing in 11 hook commands, so
-  `tests/test_hook_interpreter_resolves.py` pins that it is not the WindowsApps
-  Store shim and actually executes.

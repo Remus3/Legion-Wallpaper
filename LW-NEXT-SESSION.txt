@@ -1,27 +1,28 @@
 NEXT SESSION
 ------------
-Task: ROADMAP high-priority `verbatim-payload-followups`, the UNBLOCKED half -
-  pin "total holders never exceeds 5 + surplus" as an assertion in
-  tests/test_loop_concurrency.py. (The paired `reap` arm for a stale
-  reserved-<key>.lock stays BLOCKED until the five repos agree the short keys
-  `rc lw rsc cs ll`; do not start it.)
-Context: ops/loop/slots.py (byte-identical-by-contract with RC and RSC - never
-  edit it without a re-sync round), tests/test_loop_concurrency.py (LW's suite
-  is the ONLY coverage slots.py has on either side), ROADMAP.md line 46.
-  Inbox first: moon_sync_inbox/ prints unread at SessionStart; read THEN ack
-  with `python tools/lw_facts.py --mark-inbox-seen`.
-Acceptance: `python -m pytest tests/ -q` green (baseline 2670 passed / 18
-  skipped, 133s on 2026-09-07), ruff clean, drift_guard exit 0.
-Do NOT redo: the independent audit of RC's public history is DONE and pushed
-  (67c87bf, 4fd66f7; LEDGER 169). RC's 11 was confirmed exact; the correction
-  was to RC's SCOPE claim, not its arithmetic. Mirror clone deleted; the
-  reproduction recipe is in the delivered notes. The operator DECLINED a
-  further RC rewrite to strip LW's name - do not re-raise it.
-Carry forward: drift_guard reports the Resin Compute checkout has two path
-  spellings in the machine-level Claude config with DISAGREEING trust
-  [False, True] - regressed since the 2026-09-05 machine-wide fix. A headless
-  RSC run on the False spelling silently drops permissions, and RSC just agreed
-  to build an unattended responder. It is a trust setting outside LW's tree, so
-  surface it to RSC rather than editing it.
+Task: ROADMAP high-priority `gate-grades-a-tree-the-push-does-not-ship` - fix
+  the ORDER of the /done ritual so the final full-suite run grades the exact
+  tree that gets pushed. Found by CS 2026-09-07 as a pre-push RACE; LW's form
+  is not a race, it is the ritual's documented order (gate, THEN edit
+  ROADMAP/LEDGER/WAKEUP, THEN commit and push). LW has NO pre-push hook -
+  measured, `.githooks/` holds commit-msg and pre-commit only.
+Context: `.claude/commands/done.md` (or wherever the /done skill body lives -
+  grep for "Local check gate"), ROADMAP.md line 46, `.githooks/`,
+  `tools/precommit_gate.py`. Inbox first: moon_sync_inbox/ prints unread at
+  SessionStart; read THEN ack with
+  `python tools/lw_facts.py --mark-inbox-seen`.
+Acceptance: a /done whose final suite run is provably against the pushed tree -
+  `git diff HEAD` empty at gate time and the pushed sha equal to HEAD at gate
+  time, asserted rather than described. `python -m pytest tests/ -q` green
+  (baseline 2677 passed / 18 skipped, ~123s on 2026-09-07), ruff clean,
+  drift_guard exit 0.
+Do NOT redo: RC's ceiling property is PINNED and pushed (e62543b, LEDGER 170) -
+  7 arms in tests/test_loop_concurrency.py, mutation-proven 6 of 6 killed,
+  slots.py untouched and byte-exact. CI green. The paired `reap` arm for a
+  stale `reserved-<key>.lock` stays BLOCKED until the five repos agree the
+  short keys `rc lw rsc cs ll` - do not start it. RSC was told about its
+  two-spelling trust disagreement (LW note 18:34); do not re-raise or edit it.
+  RC's 18:30 note answers RSC, not LW - LW is not a carrier of that trial and
+  arms nothing.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log.

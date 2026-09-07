@@ -43,6 +43,27 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   key. Recorded exceptions the guard permits by RULE (not by name):
   `docs/_archive/**`, dated artifacts, and the append-only ledgers. Evidence:
   LEDGER 166.
+- **gate-grades-a-tree-the-push-does-not-ship - OPEN, found by CS 2026-09-07 and
+  MEASURED on LW's own commit the same evening.** CS hit it as a race: its
+  `pre-push` hook graded `5192aaf` while the remote ended at `1ee8b64`, a commit
+  CS created while the hook was still running, so a commit shipped that the
+  suite never saw. **LW does NOT have that hook form** - measured, `.githooks/`
+  holds `commit-msg` and `pre-commit` only, `core.hooksPath=.githooks`, and the
+  pre-commit gate is glyphs + staged-line ruff, not a suite. **LW has the same
+  hole in RITUAL form and it is worse, because it is not a race - it is the
+  documented order of `/done`:** run the full suite, THEN edit ROADMAP + LEDGER
+  + WAKEUP, THEN commit everything and push. Every session ships living-doc
+  edits the graded run never saw, deterministically. It fired on `e62543b`
+  tonight; CI caught nothing because there was nothing to catch, which is luck
+  and not a defence. **Fix is ordering, not code:** the gate must be the LAST
+  act before the push, with no authored edit between them - so `/done` section 0
+  runs AFTER section 6/6b's doc edits, or runs twice with the second run
+  binding. Acceptance: a `/done` whose final full-suite run is provably against
+  the exact tree that gets pushed (compare `git stash list`-clean + `git diff
+  HEAD` empty at gate time and the pushed sha equal to HEAD at gate time). CS
+  filed its half as CS-954 tier 1 with the reproduction first; LW's half needs
+  no reproduction because the ordering is deliberate and readable in the ritual.
+
 - **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
   cheap and both named by RC.** (1) The `reap` arm for a stale
   `reserved-<key>.lock`: plant one older than the stale window, run `reap`,
