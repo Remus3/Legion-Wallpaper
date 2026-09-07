@@ -70,6 +70,7 @@ _SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
 # after the report is still in the listing when the ack runs.
 _REPORTED = _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
 _INBOX_SHOWN = 10
+NEWLINE = chr(10)
 
 # Shared wall-clock budget (seconds). The hook timeout is 8s; every
 # subprocess gets min(its own cap, whatever budget remains), so the
@@ -284,73 +285,73 @@ def _pipeline_lines(anomalies: list[str], root: Path | None = None) -> list[str]
         return ["- pipeline: probe failed (treat as pipeline idle)"]
 
 
-def _payload_key(d: Path) -> str:
-    """A payload directory's entry text, and the thing the seen set keys on.
+def _file_digest(p: Path) -> str:
+    """sha256 of a file's CONTENTS, or the exception class if it cannot be read.
 
-    RC proposed `(N files)` and refuted it inside the hour: a sender who
-    REPLACES a file leaves the count equal, so the payload reads as already
-    seen. That is the mtime-watermark defect again - a key that stays equal
-    while the thing it names has moved.
-
-    So the key is a DIGEST, and it comes from one of two places:
-
-      * `MANIFEST.sha256` if the sender shipped one (RC's proposed convention):
-        one file read, and the key moves whenever any listed file does.
-      * otherwise a walk over (relpath, size, mtime_ns), which needs no
-        cooperation from the sender and still moves when a file is replaced.
-
-    The COUNT stays in the visible text because it is what a reader acts on;
-    it is no longer what the key rests on. Hashing is over metadata, not
-    content: this runs inside a SessionStart hook with a few seconds of budget,
-    and a same-size same-mtime replacement is a case that degrades to a missed
-    report rather than to a wrong one - the sender ships a manifest to close it.
+    An unreadable file contributes its failure rather than vanishing, so it
+    MOVES the key instead of silently dropping out of it.
     """
-    files = sorted(q for q in d.rglob("*") if q.is_file())
-    manifest = d / "MANIFEST.sha256"
-    h = hashlib.sha256()
-    if manifest.is_file():
-        try:
-            h.update(manifest.read_bytes())
-            return f"{d.name}/ ({len(files)} files, m:{h.hexdigest()[:8]})"
-        except OSError:
-            pass
-    for q in files:
-        try:
-            st = q.stat()
-            h.update(str(q.relative_to(d)).encode("utf-8", "replace"))
-            h.update(f"|{st.st_size}|{st.st_mtime_ns}|".encode("ascii"))
-        except OSError:
-            h.update(b"|unreadable|")
-    return f"{d.name}/ ({len(files)} files, {h.hexdigest()[:8]})"
+    try:
+        return hashlib.sha256(p.read_bytes()).hexdigest()
+    except OSError as exc:
+        return f"unreadable:{type(exc).__name__}"
 
 
-def _inbox_names(inbox: Path) -> list[str]:
-    """Current listing. `_`-prefixed drafts excluded, everything else counted.
+def _drop_digest(d: Path) -> str:
+    """Digest of a payload directory, over what is actually ON DISK.
 
-    NOT top-level `*.md`. Measured 2026-09-07 on RC's tree and then on this one:
-    the watcher globbed top-level `.md` only, so a payload DIRECTORY was
-    invisible - RC invented the `from-<CODE>-verbatim/` convention, asked four
-    repos to reciprocate in it, and reported zero of the 70 files CS sent. LW
-    had `from-RSC-verbatim/` and a top-level `slots.py.proposed-3repo` sitting
-    unreported the same way. A watcher that reports nothing looks exactly like
-    an empty inbox.
+    RC's algorithm, re-implemented from its prose so all five agree: one line
+    per file holding the drop-relative POSIX path, a NUL, then that file's
+    sha256; sorted, joined with newlines, hashed once. The PATH inside each line
+    is what makes two files swapping contents a change.
 
-    A DIRECTORY is ONE entry, never N: the unit a reader acts on is the payload,
-    and listing 70 files individually buries the real notes beside them. The
-    entry carries a DIGEST so a payload that grows OR CHANGES re-reports rather
-    than matching the acknowledgement already on file - see `_payload_key`.
+    NOT the digest of `MANIFEST.sha256`. RC measured the trap and it is real
+    here too: a payload edited without regenerating its manifest keys IDENTICAL,
+    so keying on the manifest means trusting the sender to have rebuilt it -
+    exactly the assumption a watcher exists to remove. The manifest is still
+    worth shipping; it just cannot be the key.
+    """
+    lines = []
+    for q in sorted(d.rglob("*")):
+        if not q.is_file():
+            continue
+        rel = q.relative_to(d).as_posix()
+        lines.append(f"{rel}\0{_file_digest(q)}")
+    joined = "\n".join(sorted(lines))
+    return hashlib.sha256(joined.encode("utf-8", "replace")).hexdigest()
+
+
+def _inbox_entries(inbox: Path) -> list[tuple[str, str]]:
+    """`(key, display)` per inbox entry, sorted by display.
+
+    KEY AND DISPLAY ARE DIFFERENT THINGS and conflating them was the defect.
+    The key carries a content digest so an in-place EDIT re-reports; the display
+    stays the bare name so the report a human reads is not a wall of hashes.
+    Measured 2026-09-07 on this tree, after RC measured the same on its own: a
+    note corrected IN PLACE moved nothing the watcher could see, and this
+    channel has already sent notes under a CORRECTION heading.
+
+    `_`-prefixed entries are drafts and stay excluded.
     """
     if not inbox.is_dir():
         return []
-    out: list[str] = []
+    out: list[tuple[str, str]] = []
     for p in inbox.iterdir():
         if p.name.startswith("_"):
             continue
         if p.is_dir():
-            out.append(_payload_key(p))
+            n = sum(1 for q in p.rglob("*") if q.is_file())
+            manifest = " +manifest" if (p / "MANIFEST.sha256").is_file() else ""
+            out.append((f"{p.name}/#{_drop_digest(p)[:12]}",
+                        f"{p.name}/ ({n} files{manifest})"))
         elif p.is_file():
-            out.append(p.name)
-    return sorted(out)
+            out.append((f"{p.name}#{_file_digest(p)[:12]}", p.name))
+    return sorted(out, key=lambda e: e[1])
+
+
+def _inbox_names(inbox: Path) -> list[str]:
+    """The KEYS, which is what the seen set stores and compares."""
+    return [key for key, _ in _inbox_entries(inbox)]
 
 
 def _seen_names(seen_path: Path) -> set[str]:
@@ -414,16 +415,22 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
     try:
         if not inbox.is_dir():
             return [f"- moon_sync_inbox: absent at {inbox} - no cross-repo mail channel"]
-        names = _inbox_names(inbox)
-        unread = [n for n in names if n not in _seen_names(seen_path)]
+        entries = _inbox_entries(inbox)
+        seen = _seen_names(seen_path)
+        names = [k for k, _ in entries]
+        # The KEY decides unread; the DISPLAY is what a human reads. An entry
+        # whose content changed carries a new key under the same display.
+        unread_pairs = [(k, d) for k, d in entries if k not in seen]
+        unread = [k for k, _ in unread_pairs]
         if not unread:
             _write_reported(reported_path, [])
             return [f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
         lines = [f"- moon_sync_inbox: {len(unread)} UNREAD of {len(names)} notes"]
-        shown = unread[-_INBOX_SHOWN:]
+        shown_pairs = unread_pairs[-_INBOX_SHOWN:]
+        shown = [k for k, _ in shown_pairs]
         _write_reported(reported_path, shown)
-        for n in shown:
-            lines.append(f"  - {n}")
+        for _, display in shown_pairs:
+            lines.append(f"  - {display}")
         if len(unread) > _INBOX_SHOWN:
             lines.append(f"  - ... and {len(unread) - _INBOX_SHOWN} more, oldest first")
         lines.append("- acknowledge (only after reading): "
@@ -431,7 +438,7 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
         # CHARTER v2 section 1 classifies in the title: REVIEW- wants a reply
         # from all five before the sender proceeds and ACTION- is blocking, so
         # an unread one of those is a real anomaly. FYI- is not.
-        wanted = [n for n in unread if "REVIEW-" in n or "ACTION-" in n]
+        wanted = [d for _, d in unread_pairs if "REVIEW-" in d or "ACTION-" in d]
         if wanted:
             anomalies.append(
                 f"{len(wanted)} unread REVIEW-/ACTION- inbox note(s) awaiting a "
@@ -503,6 +510,22 @@ def _wakeup_lines(anomalies: list[str]) -> list[str]:
 def main() -> int:
     # Acknowledgement is a SEPARATE action from the report, deliberately: the
     # hook must never mark mail read on the session's behalf.
+    # --inbox-only: the UserPromptSubmit half of the watcher. SessionStart
+    # fires ONCE, so a note that lands while a session is live is invisible
+    # until the next start - and that is the COMMON case on this channel
+    # (measured by LL: one drop grew by two files eleven minutes apart inside a
+    # single session). This runs on every operator message, including the first
+    # one after a /clear, and prints NOTHING when nothing is unread: a hook that
+    # speaks on every prompt trains the reader to skip it. It REPORTS only -
+    # acknowledgement stays a separate explicit act, so a subagent starting
+    # cannot mark the operator queue read.
+    if "--inbox-only" in sys.argv[1:]:
+        anomalies: list[str] = []
+        lines = _inbox_lines(anomalies)
+        if any("UNREAD" in ln for ln in lines):
+            sys.stdout.write(NEWLINE.join(lines) + NEWLINE)
+        return 0
+
     if "--mark-inbox-seen" in sys.argv[1:]:
         every = "--all" in sys.argv[1:]
         n = mark_inbox_seen(all_notes=every)

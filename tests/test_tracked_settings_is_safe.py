@@ -133,3 +133,28 @@ def test_every_declared_hook_script_exists():
                         if name not in present:
                             missing.append((event, name))
     assert not missing, f"hook script(s) declared but absent from the tree: {missing}"
+
+def test_the_inbox_watcher_runs_at_PROMPT_time_as_well_as_session_start():
+    """SessionStart fires ONCE, so it cannot see mail that lands mid-session.
+
+    RC put this as property 2 of five and expected it to be broadly unmet; it
+    was unmet here. A note arriving while a session is live is the COMMON case
+    on this channel - LL measured one drop growing by two files eleven minutes
+    apart inside a single session - so the watcher needs a second, cheap hook on
+    UserPromptSubmit. It also covers property 5: the first operator message
+    after a /clear is usually a pasted hand-off, and that message runs it.
+
+    An EMPTY hooks array is what this file carried before, which is the exact
+    shape of a declared-but-wired-to-nothing hook, so the assertion is that a
+    command is actually there and names the inbox mode.
+    """
+    doc = _tracked()
+    entries = doc["hooks"].get("UserPromptSubmit") or []
+    commands = [h.get("command", "")
+                for entry in entries for h in entry.get("hooks", [])]
+    assert commands, (
+        "UserPromptSubmit declares no command - mail landing mid-session is "
+        "invisible until the next session start")
+    assert any("--inbox-only" in c for c in commands), (
+        f"UserPromptSubmit runs {commands} but not the inbox watcher")
+    assert any("lw_facts.py" in c for c in commands)

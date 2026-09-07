@@ -56,7 +56,13 @@
     ],
     "UserPromptSubmit": [
       {
-        "hooks": []
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\lw_facts.py\" --inbox-only",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [

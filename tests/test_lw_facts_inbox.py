@@ -47,9 +47,22 @@ def _inbox(tmp_path, *names):
     return box
 
 
-def _record(tmp_path, names):
+def _keys(box, *displays):
+    """The seen set stores KEYS (name + content digest), not bare names.
+
+    Tests seed it through this helper so a display name in a test reads the way
+    a human means it, while the record holds what the watcher actually compares.
+    A display that is not present resolves to itself - that is the
+    archived-and-gone case, which must stay expressible.
+    """
+    table = {d: k for k, d in lw_facts._inbox_entries(box)}
+    return [table.get(d, d) for d in displays]
+
+
+def _record(tmp_path, names, box=None):
     rec = tmp_path / "sync_inbox_seen.json"
-    rec.write_text(json.dumps({"seen": list(names)}), encoding="ascii")
+    seen = _keys(box, *names) if box is not None else list(names)
+    rec.write_text(json.dumps({"seen": seen}), encoding="ascii")
     return rec
 
 
@@ -77,7 +90,7 @@ def test_an_unseen_note_is_reported_unread(tmp_path):
 
 def test_everything_seen_reports_no_unread(tmp_path):
     box = _inbox(tmp_path, "a.md", "b.md")
-    rec = _record(tmp_path, ["a.md", "b.md"])
+    rec = _record(tmp_path, ["a.md", "b.md"], box)
     text = "\n".join(_probe(box, rec))
     assert "UNREAD" not in text
     assert "0 unread" in text
@@ -110,7 +123,7 @@ def test_the_listing_is_capped_but_says_how_many_it_hid(tmp_path):
 def test_a_seen_file_with_a_new_mtime_stays_read(tmp_path):
     """An mtime watermark would re-report this; a filename set must not."""
     box = _inbox(tmp_path, "seen.md")
-    rec = _record(tmp_path, ["seen.md"])
+    rec = _record(tmp_path, ["seen.md"], box)
     import os
     import time
     os.utime(box / "seen.md", (time.time() + 10_000, time.time() + 10_000))
@@ -157,7 +170,7 @@ def test_acknowledge_rewrites_the_set_from_the_current_listing(tmp_path):
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
                              reported_path=tmp_path / "no-report.json")
     doc = json.loads(rec.read_text(encoding="utf-8"))
-    assert set(doc["seen"]) == {"current.md"}
+    assert set(doc["seen"]) == set(_keys(box, "current.md"))
     assert "UNREAD" not in "\n".join(_probe(box, rec))
 
 
@@ -166,7 +179,7 @@ def test_acknowledge_creates_the_record_when_absent(tmp_path):
     rec = tmp_path / "made" / "sync_inbox_seen.json"
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
                              reported_path=tmp_path / "no-report.json")
-    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"a.md"}
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == set(_keys(box, "a.md"))
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +259,8 @@ def test_the_report_records_what_it_showed(tmp_path):
     box = _inbox(tmp_path, "a.md", "b.md")
     rep = _reported(tmp_path)
     _probe_r(box, tmp_path / "absent.json", rep)
-    assert set(json.loads(rep.read_text(encoding="utf-8"))["reported"]) == {"a.md", "b.md"}
+    assert set(json.loads(rep.read_text(encoding="utf-8"))["reported"]) == set(
+        _keys(box, "a.md", "b.md"))
 
 
 def test_a_note_that_lands_after_the_report_is_not_acknowledged(tmp_path):
@@ -260,7 +274,8 @@ def test_a_note_that_lands_after_the_report_is_not_acknowledged(tmp_path):
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
 
     seen = set(json.loads(rec.read_text(encoding="utf-8"))["seen"])
-    assert seen == {"read-me.md"}, "a note nobody was shown was marked read"
+    assert seen == set(_keys(box, "read-me.md")), (
+        "a note nobody was shown was marked read")
     assert "arrived-mid-session.md" in "\n".join(_probe_r(box, rec, rep))
 
 
@@ -271,7 +286,8 @@ def test_acknowledge_still_prunes_a_note_that_left_the_inbox(tmp_path):
     rep = _reported(tmp_path)
     _probe_r(box, rec, rep)
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
-    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"current.md"}
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == set(
+        _keys(box, "current.md"))
 
 
 def test_an_absent_report_record_falls_back_to_the_current_listing(tmp_path):
@@ -286,7 +302,8 @@ def test_an_absent_report_record_falls_back_to_the_current_listing(tmp_path):
     n = lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
                                  reported_path=tmp_path / "never-written.json")
     assert n == 2
-    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"a.md", "b.md"}
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == set(
+        _keys(box, "a.md", "b.md"))
 
 
 def test_mark_all_is_the_deliberate_baseline_escape_hatch(tmp_path):
@@ -296,19 +313,20 @@ def test_mark_all_is_the_deliberate_baseline_escape_hatch(tmp_path):
     _probe_r(box, rec, rep)
     (box / "never-shown.md").write_text("body\n", encoding="ascii")
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep, all_notes=True)
-    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {
-        "shown.md", "never-shown.md"}
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == set(
+        _keys(box, "shown.md", "never-shown.md"))
 
 
 def test_an_already_seen_note_stays_seen_when_a_new_one_is_reported(tmp_path):
     """The reported set is what the LAST report showed, so union with the old
     seen set - otherwise acking today un-acks everything read yesterday."""
     box = _inbox(tmp_path, "old.md", "new.md")
-    rec = _record(tmp_path, ["old.md"])
+    rec = _record(tmp_path, ["old.md"], box)
     rep = _reported(tmp_path)
     _probe_r(box, rec, rep)          # shows only new.md; old.md is already seen
     lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
-    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"old.md", "new.md"}
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == set(
+        _keys(box, "old.md", "new.md"))
 
 
 def test_the_report_record_lives_in_gitignored_runtime_state():
@@ -366,7 +384,7 @@ def test_a_payload_directory_is_one_entry_carrying_its_file_count(tmp_path):
     box = _payload(tmp_path, "from-RC-verbatim", "a.py", "b.py", "tests/c.py")
     text = "\n".join(_probe(box, tmp_path / "absent.json"))
     assert "1 UNREAD" in text
-    assert "from-RC-verbatim/ (3 files," in text
+    assert "from-RC-verbatim/ (3 files)" in text
     assert "a.py" not in text, "the payload's files must not be listed one by one"
 
 
@@ -382,7 +400,7 @@ def test_a_payload_that_grows_re_reports_after_being_acknowledged(tmp_path):
 
     (box / "from-CS-verbatim" / "b.py").write_text("body\n", encoding="ascii")
     text = "\n".join(_probe_r(box, rec, rep))
-    assert "1 UNREAD" in text and "(2 files," in text
+    assert "1 UNREAD" in text and "(2 files)" in text
 
 
 def test_a_non_md_top_level_file_is_reported(tmp_path):
@@ -406,7 +424,7 @@ def test_an_empty_payload_directory_still_reports(tmp_path):
     """Zero files is a real state - a directory created and never filled."""
     box = _payload(tmp_path, "from-LL-verbatim")
     text = "\n".join(_probe(box, tmp_path / "absent.json"))
-    assert "from-LL-verbatim/ (0 files," in text
+    assert "from-LL-verbatim/ (0 files)" in text
 
 
 def test_a_replaced_file_re_reports_even_though_the_count_is_unchanged(tmp_path):
@@ -427,14 +445,25 @@ def test_a_replaced_file_re_reports_even_though_the_count_is_unchanged(tmp_path)
         "a REPLACED file must re-report - the count alone cannot see it")
 
 
-def test_a_manifest_keys_the_payload_when_the_sender_ships_one(tmp_path):
-    """RC's proposed convention: `MANIFEST.sha256` in the payload, and the
-    watcher keys on the manifest rather than walking every file."""
+def test_a_stale_manifest_cannot_mask_an_edited_payload(tmp_path):
+    """RC's measured trap, and the reason the key is NOT the manifest digest.
+
+    Keying a drop on `MANIFEST.sha256` is cheaper and sounds equivalent. It is
+    not: a payload edited without regenerating its manifest keys IDENTICAL, so
+    the key trusts the sender to have rebuilt the file - the exact assumption a
+    watcher exists to remove. The manifest is still worth shipping and is
+    reported as human context; it just cannot be the key.
+    """
     box = _payload(tmp_path, "from-CS-verbatim", "a.py", "b.py")
-    man = box / "from-CS-verbatim" / "MANIFEST.sha256"
-    man.write_text("aaaa  a.py\nbbbb  b.py\n", encoding="ascii")
-    first = "".join(_probe(box, tmp_path / "absent.json"))
-    man.write_text("cccc  a.py\nbbbb  b.py\n", encoding="ascii")
-    second = "".join(_probe(box, tmp_path / "absent.json"))
-    assert first != second, (
-        "the payload key must move when MANIFEST.sha256 changes")
+    drop = box / "from-CS-verbatim"
+    man = drop / "MANIFEST.sha256"
+    man.write_text("aaaa  a.py" + chr(10) + "bbbb  b.py" + chr(10), encoding="ascii")
+    before = lw_facts._inbox_names(box)
+    assert "+manifest" in "".join(_probe(box, tmp_path / "absent.json")), (
+        "a shipped manifest should be reported as context")
+
+    # The payload changes; the manifest is NOT regenerated, as a forgetful
+    # sender would leave it.
+    (drop / "a.py").write_text("edited body" + chr(10), encoding="ascii")
+    assert lw_facts._inbox_names(box) != before, (
+        "the key must follow the CONTENTS on disk, not the sender's manifest")

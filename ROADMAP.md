@@ -24,6 +24,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the built-in Windows one and `tests/test_no_secret_literals.py` now proves no
   tracked file carries a key. Do NOT bulk-sed this; (b) needs the e2e probe green
   in the same commit.
+  **HISTORY, measured 2026-09-07 with the pickaxe ARMED (a known-absent string
+  returns 0, a known-present one returns 32):** 26 commits touch blobs carrying
+  the backslash form and 10 the forward-slash form, and the earliest is
+  reachable from `origin/main` - PUBLISHED. So a forward fix cleans the working
+  tree and leaves every prior blob, which is CS's point: a commit titled 'PII
+  scrub' is the thing that stops anyone checking again. **LW's decision: fix
+  forward, do NOT rewrite history a third time for a generic built-in account
+  name.** The two prior rewrites cost sha-maps that every citing doc now needs,
+  and a force-push does not purge GitHub-side unreachable objects anyway.
+  Operator can overrule; this row records the reasoning rather than leaving it
+  implied.
 - **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
   cheap and both named by RC.** (1) The `reap` arm for a stale
   `reserved-<key>.lock`: plant one older than the stale window, run `reap`,
