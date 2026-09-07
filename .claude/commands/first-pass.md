@@ -12,7 +12,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 
 
 ### 0. Preflight (mandatory, before touching any image)
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, STOP and report (single-writer rule).
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - look for prior REJECT lines on the target slugs (rejection notes are the retry hints).
 3. Identify targets: slugs in `images\1.First Pass Scratch\` in EDITING substate (a `_firstinitial` present, no `_firstneedauth`).

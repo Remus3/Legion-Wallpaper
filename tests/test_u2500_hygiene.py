@@ -21,8 +21,8 @@ walk test then covers them automatically.
 If this test fails on a re-introduction, normalize the U+2500 glyphs in
 the flagged file back to ASCII '-' (1:1 char replacement), or port
 tools/strip_u2500.py from RC:
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_u2500.py --allow-frozen <path> --dry-run
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_u2500.py --allow-frozen <path>
+    python tools/strip_u2500.py --allow-frozen <path> --dry-run
+    python tools/strip_u2500.py --allow-frozen <path>
 """
 from __future__ import annotations
 

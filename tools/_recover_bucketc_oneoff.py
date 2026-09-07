@@ -11,12 +11,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 import lw_recover as R  # noqa: E402
 from lw_recover_campaign import build_corpus_hashes  # noqa: E402
 
 SCRATCH = Path("images/1.First Pass Scratch")
-CORPUS_DIRS = [r"C:\Users\Administrator\Pictures",
-               r"C:\Users\Administrator\Desktop\Found"]
+CORPUS_DIRS = [str(lw_paths.pictures_dir()),
+               str(lw_paths.desktop_dir() / "Found")]
 CACHE = "data/recovery/hashes.json"
 SLUGS = [
     "darius-the-hand-of-noxus-by-vexxsoul-dm8cizj-pre",

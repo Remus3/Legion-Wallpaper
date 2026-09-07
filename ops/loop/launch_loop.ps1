@@ -5,7 +5,8 @@ param(
   [string]$Cfg = ""
 )
 $ErrorActionPreference = "Stop"
-$py = "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe"
+$pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
+$py = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 $root = "C:\Legion Wallpaper"
 $ctl = "$root\ops\loop\control"
 $ahk = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"

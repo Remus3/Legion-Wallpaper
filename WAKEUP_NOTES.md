@@ -2,6 +2,47 @@
 
 ---
 
+## 2026-09-07 - the account path is out of the public tree, and guarded
+
+- **`account-path-in-a-public-repo` CLOSED (LEDGER 166).** The ROADMAP row's
+  own count was wrong and correcting it was the first move: 32 was a
+  single-separator measurement, the real corpus was **68 tracked files**. Five
+  were invisible to the original sweep entirely - a tracked evidence artifact, a
+  captured gallery-dl fixture, two test placeholders, and a stale per-session
+  scratch path using the 8.3 short name `ADMINI~1`.
+- **RED first, and the guard proven ARMED rather than merely failing.**
+  `tests/test_no_account_paths.py` failed on 111 hits while all 15 of its
+  detector / placeholder / exemption arms passed. It parses the ACCOUNT SEGMENT
+  instead of banning `C:\Users\`, because ROADMAP and CLAUDE.md have to write
+  the shape down to document the rule - and that also catches a path pasted from
+  another machine in the fleet, which a ban on one name would miss.
+- **The split the ROADMAP demanded was respected.** (a) prose + tool literals,
+  one scripted pass, 41 files / 118 occurrences, the pinned interpreter
+  collapsing to `python` on MEASURED equivalence. (b) load-bearing by hand: both
+  hooks resolve `$PYTHON` -> `$LOCALAPPDATA` pin -> PATH, with
+  `test_git_hook_gate_e2e.py` green in the SAME change (5 passed, both refusals
+  with HEAD unchanged, positive control landing).
+- **A hook that fails to resolve dies SILENTLY, so presence was not accepted.**
+  `.claude/settings.json`'s 11 commands became bare `pythonw` and were verified
+  EXECUTING under both `sh` and a real `cmd.exe` before the change was trusted.
+- **`tools/lw_paths.py` is new** - the one place the machine layout is written
+  down. Four interpreter constants import it; config values became `~`-relative
+  and expand at the consumer.
+- **Evidence was not damaged to pass a guard.**
+  `scratchpad/usm_fidelity_census.json` was rewritten by path PREFIX only and
+  the rewrite ASSERTED every non-path value byte-identical, so the USM ruling it
+  backs is untouched.
+- **Verified:** full suite `2640 passed, 18 skipped` exit 0 with
+  `LW_REQUIRE_HOOK_GATE=1`; ruff clean; `drift_guard.py` exit 0; every rewired
+  module re-probed live and resolving to the SAME values as before.
+- **History decision HELD and re-confirmed with measurement:** fix forward, no
+  third rewrite. Do not re-open it.
+- **Inbox:** 0 unread of 97 at session start and again on a mid-session
+  re-check; newest note is `2026-09-07-0210-from-CS`, already answered. Nothing
+  to ack.
+
+---
+
 ## 2026-09-07 - the hook refusal probe, ported real and proven by mutation
 
 - **`test_git_hook_gate_e2e.py` SHIPPED (LEDGER 160, commit 0d5211a).** RC's

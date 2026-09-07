@@ -41,7 +41,7 @@ CLAUDE.md; touch CLAUDE.md itself ONLY for rule / frozen-list / Settled changes.
 
 ### 3. Memory staleness scan
 
-Scan `C:\Users\Administrator\.claude\projects\C--Legion-Wallpaper\memory\` for
+Scan `%USERPROFILE%\.claude\projects\C--Legion-Wallpaper\memory\` for
 facts that reference removed or changed infra (e.g. a retired service or
 endpoint, an old machine/topology, a stale file:line). For each suspect:
 - HIGH confidence + low blast radius (names retired infra) -> update the file AND
@@ -53,7 +53,7 @@ claim live before editing (memory `feedback_verify_before_declare_broken`).
 
 ### 4. Session-start anomaly triage
 
-Re-read the session-start anomaly summary, or run `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/lw_facts.py`.
+Re-read the session-start anomaly summary, or run `python tools/lw_facts.py`.
 Classify each anomaly EXPECTED vs ACTIONABLE:
 - EXPECTED (known-normal anomalies for this machine's current setup) -> note it,
   no action.

@@ -27,6 +27,65 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+166. DONE **2026-09-07 (the operator home path is out of every tracked
+   file, and a guard keeps it out; TDD RED-first).** Premise CORRECTED before
+   any edit: the ROADMAP row claimed 32 tracked files, which was a
+   single-separator measurement. The real corpus was **68** - 33 carrying
+   `C:\Users\Administrator`, 32 the forward-slash form, several both, plus five
+   the original sweep never saw at all (the tracked evidence artifact
+   `scratchpad/usm_fidelity_census.json`, a captured gallery-dl stdout fixture,
+   two test placeholders, and a stale per-session scratch path in
+   `tools/lw_clean_dekel.py` spelled with the 8.3 short name `ADMINI~1`).
+   RED FIRST: `tests/test_no_account_paths.py` was written before any fix and
+   failed on 111 hits while all 15 of its detector / placeholder / exemption
+   arms passed - so the guard was proven ARMED, not merely failing. It parses
+   the ACCOUNT SEGMENT rather than banning `C:\Users\` outright, because
+   ROADMAP and CLAUDE.md both have to write the shape down to document the rule;
+   that also catches a path pasted from a DIFFERENT machine in the fleet, which
+   a ban on one account name would miss. Exemptions are a RULE, not a list
+   (`docs/_archive/**`, dated artifacts, the two append-only ledgers), plus two
+   named self-exemptions - the guard itself and
+   `tests/test_handoff_write_gate.py`, which plants user-profile strings as the
+   fixtures proving the hand-off gate redacts them (the same file
+   `test_no_secret_literals.py` already exempts, which is the precedent).
+   SPLIT AS THE ROADMAP DEMANDED, and the load-bearing half never bulk-sed.
+   (a) Prose + tool literals: one scripted pass, 41 files / 118 occurrences. The
+   pinned interpreter invoked as a COMMAND collapses to `python` - MEASURED
+   equivalent, `command -v python` resolves to the pinned Python314 install on
+   Legion - and every other home path became `%LOCALAPPDATA%` / `%USERPROFILE%`.
+   (b) Load-bearing: both git hooks now resolve `$PYTHON` -> a
+   `$LOCALAPPDATA`-derived pin -> `python` on PATH, keeping the pin's original
+   intent (a venv-activated PATH must not silently swap the interpreter) with no
+   account name. `tests/test_git_hook_gate_e2e.py` green in the SAME change with
+   `LW_REQUIRE_HOOK_GATE=1`: 5 passed - clean-ASCII commit LANDS with its
+   co-author trailer stripped (the positive control), staged glyph REFUSED,
+   message glyph REFUSED, both with HEAD unchanged.
+   `.claude/settings.json`'s 11 hook commands became bare `pythonw`, verified
+   EXECUTING under both `sh` and a real `cmd.exe` - a hook that fails to resolve
+   dies silently, which is the trap CLAUDE.md already records, so presence was
+   not accepted as proof. New `tools/lw_paths.py` is the single definition of
+   the machine layout; the four `SYS_PY`/`SUITE_PY` constants import it, and
+   config values became `~`-relative with expansion at the consumer
+   (`loop_controller.transcript_dir()`, `lw_paths.expand`).
+   NON-DESTRUCTIVE ON EVIDENCE: `scratchpad/usm_fidelity_census.json` was
+   rewritten by path PREFIX only, and the rewrite asserted every non-path value
+   byte-identical afterwards, so the USM ruling it backs is untouched.
+   VERIFIED: full suite `2640 passed, 18 skipped` exit 0 with
+   `LW_REQUIRE_HOOK_GATE=1` set (so the hook probe cannot green by skipping);
+   `ruff check .` all checks passed; `drift_guard.py` exit 0; every rewired
+   module re-probed live and resolving to the SAME values as before
+   (`SUITE_PY`/`SYS_PY` to the real pinned python.exe, `MEMORY_DIR.is_dir()`
+   True, `expand('~/Pictures')` to the real folder). A first full-suite run
+   failed on ONE hit - the guard catching this session's own CLAUDE.md wording,
+   `C:\Users\<a real account>`, which is the guard working.
+   HISTORY: fix-forward CONFIRMED, no third rewrite. 26 commits touch blobs
+   carrying the backslash form and the earliest is reachable from `origin/main`,
+   so prior blobs stand; the two earlier rewrites already cost sha-maps every
+   citing doc needs, a force-push does not purge GitHub-side unreachable
+   objects, and the account is the built-in Windows one with
+   `test_no_secret_literals.py` separately proving no tracked key. Operator can
+   overrule. DO NOT REDO: the sweep, the split, or the history decision.
+
 165. DONE **2026-09-07 (the watcher measured against RC's five properties:
    three failed, three fixed; commits 9db4371, 2d744d7, 271a4f7).** RC asked
    all five repos to MEASURE rather than answer from a docstring. LW probed the

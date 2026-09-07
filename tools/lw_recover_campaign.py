@@ -49,6 +49,7 @@ from typing import Any, Callable, Dict, List, Optional
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 
 from tools import lw_recover  # noqa: E402
 
@@ -68,9 +69,8 @@ _IMG_EXTS = (".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif")
 
 # CLI defaults (Legion box layout). Overridable on the command line.
 _DEFAULT_ORIGINALS = os.path.join("images", "0.Originals")
-_DEFAULT_FOUND = r"C:\Users\Administrator\Desktop\Found"
-_DEFAULT_CORPUS = [r"C:\Users\Administrator\Pictures",
-                   r"C:\Users\Administrator\Desktop\Found"]
+_DEFAULT_FOUND = str(lw_paths.desktop_dir() / "Found")
+_DEFAULT_CORPUS = [str(lw_paths.pictures_dir()), _DEFAULT_FOUND]
 _DEFAULT_FETCH_DIR = os.path.join("data", "recovery", "fetched")
 
 

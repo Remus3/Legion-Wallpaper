@@ -71,6 +71,7 @@ from PIL import Image  # noqa: E402
 # lw_g1_gate is stdlib+numpy at import time (pyiqa/torch are lazy inside it), so
 # reusing its luma primitive here is CI-safe. Spec sanctions reusing _to_gray.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 # gpu_lock/GpuBusy come from the same module rather than being forked into a
 # fifth copy: lw_g1_gate and this module run in the SAME venv, and two copies
 # inside one venv is two chances for GPU_MUTEX_TIMEOUT_S to drift apart. The
@@ -86,7 +87,7 @@ IMAGES = ROOT + r"\images"
 CLEAN_SCRATCH = IMAGES + r"\3.Cleaning Scratch"
 RUNTIME_CLEAN = ROOT + r"\ops\runtime\clean"
 
-SYS_PY = r"C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe"
+SYS_PY = lw_paths.system_python()
 PIPELINE = TOOLS + r"\lw_pipeline.py"
 CLEAN_VENV_PY = r"C:\Tools\lw-clean\venv\Scripts\python.exe"
 WEIGHTS_PATH = r"C:\Tools\lw-clean\yolo11x-train28-best.pt"

@@ -12,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\precommit_gate.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\precommit_gate.py\"",
             "timeout": 60
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\precommit_gate.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\precommit_gate.py\"",
             "timeout": 60
           }
         ]
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\text_first_guard.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\text_first_guard.py\"",
             "timeout": 10
           }
         ]
@@ -44,11 +44,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\pytest_guard.py\""
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\pytest_guard.py\""
           },
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\edit_lint_check.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\edit_lint_check.py\"",
             "timeout": 15
           }
         ]
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\lw_facts.py\" --inbox-only",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\lw_facts.py\" --inbox-only",
             "timeout": 10
           }
         ]
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\claimed_green_gate.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\claimed_green_gate.py\"",
             "timeout": 20
           }
         ]
@@ -81,22 +81,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\lw_facts.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\lw_facts.py\"",
             "timeout": 8
           },
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\caveman_default.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\caveman_default.py\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\lw_window_guard.py\"",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\lw_window_guard.py\"",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python314\\pythonw.exe\" \"C:\\Legion Wallpaper\\tools\\install_git_hooks.py\" --check",
+            "command": "pythonw \"C:\\Legion Wallpaper\\tools\\install_git_hooks.py\" --check",
             "timeout": 15
           }
         ]

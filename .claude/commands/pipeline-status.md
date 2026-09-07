@@ -12,7 +12,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (scan/status CLI,
 
 ### 0. Preflight
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, report that the pipeline CLI is not built/installed yet and fall back to a plain directory census of `images\` (counts only, clearly labeled "unmanaged census").
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - the recent-activity strip for the board. Missing log = fresh pipeline; say so.
 3. Run `... lw_pipeline.py scan` to refresh `ops/runtime/pipeline_state.json` (tmp+replace; extra fields tolerated by readers). Add `--verify` only when the operator asks for a deep integrity check (it re-hashes the world - slow).

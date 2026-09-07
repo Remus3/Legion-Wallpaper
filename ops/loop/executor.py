@@ -332,7 +332,7 @@ FINAL_STEP = (
 )
 
 _AHK_FINAL_STEP = (
-    "FINAL STEP: run  \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python"
+    "FINAL STEP: run  python"
     "\\Python314\\python.exe\" ops/loop/done_sentinel.py --tests <PASS_COUNT> "
     "--regressions <0_or_1>\n"
     "  where Claude substitutes the real passing-test count and 1 only if it could not "

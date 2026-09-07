@@ -19,7 +19,7 @@
   "claude_window_title": "Image",
   "gemini_model": "gemini-3-pro-preview",
   "gemini_cmd": "gemini",
-  "transcript_dir": "C:\\Users\\Administrator\\.claude\\projects\\C--Legion-Wallpaper",
+  "transcript_dir": "~/.claude/projects/C--Legion-Wallpaper",
   "gemini_price_per_mtok": {
     "input": 2.0,
     "output": 12.0

@@ -49,6 +49,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from tools import lw_pipeline  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
+
 MANIFEST_NAME = "gen_manifest.json"
 ORIGINALS_SUBPATH = ("images", "0.Originals")
 TARGET_W = 2560
@@ -56,7 +59,7 @@ TARGET_H = 1440
 DEFAULT_TOP_K = 3
 
 # Documented operator interpreter (used only in the printed next-step commands).
-PY = r"C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe"
+PY = lw_paths.system_python()
 
 REASON_OVERSIZE = "oversize_would_trigger_downscale_path"
 REASON_ZERO_PASS = "zero_pass_best_near_miss"

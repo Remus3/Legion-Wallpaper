@@ -24,7 +24,7 @@ start. Caller (the hook) gets stdout; non-zero exit just means
 "couldn't probe" and is non-blocking.
 
 Run manually any time:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_facts.py
+  python tools/lw_facts.py
 """
 from __future__ import annotations
 

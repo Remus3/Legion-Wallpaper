@@ -22,12 +22,12 @@ any product VERSION, does NOT restart any LW service, and does NOT touch `data/`
 1. Run the generator with the canonical interpreter (NOT the `py` launcher):
 
    ```
-   "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\repo_insights.py" --days 30
+   python "C:\Legion Wallpaper\tools\repo_insights.py" --days 30
    ```
 
    - Pass `--days N` to widen/narrow the window (default 30).
    - Pass `--out <path>` to override the destination.
-   - Default output: `C:\Users\Administrator\.claude\usage-data\repo-insights-<YYYY-MM-DD>.html`
+   - Default output: `%USERPROFILE%\.claude\usage-data\repo-insights-<YYYY-MM-DD>.html`
      plus a sidecar `.json` facts blob.
 
 2. The script is fully self-contained and prints `report:` / `facts:` / `window:`

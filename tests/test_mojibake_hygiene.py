@@ -14,9 +14,9 @@ authored source file, so a copy-paste from a mis-encoded source (or a
 bad editor round-trip) is caught at the /done gate immediately.
 
 If this test fails on a freshly added file, run:
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/repair_mojibake.py            # dry-run report (both variants)
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/repair_mojibake.py --apply    # rewrite in place
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py --apply # follow-through to ASCII ' - '
+    python tools/repair_mojibake.py            # dry-run report (both variants)
+    python tools/repair_mojibake.py --apply    # rewrite in place
+    python tools/strip_smart_quotes.py --apply # follow-through to ASCII ' - '
 (tools/repair_mojibake.py is ported from RC on demand - LW has no
 mojibake today, so the repair tool is not yet vendored; hand-fix or
 port it if this guard ever trips.)
@@ -156,7 +156,7 @@ def test_no_mojibake_signature_in_authored_source() -> None:
         msg = (
             "Mojibake byte signature drift detected. Hand-fix the mis-encoded "
             "bytes (or port tools/repair_mojibake.py from RC), then run "
-            "`C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py --apply` to "
+            "`python tools/strip_smart_quotes.py --apply` to "
             "normalize. Violations:\n" + "\n".join(lines)
         )
         pytest.fail(msg)

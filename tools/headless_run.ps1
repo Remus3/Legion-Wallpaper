@@ -25,7 +25,8 @@ $ErrorActionPreference = "Stop"
 
 # Absolute, derived from this script's own location - never from the caller's cwd.
 $Root = Split-Path -Parent $PSScriptRoot
-$Python = "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe"
+$pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
+$Python = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 $Orchestrator = Join-Path $Root "tools\slice_orchestrator.py"
 $LogDir = Join-Path $Root "logs"
 

@@ -1,7 +1,7 @@
 # Legion Wallpaper Generator Sidecar (lw-gen) - DURABLE SPEC
 
 > INGEST: copied into the repo 2026-07-10 from
-> `C:\Users\Administrator\Desktop\LEGIONWALLPAPER_GENERATOR_SIDECAR_PLAN.md`
+> `%USERPROFILE%\Desktop\LEGIONWALLPAPER_GENERATOR_SIDECAR_PLAN.md`
 > (authored 2026-07-06). This is the durable, tracked spec of record for the
 > lw-gen sidecar. The OPERATOR DECISIONS in section 9 are LOCKED (answered
 > 2026-07-06): 16:9-only MVP (no ultrawide), model class picked by eye in
@@ -470,11 +470,11 @@ upgrade needed.
   floor that first shipped sm_120 (Blackwell) kernels. `get_device_capability()`
   returns `(12,0)` live. The 5070 is generation-ready as-is.
 - Build .venv-gen from the SAME interpreter the other venvs use:
-  `C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe` (3.12.10).
+  `%LOCALAPPDATA%\Programs\Python\Python312\python.exe` (3.12.10).
 
 ```
 # 1. create the new side-venv (gitignored, like .venv-upscale / .venv-metrics)
-C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
 
 # 2. install the SAME cu128 torch channel the box already runs (do NOT let pip pull a CPU/cu12x wheel)
 "C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128

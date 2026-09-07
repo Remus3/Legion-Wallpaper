@@ -11,7 +11,7 @@ the product ships._
 Canonical interpreter (the ONLY one to use for LW work):
 
 ```
-C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe
+python
 ```
 
 Bare `py` is BANNED on every Legion runnable/doc surface: PEP 514 resolves it
@@ -107,17 +107,17 @@ schtasks /Create /TN "LW-WeeklyHygiene" /SC WEEKLY /D SUN /ST 04:17 /F ^
 
 REM BLOCKED ON SCRIPT - ops\lw_supervisor.py does not exist
 schtasks /Create /TN "LW-Supervisor" /SC ONLOGON /RL HIGHEST /F ^
-  /TR "\"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe\" \"C:\Legion Wallpaper\ops\lw_supervisor.py\""
+  /TR "\"pythonw\" \"C:\Legion Wallpaper\ops\lw_supervisor.py\""
 
 REM REGISTERED 2026-08-02 - by its OWN tool, not by schtasks flags.
 REM A bare `/SC ONSTART /RI 2` is REJECTED outright ("/RI ... not applicable for
 REM the scheduled types: ONSTART, ONLOGON, ONIDLE, ONEVENT"), the same wall
 REM lw_wallpaper_rotate hit, so the trigger goes through XML:
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\ci_watchdog.py" --install
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\ci_watchdog.py" --uninstall
+python "C:\Legion Wallpaper\tools\ci_watchdog.py" --install
+python "C:\Legion Wallpaper\tools\ci_watchdog.py" --uninstall
 
 REM Inspect without acting (prints CI state, stored attempts, halt, decision):
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\ci_watchdog.py" --status
+python "C:\Legion Wallpaper\tools\ci_watchdog.py" --status
 
 REM RETIRED 2026-08-02 by gemini-removal - do NOT run this
 REM schtasks /Create /TN "LW-GeminiAudit" /SC DAILY /ST 03:30 /F ^
@@ -133,8 +133,8 @@ schtasks /Delete /TN "LW-WeeklyHygiene" /F
 `LW-Wallpaper` is registered by its own tool, not by hand:
 
 ```
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" install
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" uninstall
+python "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" install
+python "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" uninstall
 ```
 
 It writes a Task Scheduler XML (`ops/runtime/lw_wallpaper_task.xml`) and
@@ -220,7 +220,7 @@ Get-ScheduledTask -TaskName "LW-*" | Select TaskName, State
 taskkill /F /PID <pid>
 
 # Compile check before any restart
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m py_compile <file.py>
+python -m py_compile <file.py>
 ```
 
 ---
@@ -244,7 +244,7 @@ reference, not session history, and WAKEUP is pruned every few sessions - a
 standing reference living there gets archived by design._
 
 - **PowerShell 7 - INSTALLED BY RIOT COMMANDER 2026-07-26. LW migration = NO-OP.**
-  Authority doc: `C:\Users\Administrator\Desktop\POWERSHELL_7_MIGRATION.md` (RC,
+  Authority doc: `%USERPROFILE%\Desktop\POWERSHELL_7_MIGRATION.md` (RC,
   machine-wide). Read it before touching any call site; do not re-derive.
   - Live state verified 2026-07-26: `C:\Program Files\PowerShell\7\pwsh.exe` =
     **7.6.4 Core**, MSI machine-scope, on machine PATH. `powershell.exe` is

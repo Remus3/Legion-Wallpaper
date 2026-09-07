@@ -474,7 +474,7 @@ console flash. Analysis of the launcher options:
 
 Shortcut spec:
 
-- Target: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe "C:\Legion Wallpaper\tools\lw_monitor.py" --open`
+- Target: `pythonw "C:\Legion Wallpaper\tools\lw_monitor.py" --open`
 - Start in: `C:\Legion Wallpaper`
 - Icon: `imageres.dll,109` (monitor glyph) - cosmetic, optional.
 
@@ -483,7 +483,7 @@ Exact one-time creation commands (PowerShell 5.1 safe, ASCII only):
 ```powershell
 $ws  = New-Object -ComObject WScript.Shell
 $lnk = $ws.CreateShortcut("$env:USERPROFILE\Desktop\LW Monitor.lnk")
-$lnk.TargetPath       = "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\pythonw.exe"
+$lnk.TargetPath       = pythonw
 $lnk.Arguments        = '"C:\Legion Wallpaper\tools\lw_monitor.py" --open'
 $lnk.WorkingDirectory = "C:\Legion Wallpaper"
 $lnk.IconLocation     = "C:\Windows\System32\imageres.dll,109"

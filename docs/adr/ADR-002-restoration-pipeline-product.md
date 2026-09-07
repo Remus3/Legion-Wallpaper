@@ -8,7 +8,7 @@
 Legion Wallpaper needed its product defined (the ROADMAP's gating item since
 bootstrap). The real, existing problem: a ~302-image corpus of 2560x1440
 League-splash-style wallpapers (mostly AI-generated DeviantArt fan art) in
-`C:\Users\Administrator\Pictures\`, carrying two defect classes - upscale
+`%USERPROFILE%\Pictures\`, carrying two defect classes - upscale
 softness introduced by the operator's old double-resample pipeline, and
 source-baked defects (malformed eyes/irises/skin, site watermarks, compression
 artifacts, banding). The operator's v1 plan (2026-06-14, archived at

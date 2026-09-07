@@ -8,8 +8,8 @@ tools/strip_smart_quotes.py (same exclusion list) and is a mandatory /done
 gate (see .claude/commands/done.md section 0).
 
 If this test fails on a freshly added file, run:
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py            # dry-run report
-    C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py --apply    # rewrite in place
+    python tools/strip_smart_quotes.py            # dry-run report
+    python tools/strip_smart_quotes.py --apply    # rewrite in place
 
 Codepoints checked (mirrors strip_smart_quotes.py):
     U+201C  LEFT DOUBLE QUOTATION MARK
@@ -231,7 +231,7 @@ def test_no_smart_quotes_in_authored_source() -> None:
         ]
         msg = (
             "Smart-quote / em-dash / en-dash / NBSP / ellipsis drift detected. "
-            "Run `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py` to inspect, then `--apply` "
+            "Run `python tools/strip_smart_quotes.py` to inspect, then `--apply` "
             "to rewrite. Violations:\n" + "\n".join(lines)
         )
         pytest.fail(msg)

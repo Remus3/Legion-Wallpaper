@@ -28,7 +28,7 @@
   "_oracle_note": "gemini-removal, operator-directed 2026-08-02. The DIRECTOR authors each cycle's directive and the AUDITOR scores each cycle's diff; both now run as a READ-ONLY headless `claude -p --permission-mode plan` call. ROLLBACK IS THESE TWO KEYS: set either back to 'gemini' and that role uses the untouched gemini() path again. NOTHING is deleted - gemini_model / gemini_cmd / gemini_price_per_mtok / ceiling_usd / tools/gemini_audit.ps1 all stay, same posture as the channel flip (LEDGER 40). An unknown value resolves to 'claude', never to a crash and never silently back to the vendor being removed.",
   "gemini_model": "gemini-3-pro-preview",
   "gemini_cmd": "gemini",
-  "transcript_dir": "C:\\Users\\Administrator\\.claude\\projects\\C--Legion-Wallpaper",
+  "transcript_dir": "~/.claude/projects/C--Legion-Wallpaper",
   "gemini_price_per_mtok": {
     "input": 2.0,
     "output": 12.0

@@ -13,7 +13,7 @@
   "dryrun_window_title": "LW-LOOP-DRYRUN",
   "gemini_model": "gemini-3-pro-preview",
   "gemini_cmd": "gemini",
-  "transcript_dir": "C:\\Users\\Administrator\\.claude\\projects\\C--Legion-Wallpaper",
+  "transcript_dir": "~/.claude/projects/C--Legion-Wallpaper",
   "price_per_mtok": {
     "opus":   {"input": 15.0, "output": 75.0, "cache_write": 18.75, "cache_read": 1.5},
     "sonnet": {"input": 3.0,  "output": 15.0, "cache_write": 3.75,  "cache_read": 0.3},

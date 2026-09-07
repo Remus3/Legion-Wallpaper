@@ -12,7 +12,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (T7 FINALIZE, T7r
 
 ### 0. Preflight (mandatory, before touching any image)
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, STOP and report (single-writer rule).
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - confirm each queued slug's APPROVE_LAST landed clean.
 3. Targets: slugs in `images\8.End Review\` not yet finalized (no hash-equal `_lastdone` in `images\9.Image Backup\<slug>\`).
@@ -40,7 +40,7 @@ Per AUDIT_GATES.md section 4 - LMMs are reliable at pairwise comparison, weak at
 
 1. `... lw_pipeline.py finalize <slug> --audit-json <path>` (dry-run first) - copies `_lastdone` to `images\9.Image Backup\<slug>\` (hash-idempotent, never overwrite), snapshots the manifest to backup, logs FINALIZE.
 2. After the backup copy hash-verifies, clear the `images\8.End Review\<slug>\` entry (the milestone set's authoritative archive is the backup + manifests; a lingering 8-entry re-queues forever).
-3. Optional delivery: `--to-pictures` / `--deliver` is OPERATOR-GATED - `C:\Users\Administrator\Pictures\` is in use and owned by the operator; agents never write there. When the operator invokes it, delivery follows FM-12 (.part + fsync + hash-verify + atomic rename, next free ### computed at rename time, assigned name recorded in manifest + log).
+3. Optional delivery: `--to-pictures` / `--deliver` is OPERATOR-GATED - `%USERPROFILE%\Pictures\` is in use and owned by the operator; agents never write there. When the operator invokes it, delivery follows FM-12 (.part + fsync + hash-verify + atomic rename, next free ### computed at rename time, assigned name recorded in manifest + log).
 
 ### 4. Verdict: FAIL -> demote
 

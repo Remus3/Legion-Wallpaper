@@ -28,7 +28,7 @@ Read these authoritative sources and write the values down. Every doc must match
 
 | Fact | Canonical source (read at runtime - never trust a doc) |
 |---|---|
-| Repo test count | `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m pytest tests/ -q --co 2>$null` -> count collected; **collect, don't trust the doc** |
+| Repo test count | `python -m pytest tests/ -q --co 2>$null` -> count collected; **collect, don't trust the doc** |
 | Product VERSION | TBD - product not yet defined. When LW gains an authoritative VERSION constant, read the assignment in source; cross-check the live health endpoint if a service is up |
 | Product data facts (counts, coverage, registries) | TBD - product not yet defined. Recompute from the authoritative data/registries at runtime, never from a doc; **drop any `_meta` key before counting** |
 | Latest session + commits | `git -C "C:/Legion Wallpaper" log --oneline -15` + the top block of `WAKEUP_NOTES.md` + the highest-numbered item in `docs/LEDGER.md` |
@@ -42,7 +42,7 @@ Produce a **Canonical Facts table** in your working notes. This is the contract 
 - **LIVING - sync targets (surgical edits OK):** `README.md`, `CLAUDE.md` (only the one-line product reference + the `### Settled` summary - the "Active priorities" block is a static pointer, do NOT add items), `ROADMAP.md`, `BACKLOG.md`, `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, `docs/AGENTS.md`. Extend this list as LW grows living docs (product docs TBD); a doc added here must be named in this section.
 - **APPEND-ONLY - never rewrite, never reflow:** `WAKEUP_NOTES.md` (append + prune via `scripts/wakeup_prune.py` only), `docs/history_notes.md`, everything under `docs/_archive/**`, `docs/adr/**` (ADRs are immutable - add a new ADR, never edit an old one), any dated artifact (`AUDIT_*`, `PHASE_*`, `*_2026-*`), `agents/**/charter.md`, `agents/**/reports/**`. Per memory `feedback_no_history_rewrite` + `reference_archive_dir`: **only sync the living docs; never rewrite a ledger.**
 - **FROZEN - do not edit (CLAUDE.md hard rule):** whatever is on the CLAUDE.md frozen list - read that list at runtime; do not assume. Read-only here.
-- **INDEX:** `MEMORY.md` (index of memory files - one line per entry, <=150 chars, never write memory bodies into it) and the memory `*.md` under `C:/Users/Administrator/.claude/projects/C--Legion-Wallpaper/memory/`.
+- **INDEX:** `MEMORY.md` (index of memory files - one line per entry, <=150 chars, never write memory bodies into it) and the memory `*.md` under `%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/memory/`.
 - **SKILL/COMMAND specs:** `.claude/commands/*.md` (tracked - LW tracks `.claude/` in git) and the `tools/*.md` helper specs (the diagnose/caveman family) - including **this skill's own file** (see section 9 self-congruence).
 - **CANDIDATE - unclassified:** anything else -> section 7 disposition.
 
@@ -101,7 +101,7 @@ Never delete a `.md`. Quarantine is the only removal.
 
 ### 8. Append-only / history protection (hard invariant)
 
-Before any write, re-confirm the target is in the LIVING set. If a fact is wrong in `WAKEUP_NOTES.md`, `docs/history_notes.md`, `docs/_archive/**`, an ADR, or any dated artifact: **do not fix it there.** History records what was true *then*. Note the discrepancy in the report and fix only the LIVING doc. The only sanctioned WAKEUP mutation is `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3` (idempotent; run only if WAKEUP has >3 sessions and the operator asked for a prune - otherwise just report the count).
+Before any write, re-confirm the target is in the LIVING set. If a fact is wrong in `WAKEUP_NOTES.md`, `docs/history_notes.md`, `docs/_archive/**`, an ADR, or any dated artifact: **do not fix it there.** History records what was true *then*. Note the discrepancy in the report and fix only the LIVING doc. The only sanctioned WAKEUP mutation is `python "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3` (idempotent; run only if WAKEUP has >3 sessions and the operator asked for a prune - otherwise just report the count).
 
 ### 9. Self-congruence
 

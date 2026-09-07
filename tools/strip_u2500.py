@@ -42,10 +42,10 @@ operator-grantable; bump ONLY with explicit operator authorization for
 a specific path that must never be touched even by accidental grant.
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_u2500.py --allow-frozen path/a.py,path/b.py
+  python tools/strip_u2500.py --allow-frozen path/a.py,path/b.py
                           # rewrite the named files in place (atomic),
                           # report per-file pre/post counts
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_u2500.py --allow-frozen path/a.py --dry-run
+  python tools/strip_u2500.py --allow-frozen path/a.py --dry-run
                           # dry-run: report counts, no writes
 
 Exit codes:

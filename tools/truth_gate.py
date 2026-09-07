@@ -11,14 +11,14 @@ Reconciliation report written atomically to ops/runtime/truth_gate_report.json.
 
 Claims JSON shape:
   {"run_id": "...",
-   "suite_cmd": "C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe -m pytest tests/ -q",     # optional; default = what CI runs
+   "suite_cmd": "python -m pytest tests/ -q",     # optional; default = what CI runs
    "check_ci": true,                           # optional; default true
    "slices": [{"id": "S1", "claim": "...",
                "files": [{"path": "rel/or/abs.py", "must_contain": ["snippet"]}],
                "claimed_passed": 42, "claimed_failed": 0}]}   # counts optional
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/truth_gate.py --claims claims.json [--skip-suite] [--report PATH]
+  python tools/truth_gate.py --claims claims.json [--skip-suite] [--report PATH]
 """
 import argparse
 import json
@@ -28,6 +28,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 import slice_orchestrator as so  # noqa: E402  (sibling tool, not a package)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,9 +49,7 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # python-manager pythoncore-3.14-64 install), which zeroes the suite and turns
 # every gate into a blanket REFUSE. Pin the canonical project interpreter;
 # fall back to whichever interpreter is running this script.
-_CANONICAL_PY = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python"
-                     r"\Python314\python.exe")
-SUITE_PY = str(_CANONICAL_PY if _CANONICAL_PY.exists() else Path(sys.executable))
+SUITE_PY = lw_paths.system_python()
 # `tests/` is NOT optional. A bare `-m pytest -q` collects from the repo root and
 # sweeps in files the project suite never runs - tools/test_lw_clean_dekel.py
 # (imports skimage, which lives only in the lw-clean venv) and a vendored MCP

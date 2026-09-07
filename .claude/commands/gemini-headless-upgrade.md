@@ -65,9 +65,9 @@ proceed. Caveman ULTRA output default (compress ~90 percent; code/paths/numbers 
 - Git hygiene: `gh run list --limit 6` green baseline (fix red FIRST); `gh pr list` reconcile;
   delete stale merged remote branches; clean stale local worktrees (verify 0 unmerged first,
   unlock + remove --force + prune + branch -D).
-- Write/refresh `C:/Users/Administrator/Desktop/LW_HEADLESS_SYNOPSIS_<YYYY-MM-DD>.md` (atomic).
+- Write/refresh `%USERPROFILE%/Desktop/LW_HEADLESS_SYNOPSIS_<YYYY-MM-DD>.md` (atomic).
 - TaskCreate per phase. Init/resume the slice manifest:
-  `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/slice_orchestrator.py init --run-id <YYYY-MM-DD-NN> --head <sha>` then `add` per slice;
+  `python tools/slice_orchestrator.py init --run-id <YYYY-MM-DD-NN> --head <sha>` then `add` per slice;
   a prior manifest with non-committed slices = RESUME (skip committed, re-verify rest).
 
 ### 2. Orchestrator-merge pattern (core framing)
@@ -81,7 +81,7 @@ proceed. Caveman ULTRA output default (compress ~90 percent; code/paths/numbers 
   read-only `verifier` subagent with the claim + cited test cmd + cited files. Merge only on
   CONFIRM; on REFUTE mark `failed` + re-dispatch - never merge a refuted slice.
 - TRUTH-GATE (mechanized): final pre-commit reconciliation of a multi-slice
-  round = `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/truth_gate.py --claims <claims.json>` (fresh suite to file, content-level
+  round = `python tools/truth_gate.py --claims <claims.json>` (fresh suite to file, content-level
   claimed-edit re-read via must_contain, gh CI probe, atomic report to
   ops/runtime/truth_gate_report.json). Exit 2 = commit BLOCKED + `quarantined` slices re-dispatch.
 - `claim --agent <id> --files <files> --slice <S>` BEFORE dispatch, then checkpoint
@@ -93,9 +93,9 @@ proceed. Caveman ULTRA output default (compress ~90 percent; code/paths/numbers 
 - After ALL merges: full relevant test gate, restart as needed, ONE surgical living-docs commit.
 
 ### 3. Phase loop discipline (after EVERY phase)
-1. Lint: `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m py_compile <touched>`; any .py edited -> `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m ruff check .` (F541 is the common CI-killer).
+1. Lint: `python -m py_compile <touched>`; any .py edited -> `python -m ruff check .` (F541 is the common CI-killer).
 2. Test gate green BEFORE commit: full suite
-   `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m pytest tests/ -q`; component-scoped subsets TBD as the product grows.
+   `python -m pytest tests/ -q`; component-scoped subsets TBD as the product grows.
 3. Restart-aware: core app/routes -> `echo restart > restart_trigger.txt` + confirm health alive/last_reload_ok;
    separately-hosted components -> their documented restart rituals (TBD); static frontend assets -> the
    product's hot-reload mechanism (TBD), say so in chat, or restart if none.
@@ -164,7 +164,7 @@ quo - do not flip blind (the current path stays as the interim floor until valid
 - No em-dash, en-dash, or smart quotes anywhere (.py/.md/.ps1/.css/.js/commit/chat). ` - ` for a clause
   break, `-` otherwise. Nothing non-ASCII is exempt unless documented in CLAUDE.md as operator-approved.
 - The /done gate runs `tests/test_smart_quote_hygiene.py tests/test_mojibake_hygiene.py
-  tests/test_u2500_hygiene.py`; drift fix = `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/strip_smart_quotes.py --apply`.
+  tests/test_u2500_hygiene.py`; drift fix = `python tools/strip_smart_quotes.py --apply`.
 
 ### 7. Multi-agent dispatch rules
 - Up to 100 concurrent worktree agents per task, disjoint file sets. Each agent prompt MUST carry the
@@ -216,7 +216,7 @@ product-direction call -> BACKLOG + issue (FUTURE), not built blind. MED/LOW alw
 ### 10. Headless cadence health
 - Desktop synopsis: update every phase complete (atomic); never delete mid-run.
 - Living docs (CLAUDE.md item N+1, ROADMAP, BACKLOG, WAKEUP_NOTES, core product doc TBD): synced at
-  run END as ONE surgical commit. WAKEUP prune: `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" scripts/wakeup_prune.py --keep 3`.
+  run END as ONE surgical commit. WAKEUP prune: `python scripts/wakeup_prune.py --keep 3`.
 - Worktree cleanup at run END (remove merged + prune + branch -D). 10h+ -> transition to a full LW
   refactor audit (frozen edits still allowed; tests required). Caveman ULTRA token discipline.
 
@@ -253,7 +253,7 @@ HEADLESS UPGRADE WRAP
   objectives: PRIMARY <TBD | progress> / SECONDARY <N levers swept, M shipped | all CLEAN | TBD>
   ui proof: <N pages captured + audited, M owed | n/a>
   worktrees: <cleaned N | none>
-  Synopsis: C:/Users/Administrator/Desktop/LW_HEADLESS_SYNOPSIS_<date>.md
+  Synopsis: %USERPROFILE%/Desktop/LW_HEADLESS_SYNOPSIS_<date>.md
   Ready for /done.
 ```
 
@@ -274,7 +274,7 @@ READ-ONLY - it DECIDES and DIRECTS; the next Claude cycle does every file write.
    - Atomic-write the findings + context + the explicit question to `ops/loop/control/gemini_ask.txt`
      (tmp + os.replace; plain ASCII).
    - Finish the in-flight slice (never a half-merged state), then run the FINAL STEP
-     `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" ops/loop/done_sentinel.py --tests <N> --regressions <0|1>` to end the cycle cleanly.
+     `python ops/loop/done_sentinel.py --tests <N> --regressions <0|1>` to end the cycle cleanly.
    - The controller consumes `gemini_ask.txt` into the NEXT director call under an `EXECUTOR ESCALATION`
      header (consume-once); the Gemini DIRECTOR resolves it and emits the next directive that encodes the
      decision + instructs the scaffolding + any ROADMAP.md / BACKLOG.md reshape. The per-cycle `/done` +
@@ -293,7 +293,7 @@ PART D - LOOP BEHAVIOR / STOP CONDITIONS / TUNING (controller-driven, automatic)
   verifier-gate each slice, commit-local, no AskUserQuestion, ends with the done_sentinel FINAL STEP).
 - AHK types `/clear` + "read+execute ops/loop/control/directive.md" into this window.
 - The executor (this session) runs PART B + C, commits locally, runs
-  `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" ops/loop/done_sentinel.py --tests <N> --regressions <0|1>` -> writes control/claude.done.
+  `python ops/loop/done_sentinel.py --tests <N> --regressions <0|1>` -> writes control/claude.done.
 - Controller meters spend from the pinned executor JSONL, then gemini AUDITS the diff. CLEAN -> next
   item; REGRESS (or self-reported regressions) -> next directive is FIX-FIRST.
 

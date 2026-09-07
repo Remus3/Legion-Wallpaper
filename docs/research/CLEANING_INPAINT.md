@@ -14,7 +14,7 @@ dated; anything not directly confirmed is marked UNVERIFIED.
 
 ## 0. Empirical corpus findings (checked on this machine, 2026-07-03)
 
-The corpus lives at `C:\Users\Administrator\Desktop\need up\` with staged
+The corpus lives at `%USERPROFILE%\Desktop\need up\` with staged
 folders `0.Originals` (19 files) through `9.Image Backup`, plus
 `Images copied from Pictures - Temp folder` (the 302 processed 2560x1440
 PNGs, names like `NNN_cleanup.png` / `NNN.png`).
@@ -252,7 +252,7 @@ Python 3.12 for ML venvs; keep 3.14 for everything else.
 winget install Python.Python.3.12
 
 :: 2. Detection + inpaint venv
-C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv C:\Tools\lw-clean\venv
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv C:\Tools\lw-clean\venv
 C:\Tools\lw-clean\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 C:\Tools\lw-clean\venv\Scripts\pip install ultralytics easyocr simple-lama-inpainting opencv-python pillow
 
@@ -260,7 +260,7 @@ C:\Tools\lw-clean\venv\Scripts\pip install ultralytics easyocr simple-lama-inpai
 curl -L -o C:\Tools\lw-clean\yolo11x-train28-best.pt https://huggingface.co/spaces/fancyfeast/joycaption-watermark-detection/resolve/main/yolo11x-train28-best.pt
 
 :: 4. IOPaint in its OWN venv (archived project, old pins - isolate it)
-C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv C:\Tools\iopaint\venv
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv C:\Tools\iopaint\venv
 C:\Tools\iopaint\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 C:\Tools\iopaint\venv\Scripts\pip install iopaint==1.6.0
 
@@ -308,4 +308,4 @@ matching nightly cu128 build.
 - Debanding: ffmpeg deband/gradfun docs; AdaDeband (IEEE SPL 2020); WaveMamba debanding (arxiv 2508.11331)
 - PyTorch Blackwell: pytorch.org/blog/pytorch-2-7 (cu128 + Blackwell, Apr 2025); pytorch.org/blog/pytorch-2-9 (Python 3.14 preview wheels, Oct 2025); github.com/pytorch/pytorch/issues/164342 (sm_120 official-support status); github.com/Comfy-Org/ComfyUI/discussions/6643 (50-series setup)
 - ComfyUI portable for Blackwell: github.com/juspky/ComfyUI-Windows-Portable-cu128
-- Local corpus inspection: C:\Users\Administrator\Desktop\need up\ (scans and crops run 2026-07-03 on this machine)
+- Local corpus inspection: %USERPROFILE%\Desktop\need up\ (scans and crops run 2026-07-03 on this machine)

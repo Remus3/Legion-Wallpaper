@@ -20,6 +20,9 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 # CREATE_NO_WINDOW: 0 on non-Windows so the module still imports/tests in CI.
@@ -34,9 +37,7 @@ DOC_BUDGETS = {"CLAUDE.md": 61440}
 DOC_BUDGETS_ADVISORY = {"ROADMAP.md": 81920}
 COMMANDS_DIR = ".claude/commands"
 COMMANDS_MARKER = "SUBAGENT-FIRST"
-MEMORY_DIR = pathlib.Path(
-    r"C:\Users\Administrator\.claude\projects\C--Legion-Wallpaper\memory"
-)
+MEMORY_DIR = lw_paths.claude_project_dir("C--Legion-Wallpaper") / "memory"
 MEMORY_INDEX = "MEMORY.md"
 MEMORY_UNINDEXED_OK = ()
 DOC_GLOBS = ["docs/**/*.md", "*.md"]

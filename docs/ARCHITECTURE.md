@@ -12,7 +12,7 @@ _Living document. Update after topology or module changes. See `docs/_archive/` 
 
 | Machine | Role |
 |---|---|
-| **Legion** | Single-machine deployment (Windows 10 Pro, RTX 5070 12GB Blackwell sm_120). Repo at `C:\Legion Wallpaper\`. Canonical Python: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe` (`pythonw.exe` for daemons/hooks). ML work runs in Python 3.12 side-venvs with torch from the cu128 wheel index. |
+| **Legion** | Single-machine deployment (Windows 10 Pro, RTX 5070 12GB Blackwell sm_120). Repo at `C:\Legion Wallpaper\`. Canonical Python: `python` (`pythonw.exe` for daemons/hooks). ML work runs in Python 3.12 side-venvs with torch from the cu128 wheel index. |
 
 Everything is 1-PC on Legion. No cross-machine topology exists or is planned
 until an ADR says otherwise.

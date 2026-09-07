@@ -11,7 +11,15 @@ This file is the operating contract - rules, tiers, gates, rituals - inherited 1
 ## Paths
 
 - Project root: `C:\Legion Wallpaper\`
-- Python: `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`
+- Python: `python` (3.14 - on PATH it resolves to the pinned
+  `%LOCALAPPDATA%\Programs\Python\Python314\python.exe`). **Never write an
+  account's home path into a tracked file** - this repo is PUBLIC, and
+  `tests/test_no_account_paths.py` fails the build on a real account's
+  `C:\Users\<account>\...` anywhere outside the recorded exceptions
+  (`docs/_archive/**`, dated artifacts, the append-only ledgers). Resolve it
+  instead: `tools/lw_paths.py` for Python callers, `$LOCALAPPDATA` /
+  `$env:LOCALAPPDATA` in the git hooks and `.ps1`, `~` or `%USERPROFILE%` in
+  config values, and a placeholder such as `<account>` in prose.
 - API keys: `API-Key-*.txt` in project root (gitignored)
 - Health: `C:\Legion Wallpaper\ops\runtime\health.json`
 - Logs: `C:\Legion Wallpaper\logs\YYYY-MM-DD.log`

@@ -11,10 +11,22 @@
 set -e
 
 ROOT="$(git rev-parse --show-toplevel)"
-PY="${PYTHON:-C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe}"
-
-# Python 3.x - prefer the pinned interpreter but fall back to `python`.
-if ! command -v "$PY" >/dev/null 2>&1; then
+# Interpreter resolution, in order. NO account name is spelled out here: this
+# file is tracked in a PUBLIC repo, and every arm below reaches the same
+# interpreter without one.
+#   1. $PYTHON        - explicit override. tests/test_git_hook_gate_e2e.py pins
+#                       it to the interpreter running the test, so the probe
+#                       measures the GATE and not the runner's PATH.
+#   2. $LOCALAPPDATA  - the pinned Legion 3.14 install, derived from the
+#                       environment. Keeps the original intent (do not let a
+#                       venv-activated PATH silently swap the interpreter).
+#   3. python on PATH - the portable fallback. This is the arm Linux CI takes,
+#                       and on Legion it resolves to the same 3.14 install.
+PY="${PYTHON:-}"
+if [ -z "$PY" ] && [ -n "$LOCALAPPDATA" ]; then
+    PY="$(printf '%s' "$LOCALAPPDATA" | tr '\\' '/')/Programs/Python/Python314/python.exe"
+fi
+if [ -z "$PY" ] || ! command -v "$PY" >/dev/null 2>&1; then
     PY=python
 fi
 

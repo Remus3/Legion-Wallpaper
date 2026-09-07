@@ -18,7 +18,7 @@ Decisions behind this plan: `docs/adr/ADR-002-restoration-pipeline-product.md`
 Drop an image into a folder; an autonomous, self-auditing pipeline recovers the
 best source, upscales it once, cleans watermarks and AI-generation artifacts,
 repairs illustrated faces/eyes, audits itself at every stage, and delivers an
-approved 2560x1440 PNG to `C:\Users\Administrator\Pictures\` with an optional
+approved 2560x1440 PNG to `%USERPROFILE%\Pictures\` with an optional
 sequential `###.png` rename. The corpus is ~302 processed League-splash-style
 illustrations (mostly AI-generated DeviantArt fan art) plus ~77 recovered
 sources.

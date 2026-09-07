@@ -5,7 +5,7 @@ Design contract: docs/superpowers/specs/2026-07-18-wallpaper-deck-rotator-design
 (section "Testing" lists the 9 required cases; each is tagged below).
 
 Everything runs inside tmp_path. The real corpus at
-C:\\Users\\Administrator\\Pictures, the real ops/runtime/wallpaper_deck.json,
+~/Pictures, the real ops/runtime/wallpaper_deck.json,
 the real logs/ tree and the real desktop wallpaper are NEVER touched: the
 win32 shim is injected per call AND replaced module-wide by an autouse
 fixture that raises if anything reaches it, LOG_DIR is redirected into

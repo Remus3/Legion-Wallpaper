@@ -92,8 +92,8 @@ def test_a_conforming_name_is_read_out_of_the_intent_document(tmp_path):
     "RM-NEXT-SESSION.txt",
     "NEXT-SESSION.txt",                     # unprefixed
     "lw-next-session.txt",                  # prefix is case-sensitive
-    "C:/Users/Administrator/Desktop/LW-X.txt",   # absolute + drive letter
-    "C:\\Users\\Administrator\\Desktop\\LW-X.txt",
+    "C:/Users/example/Desktop/LW-X.txt",   # absolute + drive letter
+    "C:\\Users\\example\\Desktop\\LW-X.txt",
     "/etc/passwd",
     "../LW-NEXT-SESSION.txt",               # escape upward
     "..\\LW-NEXT-SESSION.txt",

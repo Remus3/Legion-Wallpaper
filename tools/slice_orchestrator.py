@@ -31,14 +31,14 @@ them silently become "verified" - `add` does not seed the key, only `verdict`
 creates it.
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py init --run-id 2026-07-29-01 --head <sha> [--force]
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py add --id S1 --title "run infra" [--files a.py,b.py]
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py claim --agent wt-a --files tools/a.py,tests/test_a.py [--slice S1] [--note text]
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py set --id S1 --status in_progress --agent wt-a
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py set --id S1 --status committed [--commit <sha>] [--note text]
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py verdict --id S1 --state CONFIRM --observer verifier [--agent-id <id>] [--passed N --skipped N --failed N] [--discrepancy line]... [--note text] [--at <iso>] [--backfilled]
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py resume
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/slice_orchestrator.py status
+  python tools/slice_orchestrator.py init --run-id 2026-07-29-01 --head <sha> [--force]
+  python tools/slice_orchestrator.py add --id S1 --title "run infra" [--files a.py,b.py]
+  python tools/slice_orchestrator.py claim --agent wt-a --files tools/a.py,tests/test_a.py [--slice S1] [--note text]
+  python tools/slice_orchestrator.py set --id S1 --status in_progress --agent wt-a
+  python tools/slice_orchestrator.py set --id S1 --status committed [--commit <sha>] [--note text]
+  python tools/slice_orchestrator.py verdict --id S1 --state CONFIRM --observer verifier [--agent-id <id>] [--passed N --skipped N --failed N] [--discrepancy line]... [--note text] [--at <iso>] [--backfilled]
+  python tools/slice_orchestrator.py resume
+  python tools/slice_orchestrator.py status
 """
 import argparse
 import json

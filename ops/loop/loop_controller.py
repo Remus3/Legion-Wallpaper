@@ -762,8 +762,19 @@ def _iso(ts):
     except Exception:  # noqa: BLE001
         return 0.0
 
+def transcript_dir() -> Path:
+    """`transcript_dir` from config, expanded.
+
+    The config records `~/.claude/projects/...` rather than an absolute path so
+    the tracked bytes name no account (tests/test_no_account_paths.py). Both
+    spellings are expanded because a hand-edited config is as likely to reach
+    for `%USERPROFILE%` as for `~`.
+    """
+    return Path(os.path.expandvars(str(CFG["transcript_dir"]))).expanduser()
+
+
 def session_files():
-    d = Path(CFG["transcript_dir"])
+    d = transcript_dir()
     pin = CFG.get("session_jsonl")
     if pin:
         p = Path(pin)
@@ -888,7 +899,7 @@ def main():
     # persistent-session model: pin the session active at launch (the executor being
     # driven via /clear) so the meter bills it for the whole run, not whatever is newest.
     if not CFG.get("session_jsonl"):
-        d = Path(CFG["transcript_dir"])
+        d = transcript_dir()
         tops = sorted(d.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
         if tops:
             CFG["session_jsonl"] = str(tops[0])

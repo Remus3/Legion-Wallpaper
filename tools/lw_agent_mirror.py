@@ -29,7 +29,7 @@ Two rules, each because the naive version is wrong:
   definition never - nothing is appending to a transcript that is gone.
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_agent_mirror.py [--session DIR]... [--target PATH] [--quiet]
+  python tools/lw_agent_mirror.py [--session DIR]... [--target PATH] [--quiet]
 """
 import argparse
 import json

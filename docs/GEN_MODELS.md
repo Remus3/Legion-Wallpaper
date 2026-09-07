@@ -206,7 +206,7 @@ get_device_capability()==(12,0) on the RTX 5070) - no CUDA/PyTorch upgrade neede
 
 ```
 # 1. create the new side-venv (gitignored, like .venv-upscale / .venv-metrics)
-C:\Users\Administrator\AppData\Local\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
 
 # 2. install the SAME cu128 torch channel the box already runs
 #    (do NOT let pip pull a CPU/cu12x wheel)

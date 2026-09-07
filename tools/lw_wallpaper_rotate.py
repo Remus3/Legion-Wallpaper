@@ -36,6 +36,10 @@ import os
 import random
 import subprocess
 import sys
+from pathlib import Path as _P
+
+sys.path.insert(0, str(_P(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 from datetime import UTC, datetime
 from pathlib import Path
 from xml.sax.saxutils import escape as _xml_escape
@@ -55,7 +59,7 @@ SPIF_UPDATEINIFILE = 0x01
 SPIF_SENDWININICHANGE = 0x02
 
 DEFAULT_CONFIG = {
-    "source_dir": "C:\\Users\\Administrator\\Pictures",
+    "source_dir": str(lw_paths.pictures_dir()),
     "interval_minutes": 3,
     "state_path": "ops/runtime/wallpaper_deck.json",
     "extensions": [".jpg", ".jpeg", ".png", ".bmp"],
@@ -305,7 +309,8 @@ def set_wallpaper(path) -> bool:
 
 def tick(config, dry_run: bool = False, rng=None, set_wallpaper_fn=None):
     """Advance one image. Returns (exit_code, pick_or_None)."""
-    source_dir = Path(str(config.get("source_dir") or DEFAULT_CONFIG["source_dir"]))
+    source_dir = lw_paths.expand(
+        config.get("source_dir") or DEFAULT_CONFIG["source_dir"])
     state_path = Path(str(config.get("state_path") or DEFAULT_CONFIG["state_path"]))
     extensions = config.get("extensions") or DEFAULT_CONFIG["extensions"]
 

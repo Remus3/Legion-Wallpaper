@@ -38,6 +38,7 @@ import json
 import math
 import os
 import sys
+import tempfile
 import time
 
 import cv2
@@ -70,9 +71,11 @@ NAMAKX_SLUGS = [
 DEFAULT_REGION = (848, 1122, 1712, 1430)
 DEFAULT_PAD = 20
 
+# Debug dump target. Derived from the system temp dir rather than a pinned
+# per-session scratch path: the session uuid it used to carry went stale the
+# moment that session ended, and it spelled out the account name.
 _SCRATCH_DEBUG = os.path.join(
-    r"C:\Users\ADMINI~1\AppData\Local\Temp\claude\C--Legion-Wallpaper",
-    "a29d4376-03d2-40f2-85f9-719b5a3dfe9e", "scratchpad", "dekel_debug", "namakx",
+    tempfile.gettempdir(), "lw_dekel_debug", "namakx",
 )
 
 # Standard 3x3 Sobel kernels expressed as (di, dj, value) correlation taps. These

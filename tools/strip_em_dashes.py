@@ -30,9 +30,9 @@ back to a filesystem walk with the same exclusions while the repo is
 young / unborn.
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_em_dashes.py            # dry-run (default): report only
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_em_dashes.py --apply    # rewrite in place (atomic)
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_em_dashes.py --check    # drift gate: exit 1 if any offender found
+  python tools/strip_em_dashes.py            # dry-run (default): report only
+  python tools/strip_em_dashes.py --apply    # rewrite in place (atomic)
+  python tools/strip_em_dashes.py --check    # drift gate: exit 1 if any offender found
 """
 from __future__ import annotations
 

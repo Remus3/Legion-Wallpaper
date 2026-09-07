@@ -1,5 +1,5 @@
 {
-  "source_dir": "C:\\Users\\Administrator\\Pictures",
+  "source_dir": "~/Pictures",
   "interval_minutes": 3,
   "state_path": "ops/runtime/wallpaper_deck.json",
   "extensions": [".jpg", ".jpeg", ".png", ".bmp"]

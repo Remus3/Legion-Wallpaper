@@ -16,11 +16,11 @@ Versioning is cheap; lost work is not. The operator never passes up a commit + p
 
 - Identify the files authored this session: `git -C "C:/Legion Wallpaper" status -s`.
 - Run the cheap local gate on the touched surface:
-  - `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m ruff check .` (must report ALL CHECKS PASSED)
-  - `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m py_compile <each touched .py>` (syntax - silent-crash guard per CLAUDE.md hard rule)
-  - **Authored-source hygiene (ALWAYS run, every /done - CI runs these same guards via `pytest tests/` in the `check` job of `.github/workflows/ci.yml`):** `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m pytest tests/test_smart_quote_hygiene.py tests/test_mojibake_hygiene.py tests/test_u2500_hygiene.py -q`. Must be green. No smart quotes / em-en dashes / NBSP / ellipsis / mojibake / U+2500 in authored source. If this fails, it is NEVER "pre-existing / unrelated / not in CI" - it is in CI now (every push/PR via the `check` job; the nightly adds `tools/strip_em_dashes.py --check` as a style drift gate); fix it (`"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/strip_em_dashes.py --apply` for smart-quote/dash drift) before the gate is green.
+  - `python -m ruff check .` (must report ALL CHECKS PASSED)
+  - `python -m py_compile <each touched .py>` (syntax - silent-crash guard per CLAUDE.md hard rule)
+  - **Authored-source hygiene (ALWAYS run, every /done - CI runs these same guards via `pytest tests/` in the `check` job of `.github/workflows/ci.yml`):** `python -m pytest tests/test_smart_quote_hygiene.py tests/test_mojibake_hygiene.py tests/test_u2500_hygiene.py -q`. Must be green. No smart quotes / em-en dashes / NBSP / ellipsis / mojibake / U+2500 in authored source. If this fails, it is NEVER "pre-existing / unrelated / not in CI" - it is in CI now (every push/PR via the `check` job; the nightly adds `tools/strip_em_dashes.py --check` as a style drift gate); fix it (`python tools/strip_em_dashes.py --apply` for smart-quote/dash drift) before the gate is green.
   - Test slice covering the change: full `tests/` for broad edits, the targeted module for narrow ones. (Product-specific suites: TBD - product not yet defined; add them here when the LW engine exists.) **Run the FULL suite locally - do NOT defer it to CI.** Measured 2026-07-26: `pytest tests/ -q` = 577 passed / 11 skipped in **21s**. The machine-wide ritual doc (`DONE_RITUAL_OPTIMIZED.md`) moves the full suite off-machine because Riot Commander's takes ~27 min; at 21s that trade is inverted - dispatching CI would make the wrap slower AND burn metered Actions minutes. Re-measure before adopting the off-machine shape; the threshold is roughly "local suite exceeds the ~17 min CI round trip".
-  - `"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" tools/drift_guard.py` - per-session drift guard (doc budgets / command-doc SUBAGENT-FIRST parity / memory-index integrity / counted claims / untracked authored docs / cited-SHA resolvability). Exit 0 = clean. Adopted 2026-07-26 from `DONE_RITUAL_OPTIMIZED.md` sec 3. After a version bump pass the OLD version as argv[1] to sweep stale anchors.
+  - `python tools/drift_guard.py` - per-session drift guard (doc budgets / command-doc SUBAGENT-FIRST parity / memory-index integrity / counted claims / untracked authored docs / cited-SHA resolvability). Exit 0 = clean. Adopted 2026-07-26 from `DONE_RITUAL_OPTIMIZED.md` sec 3. After a version bump pass the OLD version as argv[1] to sweep stale anchors.
 - Ground truth, not memory (per CLAUDE.md Verification Discipline): run the gate FRESH this turn, read the pass/fail counts you observe now, and `ls` any test file you cite as added - never carry forward a prior or subagent-reported green. If the work came from parallel slices, the `verifier` subagent's CONFIRM is the gate, not the slice agent's claim.
 - GREEN: proceed to commit (section 1).
 - RED: fix and re-run. If the failure is pre-existing and unrelated to this session's work, note it ABOVE the banner and commit only the green-verified authored files - never commit over a regression you introduced.
@@ -113,7 +113,7 @@ Keep WAKEUP_NOTES.md to last 2-3 full sessions only. Headless spawn overhead gro
 Run the auto-prune helper:
 
 ```
-"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3
+python "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3
 ```
 
 This moves any session block past the 3 most recent into `docs/history_notes.md` (newest-first, atomic write). It is a no-op when WAKEUP_NOTES already has <=3 sessions, so always-safe to run. Add `--dry-run` first if you want to preview what would move.
@@ -124,7 +124,7 @@ Manual follow-ups (only if needed):
 
 ### 7. Memory updates
 
-- List new/modified files under `C:/Users/Administrator/.claude/projects/C--Legion-Wallpaper/memory/` since session start.
+- List new/modified files under `%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/memory/` since session start.
 - Confirm `MEMORY.md` indexes any new memories; add if missing.
 
 ### 8. Live-state safety check (TBD - product not yet defined)
@@ -134,7 +134,7 @@ Manual follow-ups (only if needed):
 
 ### 8b. Session-size check (folded from /wrap)
 
-- Find the active session jsonl: `Get-ChildItem "C:/Users/Administrator/.claude/projects/C--Legion-Wallpaper/" -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 Name, @{N='MB';E={[math]::Round($_.Length/1MB,1)}}`
+- Find the active session jsonl: `Get-ChildItem "%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/" -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 Name, @{N='MB';E={[math]::Round($_.Length/1MB,1)}}`
 - > 10 MB: add "session file > 10 MB - /clear overdue" to the banner.
 - > 20 MB: escalate ABOVE the banner - at this size compaction is lossy and the model is already degraded.
 

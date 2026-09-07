@@ -12,7 +12,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (T1 INTAKE, slugg
 
 ### 0. Preflight (mandatory, before touching any image)
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, STOP and report - the CLI is the only sanctioned writer.
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root for recent transitions, failures, and half-done intakes. Missing log = fresh pipeline; note it and continue.
 3. Run `... lw_pipeline.py scan` and check `ops/runtime/pipeline_state.json` for anomalies (STALE_LOCK, half-done T1 recovery states). Resolve or report anomalies BEFORE new intakes.

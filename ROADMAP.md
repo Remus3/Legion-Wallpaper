@@ -6,35 +6,43 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
-- **account-path-in-a-public-repo - 32 TRACKED files carry the operator home
-  path - OPEN, and split in two on purpose.** Measured 2026-09-07 after CS
-  found the class in RC's broadcast payload and RC pulled it. LW has it
-  INDEPENDENTLY and LW is public: 12 `.claude/commands/*.md`, 8 in
-  `tools/slice_orchestrator.py`, 5 each in `scripts/wakeup_prune.py` and
-  `tools/repair_mojibake.py`, and the rest across tools and tests.
-  (a) **Prose and tool literals: straight cleanup.** A path in a comment or a
-  docstring buys nothing and can be parameterised or dropped outright.
-  (b) **`.githooks/{pre-commit,commit-msg}` are LOAD-BEARING, not prose** -
-  they resolve `PY="${PYTHON:-C:/Users/<account>/.../python.exe}"` and fall
-  back to `python` on PATH, so this is a change to the gate that guards every
-  commit. Fix by resolving from the environment with the PATH fallback kept,
-  and prove the gate still refuses with `tests/test_git_hook_gate_e2e.py`
-  (which already asserts a real commit is REFUSED, with a positive control).
-  Severity is hygiene and blast radius, not a credential leak - the account is
-  the built-in Windows one and `tests/test_no_secret_literals.py` now proves no
-  tracked file carries a key. Do NOT bulk-sed this; (b) needs the e2e probe green
-  in the same commit.
-  **HISTORY, measured 2026-09-07 with the pickaxe ARMED (a known-absent string
-  returns 0, a known-present one returns 32):** 26 commits touch blobs carrying
-  the backslash form and 10 the forward-slash form, and the earliest is
-  reachable from `origin/main` - PUBLISHED. So a forward fix cleans the working
-  tree and leaves every prior blob, which is CS's point: a commit titled 'PII
-  scrub' is the thing that stops anyone checking again. **LW's decision: fix
-  forward, do NOT rewrite history a third time for a generic built-in account
-  name.** The two prior rewrites cost sha-maps that every citing doc now needs,
-  and a force-push does not purge GitHub-side unreachable objects anyway.
-  Operator can overrule; this row records the reasoning rather than leaving it
-  implied.
+- **account-path-in-a-public-repo - DONE 2026-09-07. Every tracked file is
+  clean and `tests/test_no_account_paths.py` is the standing guard.** The row's
+  own count was WRONG and the fix started by correcting it: 32 was a
+  single-separator measurement, and the real corpus was **68 tracked files** -
+  33 carrying the backslash form, 32 the forward-slash form, some both, plus
+  five the original sweep never saw (a tracked evidence artifact, a captured
+  gallery-dl fixture, two test placeholders and a stale per-session scratch path
+  using the 8.3 short name `ADMINI~1`).
+  (a) **Prose and tool literals - done.** The pinned 3.14 interpreter invoked as
+  a COMMAND collapses to `python`, which is measurably the same interpreter
+  (`command -v python` resolves to the pinned install on Legion) and is what a
+  reader can actually type; every other home path became `%LOCALAPPDATA%` /
+  `%USERPROFILE%`. 41 files, 118 occurrences, one scripted pass.
+  (b) **The load-bearing half - done, with the gate proven in the same commit.**
+  Both hooks now resolve `$PYTHON` -> `$LOCALAPPDATA`-derived pin -> `python` on
+  PATH, so the pin's intent survives with no account name;
+  `tests/test_git_hook_gate_e2e.py` is green with `LW_REQUIRE_HOOK_GATE=1` (5
+  passed: clean-ASCII commit LANDS with its trailer stripped, staged glyph
+  REFUSED, message glyph REFUSED, both with HEAD unchanged). The other
+  load-bearing sites: `.claude/settings.json`'s 11 hook commands now start with
+  bare `pythonw` (verified executing under BOTH `sh` and a real `cmd.exe`, since
+  a hook that fails to resolve dies SILENTLY - the documented trap);
+  `tools/lw_paths.py` is the new single definition of the machine layout and the
+  four `SYS_PY`/`SUITE_PY` constants import it; config values became `~`-relative
+  with expansion at the consumer.
+  **The tracked evidence artifact was rewritten by PREFIX ONLY** - every
+  measured value in `scratchpad/usm_fidelity_census.json` was asserted
+  byte-identical afterwards, so the USM ruling it backs is untouched.
+  **History: fix-forward CONFIRMED, no third rewrite.** 26 commits touch blobs
+  carrying the backslash form and the earliest is reachable from `origin/main`,
+  so the prior blobs stand. Reasons unchanged and still good: two prior rewrites
+  already cost sha-maps every citing doc needs, a force-push does not purge
+  GitHub-side unreachable objects, and the account is the built-in Windows one -
+  `tests/test_no_secret_literals.py` separately proves no tracked file carries a
+  key. Recorded exceptions the guard permits by RULE (not by name):
+  `docs/_archive/**`, dated artifacts, and the append-only ledgers. Evidence:
+  LEDGER 166.
 - **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
   cheap and both named by RC.** (1) The `reap` arm for a stale
   `reserved-<key>.lock`: plant one older than the stale window, run `reap`,

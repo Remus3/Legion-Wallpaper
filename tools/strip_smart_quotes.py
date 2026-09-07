@@ -78,9 +78,9 @@ in the report and skipped. Operator must hand-edit (or grant
 in sync with the CLAUDE.md list as files get frozen.
 
 Usage:
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py            # dry-run (default): report only
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py --apply    # rewrite in place (atomic)
-  C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/strip_smart_quotes.py --apply \
+  python tools/strip_smart_quotes.py            # dry-run (default): report only
+  python tools/strip_smart_quotes.py --apply    # rewrite in place (atomic)
+  python tools/strip_smart_quotes.py --apply \
       --allow-frozen path/to/frozen_a.py,path/to/frozen_b.py
                                              # override frozen-skip for the
                                              # listed comma-separated paths

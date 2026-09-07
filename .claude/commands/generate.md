@@ -18,7 +18,7 @@ any numbered stage, and the human 8.End Review stays the final arbiter.
 
 ### 0. Preflight (mandatory, before any generation)
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, STOP and report (single-writer rule).
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - confirm no
    in-flight intake churn on 0.Originals before you drop new loose files.
@@ -70,7 +70,7 @@ C:\Legion Wallpaper\.venv-gen\Scripts\python.exe tools\lw_gen_run.py --brief bri
 - Zero PASS: the best near-miss is copied to `<batch-dir>/review/` (human eyeball, never
   auto-deleted) and recorded in `promote.review`.
 - Operator handoff (the exact next commands lw_gen_run prints):
-  1. `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py intake --all`
+  1. `python tools/lw_pipeline.py intake --all`
   2. Then annotate the RECOVERED slug (from intake stdout `intake <file> -> <slug>`, never
      reconstructed): `... lw_pipeline.py annotate <recovered-slug> --source-url gen://lw-gen/<batch-id> --tool lw-gen --metrics @<slug>.slice.json`
 - From intake onward a generated image rides the EXACT existing chain (1.First Pass ->

@@ -34,7 +34,7 @@ def test_scan_settings_flags_invalid_json_first():
 
     A single backslash before a drive letter is not a valid JSON escape.
     """
-    bad = '{"hooks": {"PreToolUse": [{"command": "C:\\Users\\x\\py.exe"}]}}'
+    bad = '{"hooks": {"PreToolUse": [{"command": "C:\\Users\\example\\py.exe"}]}}'
     issues = DG.scan_settings(bad)
     assert any("invalid json" in i.lower() for i in issues)
 

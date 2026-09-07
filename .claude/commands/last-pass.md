@@ -12,7 +12,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 
 
 ### 0. Preflight (mandatory, before touching any image)
 
-1. Run: `C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe tools/lw_pipeline.py status`
+1. Run: `python tools/lw_pipeline.py status`
    - If `tools/lw_pipeline.py` is missing or errors, STOP and report (single-writer rule).
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - the slug's full transition history is the audit context.
 3. Targets: slugs in `images\7.Last Scratch\` (EDITING substate). Images in `images\6.Final Done\` enter via `... lw_pipeline.py start-stage <slug>` (dry-run first) which creates `_lastinitial`.

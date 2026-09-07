@@ -307,7 +307,7 @@ Components:
 Install steps (new venv, PowerShell):
 
     cd C:\Legion Wallpaper
-    & "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" -m venv .venv-upscale
+    & python -m venv .venv-upscale
     .\.venv-upscale\Scripts\python.exe -m pip install --upgrade pip
     .\.venv-upscale\Scripts\pip.exe install torch torchvision --index-url https://download.pytorch.org/whl/cu128
     .\.venv-upscale\Scripts\pip.exe install spandrel pillow numpy

@@ -103,7 +103,7 @@ this charter is armed. None are granted today.
 - Per cycle: commit + push + CI green + /done + /clear within viable context
   bounds.
 - LIVE SYNOPSIS on the Desktop
-  (C:/Users/Administrator/Desktop/LW_DEEP_AUDIT_SYNOPSIS.md, atomic writes):
+  (%USERPROFILE%/Desktop/LW_DEEP_AUDIT_SYNOPSIS.md, atomic writes):
   stages/phases todo/done, gemini<->claude handoff log (append, terse), no
   repeated findings. This is the operator's morning review artifact - keep it
   current.

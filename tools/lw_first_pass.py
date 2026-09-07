@@ -49,6 +49,7 @@ from pathlib import Path
 # lw_g1_gate is stdlib+numpy at import time (pyiqa/torch are lazy inside it), so
 # importing verdict/DEFAULT_G1_THRESHOLDS here is CI-safe.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 from lw_g1_gate import DEFAULT_G1_THRESHOLDS, verdict  # noqa: E402
 
 # --------------------------------------------------------------------------
@@ -61,7 +62,7 @@ FIRST_SCRATCH = IMAGES + r"\1.First Pass Scratch"
 FETCHED_ROOT = ROOT + r"\data\recovery\fetched"
 MATCHES_JSON = ROOT + r"\data\recovery\matches.json"
 
-SYS_PY = r"C:/Users/Administrator/AppData/Local/Programs/Python/Python314/python.exe"
+SYS_PY = lw_paths.system_python()
 UP_PY = ROOT + r"\.venv-upscale\Scripts\python.exe"
 MET_PY = ROOT + r"\.venv-metrics\Scripts\python.exe"
 PIPELINE = TOOLS + r"\lw_pipeline.py"

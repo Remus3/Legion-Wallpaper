@@ -42,9 +42,9 @@ no reverse image search at all for most of the corpus.
 
 ## 0. Corpus ground truth (checked on this machine, 2026-07-03)
 
-- Processed corpus: `C:\Users\Administrator\Pictures\` - 303 entries,
+- Processed corpus: `%USERPROFILE%\Pictures\` - 303 entries,
   `NNN.png` / `NNN_cleanup.png`, 2560x1440.
-- Originals: `C:\Users\Administrator\Desktop\need up\` staging tree
+- Originals: `%USERPROFILE%\Desktop\need up\` staging tree
   (`0.Originals` has 19 files; more `-fullview.jpg` files sit inside
   `2.First Pass Done` and other stage folders - the ~77 total is scattered,
   intake must sweep the whole tree).
@@ -265,7 +265,7 @@ never re-searches something we already own.
   302 + 77 images embed fine on CPU in minutes; GPU not required, which
   sidesteps the whole Blackwell/CUDA wheel question for this task.
 - **Python 3.14 compatibility on this box** (Python at
-  `C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe`):
+  `python`):
   - Pillow, numpy: cp314 wheels available (mid-2026). VERIFIED at the
     ecosystem level, verify exact pins at install.
   - PyWavelets (imagehash dependency): 1.9.0 added cp314 wheels 2025-08-04.
