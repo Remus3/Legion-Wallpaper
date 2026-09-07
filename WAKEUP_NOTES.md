@@ -156,6 +156,9 @@
   design needs the short repo keys agreed FIRST (`rc lw rsc cs ll`). LW's
   `ops/loop/loop_controller.py:952` passes `repo=str(ROOT)`, a full path with a
   space in it, which is exactly the value that must stop being cosmetic.
+
+---
+
 ## 2026-09-06 (late night) - both gates built: the hand-off WRITE gate and the inbox watcher
 
 - **Charters reviewed and answered, both broadcast to all five.** LW ADOPTED
@@ -192,63 +195,3 @@
   declarations of the banned-glyph rule are a real divergence risk and are
   recorded as such; the `123f` hand-clean in Photoshop is operator manual work.
 - Suite 2574 passed / 18 skipped, run fresh after both changes.
-
----
-
-## 2026-09-06 (night) - the `claude` contributor purged, and the hand-off moved in-repo
-
-- **GitHub listed `claude` as a second Contributor; the cause was NOT
-  authorship.** All 483 commits were already authored AND committed by
-  Moonbeam. It was 84 `Co-Authored-By: Claude` trailers on commits dated
-  2026-07-03 to 2026-07-26 - every one predating the commit-msg strip hook.
-- **Fixed by rewriting all 483 commits** (`git filter-repo --message-callback`)
-  and force-pushing. HEAD tree byte-identical either side (`1c558e45`), so no
-  file content moved - only shas. `aa99af3` -> `16bc443`. The contributors API
-  now returns `Remus3` alone, 483. Suite 2521 passed / 18 skipped, CI green.
-- **Every sha in the repo changed.** All 255 shas cited in tracked Markdown are
-  mapped in `docs/_archive/2026-09-06-sha-rewrite-map.md`, chained to the
-  2026-08-01 map - walk the older map first, then this one. LEDGER 154.
-- **Do NOT redo:** no further trailer sweep. `.githooks/commit-msg` already
-  strips it, re-verified active this session via `install_git_hooks.py --check`.
-- **RC's 22:05 inbox note was actioned in-session, not deferred.**
-  `LW-NEXT-SESSION.txt` moved off the Desktop into the REPO ROOT and is tracked;
-  the Desktop keeps a `.lnk` to it. LW did NOT have RC's write/consume bug -
-  there is no `--consume` mode here, so there was nothing to split. LEDGER 155.
-- **Answered RC's watcher question honestly: LW has NO inbox watcher**, measured
-  by grep, not assumed. Reply is in RC's inbox. The proposal (SessionStart hook
-  surfaces unread items against a watermark file, no daemon) is opened as
-  ROADMAP `sync-inbox-visible-at-session-start` - build it next, do not invent a
-  fourth background daemon for it.
-- **Then the cross-repo round took over the session, all of it actioned rather
-  than deferred.** RC corrected LW's inbox-watcher design before any code was
-  written (seen-FILENAME set, never an mtime watermark - a watermark loses a
-  note on a `/clear` right after session start, and loses it SILENTLY on
-  mtime-preserving delivery and clock skew). ROADMAP row carries the corrected
-  shape.
-- **Mutex names ROTATED and the disclosure prose SCRUBBED (LEDGER 156,
-  ADR-012, `1de8d4e`) - operator-approved, not taken unilaterally.** RSC was
-  holding a public flip believing it would be first to publish the shared loop
-  files; LW verified live that it already publishes them (raw URL HTTP 200) and
-  unblocked RSC. Done with every loop STOPPED because this re-pin moves the name
-  VALUES. The rotation exposed a REAL defect: `p5_probe.py` matched the mutex by
-  the substring "GEMINI", so opaque names made condition 4 report GREEN on no
-  evidence - now bound to the value, with two tests pinning it.
-- **The `hold()` release-path leak is FIXED, authored by LW (LEDGER 157,
-  `374c79e`).** LW was the unanswered party and is the other acquirer.
-  CONFIRMED on LW's tree: `loop_controller.py:916` runs every cycle under one
-  pid, so a leaked lane was unreapable for the whole run. MEASURED what RC would
-  not ship on: unlink fails under an open reader (WinError 32), in-place rewrite
-  SUCCEEDS, `tmp + os.replace` FAILS (WinError 5). So release() retries then
-  NEUTRALISES (pid 0, ts 0) and `hold()` stops logging a release that did not
-  happen.
-- **Both rounds converged the same night - VERIFIED by hashing all three trees,
-  not by their say-so.** `winmutex.py` `0b112a4f` is in LW, RC and RSC, so the
-  rotation window is CLOSED and the loop-start block is LIFTED. `slots.py`
-  `629c3d51` is in LW and RC; RSC is still on `1c4f8af4`, which is non-blocking
-  because RSC vendors that file and never acquires. drift_guard reads 0
-  breaches. Whether RC and RSC updated their own pinned digest CONSTANTS is
-  theirs to confirm - LW verified the file bytes.
-- **Next:** the 123f hand-clean (veil stage) in Photoshop - still untouched,
-  unchanged from the last three hand-offs.
-
----

@@ -1,89 +1,57 @@
-LW NEXT SESSION
-===============
+NEXT SESSION
+------------
+Task: build the executor throttle detector (LW-local, unblocked, top open
+  ROADMAP item now that account-path is closed). RC adopted LW's two-class
+  split. LOUD = the six keys already at ops/loop/loop_controller.py:499 plus
+  rate_limit / overloaded / "too many requests" / retry-after, logged with repo
+  key + slot + cycle. QUIET = a cycle whose wall-clock exceeds its own trailing
+  median while producing fewer output events than its trailing median. Today LW
+  has NOTHING on the Claude executor path; only the gemini director path is
+  instrumented.
+Context: ops/loop/loop_controller.py (:499 for the existing key list, :916 the
+  per-cycle hold, :951 the acquirer's repo= value), ops/loop/executor.py,
+  ops/loop/config.json. TDD per CLAUDE.md: failing test first.
+Acceptance: a test drives a synthetic cycle stream and asserts LOUD fires on
+  each key and QUIET fires on the slow-and-quiet cycle without firing on a
+  slow-but-productive one; full suite green; ruff clean.
 
-DONE LAST SESSION, do NOT redo: account-path-in-a-public-repo (LEDGER 166,
-  commit 56fed36, pushed, CI green). The ROADMAP's "32 tracked files" was a
-  single-separator MISCOUNT - the real corpus was 68, including five files no
-  earlier sweep saw (a tracked evidence artifact, a captured gallery-dl
-  fixture, two test placeholders, and a stale scratch path using the 8.3 short
-  name ADMINI~1). Both halves shipped: prose collapsed the pinned interpreter
-  to `python` on measured equivalence, and the two git hooks now resolve
-  $PYTHON -> a $LOCALAPPDATA-derived pin -> PATH with
-  tests/test_git_hook_gate_e2e.py green in the same commit.
-  tests/test_no_account_paths.py is the standing guard and tools/lw_paths.py is
-  the single definition of the machine layout - use it, do not re-hardcode.
-  The fix-forward-no-third-rewrite decision was re-confirmed with measurement.
-  Do not re-open the sweep, the split, or the history call.
-
-FIRST TASK, unblocked and LW-local: build the executor throttle detector. RC
-  adopted LW's two-class split. LOUD = the six keys already at
-  ops/loop/loop_controller.py:499 plus rate_limit / overloaded / too many
-  requests / retry-after, logged with repo key + slot + cycle. QUIET = a cycle
-  whose wall-clock exceeds its own trailing median while producing fewer
-  output events than its trailing median. Today LW has NOTHING on the Claude
-  executor path - only the gemini director path is instrumented.
-
-SECOND, also unblocked: delta-scan RC's tests/test_stop_claim_gate.py (63 arms)
+Second, also unblocked: delta-scan RC's tests/test_stop_claim_gate.py (63 arms)
   against LW's tests/test_claimed_green_gate.py + _history.py (48 arms) and
-  port the GENERIC arms only. Most of RC's 63 are RC-claim-specific, which is
-  why this was queued rather than bulk-copied. Both files are in
+  port the GENERIC arms only. Most of RC's are RC-claim-specific, which is why
+  this was queued rather than bulk-copied. Both files are in
   moon_sync_inbox/from-RC-verbatim/tests/.
 
-STILL BLOCKED, do not start early: the reap arm for a stale RESERVED slot lock.
-  RC ACCEPTED this amendment (its 2026-09-07-0020 note) and named LW as the
-  author, but it is blocked until the repo-key round lands - do not write the
-  reservation scheme itself, only the arm that proves reap reclaims one.
-Shape (agreed, both sides): plant a `reserved-cs.lock` older than the stale
-  window, run `reap`, assert CS can then acquire its floor. The failure this
-  prevents: under reservation a leaked lock is ONE repo silently losing its
-  guarantee while the other four see a healthy bucket - a missing reservation
-  reads as a policy decision, not as a leak, so nobody investigates it.
-Also agreed and unbuilt: pin "total holders never exceeds 5 + surplus" as an
-  assertion in tests/test_loop_concurrency.py. LW's suite is the ONLY coverage
-  ops/loop/slots.py has on either side, so a property asserted in a note is
-  asserted nowhere.
-Blocker first: the five must agree the short repo keys `rc lw rsc cs ll`. LW
-  has ADOPTED them and takes `lw`. LW's acquirer passes `repo=str(ROOT)` at
-  ops/loop/loop_controller.py:951 - a full path with a space that CHANGED
-  under this week's rename. Do NOT change that value early; it goes in the
-  same ordered round as the slots.py change.
+STILL BLOCKED, do not start early: the reap arm for a stale reserved-<key>.lock.
+  RC accepted the amendment and named LW as author, but it is blocked until the
+  five agree the short repo keys (rc lw rsc cs ll). Shape: plant a
+  reserved-cs.lock older than the stale window, run reap, assert CS can then
+  take its floor. Pair it with pinning "total holders never exceeds 5 + surplus"
+  in tests/test_loop_concurrency.py - LW's suite is the ONLY coverage
+  ops/loop/slots.py has on either side. Do NOT change the repo= value at
+  loop_controller.py:951 early; it goes in the same ordered round.
 
-Context: ops/loop/slots.py (byte-identical-by-contract with RC - any change
-  needs a re-sync and a re-hash from THIS disk), tests/test_loop_concurrency.py
-  (pinned digests; never regenerate them to make something pass),
-  moon_sync_inbox/ for the round.
+Do NOT redo: account-path-in-a-public-repo is CLOSED (LEDGER 166, 56fed36) -
+  68 files, not the 32 the old ROADMAP row claimed; tests/test_no_account_paths.py
+  is the standing guard and tools/lw_paths.py is the single definition of the
+  machine layout, so resolve paths through it rather than re-hardcoding. The
+  fix-forward / no-third-history-rewrite call was re-confirmed with measurement.
+  The inbox slice is CLOSED too (LEDGER 167, 13c0f36): the inverted paragraph in
+  tools/lw_facts.py is DELETED, property 6 is proven by
+  tests/test_inbox_report_is_idempotent.py, and
+  tests/test_hook_interpreter_resolves.py pins that bare pythonw is not a Store
+  stub. The hook refusal probe (LEDGER 160), the settings split (161) and the
+  ack fix (162) all shipped. Repo keys, both slot amendments, the clock
+  convention and the watcher design are ANSWERED - do not re-litigate.
 
-Do NOT redo: the hook refusal probe (LEDGER 160, 0d5211a) is ported, proven by
-  mutation, and CI arms LW_REQUIRE_HOOK_GATE=1 in all three jobs. The settings
-  split (LEDGER 161, 09a68f4) and the acknowledgement fix (LEDGER 162) both
-  shipped. Repo keys, both slot amendments and the clock convention are
-  ANSWERED - do not re-litigate.
-
-Rituals, both added because they were violated:
-  * Stamp cross-repo notes with REAL wall clock and say so. LW's skew was the
-    worst measured (+375 min). Check `date` before naming a note.
-  * Read inbox notes, THEN ack. The ack now only marks what the last report
-    SHOWED, so the mechanism backs the ritual - but `--mark-inbox-seen --all`
-    still marks everything, so do not reach for it out of habit.
+Inbox at hand-off: 0 unread of 99. Everything through 2026-09-07T02:45 is read
+  and answered; LW's reply went to all four sibling inboxes. Anything unread
+  next session is genuinely new.
+Rituals: stamp cross-repo notes with REAL wall clock off `date` and say so
+  (LW's old skew was +375 min, so LW's own earlier notes sort wrong). Read
+  inbox notes THEN ack - the ack marks only what the last report SHOWED, so
+  acking after a stale report is a safe no-op, and --all is a deliberate
+  baseline reset, not a habit. Review the inbox SUBDIRECTORIES too, not only
+  the .md notes.
 
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log. Read any unread mail FIRST, then ack.
-
-STANDING RITUAL (operator, 2026-09-07, given to all five repos): review the
-  sync inbox AND ITS SUBDIRECTORIES - notes and payload directories both - for
-  ingest, review, implementation and REPLY. Not only the .md notes. LW had
-  ingested 1 of 48 files from from-RC-verbatim/ before this landed; the full
-  disposition is LEDGER 163 and the broadcast note
-  2026-09-07-0001-from-LW-verbatim-payload-reviewed...
-
-INBOX STATE at hand-off: 0 unread of 97, re-checked mid-session. Everything
-  through 2026-09-07T02:30 was READ and ANSWERED in four broadcast notes (0001,
-  0130, 0155, 0230); the newest note on disk is 0210-from-CS. Anything unread
-  next session is genuinely new. Nothing owed in reply.
-
-WATCHER STATE at hand-off (LEDGER 165): it runs at BOTH SessionStart and
-  UserPromptSubmit, so mail landing mid-session surfaces on your next message
-  instead of next session. Entries are keyed on CONTENT (name + sha256; payload
-  directories on a receiver-side digest over the files on disk), so an in-place
-  CORRECTION to a note re-reports. The seen set was re-baselined once with
-  --mark-inbox-seen --all when the key changed - that was deliberate.
