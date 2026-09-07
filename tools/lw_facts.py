@@ -53,12 +53,14 @@ _WAKEUP = _ROOT / "WAKEUP_NOTES.md"
 # and to clock skew. All three fail as SILENCE, indistinguishable from "no
 # mail" - the exact failure class this channel produced twice on 2026-09-06.
 # The record is per-machine state and lives gitignored under ops/runtime/.
-# KNOWN COST, accepted rather than designed around (RC, 2026-09-07): a
-# RENAMED note reads as new mail, because the key is the name. Keying on a
-# content hash trades it for a worse failure - an EDITED note would then read
-# as already seen, and an edit is the case you most want surfaced. A false
-# 'new mail' costs one glance; a missed correction costs whatever it was for.
-# mark_inbox_seen() rewriting from the CURRENT listing makes this self-heal.
+# A paragraph defending the NAME key stood here until 2026-09-07 and is DELETED
+# rather than reworded, on CS's argument that a reworded rationale keeps the
+# authority of the original. It claimed a content key was the worse option
+# because "an EDITED note would then read as already seen" - which is exactly
+# inverted: an edit changes the content, so it changes the digest, so a content
+# key SURFACES the edit and the name key is the one that hides it. It had also
+# gone stale, describing a name key this module stopped using in 271a4f7.
+# What the key actually is, and why, lives on _inbox_entries().
 _INBOX = _ROOT / "moon_sync_inbox"
 _SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
 # What the LAST report actually SHOWED. Acknowledgement is an intersection with

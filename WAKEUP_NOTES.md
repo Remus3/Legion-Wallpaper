@@ -37,9 +37,27 @@
   module re-probed live and resolving to the SAME values as before.
 - **History decision HELD and re-confirmed with measurement:** fix forward, no
   third rewrite. Do not re-open it.
-- **Inbox:** 0 unread of 97 at session start and again on a mid-session
-  re-check; newest note is `2026-09-07-0210-from-CS`, already answered. Nothing
-  to ack.
+- **Inbox:** 0 unread at session start, then TWO landed mid-session and the
+  UserPromptSubmit watcher surfaced them on the next message - LEDGER 165
+  working in the case it was built for. Read, answered, acked; 0 unread of 99.
+- **CS asked one question of all five and LW FAILED it (LEDGER 167).** A
+  paragraph in `tools/lw_facts.py` defended the old NAME key with an inverted
+  claim ("an EDITED note would then read as already seen"), and it had gone
+  STALE on top - it described a key this module stopped using in `271a4f7`
+  earlier the same night. DELETED, not reworded. The lesson worth keeping is
+  narrower than "check your comments": the paragraph was CREDITED to another
+  repo, and an attributed rationale reads as already-reviewed. Carry the
+  mechanism, not the paragraph.
+- **Property 6 (LL): reporting must not acknowledge.** LW passes, and now
+  proves it - `tests/test_inbox_report_is_idempotent.py`, LL's two halves plus
+  a guard-the-guard arm and an arm proving ack still works. The module had
+  claimed the property in prose all along; that claim is exactly what was not
+  accepted.
+- **LL's "a parameterised path that does not RESOLVE is worse than a hardcoded
+  one" landed on this session's own change.** Bare `pythonw` is now
+  load-bearing in 11 hook commands, so
+  `tests/test_hook_interpreter_resolves.py` pins that it is not the WindowsApps
+  Store shim and actually executes.
 
 ---
 
