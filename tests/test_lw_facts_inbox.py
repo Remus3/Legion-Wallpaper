@@ -709,3 +709,92 @@ def test_acknowledging_a_withdrawal_does_not_mark_UNREAD_mail_as_read(tmp_path):
     (box / "c.md").write_bytes(b"new" + NEWLINE.encode())
     block = NEWLINE.join(_probe_r(box, rec, rep))
     assert "1 UNREAD" in block and "c.md" in block, block
+
+
+# ---------------------------------------------------------------------------
+# 8. the walker: what cannot be digested is REPORTED, never silently dropped
+# ---------------------------------------------------------------------------
+#
+# CS's 0718 note, section 6. A read-only adversary found four ways to make a
+# subdirectory-walking watcher report a real deliverable ZERO times, none of
+# them exotic and none needing an attacker. LW walks subdirectories, so they
+# were LW's to check.
+#
+# Measured here 2026-09-07 before these arms existed:
+#
+#   junction inside a drop   `is_symlink()` is FALSE for one, so rglob descended
+#                            it and a ONE-FILE drop reported 32 files - CS's
+#                            exact number, reproduced independently. With a
+#                            large file behind the junction that is a hook that
+#                            outlives its timeout, and a killed hook surfaces
+#                            NOTHING: a whole-channel outage from one link.
+#   neither file nor dir     `if is_dir() / elif is_file()` had no `else`, so an
+#                            entry both calls answer False for fell off the end
+#                            of the loop. Exit 0, confident count, deliverable
+#                            invisible.
+#
+# NOT reproduced here, and not claimed: CS's trailing-dot and trailing-space
+# filenames. Creating one on this box fails with ERROR_INVALID_NAME through
+# both `open()` and `CreateFileW`, so LW cannot measure that route and does not
+# assert it either way. The `else` branch covers the CLASS regardless of which
+# route produces it, which is why the arm below builds the condition directly
+# rather than through a filename trick that may not port.
+#
+# CS's rule, adopted: WHAT CANNOT BE DIGESTED IS FORCED INTO EVERY REPORT WITH
+# ITS REASON, never keyed silently and never dropped.
+
+
+def _junction(link, target) -> bool:
+    """A real NTFS junction, or False if this box will not make one."""
+    import subprocess
+    r = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
+                       capture_output=True, text=True, creationflags=0x08000000)
+    return r.returncode == 0
+
+
+def test_a_junction_inside_a_drop_is_not_descended(tmp_path):
+    box = tmp_path / "moon_sync_inbox"
+    box.mkdir()
+    drop = box / "from-XX-verbatim"
+    drop.mkdir()
+    (drop / "one.bin").write_bytes(b"x" * 10)
+    if not _junction(drop / "loop", box):
+        import pytest
+        pytest.skip("this box will not create a junction")
+
+    entries = lw_facts._inbox_entries(box)
+    display = [d for _, d in entries][0]
+    assert "1 file" in display, (
+        f"the walker descended a junction - a one-file drop reported {display!r}")
+
+
+def test_an_entry_that_is_NEITHER_file_nor_directory_is_reported(tmp_path):
+    """The both-false path, built directly rather than through a filename trick.
+
+    A dangling link, a name Windows normalises away, a race between listing and
+    stat - they all arrive here, and the property is the same for every one of
+    them: it must appear in the report with a reason.
+    """
+    box = tmp_path / "moon_sync_inbox"
+    box.mkdir()
+    (box / "normal.md").write_bytes(b"ok" + NEWLINE.encode())
+    ghost = box / "vanished.md"
+    ghost.write_bytes(b"gone" + NEWLINE.encode())
+
+    real_iterdir = type(box).iterdir
+
+    def _iterdir(self):
+        items = list(real_iterdir(self))
+        if self == box:
+            ghost.unlink(missing_ok=True)   # neither file nor dir by the time it is classified
+        return iter(items)
+
+    import unittest.mock as mock
+    with mock.patch.object(type(box), "iterdir", _iterdir):
+        entries = lw_facts._inbox_entries(box)
+
+    displays = [d for _, d in entries]
+    assert any("vanished.md" in d for d in displays), (
+        f"an unclassifiable entry was silently dropped: {displays}")
+    assert any("vanished.md" in d and "?" in d for d in displays), (
+        f"it must carry its reason, not pose as a normal note: {displays}")

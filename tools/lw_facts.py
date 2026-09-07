@@ -32,6 +32,8 @@ import hashlib
 import csv
 import io
 import json
+import os
+import stat
 import subprocess
 import sys
 import time
@@ -300,6 +302,64 @@ def _file_digest(p: Path) -> str:
         return f"unreadable:{type(exc).__name__}"
 
 
+_REPARSE = 0x400          # FILE_ATTRIBUTE_REPARSE_POINT
+_WALK_BUDGET = 5000       # entries per drop, then the walk reports and stops
+
+
+def _is_reparse(p: Path) -> bool:
+    """True for a junction, a symlink, or any other reparse point.
+
+    `Path.is_symlink()` alone is NOT enough and that is the whole finding: it is
+    FALSE for an NTFS junction. CS measured a one-file payload reporting 32
+    files because `rglob` descended one, and LW reproduced exactly that number
+    here before this existed. The cost is not a wrong count - a junction over a
+    large tree runs the walk past the hook's timeout, the hook is killed, and a
+    killed hook surfaces NOTHING at all.
+    """
+    try:
+        st = os.lstat(p)
+    except OSError:
+        return False
+    return bool(getattr(st, "st_file_attributes", 0) & _REPARSE) or stat.S_ISLNK(st.st_mode)
+
+
+def _walk_drop(d: Path) -> list[tuple[str, str]]:
+    """`(relative posix path, digest-or-reason)` for a drop, without following links.
+
+    Iterative and pruned rather than `rglob`, which cannot be told not to follow
+    a junction. CS's rule is the shape: what cannot be digested is carried into
+    the key WITH ITS REASON rather than skipped, so a file that turns
+    unreadable, a link that appears, or a tree that blows the budget all MOVE
+    the key instead of quietly leaving it equal.
+    """
+    out: list[tuple[str, str]] = []
+    stack = [d]
+    seen = 0
+    while stack:
+        cur = stack.pop()
+        try:
+            children = sorted(cur.iterdir())
+        except OSError as exc:
+            out.append((cur.relative_to(d).as_posix() or ".",
+                        f"unreadable-dir:{type(exc).__name__}"))
+            continue
+        for q in children:
+            seen += 1
+            if seen > _WALK_BUDGET:
+                out.append(("", f"budget-exceeded:{_WALK_BUDGET}"))
+                return out
+            rel = q.relative_to(d).as_posix()
+            if _is_reparse(q):
+                out.append((rel, "reparse-point"))
+            elif q.is_dir():
+                stack.append(q)
+            elif q.is_file():
+                out.append((rel, _file_digest(q)))
+            else:
+                out.append((rel, "unclassifiable"))
+    return out
+
+
 def _drop_digest(d: Path) -> str:
     """Digest of a payload directory, over what is actually ON DISK.
 
@@ -314,12 +374,7 @@ def _drop_digest(d: Path) -> str:
     exactly the assumption a watcher exists to remove. The manifest is still
     worth shipping; it just cannot be the key.
     """
-    lines = []
-    for q in sorted(d.rglob("*")):
-        if not q.is_file():
-            continue
-        rel = q.relative_to(d).as_posix()
-        lines.append(f"{rel}\0{_file_digest(q)}")
+    lines = [f"{rel}\0{mark}" for rel, mark in _walk_drop(d)]
     joined = "\n".join(sorted(lines))
     return hashlib.sha256(joined.encode("utf-8", "replace")).hexdigest()
 
@@ -342,13 +397,28 @@ def _inbox_entries(inbox: Path) -> list[tuple[str, str]]:
     for p in inbox.iterdir():
         if p.name.startswith("_"):
             continue
-        if p.is_dir():
-            n = sum(1 for q in p.rglob("*") if q.is_file())
+        if _is_reparse(p):
+            # Reported, never followed and never opened. A link is a claim about
+            # somewhere else; the watcher's job is to say that it arrived.
+            out.append((f"{p.name}#reparse", f"{p.name} (? link, not followed)"))
+        elif p.is_dir():
+            walked = _walk_drop(p)
+            n = sum(1 for _, mark in walked if len(mark) == 64)
+            odd = sorted({m.split(":")[0] for _, m in walked if len(m) != 64})
             manifest = " +manifest" if (p / "MANIFEST.sha256").is_file() else ""
+            note = f", ? {'/'.join(odd)}" if odd else ""
+            plural = "" if n == 1 else "s"
             out.append((f"{p.name}/#{_drop_digest(p)[:12]}",
-                        f"{p.name}/ ({n} files{manifest})"))
+                        f"{p.name}/ ({n} file{plural}{manifest}{note})"))
         elif p.is_file():
             out.append((f"{p.name}#{_file_digest(p)[:12]}", p.name))
+        else:
+            # NEITHER, which an `if`/`elif` with no `else` dropped off the end of
+            # the loop: a dangling link, a name Windows normalises away, or a
+            # file deleted between the listing and the classification. CS
+            # measured two real deliverables going invisible under exit 0.
+            out.append((f"{p.name}#unclassifiable",
+                        f"{p.name} (? neither file nor directory)"))
     return sorted(out, key=lambda e: e[1])
 
 
