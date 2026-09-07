@@ -1,35 +1,33 @@
 NEXT SESSION
 ------------
+Shared-file state, VERIFIED by hashing all three trees at 04:55 (not taken on
+report) - re-verify before trusting it, siblings move independently:
+  ops/loop/winmutex.py 0b112a4f - LW + RC + RSC all landed. The mutex ROTATION
+    (ADR-012) is CLOSED and the loop-start block is LIFTED.
+  ops/loop/slots.py    629c3d51 - LW + RC landed. RSC still on 1c4f8af4, which
+    is non-blocking: RSC vendors the file and never acquires. Close the ROADMAP
+    row when RSC lands it.
+  Whether RC/RSC updated their own pinned digest CONSTANTS is theirs to confirm;
+  LW verified the file bytes only. drift_guard reads 0 breaches.
 Task: build ROADMAP `sync-inbox-visible-at-session-start` - surface UNREAD
-  moon_sync_inbox items in the SessionStart hook, so a cross-repo note no
-  longer sits until a human happens to mention it.
-Context: tools/lw_facts.py is the existing SessionStart hook that prints live
-  state (shared 8s budget, every probe in its own try/except - keep it that
-  way, a crashed hook loses the whole live-state block). moon_sync_inbox/ is
-  the gitignored channel. Read the ROADMAP row FIRST - the design was
-  CORRECTED before any code was written: the record is a set of seen
-  FILENAMES in ops/runtime/sync_inbox_seen.json, NOT an mtime watermark. The
-  hook REPORTS and never acknowledges; a separate --mark-inbox-seen does,
-  rewriting the set from the current listing so pruning is automatic.
-  Exclude `_`-prefixed drafts. Background: RC's note
-  moon_sync_inbox/2026-09-06-2215-from-RC-adopted-your-hook-design-with-one-
-  change.md and LW's reply in "C:\Riot Commander\moon_sync_inbox\".
+  moon_sync_inbox items in the SessionStart hook.
+Context: tools/lw_facts.py is the existing SessionStart hook (shared 8s budget,
+  every probe in its own try/except - keep it that way). Read the ROADMAP row
+  FIRST: the record is a set of seen FILENAMES in
+  ops/runtime/sync_inbox_seen.json, NOT an mtime watermark (corrected by RC
+  before any code was written). The hook REPORTS and never acknowledges; a
+  separate --mark-inbox-seen does, rewriting the set from the current listing so
+  pruning is automatic. Exclude _-prefixed drafts.
 Acceptance: a file dropped into moon_sync_inbox/ appears as unread in the NEXT
   session's first context window; acknowledging is idempotent; a note deleted
-  from the inbox leaves no entry behind; no new scheduled task and no daemon;
-  full suite green.
-Do NOT redo: (1) the Claude co-author trailer purge - LEDGER 154, all 483 shas
-  moved, aa99af3 -> 16bc443, contributors API verified returning Remus3 alone;
-  map at docs/_archive/2026-09-06-sha-rewrite-map.md. (2) the hand-off move
-  into the repo root - LEDGER 155. Both shipped and pushed.
-OPERATOR DECISION PENDING (do not take it unilaterally): RSC asked whether to
-  keep publishing ops/loop/winmutex.py + slots.py. LW verified it already
-  publishes both - repo public since 2026-08-01, raw URL returns HTTP 200 - so
-  RSC was unblocked with "accept". What is still open is whether LW rotates the
-  mutex names and scrubs the capability/defect prose in
-  docs/specs/2026-07-26-f1-sdk-executor-channel.md:158,182,186,
-  docs/CONCURRENCY_MEASURED_2026-08-01.md:34, docs/history_notes.md:2385 and
-  docs/LEDGER.md:4419. Going forward only - history keeps the originals.
+  from the inbox leaves no entry behind; no daemon; full suite green.
+Do NOT redo, all shipped and pushed tonight:
+  - the Claude co-author trailer purge (LEDGER 154; all 483 shas moved,
+    aa99af3 -> 16bc443; map docs/_archive/2026-09-06-sha-rewrite-map.md)
+  - the hand-off move into the repo root (LEDGER 155)
+  - the mutex rotation + disclosure scrub (LEDGER 156, ADR-012) - operator
+    APPROVED and landed in all three repos
+  - the slots hold() release-path fix (LEDGER 157) - LW authored the bytes
 Also open, unchanged: the 123f hand-clean (veil stage) in Photoshop - operator
   manual work.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +

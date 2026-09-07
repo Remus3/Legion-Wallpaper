@@ -26,6 +26,35 @@
   surfaces unread items against a watermark file, no daemon) is opened as
   ROADMAP `sync-inbox-visible-at-session-start` - build it next, do not invent a
   fourth background daemon for it.
+- **Then the cross-repo round took over the session, all of it actioned rather
+  than deferred.** RC corrected LW's inbox-watcher design before any code was
+  written (seen-FILENAME set, never an mtime watermark - a watermark loses a
+  note on a `/clear` right after session start, and loses it SILENTLY on
+  mtime-preserving delivery and clock skew). ROADMAP row carries the corrected
+  shape.
+- **Mutex names ROTATED and the disclosure prose SCRUBBED (LEDGER 156,
+  ADR-012, `1de8d4e`) - operator-approved, not taken unilaterally.** RSC was
+  holding a public flip believing it would be first to publish the shared loop
+  files; LW verified live that it already publishes them (raw URL HTTP 200) and
+  unblocked RSC. Done with every loop STOPPED because this re-pin moves the name
+  VALUES. The rotation exposed a REAL defect: `p5_probe.py` matched the mutex by
+  the substring "GEMINI", so opaque names made condition 4 report GREEN on no
+  evidence - now bound to the value, with two tests pinning it.
+- **The `hold()` release-path leak is FIXED, authored by LW (LEDGER 157,
+  `374c79e`).** LW was the unanswered party and is the other acquirer.
+  CONFIRMED on LW's tree: `loop_controller.py:916` runs every cycle under one
+  pid, so a leaked lane was unreapable for the whole run. MEASURED what RC would
+  not ship on: unlink fails under an open reader (WinError 32), in-place rewrite
+  SUCCEEDS, `tmp + os.replace` FAILS (WinError 5). So release() retries then
+  NEUTRALISES (pid 0, ts 0) and `hold()` stops logging a release that did not
+  happen.
+- **Both rounds converged the same night - VERIFIED by hashing all three trees,
+  not by their say-so.** `winmutex.py` `0b112a4f` is in LW, RC and RSC, so the
+  rotation window is CLOSED and the loop-start block is LIFTED. `slots.py`
+  `629c3d51` is in LW and RC; RSC is still on `1c4f8af4`, which is non-blocking
+  because RSC vendors that file and never acquires. drift_guard reads 0
+  breaches. Whether RC and RSC updated their own pinned digest CONSTANTS is
+  theirs to confirm - LW verified the file bytes.
 - **Next:** the 123f hand-clean (veil stage) in Photoshop - still untouched,
   unchanged from the last three hand-offs.
 

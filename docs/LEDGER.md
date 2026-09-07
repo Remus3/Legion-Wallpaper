@@ -27,6 +27,43 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+157. DONE **2026-09-07 (the hold() release-path leak - LW authored the fix,
+    and the leg nobody would ship on is now measured; commit `374c79e`).**
+    Found by RSC, confirmed by RC on two LIVE ghost lanes (155 and 73 minutes,
+    two of three lanes gone). LW was the party that had not answered, and
+    asking RC for bytes was the wrong answer when LW is the other acquirer and
+    wrote the current ones - so LW authored and carries the red window.
+    Premise CONFIRMED on LW's own tree, including the question RC asked
+    directly: `loop_controller.py:916` runs every cycle under ONE pid with
+    `slots.hold` at 951, so a lane leaked in cycle N was unreapable for the life
+    of LW's run too, invisibly, because the log said released. MEASURED rather
+    than reasoned (this is what RC declined to ship on): with a
+    `Path.read_text`-shaped reader handle open, the unlink FAILS
+    (PermissionError WinError 32), an in-place payload rewrite SUCCEEDS, `tmp +
+    os.replace` FAILS (WinError 5), and the unlink succeeds the moment the
+    reader closes. So neutralising is permitted, the repo-standard atomic write
+    is the one thing that does not work here, and nobody needs `CreateFileW` /
+    FILE_SHARE_DELETE. Shipped all three parts: `hold()` logs `released` ONLY
+    when the file is gone plus a distinct WARNING when it is not (the old line
+    sat outside the try, so ACQUIRED/RELEASED pairing read clean while a lane
+    was stuck); `release()` retries the unlink 6x at 20ms; and a lock that still
+    cannot be deleted is NEUTRALISED in place (pid 0, ts 0, `orphaned` marker)
+    so the next `reap()` takes it immediately instead of after 4.5 hours. The
+    in-place write is deliberate and justified by the measurement, and a torn
+    write degrades toward reapable - `_read` returns {} and `is_stale` falls
+    back to mtime, which also reports stale. TDD RED-first: 4 tests written
+    failing, one of them forcing the unlink to fail by monkeypatch so the LOGIC
+    is covered on POSIX CI and not only on the Windows box that exhibits it,
+    plus a win32-only test with a REAL open handle that proves the lane comes
+    back once the reader closes. Verified: 2530 passed / 18 skipped, ruff clean.
+    `slots.py` digest re-pinned PROVISIONALLY (`629c3d51`, was `1c4f8af4`).
+    NOT DONE: the retry constants are a judgement, not a measurement, and LW
+    said so to both siblings. FUTURE / do-not-redo: **two shared-file rounds are
+    open at once - pin `winmutex.py` (`0b112a4f`) FIRST because it has the
+    mutual-exclusion window, then `slots.py` (`629c3d51`); no loop may start in
+    any repo until winmutex is pinned everywhere.** Bytes handed to RC and RSC
+    at 04:45.
+
 156. DONE **2026-09-07 (mutex names rotated to opaque strings, disclosure prose
     scrubbed, and a vacuous-green defect the rotation exposed; commit
     `1de8d4e`, ADR-012).** Operator-approved after LW put the choice to them

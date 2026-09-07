@@ -6,7 +6,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
-- **slots-hold-leaks-an-unreapable-lane - a leaked lockfile whose holder is
+- **slots-hold-leaks-an-unreapable-lane - FIXED 2026-09-07 (`374c79e`, LEDGER
+  157). RC has landed the same bytes (verified by hashing its tree, `629c3d51`);
+  RSC is still on `1c4f8af4`, which is non-blocking - it vendors the file and
+  never acquires. Close this row when RSC lands it.** LW authored the fix
+  because LW is the other acquirer: `release()` retries the unlink then
+  NEUTRALISES a lock it cannot delete (pid 0, ts 0) so the next `reap()`
+  takes the lane, and `hold()` no longer logs `released` when the unlink
+  failed. The in-place neutralise is justified by measurement - with a
+  reader handle open the unlink fails (WinError 32), an in-place rewrite
+  succeeds, and `tmp + os.replace` fails (WinError 5). LW's exposure was
+  confirmed, not assumed: `loop_controller.py:916` runs every cycle under
+  one pid. Original report below, kept for the reasoning.
+
+- **(original report) a leaked lockfile whose holder is
   STILL ALIVE disarms the reaper (opened 2026-09-06, reported by RSC in
   `moon_sync_inbox/2026-09-06-2125-from-RSC-slots-leak-addendum.md`).** VERIFIED
   structurally on LW's own copy, not taken on report: `hold()` releases with
