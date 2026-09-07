@@ -1,14 +1,20 @@
-"""Resolve and write the LW Desktop hand-off file, with the namespace guarded.
+"""Resolve and write the LW next-session hand-off file, namespace guarded.
 
-The Legion Desktop is shared by three concurrent sessions - LW, RC and RM -
-and each ends a session by OVERWRITING its own `<PREFIX>-NEXT-SESSION.txt`.
-The prefix is the only thing keeping one repo's hand-off off another's, so the
-write target is never taken on trust.
+The hand-off lands in the REPO ROOT and is tracked in git (moved off the
+Desktop 2026-09-06, operator-directed via RC's cross-repo note). The Desktop
+was untracked, unversioned and unreviewable: nothing could notice a hand-off
+going stale, and no diff showed what the last session actually handed over.
+The Desktop keeps a SHORTCUT to the repo file, so operator access is unchanged.
+
+The `LW-` prefix stays on the filename even though it is now redundant in-repo.
+The Desktop shortcuts are still a shared surface and need distinguishable
+names, and the prefix is also what stops a doctored intent document from
+naming an arbitrary write target.
 
 Contract:
-  * default target is `~/Desktop/LW-NEXT-SESSION.txt`;
+  * default target is `<repo root>/LW-NEXT-SESSION.txt`;
   * an optional on-disk intent document may name a DIFFERENT file, but only a
-    bare filename under the Desktop that starts with `LW-`;
+    bare filename in the repo root that starts with `LW-`;
   * every other value - absolute path, drive letter, `..` segment, any path
     separator, empty/blank, non-string, malformed or missing document - falls
     back to the default instead of being honoured.
@@ -92,14 +98,14 @@ def choose_filename_from_intent(intent_path=None):
     return choose_filename(doc[INTENT_KEY])
 
 
-def resolve_target(home=None, intent_path=None):
+def resolve_target(root=None, intent_path=None):
     """The full path the hand-off will be written to."""
-    base = Path(home) if home is not None else Path.home()
+    base = Path(root) if root is not None else ROOT
     name, _reason = choose_filename_from_intent(intent_path)
-    return base / "Desktop" / name
+    return base / name
 
 
-def write_handoff(text, home=None, intent_path=None):
+def write_handoff(text, root=None, intent_path=None):
     """Atomically write `text` to the resolved target. Returns the path written.
 
     Raises ValueError on non-ASCII content: the hand-off is authored text and
@@ -113,7 +119,7 @@ def write_handoff(text, home=None, intent_path=None):
         raise ValueError(
             f"hand-off content is not 7-bit ASCII at position {exc.start}: "
             f"{text[exc.start:exc.end]!r}") from exc
-    target = resolve_target(home=home, intent_path=intent_path)
+    target = resolve_target(root=root, intent_path=intent_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(target.name + ".tmp")
     tmp.write_text(text, encoding="ascii", newline="\n")
@@ -122,7 +128,7 @@ def write_handoff(text, home=None, intent_path=None):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="LW Desktop hand-off writer")
+    ap = argparse.ArgumentParser(description="LW next-session hand-off writer")
     ap.add_argument("--path", action="store_true",
                     help="print the resolved target and exit")
     ap.add_argument("--write", metavar="FILE",

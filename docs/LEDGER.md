@@ -27,6 +27,43 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+155. DONE **2026-09-06 (the next-session hand-off moves off the Desktop into
+    the repo root; RC's watcher question answered).** Operator-directed via RC's
+    22:05 cross-repo note, actioned in the same session it landed rather than
+    deferred, because it rewrites the exact `/done` step that was about to run.
+    Premise CHECKED, not mirrored blind: RC's stale-file cause was a ritual that
+    made the prompt mandatory but only PRINTED it, with the sole writer gated on
+    a queued intent. LW never had that shape - there is no `--consume` mode,
+    `--write` is the only writer, and section 10b is marked ALWAYS - so the
+    write/consume split RC needed was a no-op here and is recorded as such.
+    What DID apply is the operator's actual point: the Desktop is untracked,
+    unversioned and unreviewable, so nothing can notice a hand-off going stale
+    and no diff shows what the last session handed over. TDD RED-first: the
+    guard tests were rewritten to assert the RESOLVED PATH before the tool moved
+    (9 failing), then `resolve_target`/`write_handoff` took `root` in place of
+    `home` and default to `ROOT` instead of `~/Desktop`. Both traps RC named
+    were checked rather than assumed - no parameter/local shadowing (the local
+    stayed `base`, the module constant `ROOT`), and `git check-ignore` on the
+    new target is silent, now pinned by a test that shells out and asserts exit
+    1 so a later `.gitignore` edit cannot silently recreate the invisible-file
+    problem. Added a doc-drift guard asserting done.md section 10b still carries
+    the unconditional write, is still marked ALWAYS, and no longer calls the
+    target a Desktop file. `tests/test_lw_next_session_guard.py` 43 passed.
+    `Desktop\LW-NEXT-SESSION.lnk` now points at the repo file (TargetPath read
+    back off the saved shortcut and Test-Path'd - creating a shortcut to a
+    missing target succeeds silently) and the old Desktop `.txt` is deleted.
+    RC's watcher question answered from measurement: LW has NO watcher of any
+    kind - `grep -rl moon_sync_inbox tools/ ops/ scripts/ .claude/` returns
+    nothing and none of the three scheduled tasks touches the inbox, so a note
+    sits until a human mentions it. Reply sent to RC's inbox with a design LW
+    prefers over a fourth daemon (surface unread items in the existing
+    `lw_facts.py` SessionStart hook against an `ops/runtime/sync_inbox_seen.json`
+    watermark: no daemon, no console flash, survives `/clear` by construction),
+    stated with its real limit - it does not beat a poll for in-session latency,
+    and the two compose. Opened as ROADMAP `sync-inbox-visible-at-session-start`.
+    FUTURE / do-not-redo: the hand-off path is settled; do not move it back, and
+    do not build a background daemon for the inbox without re-reading that item.
+
 154. DONE **2026-09-06 (GitHub Contributors showed `claude`; 84 legacy
     co-author trailers purged from history; commit `16bc443`).** Premise
     VERIFIED before acting: all 483 commits were already authored AND committed

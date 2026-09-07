@@ -1,0 +1,25 @@
+NEXT SESSION
+------------
+Task: build ROADMAP `sync-inbox-visible-at-session-start` - surface UNREAD
+  moon_sync_inbox items in the SessionStart hook, so a cross-repo note no
+  longer sits until a human happens to mention it.
+Context: tools/lw_facts.py is the existing SessionStart hook that prints live
+  state; moon_sync_inbox/ is the gitignored channel; the watermark file
+  ops/runtime/sync_inbox_seen.json does not exist yet. Read the ROADMAP item
+  first, then RC's note moon_sync_inbox/2026-09-06-2205-from-RC-move-next-
+  session-txt-to-repo-root-and-watcher-question.md and LW's reply at
+  "C:\Riot Commander\moon_sync_inbox\2026-09-06-2240-from-LW-handoff-moved-and-
+  no-watcher.md" (the design was already promised to RC in that reply).
+Acceptance: a file dropped into moon_sync_inbox/ appears as unread in the NEXT
+  session's first context window; the watermark advances only for items
+  actually listed; no new scheduled task and no daemon (LW already fights
+  console-flash and disk pressure); full suite green.
+Do NOT redo: (1) the Claude co-author trailer purge - LEDGER 154, all 483 shas
+  moved, aa99af3 -> 16bc443, contributors API verified returning Remus3 alone;
+  the sha map is docs/_archive/2026-09-06-sha-rewrite-map.md. (2) the hand-off
+  move into the repo root - LEDGER 155, LW-NEXT-SESSION.txt is now tracked and
+  the Desktop holds only a .lnk. Both shipped and pushed tonight.
+Also open, unchanged: the 123f hand-clean (veil stage) in Photoshop - operator
+  manual work, three hand-offs running.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
+  git log.

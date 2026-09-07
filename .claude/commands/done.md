@@ -187,24 +187,34 @@ Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + g
 
 This is mandatory. Never end /done without it - even when the only next task is "pick the next ROADMAP item".
 
-### 10b. Persist that prompt to the Desktop hand-off file (ALWAYS)
+### 10b. Persist that prompt to the repo-root hand-off file (ALWAYS)
 
 Printing it in chat is not enough - chat dies at `/clear`. Write the SAME block
-to the shared Desktop hand-off, which is what a fresh session re-feeds verbatim:
+to `LW-NEXT-SESSION.txt` in the REPO ROOT, which is what a fresh session
+re-feeds verbatim:
 
 ```
 python tools/lw_next_session.py --write -
 ```
 
 Pipe the prompt block in on stdin (or `--write <file>`). Do NOT hand-write the
-path. The Legion Desktop is shared by three concurrent sessions (LW / RC / RM)
-and the `LW-` prefix is the only thing keeping this write off a sibling's
-hand-off, so the target is resolved and guarded by that tool: an optional
-`ops/runtime/next_session_intent.json` may name a different file, but anything
-that is not a bare `LW-`-prefixed filename under the Desktop - absolute path,
-drive letter, `..`, any separator, empty, non-string, malformed document -
-falls back to `LW-NEXT-SESSION.txt` instead of being honoured. The content must
-be 7-bit ASCII; the tool refuses non-ASCII rather than writing mojibake.
+path. Writing is UNCONDITIONAL - every session, green or red. The file is
+tracked in git, so stage it with the session's other work in section 1: that is
+the whole point of the move off the Desktop on 2026-09-06 (operator-directed,
+mirrored from RC). An untracked Desktop file could go stale for days with
+nothing able to notice and no diff showing what the last session handed over.
+The Desktop keeps a SHORTCUT (`Desktop\LW-NEXT-SESSION.lnk`) to the repo file,
+so operator access is unchanged.
+
+The `LW-` prefix stays on the filename even though it is redundant in-repo: the
+Desktop shortcuts are still a shared surface, and the prefix is what stops a
+doctored intent document naming an arbitrary target. The target is resolved and
+guarded by the tool: an optional `ops/runtime/next_session_intent.json` may
+name a different file, but anything that is not a bare `LW-`-prefixed filename
+in the repo root - absolute path, drive letter, `..`, any separator, empty,
+non-string, malformed document - falls back to `LW-NEXT-SESSION.txt` instead of
+being honoured. The content must be 7-bit ASCII; the tool refuses non-ASCII
+rather than writing mojibake.
 
 Confirm the write in the banner (`hand-off file`) with the path the tool
 printed - not an assumed one.

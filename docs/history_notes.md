@@ -373,6 +373,94 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-06 - root renamed to "C:\Legion Wallpaper", RM replaced by RSC
+
+Commits 1ef672e (inbox) and 81de837 (rename), both pushed. Suite green: ruff
+clean, 2501 passed, 19 skipped.
+
+**Two spellings, both deliberate - do not "fix" either.** The local root is
+`C:\Legion Wallpaper` WITH A SPACE. The GitHub repo is `Remus3/Legion-Wallpaper`
+with a HYPHEN, because a repo name cannot hold a space. The agent project slug
+`C--Legion-Wallpaper` is unchanged, since the slug hyphenates the space anyway.
+Rule of thumb: a filesystem path is anchored on `C:`; a bare `Legion-Wallpaper`
+token is the repo name. Any NEW hardcoded path needs QUOTING - an unquoted
+`-File C:\Legion Wallpaper\tools\x.ps1` is read as `-File C:\Legion` plus a
+stray positional, and fails silently.
+
+**drift_guard WILL report a slots.py divergence between LW and RC. That is
+correct and expected - do NOT revert it.** Red Moon is archived read-only and
+its working copy deleted; Resin Compute took the vacated third slot in the
+concurrency governor. LW authored the new bytes (docstring only, line 5,
+`MAX_CONCURRENT_SLOTS` still 3) and re-pinned from its own disk:
+
+    1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492
+    previous 5297f2d041030398a9ba240aad527b2b01a86d6e7f57a196719af8f0a91cb0a6
+
+RC copies those bytes verbatim next; RSC lands its vendored copy LAST, being
+the only participant with no pin to break. The flip cannot be atomic. Replies
+explaining the sequencing are in RC's and RSC's `moon_sync_inbox`.
+
+Also landed: `RSC: 8790-8809` recorded in `tools/lw_ports.py` FORBIDDEN (the
+seventh block). LW binds nothing in that band - checked against source, the
+registry and all three task definitions. `RM: 8770-8789` stays declared even
+though Red Moon is gone, because Amberstone's `core/ports.py` still declares
+`RM_BLOCK = range(8770, 8790)`.
+
+If the folder move has not run yet: close Claude Code and run
+`C:\finish-legion-rename.cmd`. It is idempotent and also repairs the three
+agreeing `~/.claude.json` trust spellings, the three `LW-*` scheduled tasks
+(quoting `-File` for the space), the agent memory directory, and checks that
+all four venvs still resolve.
+
+> Newest-first. Keep only the last 2-3 sessions here at FULL fidelity; archive
+> older sessions verbatim to `docs/history_notes.md` (append a pointer line to
+> this banner when you prune). Per-item completion records live in
+> `docs/LEDGER.md`; open work lives in `ROADMAP.md` + `BACKLOG.md`.
+> Archived to `docs/history_notes.md`: the two 2026-07-03 sessions (genesis +
+> product-defined, pruned 2026-07-04), 2026-07-04 QA Session 1 (pruned
+> 2026-07-05), 2026-07-04 QA Session 2 (pruned 2026-07-07), and the 2026-07-07
+> first-pass-queue session + the lw-gen generator-sidecar/deep-research session (both pruned 2026-07-11), and the 2026-07-11 QA-floor calibration + recipe-v2 session (pruned 2026-07-11), and the 2026-07-11 GOLDEN DEFINITION session (pruned 2026-07-12), and the 2026-07-11 M0-foundations + M1-slices-1-2 session (pruned 2026-07-12), and the 2026-07-11 localizer-decision session (pruned 2026-07-12), and the 2026-07-12 M1-weapon-CLIP-gate session (pruned 2026-07-16), and the 2026-07-16 W4-M3 weapon-parked session (pruned 2026-07-16), and the 2026-07-16 Stage-2 cleaning-pipeline session (pruned 2026-07-18), and the 2026-07-27 loop-cycle-11 alpha-audit session (pruned 2026-07-29), and the 2026-08-01 three-repo-N=3 / hook-rule-correction session (pruned 2026-08-01), and the 2026-08-01 (evening) Stage-2-drain / L1 / dashboard-spine session (pruned 2026-08-01), and the 2026-08-01 (night) dashboard-spec-completion session (pruned 2026-08-01), and the 2026-08-01 (earlier) P3/P4/P5 + wiki-swap session and the 2026-08-01 (late) MCP-list/P1 session (both pruned 2026-08-02), and the 2026-08-02 all-five-recommendations/USM-flip/watchdog session (pruned 2026-08-09), and the 2026-08-10/11 intake/retry-degrades session + the 2026-08-11 detector-precision/recall session + the 2026-08-11 (evening) centre-overlay-inpaint session (all three pruned 2026-08-12), and the 2026-08-12 faint-mark REMOVAL lane session (pruned 2026-08-12), and the 2026-08-12 (later) overlay-registration-SCALE session (pruned 2026-08-12), and the 2026-08-12 QA-lane precision-census session (pruned 2026-08-12), and the 2026-08-12 veil-ring session (pruned 2026-08-13), and the 2026-08-12 clean-retry-degrades/one-engine session + the 2026-08-12 bare-pytest-wrong-tree session (both pruned 2026-08-16), and the 2026-08-23 queue-run/revert-lever session (pruned 2026-08-29), and the 2026-08-29 chord-coverage session (pruned 2026-08-29) - keep the last 3.
+
+---
+
+## 2026-09-06 - the license question, answered by refusing its premise
+
+One commit (`511f1d8`) plus a docs sync, all pushed. Suite **2501 passed / 18
+skipped / 1 pre-existing GPU failure**, ruff clean, `drift_guard` 0 breaches,
+CI green.
+
+- **No license change shipped, and that IS the result. Do not re-open it -
+  CLAUDE.md Settled + LEDGER 145 carry the full reasoning.** The operator asked
+  MIT vs Apache-2 wanting to block "downloaded + altered + commercialized".
+  Both are permissive and both allow exactly that, so the premise was void; the
+  governing axis is permissive vs copyleft and neither candidate was on it.
+  MIT, GPL-3.0, AGPL-3.0, MPL-2.0, BUSL-1.1, PolyForm NC and the whole CC
+  family were each weighed and each lost to the incumbent Apache-2.0.
+- **The GPL-3.0 probe was the sharp one and it still came back empty.**
+  CC BY-SA 4.0 -> GPLv3 is a real one-way bridge, but LW has nothing to carry
+  over it: `data/reference/wiki/` is `render/` + `splash/` IMAGE bytes
+  (gitignored, zero tracked) and BY-SA covers wiki TEXT, while the art is Riot
+  IP regardless; ComfyUI (GPL-3.0) is a headless SUBPROCESS, which is mere
+  aggregation and already fine under Apache-2. Copyleft binds on distribution
+  of a combined work only - never subprocess, private use, or optional deps.
+- **Visibility is metadata, not license.** All four levers set and verified
+  live: description, homepage -> `docs/adr`, 19 topics, and a 1280x640
+  social-preview card (`docs/assets/social-preview.png`, self-authored with
+  PIL, no corpus bytes). Social preview had to be uploaded by hand - GitHub has
+  no REST endpoint for it - and it is CONFIRMED landed because the page serves
+  `og:image` from the `repository-images` custom CDN, not the
+  `opengraph.githubassets.com` fallback. One topic slot is free.
+- **Do NOT redo:** the licensing exploration, the metadata levers, or the
+  social preview. All shipped and verified this session.
+- **Pre-existing, not mine:** `test_worker_spandrel_branch_produces_both_variants`
+  OOMs on an IDLE GPU (11105/12227 MiB free, no compute process), reproduced
+  twice. CI never sees it - no CUDA runner. Now tracked as ROADMAP
+  `usm-halo-probe-cuda-oom`.
+- **Next:** the 123f hand-clean (veil stage) in Photoshop - unchanged from the
+  last hand-off, this session never touched it.
+
+---
+
 ## 2026-09-05 - three ways to measure a watermark, all refused; plus a live permissions bug
 
 Six commits, all pushed. Suite **2501+ passed / 18 skipped**, ruff clean,

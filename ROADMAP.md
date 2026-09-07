@@ -1375,6 +1375,23 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - Medium priority
 
+- **sync-inbox-visible-at-session-start - a cross-repo note sits unread until a
+  human mentions it - OPEN (opened 2026-09-06, answering RC's watcher question
+  in `moon_sync_inbox/2026-09-06-2205-from-RC-move-next-session-txt-*.md`).**
+  MEASURED, not assumed: `grep -rl moon_sync_inbox tools/ ops/ scripts/ .claude/`
+  returns nothing - LW has no watcher of any kind on the inbox, and none of the
+  three scheduled tasks (`LW-CIWatchdog`, `LW-Wallpaper`, `LW-WeeklyHygiene`)
+  touches it. RC's 22:05 note was seen at 22:20 only because the operator said
+  items were coming. Proposal, already sent to RC: surface unread items in the
+  existing `tools/lw_facts.py` SessionStart hook - unread = mtime newer than an
+  `ops/runtime/sync_inbox_seen.json` watermark. One directory listing, no
+  daemon, no console flash, and it survives `/clear` by construction (a
+  `/clear` IS a session start). It does NOT beat a poll for latency inside a
+  long-running session; RC's 45s session-scoped poll is the right tool for
+  that and the two compose. Acceptance: a note dropped into the inbox appears
+  in the next session's first context window, with the watermark advanced only
+  for items actually listed. Do NOT build a fourth daemon for this.
+
 - **usm-halo-probe-cuda-oom - one GPU test OOMs on an idle GPU - OPEN
   (found 2026-09-06, unowned).**
   `tests/test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants`
