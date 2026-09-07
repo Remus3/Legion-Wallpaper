@@ -34,6 +34,31 @@ disk only, so they proceed; GPU work waits).
 
 ---
 
+## Runtime environment, 2026-09-06
+
+The NVIDIA driver moved 610.62 -> 616.56. The 610.62 figures elsewhere in this
+doc and in GENERATOR_SIDECAR_PLAN.md are the ORIGINAL probe records and are
+left as measured; they are history, not the current state.
+
+ONNX Runtime in `.venv-gen` is now `onnxruntime-gpu` 1.27.0 built against
+**CUDA 12**, not the CPU-only `onnxruntime` it carried until this date, and not
+the default PyPI `onnxruntime-gpu`, which is built against CUDA 13 and will not
+load beside torch cu128. Reinstall it with the CUDA-12 index and `--no-deps` so
+pip cannot substitute the PyPI wheel:
+
+```
+".venv-gen\Scripts\python.exe" -m pip install --force-reinstall --no-deps "onnxruntime-gpu==1.27.0" --index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+```
+
+Never install `onnxruntime` and `onnxruntime-gpu` together; they conflict.
+
+DWPose steady state went 0.29s -> 0.03s per image. The first CUDA run on a
+fresh driver costs about 38s of PTX JIT for the 5070's sm_120 and the driver
+caches it, so later processes warm in under a second. `LW_ORT_PROVIDER=cpu`
+forces the old CPU path when a CPU-measured number has to be reproduced
+exactly - CUDA and CPU kernels are not bit-identical.
+
+
 ## Model provenance table
 
 Fill one row per weight actually downloaded. `source_url` = the exact download
