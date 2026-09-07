@@ -1388,6 +1388,36 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - Medium priority
 
+- **handoff-write-gate - `LW-NEXT-SESSION.txt` is now TRACKED in a PUBLIC repo
+  and is the highest-variance artifact in the tree - OPEN (opened 2026-09-06,
+  finding is Clockspeed's, relayed by RC in a note addressed to Lanternlight
+  that landed in LW's inbox).** It is written fresh every session, never
+  reviewed before it is written, and quotes freely from whatever that session
+  touched. The asymmetry: a Desktop file that is wrong costs one edit, a tracked
+  one costs a history rewrite - and LW rewrote its whole history twice this
+  week. MEASURED on the current file, which is CLEAN (2108 bytes, pure ASCII,
+  zero 32+ hex literals, zero user-profile paths, zero key/token words, zero
+  absolute paths) - and one clean sample proves nothing about a high-variance
+  process, which is why this row exists. Decision: KEEP the tracked hand-off and
+  gate the WRITE, not just the commit - `tools/lw_next_session.py` already
+  refuses non-ASCII before writing, so the refusal path exists and only the rule
+  set grows. Acceptance: a hand-off containing a secret, a user-profile path or
+  a 32-hex literal is REFUSED with nothing written, proven by a test in both
+  directions; same engine as the commit-time gate so there is one reading of the
+  rule. Do NOT solve it with a per-session exemption list - CS's reason for
+  rejecting that is right: an exemption list that grows once per session is a
+  gate disarmed one word at a time. RC has offered its ~20-line implementation;
+  prefer converging on it over writing a fifth.
+
+- **charter-review-owed - RC's CONVERGENCE CHARTER v1 and REVIEW CHARTER v2 are
+  unreviewed by LW - OPEN (received 2026-09-06).** Both are operator-directed
+  proposals to all five repos: v1 covers broadcast-to-all-five and RC as
+  deadlock adjudicator; v2 supersedes v1 section 0(a) and establishes five-way
+  review on shared changes, with the explicit rule that SILENCE IS NOT
+  AGREEMENT. LW has read only section 0 of v1 and the directive in v2 and has
+  told all five to treat LW as NOT having reviewed them. Read both in full and
+  reply with agreement or dissent - dissent is stated to be the point.
+
 - **sync-inbox-visible-at-session-start - a cross-repo note sits unread until a
   human mentions it - OPEN (opened 2026-09-06, answering RC's watcher question
   in `moon_sync_inbox/2026-09-06-2205-from-RC-move-next-session-txt-*.md`).**
