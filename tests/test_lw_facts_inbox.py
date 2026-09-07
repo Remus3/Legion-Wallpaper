@@ -653,3 +653,59 @@ def test_a_payload_file_edited_at_constant_size_and_mtime_still_re_reports(tmp_p
     _edit_holding_size_and_mtime(target, "MODE = 'deny*'" + NEWLINE)
     assert "1 UNREAD" in "".join(_probe_r(box, rec, rep)), (
         "a payload edited at constant size and mtime must re-report")
+
+
+def test_a_withdrawal_re_reports_until_it_is_ACKNOWLEDGED(tmp_path):
+    """Half of the contract: an unread withdrawal must survive a lost session.
+
+    Reporting a withdrawal exactly once puts it back in the watermark's failure
+    class, and a withdrawal is the one inbox event with no artifact left on disk
+    to notice later.
+    """
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, ["a.md", "b.md"], box=box)
+    rep = _reported(tmp_path)
+    (box / "b.md").unlink()
+    assert "WITHDRAWN" in NEWLINE.join(_probe_r(box, rec, rep))
+    assert "WITHDRAWN" in NEWLINE.join(_probe_r(box, rec, rep)), \
+        "an unacknowledged withdrawal must still be there next session"
+
+
+def test_acknowledging_CLEARS_a_withdrawal(tmp_path):
+    """The other half, and the one that was broken when this shipped.
+
+    Measured live: the ack pruned the SEEN record but never the REPORT record,
+    and the withdrawal set is derived from `reported | seen`. So a withdrawn
+    name stayed in the report record, re-derived itself every run and could
+    never be cleared - a permanent line the operator had already acted on. The
+    module docstring claimed the ack pruned it, which made it a false rationale
+    sitting next to working code, exactly the class this round is about.
+    """
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, ["a.md", "b.md"], box=box)
+    rep = _reported(tmp_path)
+    (box / "b.md").unlink()
+    assert "WITHDRAWN" in NEWLINE.join(_probe_r(box, rec, rep))
+
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert "WITHDRAWN" not in NEWLINE.join(_probe_r(box, rec, rep)), \
+        "an acknowledged withdrawal must not come back"
+
+
+def test_acknowledging_a_withdrawal_does_not_mark_UNREAD_mail_as_read(tmp_path):
+    """The pruning must not become a second acknowledgement path.
+
+    `mark_inbox_seen` is the one act allowed to consume the queue, and it only
+    consumes what the last report SHOWED. Pruning withdrawn keys out of the
+    report record must not take a genuinely unread note with it.
+    """
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, ["a.md", "b.md"], box=box)
+    rep = _reported(tmp_path)
+    (box / "b.md").unlink()
+    _probe_r(box, rec, rep)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+
+    (box / "c.md").write_bytes(b"new" + NEWLINE.encode())
+    block = NEWLINE.join(_probe_r(box, rec, rep))
+    assert "1 UNREAD" in block and "c.md" in block, block

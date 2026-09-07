@@ -557,6 +557,17 @@ def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
                    indent=2) + "\n",
         encoding="utf-8", newline="\n")
     tmp.replace(seen_path)
+    # The REPORT record is pruned to what is still present, for the same reason
+    # the seen set is: the withdrawal set is derived from `reported | seen`, so
+    # a withdrawn name left in here re-derives itself on every run and can never
+    # be cleared. Measured live on 2026-09-07 - six real withdrawals reported
+    # correctly, then reported again after the operator had acknowledged them.
+    # It prunes only names that have LEFT the inbox, so it cannot acknowledge
+    # anything: a note still on disk keeps its entry either way.
+    if reported is not None:
+        still_here = set(listing)
+        _write_reported(reported_path,
+                        sorted(k for k in reported if k in still_here))
     return len(names)
 
 
