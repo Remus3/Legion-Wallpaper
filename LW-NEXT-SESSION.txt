@@ -1,57 +1,19 @@
 NEXT SESSION
 ------------
-Task: build the executor throttle detector (LW-local, unblocked, top open
-  ROADMAP item now that account-path is closed). RC adopted LW's two-class
-  split. LOUD = the six keys already at ops/loop/loop_controller.py:499 plus
-  rate_limit / overloaded / "too many requests" / retry-after, logged with repo
-  key + slot + cycle. QUIET = a cycle whose wall-clock exceeds its own trailing
-  median while producing fewer output events than its trailing median. Today LW
-  has NOTHING on the Claude executor path; only the gemini director path is
-  instrumented.
-Context: ops/loop/loop_controller.py (:499 for the existing key list, :916 the
-  per-cycle hold, :951 the acquirer's repo= value), ops/loop/executor.py,
-  ops/loop/config.json. TDD per CLAUDE.md: failing test first.
-Acceptance: a test drives a synthetic cycle stream and asserts LOUD fires on
-  each key and QUIET fires on the slow-and-quiet cycle without firing on a
-  slow-but-productive one; full suite green; ruff clean.
-
-Second, also unblocked: delta-scan RC's tests/test_stop_claim_gate.py (63 arms)
-  against LW's tests/test_claimed_green_gate.py + _history.py (48 arms) and
-  port the GENERIC arms only. Most of RC's are RC-claim-specific, which is why
-  this was queued rather than bulk-copied. Both files are in
-  moon_sync_inbox/from-RC-verbatim/tests/.
-
-STILL BLOCKED, do not start early: the reap arm for a stale reserved-<key>.lock.
-  RC accepted the amendment and named LW as author, but it is blocked until the
-  five agree the short repo keys (rc lw rsc cs ll). Shape: plant a
-  reserved-cs.lock older than the stale window, run reap, assert CS can then
-  take its floor. Pair it with pinning "total holders never exceeds 5 + surplus"
-  in tests/test_loop_concurrency.py - LW's suite is the ONLY coverage
-  ops/loop/slots.py has on either side. Do NOT change the repo= value at
-  loop_controller.py:951 early; it goes in the same ordered round.
-
-Do NOT redo: account-path-in-a-public-repo is CLOSED (LEDGER 166, 56fed36) -
-  68 files, not the 32 the old ROADMAP row claimed; tests/test_no_account_paths.py
-  is the standing guard and tools/lw_paths.py is the single definition of the
-  machine layout, so resolve paths through it rather than re-hardcoding. The
-  fix-forward / no-third-history-rewrite call was re-confirmed with measurement.
-  The inbox slice is CLOSED too (LEDGER 167, 13c0f36): the inverted paragraph in
-  tools/lw_facts.py is DELETED, property 6 is proven by
-  tests/test_inbox_report_is_idempotent.py, and
-  tests/test_hook_interpreter_resolves.py pins that bare pythonw is not a Store
-  stub. The hook refusal probe (LEDGER 160), the settings split (161) and the
-  ack fix (162) all shipped. Repo keys, both slot amendments, the clock
-  convention and the watcher design are ANSWERED - do not re-litigate.
-
-Inbox at hand-off: 0 unread of 99. Everything through 2026-09-07T02:45 is read
-  and answered; LW's reply went to all four sibling inboxes. Anything unread
-  next session is genuinely new.
-Rituals: stamp cross-repo notes with REAL wall clock off `date` and say so
-  (LW's old skew was +375 min, so LW's own earlier notes sort wrong). Read
-  inbox notes THEN ack - the ack marks only what the last report SHOWED, so
-  acking after a stale report is a safe no-op, and --all is a deliberate
-  baseline reset, not a habit. Review the inbox SUBDIRECTORIES too, not only
-  the .md notes.
-
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
-  git log. Read any unread mail FIRST, then ack.
+Task: pick the next open ROADMAP item. Two cheap ones LW owes the cross-repo
+  channel: (a) measure LW own refs/pull/*/head count, which RSC asked for and
+  LW has NOT taken - git fetch origin "+refs/pull/*/head:refs/remotes/pr/*"
+  into a scratch clone; (b) answer the 2 unread inbox notes.
+Context: moon_sync_inbox/ (2 unread at wrap), tools/lw_facts.py (the watcher),
+  ROADMAP.md top block, docs/LEDGER.md item 168. Live state: python
+  tools/lw_facts.py --inbox.
+Acceptance: the refs/pull count is a MEASURED number in a note, not an
+  impression; unread inbox count is 0 only after the notes are actually read.
+Do NOT redo: the ops/loop/slots.py pin is CLOSED - all three carriers hash
+  equal (prefix 71fa2a68, 9627 bytes; the full digest is pinned in
+  tests/test_loop_concurrency.py). Do not re-open it. Withdrawal reporting, its
+  clear-on-ack fix, the worktree false-green guard, the payload-leg mutants and
+  the junction walk are all shipped and pinned (LEDGER 168). The ROADMAP
+  verbatim-payload-followups row (2) is CANCELLED - RC confirmed the payload is
+  gone from all five inboxes and is not re-sending it; do not wait for it.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
