@@ -140,6 +140,7 @@ data/.*.tmp
 # they are sha-pinned in the manifest. See docs/research/GOLDEN_SET.md.
 data/golden/inputs/
 data/golden/baseline/
+data/golden/candidates/
 
 # Source-recovery RUNTIME outputs (privacy - same boundary as golden/ and
 # images/**). Two reasons NEVER to commit any of this: (1) gallery-dl lands

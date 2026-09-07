@@ -23,9 +23,26 @@ on:
   # LW deliberately diverges from RC's fix here. RC added a separate docs-guard
   # workflow plus a selector, because its skipped suite includes playwright,
   # mypy and a Share sync and docs-only commits are ~55% of its history. LW's
-  # whole suite is ~28s with none of that, so the complement would cost more
+  # whole suite carries none of that, so the complement would cost more
   # complexity than the filter ever saved. Dropping the filter also retires the
   # not-evaluated ambiguity that only existed because of it (f1 item 12).
+  #
+  # RE-CHECKED 2026-09-06 against RC's live tree, because the question came back
+  # as "Amberstone has a docs-guards badge, should LW?". ANSWER: NO, and the
+  # reason is structural, not a preference. RC's ci.yml still carries
+  # `paths-ignore: ['**/*.md']`, so a docs-only commit there fires NO workflow,
+  # and docs-guards.yml exists purely as the complement to that filter (its own
+  # header says so and names the two commits that proved it). This file has no
+  # such filter, so every docs-only push already runs the `check` job whole -
+  # pytest tests/ entire, including the mojibake / smart-quote / U+2500 guards
+  # that read tracked .md off disk, plus the strip_em_dashes drift gate. A
+  # docs-guards workflow here would re-run guards that already ran and badge it
+  # as new coverage. RC's tools/md_guard_selector.py is moot here for the same
+  # reason: LW runs the whole suite, so there is no subset to derive. If this
+  # file ever gains a paths filter, the answer flips and the complement becomes
+  # mandatory in the SAME commit. (Suite size for scale: 2519 passed / 18
+  # skipped, ~130s local, 2026-09-06. The old "~28s" figure here was from
+  # bring-up and is long stale.)
   push:
     branches: [main]
   pull_request:

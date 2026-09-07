@@ -86,7 +86,16 @@ chose bless-now timing).
 
 ## 5. The regression harness
 
-`tools/lw_golden.py` with two verbs:
+`tools/lw_golden.py` with three verbs:
+
+- `candidates` - re-run every frozen input through the LIVE first-pass
+  pipeline into a staging dir, named after each case's baseline basename (the
+  filename `regress` looks for). ADDED 2026-09-06: this step was an ad-hoc
+  script both times it was needed, and it did not survive the session that
+  wrote it, so the 2026-09-06 regress could not be reproduced and the
+  re-freeze had to rebuild it from scratch. Each row reports the branch taken
+  and whether the unsharp mask actually ran, because an over-target source
+  skips the AI 4x and a source already exactly at target runs no USM at all.
 
 - `freeze` - (re)build `golden_set.json` from the current pipeline: copy inputs +
   baseline outputs to the durable gitignored location, compute metrics + the
@@ -100,6 +109,19 @@ chose bless-now timing).
   per-case delta table + overall pass/fail + exit code (0 ok, 1 regressions).
   If the current pipeline_version differs from the frozen one, the report says
   so (an intended re-baseline vs an accidental drift are distinguished).
+
+The re-freeze recipe, in full (deliberate re-baseline only):
+
+```
+python tools/lw_golden.py candidates --out-dir data/golden/candidates
+.venv-metrics/Scripts/python.exe tools/lw_golden.py freeze     --cases-json data/golden/cases.json --model tools/models/<ijn>.safetensors
+.venv-metrics/Scripts/python.exe tools/lw_golden.py regress     --candidates-dir data/golden/candidates --model tools/models/<ijn>.safetensors
+```
+
+`data/golden/cases.json` is the tracked blessed-set definition (slug, input,
+baseline basename, defect axes - no image bytes). The regress at the end is the
+section-8 self-check: it must PASS every case with `pv_changed=False`, since it
+scores the very outputs just frozen.
 
 DEFERRED (documented TODO, gated on G3): the Haiku side-by-side new-vs-baseline
 "must win or tie" check (AUDIT_GATES 5.4 / 3.3). G3 vision audit is not built

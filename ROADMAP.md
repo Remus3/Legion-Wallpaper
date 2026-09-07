@@ -6,24 +6,26 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
-- **golden-overtarget-refreeze - one stale baseline needs an operator blessing
-  (opened 2026-09-06, LEDGER 149).** The 12-case golden regress passes 11 and
-  flags `1341679-banding` on `lap_ratio` (1.23367 vs 1.42409). It is NOT a
-  regression and NOT the driver: that case's 4096x2305 source takes the G0
-  over-target downscale-only branch, and its baseline was frozen 64 minutes
-  BEFORE that branch landed (`37741ea` then `6cffc3d`), so the baseline came from
-  the AI-4x path that case no longer takes. Re-freezing is a blessing call, which
-  is why it was not done unilaterally. Note that `pipeline_version` now correctly
-  reports the manifest as drifted (`ed249af6` vs `6d43a6d4`) because the USM
-  default moved on 2026-08-02 and the hash finally sees it - so a re-freeze
-  should decide the USM question at the same time rather than separately.
-  VERIFIED 2026-09-06: the two are entangled, not merely adjacent. A 4096x2305
-  source is not exactly 2560x1440, so `_usm_applies` is True and the
-  downscale-only branch DOES apply an unsharp mask - the flagged `lap_ratio` is
-  directly USM-sensitive. The regress run had to pin USM to 70 by hand, so the
-  frozen set currently validates a sharpening recipe that has not shipped since
-  2026-08-02. Re-freezing under the live `USM_DEFAULT` (percent 35) retires that
-  pin; USM 35 itself is SETTLED and is not the open question.
+- **slots-hold-leaks-an-unreapable-lane - a leaked lockfile whose holder is
+  STILL ALIVE disarms the reaper (opened 2026-09-06, reported by RSC in
+  `moon_sync_inbox/2026-09-06-2125-from-RSC-slots-leak-addendum.md`).** VERIFIED
+  structurally on LW's own copy, not taken on report: `hold()` releases with
+  `slot.unlink()` inside `except OSError: pass` (`ops/loop/slots.py:190`), so a
+  release that loses the Windows ERROR_SHARING_VIOLATION race leaves the
+  lockfile carrying the payload written at entry - a LIVE pid and a recent ts.
+  Both of `is_stale`'s arms then answer "not stale" (`slots.py:94`), so `reap()`
+  skips it and the lane is gone until `stale_after` elapses. The safety valve is
+  disarmed by exactly the case that produces the leak. LW's exposure is the same
+  shape as RC's: a long-lived controller runs many cycles under ONE pid, so a
+  lane leaked in cycle N is unreapable for the life of the controller and
+  narrows the bucket for all three repos. RSC measured 107 of 200 rounds leaving
+  residue at backoff/jitter 0.02; the 30-of-30 wedged-bucket figure is stress
+  amplification at zero backoff and must not be quoted as a rate. NOT FIXED
+  HERE ON PURPOSE: `slots.py` is byte-identical-by-contract across LW, RC and
+  RSC (CLAUDE.md Settled), so a change is a joint act with a re-pin, and LW's
+  suite is the only coverage either sibling has. Decide the fix jointly - the
+  obvious candidate is to make release verify the unlink and, failing that,
+  overwrite the payload with a dead marker so the reaper can see it.
 
 - **clean-zero-watermark - the acceptance standard is ZERO watermark; ghost,
   banding and faint residue all FAIL (operator, 2026-08-22). All five tracks are

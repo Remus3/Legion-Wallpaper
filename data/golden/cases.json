@@ -1,0 +1,100 @@
+[
+  {
+    "slug": "dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395",
+    "input_path": "data/golden/inputs/dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395_ijn.png",
+    "defect_axes": [
+      "mid-detail"
+    ]
+  },
+  {
+    "slug": "dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545",
+    "input_path": "data/golden/inputs/dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545_ijn.png",
+    "defect_axes": [
+      "soft-source"
+    ]
+  },
+  {
+    "slug": "dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5",
+    "input_path": "data/golden/inputs/dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5_ijn.png",
+    "defect_axes": [
+      "soft-source"
+    ]
+  },
+  {
+    "slug": "dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451",
+    "input_path": "data/golden/inputs/dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451_ijn.png",
+    "defect_axes": [
+      "mid-detail"
+    ]
+  },
+  {
+    "slug": "dgk8f92-bc10d7a7-f520-4b4f-ad86-ac70f6d50293",
+    "input_path": "data/golden/inputs/dgk8f92-bc10d7a7-f520-4b4f-ad86-ac70f6d50293_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dgk8f92-bc10d7a7-f520-4b4f-ad86-ac70f6d50293_ijn.png",
+    "defect_axes": [
+      "mid-detail"
+    ]
+  },
+  {
+    "slug": "dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5",
+    "input_path": "data/golden/inputs/dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5_ijn.png",
+    "defect_axes": [
+      "soft-source"
+    ]
+  },
+  {
+    "slug": "fiora2",
+    "input_path": "data/golden/inputs/fiora2_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/fiora2_ijn.png",
+    "defect_axes": [
+      "high-detail",
+      "high-halo"
+    ]
+  },
+  {
+    "slug": "dfzypou-30bef263-c754-4a26-9797-484757b1c4cf",
+    "input_path": "data/golden/inputs/dfzypou-30bef263-c754-4a26-9797-484757b1c4cf_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dfzypou-30bef263-c754-4a26-9797-484757b1c4cf_ijn.png",
+    "defect_axes": [
+      "soft-source"
+    ]
+  },
+  {
+    "slug": "inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview",
+    "input_path": "data/golden/inputs/inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview_ijn.png",
+    "defect_axes": [
+      "high-detail",
+      "high-halo"
+    ]
+  },
+  {
+    "slug": "dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf",
+    "input_path": "data/golden/inputs/dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf_firstinitial.jpg",
+    "baseline_path": "data/golden/candidates/dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf_ijn.png",
+    "defect_axes": [
+      "soft-source"
+    ]
+  },
+  {
+    "slug": "coven-ashe-lol-df49jt0-pre",
+    "input_path": "data/golden/inputs/coven_ashe___league_of_legends_by_chisuniii_df49jt0-pre.jpg",
+    "baseline_path": "data/golden/candidates/coven_ashe___league_of_legends_by_chisuniii_df49jt0-pre.png",
+    "defect_axes": [
+      "jpeg-artifact"
+    ]
+  },
+  {
+    "slug": "1341679-banding",
+    "input_path": "data/golden/inputs/1341679.jpeg",
+    "baseline_path": "data/golden/candidates/1341679.png",
+    "defect_axes": [
+      "banding"
+    ]
+  }
+]

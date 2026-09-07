@@ -138,3 +138,50 @@ def test_pinned_usm_tracks_the_live_upscaler_default():
     radius, percent, threshold = up.USM_DEFAULT
     assert lw_golden._pinned_usm() == {"radius": radius, "percent": percent,
                                        "threshold": threshold}
+
+
+# --------------------------------------------------------------- Task: candidates
+def _man_two():
+    m = {"msssim": 0.99, "lpips": 0.02, "lap_ratio": 1.2, "halo_pct": 0.03}
+    return {"schema": 1, "pipeline_version": "pv0", "created_ts": "t", "cases": [
+        {"slug": "a", "input": {"path": "data/golden/inputs/a.jpg", "sha256": "x"},
+         "baseline": {"path": "data/golden/baseline/a_ijn.png", "sha256": "y"},
+         "metrics": m, "defect_axes": [], "blessed": True},
+        {"slug": "b", "input": {"path": "data/golden/inputs/b.jpg", "sha256": "x"},
+         "baseline": {"path": "data/golden/baseline/b_ijn.png", "sha256": "y"},
+         "metrics": m, "defect_axes": ["banding"], "blessed": True}]}
+
+
+def test_candidates_regenerates_one_output_per_case(tmp_path):
+    """Re-running the frozen inputs through the LIVE pipeline was an ad-hoc
+    script that did not survive the session that wrote it, which is why a
+    re-freeze had to be reconstructed from scratch. It is a verb now."""
+    calls = []
+
+    def fake_upscale(src, dst):
+        _mkimg(dst)
+        calls.append((src, dst))
+        return {"backend": "spandrel", "usm": [1.2, 35, 3], "usm_applied": True}
+
+    rows = lw_golden.candidates(_man_two(), tmp_path / "cand", fake_upscale,
+                                root=tmp_path / "repo")
+    assert [os.path.basename(d) for _s, d in calls] == ["a_ijn.png", "b_ijn.png"]
+    assert [os.path.basename(s) for s, _d in calls] == ["a.jpg", "b.jpg"]
+    assert all(Path(d).is_file() for _s, d in calls)
+    assert [r["slug"] for r in rows] == ["a", "b"]
+
+
+def test_candidates_rows_expose_the_branch_and_whether_usm_ran(tmp_path):
+    """The over-target case takes a downscale-only branch and a source already
+    at target runs NO unsharp mask. Both facts have to be visible in the run
+    that produces a baseline, or the baseline records a recipe nobody can name."""
+    def fake_upscale(src, dst):
+        _mkimg(dst)
+        down = "b.jpg" in src
+        return {"backend": "downscale-only" if down else "spandrel",
+                "usm": [1.2, 35, 3], "usm_applied": not down}
+
+    rows = lw_golden.candidates(_man_two(), tmp_path / "cand", fake_upscale)
+    assert [r["backend"] for r in rows] == ["spandrel", "downscale-only"]
+    assert [r["usm_applied"] for r in rows] == [True, False]
+    assert rows[0]["usm"] == [1.2, 35, 3]

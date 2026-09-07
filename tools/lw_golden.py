@@ -137,6 +137,43 @@ def regress(manifest, candidates_dir, compute_metrics, current_pv=None):
     return {"ok": all_ok, "pipeline_version_changed": pv_changed, "cases": cases_out}
 
 
+# --------------------------------------------------------------- candidates
+def candidates(manifest, out_dir, run_upscale, root=None):
+    """Re-run every frozen input through the LIVE first-pass pipeline.
+
+    This is the step `regress` and a re-freeze BOTH need and neither owned: the
+    2026-09-06 regress produced its candidate outputs with a throwaway script,
+    so the next session could not reproduce the run and had to rebuild it. A
+    verb survives the session that wrote it.
+
+    run_upscale(src, dst) -> audit dict is injected (the CLI wires
+    lw_first_pass.run_upscale, which shells to .venv-upscale). Outputs are named
+    after each case's BASELINE basename, which is the filename `regress` looks
+    for. Returns one row per case carrying the branch taken and whether the
+    unsharp mask actually ran - an over-target source skips the AI 4x, and a
+    source already exactly at target runs no USM at all, so a baseline frozen
+    without those two facts records a recipe nobody can name afterwards.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    root = Path(root) if root else None
+    rows = []
+    for case in manifest["cases"]:
+        src = case["input"]["path"]
+        src = str(root / src) if root else src
+        dst = out_dir / os.path.basename(case["baseline"]["path"])
+        audit = run_upscale(src, str(dst)) or {}
+        rows.append({
+            "slug": case["slug"],
+            "out": str(dst),
+            "backend": audit.get("backend"),
+            "usm": audit.get("usm"),
+            "usm_applied": audit.get("usm_applied"),
+            "seconds": audit.get("seconds"),
+        })
+    return rows
+
+
 # --------------------------------------------------------------- real adapters (lazy)
 def _real_compute_metrics(input_path, output_path):
     """Real metrics: common-scale self FR (pyiqa) + numpy cheap checks.
@@ -204,6 +241,10 @@ def main(argv=None):
                    help="JSON list of blessed {slug,input_path,baseline_path,defect_axes}")
     f.add_argument("--model", required=True, help="upscaler .pth (pins pipeline_version)")
     f.add_argument("--out-root", default="data/golden")
+    c = sub.add_parser("candidates",
+                       help="re-run the frozen inputs through the LIVE pipeline")
+    c.add_argument("--manifest", default="data/golden/golden_set.json")
+    c.add_argument("--out-dir", default="data/golden/candidates")
     r = sub.add_parser("regress", help="score a candidate dir vs the frozen baseline")
     r.add_argument("--candidates-dir", required=True)
     r.add_argument("--manifest", default="data/golden/golden_set.json")
@@ -218,6 +259,15 @@ def main(argv=None):
         return 0
 
     man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
+    if a.cmd == "candidates":
+        from tools import lw_first_pass as fp
+        rows = candidates(man, a.out_dir, fp.run_upscale, root=Path(__file__).resolve().parents[1])
+        for row in rows:
+            print(f"  {row['slug']:<42} {row['backend'] or '?':<16} "
+                  f"usm_applied={row['usm_applied']} {row['seconds']}s")
+        print(f"candidates: {len(rows)} -> {a.out_dir}")
+        return 0
+
     rep = regress(man, a.candidates_dir, _real_compute_metrics,
                   current_pv=pipeline_version(_pinned_from_config(a.model)))
     for c in rep["cases"]:
