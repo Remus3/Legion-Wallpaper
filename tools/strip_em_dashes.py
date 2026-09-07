@@ -50,10 +50,17 @@ LSQ = chr(0x2018)   # left single smart quote
 RSQ = chr(0x2019)   # right single smart quote
 LDQ = chr(0x201C)   # left double smart quote
 RDQ = chr(0x201D)   # right double smart quote
-REPL = {EM: "-", EN: "-", LSQ: "'", RSQ: "'", LDQ: '"', RDQ: '"'}
-# All six offenders are U+2013..U+201D: UTF-8 prefix b"\xe2\x80" is a cheap
-# byte-level prefilter before the (costlier) decode + per-char count.
-_PREFILTER = b"\xe2\x80"
+ELL = chr(0x2026)   # horizontal ellipsis
+NBSP = chr(0x00A0)  # non-breaking space
+REPL = {EM: "-", EN: "-", LSQ: "'", RSQ: "'", LDQ: '"', RDQ: '"',
+        ELL: "...", NBSP: " "}
+# Byte-level prefilter before the (costlier) decode + per-char count. U+2013 to
+# U+2026 all share the UTF-8 prefix b"\xe2\x80"; NBSP does NOT - it encodes C2 A0 -
+# so the filter is a TUPLE tested with any(). A single prefix silently skipped
+# every file whose only offender was an NBSP, which is the kind of fast path
+# that stops covering the set without saying so. Pinned by
+# tests/test_glyph_rule_has_one_reading.py.
+_PREFILTER = (b"\xe2\x80", b"\xc2\xa0")
 ROOT = Path(__file__).resolve().parent.parent
 
 # CREATE_NO_WINDOW: 0 on non-Windows so the module still imports/tests in CI.
@@ -138,7 +145,7 @@ def main() -> int:
             raw = p.read_bytes()
         except OSError:
             continue
-        if _PREFILTER not in raw:
+        if not any(pre in raw for pre in _PREFILTER):
             continue
         try:
             text = raw.decode("utf-8")

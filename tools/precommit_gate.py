@@ -51,6 +51,13 @@ _BANNED = {
     chr(0x201D): "smart-dquote-close",
     chr(0x2018): "smart-quote-open",
     chr(0x2019): "smart-quote-close",
+    # U+2026 joined the set 2026-09-06: the CI hygiene guard had banned it
+    # since bring-up while this gate did not, so an ellipsis committed clean
+    # and reddened CI on the same commit. Converged on the stricter reading -
+    # CLAUDE.md says stay 7-bit ASCII. Pinned by
+    # tests/test_glyph_rule_has_one_reading.py.
+    chr(0x2026): "ellipsis",
+    chr(0x00A0): "non-breaking-space",
 }
 _FROZEN_SKIP = ("logs/", "docs/_archive/", ".pyc", ".git/", "__pycache__/")
 _HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
