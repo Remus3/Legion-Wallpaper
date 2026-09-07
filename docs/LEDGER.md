@@ -27,6 +27,51 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+156. DONE **2026-09-07 (mutex names rotated to opaque strings, disclosure prose
+    scrubbed, and a vacuous-green defect the rotation exposed; commit
+    `1de8d4e`, ADR-012).** Operator-approved after LW put the choice to them
+    explicitly rather than taking it off a sibling's flip. Premise VERIFIED
+    live, not from memory: LW has been public since 2026-08-01 and both shared
+    loop files are tracked, so
+    `raw.githubusercontent.com/.../ops/loop/winmutex.py` returns HTTP 200
+    anonymously - the two `Global\` names, the vendor, the single-metered-account
+    fact and a full description of a failover path that misreads a quota error
+    and stickily swaps the backend had been world-readable for five weeks. That
+    also falsified RSC's premise that its own flip would be the first
+    publication, which is what unblocked RSC. Shipped: both names rotated to
+    opaque strings; the vendor/metering/defect prose removed from
+    `winmutex.py`, `loop_controller.py` and the f1 spec (RC's option 3 folded
+    into the same round, on ACCURACY grounds - the header asserted an acquirer
+    RC had retired). Executed with every loop STOPPED and that state VERIFIED
+    (zero `loop_controller` processes, empty slots bucket), because unlike the
+    two prior re-pins this one moves the name VALUES: between the first tree
+    landing them and the last, two loops can hold different names and both
+    believe they are exclusive - the mutual exclusion the file exists to
+    provide, silently absent. Digest re-pinned PROVISIONALLY
+    (`0b112a4f`, was `f1b4b011`); `drift_guard` reports the RC divergence as a
+    BREACH until RC and RSC copy the bytes, which is the expected transient and
+    is NOT to be suppressed. REAL DEFECT found by the rotation, not by review:
+    `ops/loop/p5_probe.py` identified the adjudicator mutex by the substring
+    `"GEMINI"`, so an opaque name matches nothing - zero windows, zero unpaired
+    holds, and condition 4 of the P5 acceptance run reports GREEN on no
+    evidence. A vacuous pass, in the one judge written to close vacuous passes.
+    Root-caused rather than patched: the probe now reads the value out of
+    `winmutex` with a loud import and no default, pinned by two tests (the
+    probe's name IS `winmutex.GEMINI_MUTEX`; a window logged under any other
+    name is not counted). Sibling sweep done - every other literal in
+    `tests/test_gpu_mutex_wiring.py`, `test_p5_probe.py`,
+    `test_three_way_concurrency.py`, `test_loop_concurrency.py` and
+    `test_oracle_backend.py` moved in the same commit. Verified: 2526 passed /
+    18 skipped, ruff clean, CI green. Append-only records keep their mentions of
+    the retired names - dead strings, and rewriting history buys nothing since
+    LW's public history keeps the originals either way; the redaction is
+    recorded in ADR-012 instead. NOT DONE ON PURPOSE: the SYMBOL names
+    `GEMINI_MUTEX`/`GPU_MUTEX` still name the vendor and resource in a public
+    file - renaming them touches every call site in three repos and is logged as
+    an ADR-012 Watch-for. FUTURE / do-not-redo: **no loop may start in any repo
+    until all three trees carry the new bytes** (sha256 `0b112a4f...`); the exact
+    bytes and the pin protocol were handed to RC and RSC at 04:15.
+
 155. DONE **2026-09-06 (the next-session hand-off moves off the Desktop into
     the repo root; RC's watcher question answered).** Operator-directed via RC's
     22:05 cross-repo note, actioned in the same session it landed rather than

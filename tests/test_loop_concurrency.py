@@ -361,7 +361,14 @@ SHARED_SHA256 = {
     # because the flip cannot be atomic. RM's copy is frozen at the previous
     # digest forever - do not chase it.
     # Previous: 5297f2d041030398a9ba240aad527b2b01a86d6e7f57a196719af8f0a91cb0a6
-    "slots.py": "1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492",
+    # Re-pinned 2026-09-07: the hold() release-path leak (found by RSC, confirmed
+    # by RC on two live ghost lanes). CODE, not docstring: release() retries a
+    # bounded number of times and NEUTRALISES a lock it cannot delete, and hold()
+    # no longer logs "released" when the unlink failed. Authored HERE, hashed from
+    # this disk, handed to RC and RSC verbatim. PROVISIONAL until both copy it;
+    # drift_guard reporting divergence until then is the expected transient.
+    # Previous: 1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492
+    "slots.py": "629c3d511d2500f92d25fbe102a7a8c73644c027291f46b8796565a1e839f865",
     # Re-pinned 2026-09-07 (ADR-012): the two mutex NAMES are rotated to opaque
     # strings and the header prose that described the vendor and a failover
     # defect is scrubbed. This one is NOT docstring-only - the name VALUES move,
@@ -592,3 +599,81 @@ def test_mutex_timeout_raises_when_held_elsewhere():
     finally:
         release.set()
         t.join(timeout=10)
+
+
+# ---------------------------------------------------------------------------
+# the release path: a lock that cannot be DELETED must not stay REAPABLE-NEVER
+#
+# Found by RSC 2026-09-06, confirmed by RC on live ghosts (two of three lanes
+# lost for 155 and 73 minutes). Windows refuses the holder's unlink while any
+# waiter has the lock open for reading - is_stale -> _read -> Path.read_text
+# opens without FILE_SHARE_DELETE - and the old `except OSError: pass` swallowed
+# it. The orphan then keeps the pid and ts written at hold() entry, so BOTH fast
+# arms of is_stale answer "not stale" and reap() skips it: the fail-open valve is
+# disarmed by exactly the case that produces the leak. A controller running many
+# cycles under one pid loses that lane for the life of the run.
+# ---------------------------------------------------------------------------
+def _payload(pid: int) -> dict:
+    return {"pid": pid, "repo": "probe", "run_id": "r", "cycle": 1, "ts": time.time()}
+
+
+def test_release_deletes_the_lock_in_the_ordinary_case(tmp_path):
+    p = tmp_path / "0.lock"
+    p.write_text(json.dumps(_payload(os.getpid())), encoding="utf-8")
+    assert slots.release(p) is True
+    assert not p.exists()
+
+
+def test_a_lock_that_cannot_be_deleted_is_neutralised_so_reap_can_take_it(tmp_path, monkeypatch):
+    """The headline regression. Portable: the unlink is forced to fail so the
+    LOGIC is covered on POSIX CI too, not only on the Windows box that shows it.
+    """
+    p = tmp_path / "0.lock"
+    p.write_text(json.dumps(_payload(os.getpid())), encoding="utf-8")
+
+    def _refuse(self, *a, **k):
+        raise PermissionError(32, "The process cannot access the file")
+
+    monkeypatch.setattr(Path, "unlink", _refuse)
+    lines = []
+    assert slots.release(p, log=lines.append, attempts=2, backoff=0.001) is False
+    assert p.exists(), "the point of this case is that the file survives"
+    # the live pid and fresh ts are exactly what disarmed reap()
+    assert slots.is_stale(p, stale_after=3600) is True
+    assert any("release" in ln.lower() for ln in lines), "a failed release must say so"
+
+
+def test_hold_does_not_log_released_when_the_unlink_failed(tmp_path, monkeypatch):
+    """The log lied: `released` sat outside the try, so a pairing analysis over
+    the logs read perfectly clean while a lane was stuck."""
+    def _refuse(self, *a, **k):
+        raise PermissionError(32, "The process cannot access the file")
+
+    lines = []
+    with slots.hold(3, root=tmp_path, repo="probe", run_id="r", cycle=1,
+                    log=lines.append):
+        monkeypatch.setattr(Path, "unlink", _refuse)
+    joined = "\n".join(lines)
+    assert "acquired" in joined
+    # the SUCCESS marker specifically - the warning line is allowed to use the
+    # word while denying it ("it is NOT released")
+    assert "slots: released" not in joined, "a failed release must never log as released"
+    assert "WARNING" in joined, "a failed release must be visible in the log"
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="windows sharing semantics")
+def test_a_real_open_reader_blocks_the_unlink_and_the_lane_still_comes_back(tmp_path):
+    """The same case with a REAL handle rather than a forced failure, then the
+    recovery: once the reader closes, reap() can take the neutralised lock."""
+    p = tmp_path / "0.lock"
+    p.write_text(json.dumps(_payload(os.getpid())), encoding="utf-8")
+    fh = open(p, encoding="utf-8")   # the read handle Path.read_text opens
+    try:
+        fh.read()
+        assert slots.release(p, attempts=2, backoff=0.001) is False
+        assert p.exists()
+        assert slots.is_stale(p, stale_after=3600) is True
+    finally:
+        fh.close()
+    assert slots.reap(tmp_path, 3, 3600) == 1
+    assert not p.exists()
