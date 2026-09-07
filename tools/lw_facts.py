@@ -28,6 +28,7 @@ Run manually any time:
 """
 from __future__ import annotations
 
+import hashlib
 import csv
 import io
 import json
@@ -283,15 +284,73 @@ def _pipeline_lines(anomalies: list[str], root: Path | None = None) -> list[str]
         return ["- pipeline: probe failed (treat as pipeline idle)"]
 
 
+def _payload_key(d: Path) -> str:
+    """A payload directory's entry text, and the thing the seen set keys on.
+
+    RC proposed `(N files)` and refuted it inside the hour: a sender who
+    REPLACES a file leaves the count equal, so the payload reads as already
+    seen. That is the mtime-watermark defect again - a key that stays equal
+    while the thing it names has moved.
+
+    So the key is a DIGEST, and it comes from one of two places:
+
+      * `MANIFEST.sha256` if the sender shipped one (RC's proposed convention):
+        one file read, and the key moves whenever any listed file does.
+      * otherwise a walk over (relpath, size, mtime_ns), which needs no
+        cooperation from the sender and still moves when a file is replaced.
+
+    The COUNT stays in the visible text because it is what a reader acts on;
+    it is no longer what the key rests on. Hashing is over metadata, not
+    content: this runs inside a SessionStart hook with a few seconds of budget,
+    and a same-size same-mtime replacement is a case that degrades to a missed
+    report rather than to a wrong one - the sender ships a manifest to close it.
+    """
+    files = sorted(q for q in d.rglob("*") if q.is_file())
+    manifest = d / "MANIFEST.sha256"
+    h = hashlib.sha256()
+    if manifest.is_file():
+        try:
+            h.update(manifest.read_bytes())
+            return f"{d.name}/ ({len(files)} files, m:{h.hexdigest()[:8]})"
+        except OSError:
+            pass
+    for q in files:
+        try:
+            st = q.stat()
+            h.update(str(q.relative_to(d)).encode("utf-8", "replace"))
+            h.update(f"|{st.st_size}|{st.st_mtime_ns}|".encode("ascii"))
+        except OSError:
+            h.update(b"|unreadable|")
+    return f"{d.name}/ ({len(files)} files, {h.hexdigest()[:8]})"
+
+
 def _inbox_names(inbox: Path) -> list[str]:
-    """Current listing: `.md` notes, `_`-prefixed drafts excluded."""
+    """Current listing. `_`-prefixed drafts excluded, everything else counted.
+
+    NOT top-level `*.md`. Measured 2026-09-07 on RC's tree and then on this one:
+    the watcher globbed top-level `.md` only, so a payload DIRECTORY was
+    invisible - RC invented the `from-<CODE>-verbatim/` convention, asked four
+    repos to reciprocate in it, and reported zero of the 70 files CS sent. LW
+    had `from-RSC-verbatim/` and a top-level `slots.py.proposed-3repo` sitting
+    unreported the same way. A watcher that reports nothing looks exactly like
+    an empty inbox.
+
+    A DIRECTORY is ONE entry, never N: the unit a reader acts on is the payload,
+    and listing 70 files individually buries the real notes beside them. The
+    entry carries a DIGEST so a payload that grows OR CHANGES re-reports rather
+    than matching the acknowledgement already on file - see `_payload_key`.
+    """
     if not inbox.is_dir():
         return []
-    return sorted(
-        p.name
-        for p in inbox.iterdir()
-        if p.is_file() and p.suffix.lower() == ".md" and not p.name.startswith("_")
-    )
+    out: list[str] = []
+    for p in inbox.iterdir():
+        if p.name.startswith("_"):
+            continue
+        if p.is_dir():
+            out.append(_payload_key(p))
+        elif p.is_file():
+            out.append(p.name)
+    return sorted(out)
 
 
 def _seen_names(seen_path: Path) -> set[str]:

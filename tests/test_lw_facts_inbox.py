@@ -329,3 +329,112 @@ def test_writing_the_report_record_cannot_break_session_start(tmp_path):
                                   seen_path=tmp_path / "absent.json",
                                   reported_path=unwritable / "nested" / "rep.json")
     assert "1 UNREAD" in "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# 8. the inbox is more than top-level .md
+#
+# MEASURED 2026-09-07, on RC's tree first and then on this one: the watcher
+# globbed top-level `*.md` only, so a payload DIRECTORY was invisible. RC
+# invented the `from-<CODE>-verbatim/` convention, asked four repos to
+# reciprocate in it, and shipped a watcher that could not see it - it reported
+# zero of 70 files CS sent. LW had `from-RSC-verbatim/` (10 entries) and a
+# top-level `slots.py.proposed-3repo` sitting unreported the same way.
+#
+# A watcher that reports nothing looks exactly like an empty inbox. That is the
+# shape of every defect this channel found: silent, and indistinguishable from
+# healthy.
+#
+# A DIRECTORY is ONE entry, not N: the unit a reader acts on is the payload, and
+# listing 70 files as 70 notes buries the real notes beside them. The entry
+# carries the FILE COUNT so a payload that GROWS re-reports instead of matching
+# the acknowledgement already on file.
+# ---------------------------------------------------------------------------
+def _payload(tmp_path, name, *files):
+    box = tmp_path / "moon_sync_inbox"
+    box.mkdir(exist_ok=True)
+    d = box / name
+    d.mkdir(exist_ok=True)
+    for f in files:
+        p = d / f
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("body\n", encoding="ascii")
+    return box
+
+
+def test_a_payload_directory_is_one_entry_carrying_its_file_count(tmp_path):
+    box = _payload(tmp_path, "from-RC-verbatim", "a.py", "b.py", "tests/c.py")
+    text = "\n".join(_probe(box, tmp_path / "absent.json"))
+    assert "1 UNREAD" in text
+    assert "from-RC-verbatim/ (3 files," in text
+    assert "a.py" not in text, "the payload's files must not be listed one by one"
+
+
+def test_a_payload_that_grows_re_reports_after_being_acknowledged(tmp_path):
+    """The count is IN the entry so an acknowledged payload cannot absorb new
+    files silently - the failure mode that made a 70-file drop invisible."""
+    box = _payload(tmp_path, "from-CS-verbatim", "a.py")
+    rec = tmp_path / "sync_inbox_seen.json"
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert "UNREAD" not in "\n".join(_probe_r(box, rec, rep))
+
+    (box / "from-CS-verbatim" / "b.py").write_text("body\n", encoding="ascii")
+    text = "\n".join(_probe_r(box, rec, rep))
+    assert "1 UNREAD" in text and "(2 files," in text
+
+
+def test_a_non_md_top_level_file_is_reported(tmp_path):
+    box = _inbox(tmp_path, "note.md")
+    (box / "slots.py.proposed-3repo").write_text("payload\n", encoding="ascii")
+    text = "\n".join(_probe(box, tmp_path / "absent.json"))
+    assert "slots.py.proposed-3repo" in text, (
+        "a top-level payload that is not .md was invisible to the watcher")
+
+
+def test_underscore_prefixed_entries_are_still_excluded(tmp_path):
+    box = _inbox(tmp_path, "real.md", "_draft.md")
+    (box / "_scratch").mkdir()
+    (box / "_scratch" / "x.py").write_text("body\n", encoding="ascii")
+    text = "\n".join(_probe(box, tmp_path / "absent.json"))
+    assert "1 UNREAD" in text
+    assert "_draft.md" not in text and "_scratch" not in text
+
+
+def test_an_empty_payload_directory_still_reports(tmp_path):
+    """Zero files is a real state - a directory created and never filled."""
+    box = _payload(tmp_path, "from-LL-verbatim")
+    text = "\n".join(_probe(box, tmp_path / "absent.json"))
+    assert "from-LL-verbatim/ (0 files," in text
+
+
+def test_a_replaced_file_re_reports_even_though_the_count_is_unchanged(tmp_path):
+    """RC shipped the `(N files)` key and refuted it within the hour: a sender
+    who REPLACES a file leaves the count equal, so the payload reads as already
+    seen. That is the mtime-watermark defect again - a key that stays equal
+    while the thing it names has moved."""
+    box = _payload(tmp_path, "from-RC-verbatim", "a.py")
+    rec = tmp_path / "sync_inbox_seen.json"
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert "UNREAD" not in "".join(_probe_r(box, rec, rep))
+
+    (box / "from-RC-verbatim" / "a.py").write_text(
+        "a completely different body\n", encoding="ascii")
+    assert "1 UNREAD" in "".join(_probe_r(box, rec, rep)), (
+        "a REPLACED file must re-report - the count alone cannot see it")
+
+
+def test_a_manifest_keys_the_payload_when_the_sender_ships_one(tmp_path):
+    """RC's proposed convention: `MANIFEST.sha256` in the payload, and the
+    watcher keys on the manifest rather than walking every file."""
+    box = _payload(tmp_path, "from-CS-verbatim", "a.py", "b.py")
+    man = box / "from-CS-verbatim" / "MANIFEST.sha256"
+    man.write_text("aaaa  a.py\nbbbb  b.py\n", encoding="ascii")
+    first = "".join(_probe(box, tmp_path / "absent.json"))
+    man.write_text("cccc  a.py\nbbbb  b.py\n", encoding="ascii")
+    second = "".join(_probe(box, tmp_path / "absent.json"))
+    assert first != second, (
+        "the payload key must move when MANIFEST.sha256 changes")
