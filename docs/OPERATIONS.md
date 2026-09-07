@@ -163,6 +163,39 @@ Ready, nothing else).
 
 ---
 
+## Claude agent config - what is TRACKED and what is LOCAL
+
+Split 2026-09-06. LW tracks `.claude/` on purpose (unlike RC, which ignores the
+whole directory): the hook wiring IS the gate, and an untracked gate is
+unreviewable - a missing script target becomes a silent no-op that no diff
+shows. The split keeps that property without publishing the operator's
+environment.
+
+```
+tracked   .claude/settings.json        env + hooks. Repo behaviour only.
+ignored   .claude/settings.local.json  bypassPermissions / dangerouslySkip-
+                                       Permissions / defaultMode / skipDangerous-
+                                       ModePermissionPrompt, permissions.allow,
+                                       model, effortLevel, theme, statusLine,
+                                       enabledPlugins, autoUpdates and the rest
+                                       of the operator preferences.
+```
+
+The four bypass keys are identical across all five projects on this box, which
+is what makes them ENVIRONMENT rather than repo configuration. The local file
+takes precedence, so this machine behaves exactly as before the split; a cloner
+of a PUBLIC repo no longer receives a permission-disabling default.
+
+Enforced by `tests/test_tracked_settings_is_safe.py` (banned keys by NAME, plus
+the hook wiring must still be there and every declared hook script must exist).
+Validity is checked first everywhere it is read: a settings file that does not
+parse registers NO hooks and warns about nothing, so it presents exactly like
+hooks that do not fire.
+
+```
+python -c "import json;json.load(open('.claude/settings.json'))"
+python tools/drift_guard.py --check
+```
 ## Pre-flight before any restart
 
 ```powershell

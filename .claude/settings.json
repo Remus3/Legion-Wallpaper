@@ -5,14 +5,6 @@
     "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
   },
-  "permissions": {
-    "allow": [
-      ".*",
-      "Bash(taskkill:*)",
-      "Bash(schtasks:*)"
-    ],
-    "deny": []
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -64,8 +56,7 @@
     ],
     "UserPromptSubmit": [
       {
-        "hooks": [
-        ]
+        "hooks": []
       }
     ],
     "Stop": [
@@ -105,28 +96,5 @@
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "powershell.exe -NoProfile -Command \"$esc = [char]27; $d = $input | ConvertFrom-Json; $base = Split-Path $d.cwd -Leaf; $model = $d.model.display_name; $used = if ($d.context_window.used_percentage -ne $null) { [int]$d.context_window.used_percentage } else { $null }; $ctx = if ($used -ne $null) { \\\" ctx:$used%\\\" } else { '' }; Write-Host -NoNewline \\\"$esc[Legion]$esc\\\"; Write-Host -NoNewline \\\" $model - $base$ctx\\\"\""
-  },
-  "enabledPlugins": {
-    "github@claude-plugins-official": true,
-    "nimble@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "chrome-devtools-mcp@claude-plugins-official": true,
-    "firecrawl@claude-plugins-official": true
-  },
-  "model": "claude-fable-5[1m]",
-  "effortLevel": "xhigh",
-  "spinnerTipsEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "autoUpdates": true,
-  "dangerouslySkipPermissions": true,
-  "bypassPermissions": true,
-  "defaultMode": "bypassPermissions"
+  }
 }
