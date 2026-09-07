@@ -4,8 +4,16 @@
 
 ## 2026-09-06 (evening) - driver bump, DWPose onto the GPU, and two silent guards
 
-Commits `0cce31a`, `6f07bd5`, `5715cf0`, `1998e2b`. All pushed. Suite 2516
-passed, 18 skipped, ruff clean, drift_guard 0 breaches.
+Commits `1ef672e`, `81de837`, `a019586`, `0cce31a`, `6f07bd5`, `5715cf0`,
+`1998e2b`, `ce8b4ad`, `3a8a296`, `024d0a8`. All pushed, CI green on
+`024d0a8`. Suite 2516 passed, 18 skipped, ruff clean, drift_guard 0
+breaches. Ledger 146-150.
+
+CI went RED once on `3a8a296` and the local suite did not catch it: the new
+DLL-path test asserted Windows-only behaviour, and `os.pathsep` is `:` on the
+runner. Fixed in `024d0a8` by INJECTING the platform decision rather than
+skipping on POSIX - a skip there would have been the same green-by-skip hole
+closed one commit earlier.
 
 **The `.git` directory was destroyed during the folder move and rebuilt.** The
 tree arrived complete with no `.git`; `.git` carries the Windows HIDDEN
