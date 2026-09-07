@@ -436,6 +436,104 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-07 - the hook refusal probe, ported real and proven by mutation
+
+- **`test_git_hook_gate_e2e.py` SHIPPED (LEDGER 160, commit 0d5211a).** RC's
+  real file out of `moon_sync_inbox/from-RC-verbatim/`, adapted to LW's two
+  hooks. NOT a fifth paraphrase - the note-channel versions are superseded.
+- **Premise CORRECTED before porting.** LW already had four real-commit tests
+  in `tests/test_git_hooks_gate.py`, so the gap was never the happy path - it
+  was the FIXTURE. The old one inherited the operator's global git config, did
+  not pin `PYTHON` (the hooks' default interpreter path does not exist on the
+  Linux runner), did not set `commit.gpgsign=false`, and passed the banned
+  glyph through `-m`, which tests argv encoding rather than the gate.
+- **The positive control is the whole point and it is EARNED, not asserted.**
+  Mutation run on LW's own tree: make the fixture silently fail to copy
+  `tools/precommit_gate.py` and BOTH refusal tests still PASS while only the
+  clean-commit test goes red. A refusal-only probe would have called that
+  green. Second mutation: swap the glyph for an ASCII hyphen, both refusals go
+  red, so they depend on the glyph and not on the harness.
+- **CI can no longer go green by skipping.** `LW_REQUIRE_HOOK_GATE=1` prefixes
+  the suite in all three jobs and turns the probe's environment skips into
+  failures; `tests/test_ci_gate_arming.py` grew the parity guard so a fourth
+  job cannot dodge it. Guard-the-guard: un-arming `check` turns it red.
+- **The tracked `.claude/settings.json` was publishing the operator's posture
+  (LEDGER 161, `09a68f4`).** `bypassPermissions` and three siblings plus an
+  allow list of `[".*"]`, in a PUBLIC repo. Split: tracked keeps `env` +
+  `hooks`, the rest moved to gitignored `settings.local.json`; allow lists
+  UNIONed, no local value overwritten, so this box is unchanged. Severity was
+  overstated at first and is corrected in place: the app gates permissions on
+  workspace TRUST above the settings file, so this is a category error, not a
+  hazard. The ruling holds either way - a value identical in five trees is
+  environment, not repo config. Guarded by `test_tracked_settings_is_safe.py`.
+- **The ack defect is FIXED, not just ritualised (LEDGER 162).** It bit a third
+  time this session before the fix landed. `--mark-inbox-seen` now marks only
+  what the last report SHOWED (`ops/runtime/sync_inbox_reported.json`); the
+  fallbacks (no record yet, or `--all`) are explicit and the CLI names which
+  mode it used. The hand-off ritual alone could never close this - a note that
+  lands a minute after the report is still in the listing at ack time.
+- **Clock convention adopted: stamp notes with REAL wall clock.** RSC measured
+  per-sender skew growing through a session (LW was worst at +375 min). LW's
+  first reply tonight went out mis-stamped `0510`, was re-filed as `2340`, and
+  the mis-stamped copies were removed from all four inboxes.
+- **RC ACCEPTED both LW amendments to the reserved-slot design** (its 0020
+  note) and LW is to AUTHOR the reap arm: plant a `reserved-cs.lock` older than
+  the stale window, run `reap`, assert CS can then take its floor. Blocked on
+  the repo-key round landing first. RC also corrected its own cite - LW's
+  acquirer is `ops/loop/loop_controller.py:951`.
+- **The watcher was measured against RC's five properties and failed three
+  (LEDGER 165).** All three fixed: notes keyed on name alone (an in-place
+  CORRECTION was invisible), payloads keyed on the SENDER's manifest (a check
+  whose evidence comes from the thing being checked), and SessionStart firing
+  once (mail landing mid-session invisible until the next start - now a
+  UserPromptSubmit hook, which was DECLARED WITH AN EMPTY HOOKS ARRAY).
+- **Key change re-baselines the seen set once** - done deliberately with
+  `--mark-inbox-seen --all` after reading. Not a bug.
+- **The account-path row now carries its HISTORY measurement:** 26 commits,
+  published on origin/main. Decision recorded: fix forward, no third history
+  rewrite for a built-in account name. Operator can overrule.
+- **The inbox was answered END TO END (LEDGER 164, `9db4371`).** 15 unread
+  including two URGENT. Both watcher defects FIXED here: subdirectory
+  blindness (LW was hiding `from-RSC-verbatim/` and a top-level payload) and
+  the `(N files)` key RC refuted within the hour - a REPLACED file leaves the
+  count equal, so the key is a digest now (MANIFEST.sha256 when shipped).
+- **RSC's `test_no_secret_literals.py` ported and credited.** Two false
+  positives fixed rather than exempted: a PowerShell `$var` re-export is not a
+  literal, and every exemption is now asserted load-bearing.
+- **CS's digest disagreement was LW's own doing.** `1de8d4e` (ADR-012) rotated
+  the mutex names; CS's `f1b4b011` pin is pre-rotation. Nothing drifted. LW
+  supports CS's vendored-or-declared-fork counter-proposal.
+- **OPEN and split in two: 32 tracked files carry the operator home path in a
+  PUBLIC repo.** Prose is cleanup; `.githooks/*` are LOAD-BEARING (they resolve
+  the interpreter through that path). Do NOT bulk-sed - the hook half needs
+  `tests/test_git_hook_gate_e2e.py` green in the same commit. ROADMAP row open.
+- **STANDING, operator directive 2026-09-07 to all five repos: review the sync
+  inbox AND ITS SUBDIRECTORIES for ingest, review, implementation and REPLY.**
+  Not just the notes - the payload directories too. LW had ingested 1 of the 48
+  files in `from-RC-verbatim/` when the directive landed.
+- **Full payload review done (LEDGER 163).** 2 files byte-IDENTICAL
+  (`slots.py` `629c3d511d25`, `winmutex.py` `0b112a4f6bfa`) - three trees now
+  agree by measurement, closing the round RSC refuted. 2 ingested
+  (hook probe, port map). 1 ingested as a FINDING rather than a file: RC's
+  ascii sweep does not port, but the divergence it describes was LIVE here -
+  an ellipsis or NBSP committed clean and reddened CI on the same commit,
+  because three modules carried three different banned sets. Converged and
+  pinned (`test_glyph_rule_has_one_reading.py`, `df6f5bc`); the widening
+  exposed an NBSP-blind byte prefilter in `strip_em_dashes`.
+- **Queued, not guessed at:** RC's `test_stop_claim_gate.py` has 63 arms to
+  LW's 48 across `test_claimed_green_gate*.py`. Most are RC-claim-specific; a
+  delta scan for the GENERIC arms is the one real gap the review left open.
+- **Inbox: 3 notes read THEN acked, in that order.** RC's 0135 slot-reservation
+  REVIEW, 0140 (the watcher survives `/clear`; the real gap is no session at
+  all), 0150 (the repo-key blocker is measured - LW's root rename would have
+  moved its reservation). Replied in one note; see `moon_sync_inbox/`.
+- **Open, and it is a REVIEW so silence is not assent:** RC's reserved-slot
+  design needs the short repo keys agreed FIRST (`rc lw rsc cs ll`). LW's
+  `ops/loop/loop_controller.py:952` passes `repo=str(ROOT)`, a full path with a
+  space in it, which is exactly the value that must stop being cosmetic.
+
+---
+
 ## 2026-09-06 (late night) - both gates built: the hand-off WRITE gate and the inbox watcher
 
 - **Charters reviewed and answered, both broadcast to all five.** LW ADOPTED

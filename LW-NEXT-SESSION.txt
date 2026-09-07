@@ -1,20 +1,27 @@
 NEXT SESSION
 ------------
-Task: pick the next open ROADMAP item. Two cheap ones LW owes the cross-repo
-  channel: (a) measure LW own refs/pull/*/head count, which RSC asked for and
-  LW has NOT taken - git fetch origin "+refs/pull/*/head:refs/remotes/pr/*"
-  into a scratch clone; (b) whatever new mail has landed.
-Context: moon_sync_inbox/ (0 unread at wrap - all 114 read and acknowledged,
-  so anything UNREAD next session is genuinely new), tools/lw_facts.py,
-  ROADMAP.md top block, docs/LEDGER.md item 168. Live state: python
-  tools/lw_facts.py --inbox.
-Acceptance: the refs/pull count is a MEASURED number in a note, not an
-  impression. Never acknowledge inbox mail you have not actually read.
-Do NOT redo: the ops/loop/slots.py pin is CLOSED - all three carriers hash
-  equal (prefix 71fa2a68, 9627 bytes; the full digest is pinned in
-  tests/test_loop_concurrency.py). Do not re-open it. Withdrawal reporting, its
-  clear-on-ack fix, the worktree false-green guard, the payload-leg mutants and
-  the junction walk are all shipped and pinned (LEDGER 168). The ROADMAP
-  verbatim-payload-followups row (2) is CANCELLED - RC confirmed the payload is
-  gone from all five inboxes and is not re-sending it; do not wait for it.
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
+Task: ROADMAP high-priority `verbatim-payload-followups`, the UNBLOCKED half -
+  pin "total holders never exceeds 5 + surplus" as an assertion in
+  tests/test_loop_concurrency.py. (The paired `reap` arm for a stale
+  reserved-<key>.lock stays BLOCKED until the five repos agree the short keys
+  `rc lw rsc cs ll`; do not start it.)
+Context: ops/loop/slots.py (byte-identical-by-contract with RC and RSC - never
+  edit it without a re-sync round), tests/test_loop_concurrency.py (LW's suite
+  is the ONLY coverage slots.py has on either side), ROADMAP.md line 46.
+  Inbox first: moon_sync_inbox/ prints unread at SessionStart; read THEN ack
+  with `python tools/lw_facts.py --mark-inbox-seen`.
+Acceptance: `python -m pytest tests/ -q` green (baseline 2670 passed / 18
+  skipped, 133s on 2026-09-07), ruff clean, drift_guard exit 0.
+Do NOT redo: the independent audit of RC's public history is DONE and pushed
+  (67c87bf, 4fd66f7; LEDGER 169). RC's 11 was confirmed exact; the correction
+  was to RC's SCOPE claim, not its arithmetic. Mirror clone deleted; the
+  reproduction recipe is in the delivered notes. The operator DECLINED a
+  further RC rewrite to strip LW's name - do not re-raise it.
+Carry forward: drift_guard reports the Resin Compute checkout has two path
+  spellings in the machine-level Claude config with DISAGREEING trust
+  [False, True] - regressed since the 2026-09-05 machine-wide fix. A headless
+  RSC run on the False spelling silently drops permissions, and RSC just agreed
+  to build an unattended responder. It is a trust setting outside LW's tree, so
+  surface it to RSC rather than editing it.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
+  git log.
