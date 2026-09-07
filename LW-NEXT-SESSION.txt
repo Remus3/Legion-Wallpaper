@@ -1,86 +1,50 @@
-NEXT SESSION
-------------
-FIRST: the SessionStart hook now PRINTS unread cross-repo mail. Read the "Sync
-  inbox" section of its output before anything else. An unread REVIEW- or
-  ACTION- note also raises an anomaly at the very top of the hook output.
-  Acknowledge ONLY after reading: python tools/lw_facts.py --mark-inbox-seen
-KNOWN DEFECT IN THIS HAND-OFF's PROVENANCE, stated because silence is the
-  failure mode this whole channel is about: the 2026-09-06 session acknowledged
-  the inbox BEFORE reading six notes that arrived mid-session. They are marked
-  seen and will NOT re-report. Read these six by name:
-    2026-09-07-0035-from-RC-CHARTER-v4-worktree-invariant-and-caveman-wiring
-    2026-09-07-0050-from-RC-REVIEW-inventory-to-share-and-CI-time-measurements
-    2026-09-07-0105-from-RC-the-git-hook-refusal-probe-shape-with-its-traps
-    2026-09-07-0120-from-RC-VERBATIM-tools-rituals-and-tests-in-your-inbox
-    2026-09-06-2310-from-CS-watcher-built-and-firing-charter-v4-accepted-rename
-    2026-09-06-2310-from-RSC-charter-v3-adopted-watcher-yes-caveman-no-one-dissent
-  Only the first four were skimmed; the two sibling notes were NOT read at all.
-  Lesson for the ritual: acknowledge FIRST, at session start, then read - never
-  at wrap, when mail has landed since.
-Owed to the five, carry these forward:
-  - LW has reviewed only the two accepted dissents in RC's CHARTER v3, and has
-    NOT reviewed v4 at all. LW told all five to treat the rest of v3 as
-    UNREVIEWED, and that statement must now extend to v4. Reply to both.
-  - RC asked all five to reciprocate with a command/skill inventory (0050) and
-    with CI-time measurements. LW owes both. RC's headline finding: pytest-xdist
-    bought 88 percent locally and 4 percent on a GitHub runner, so do NOT assume
-    -n auto helped CI - measure it on LW before quoting a number.
-  - LW asked all five whether their PII rule set is wider than LW's. LW gates
-    secrets, user-profile paths and 32-hex only, and deliberately left email
-    addresses out on scope grounds. Take a wider rule if anyone has one.
-RC DELIVERED THE VERBATIM BYTES - do not re-derive from the descriptions:
-  moon_sync_inbox/from-RC-verbatim/ holds 48 files, original paths preserved,
-  with a sha256 manifest in the 0120 note. It supersedes RC's own paraphrases,
-  including the pseudo-fixture in the 0105 probe note. The real
-  tests/test_git_hook_gate_e2e.py is in there.
-Task: the git-hook refusal probe with a POSITIVE CONTROL. This is the gap LW
-  named to all five twice - LW's "the gate is armed" claim still rests on LW's
-  own checker checking LW. Port RC's tests/test_git_hook_gate_e2e.py from the
-  verbatim drop rather than writing a fifth. Three tests, and the POSITIVE
-  control is the one people leave out, because a gate that refuses EVERYTHING
-  passes both refusal tests. Traps RC paid for: isolate GIT_CONFIG_GLOBAL and
-  GIT_CONFIG_SYSTEM; pin the interpreter the hooks resolve; set
-  commit.gpgsign=false or an unsigned-commit prompt hangs CI; copy the REAL hook
-  bodies, not stubs; relative core.hooksPath; track the hooks with
-  update-index --chmod=+x, since a 100644 hook is silently not a gate; baseline
-  commit with --no-verify; commit via -F not -m, because a non-ASCII message
-  gets mangled by argv encoding before the hook sees it; write the banned glyph
-  as chr(0x2014) concatenated in, never a literal, or the test file trips the
-  gate it tests. Assert on HEAD before and after - a refusal means HEAD is
-  UNCHANGED, not that something was printed. Then arm it in CI, and make an
-  unconfigured clone a FAILURE rather than a SKIP: a skipped test is a green
-  tick, which is how RC's hooks sat at 100644 for weeks.
-  Then: ROADMAP one-glyph-engine - the banned-glyph rule is declared THREE times
-  (strip_em_dashes.py, precommit_gate.py, edit_lint_check.py). They agree today
-  and nothing makes them agree tomorrow. The fix shape already exists in this
-  tree: scan_handoff_text is called by both its enforcement points and its test
-  asserts the FUNCTION-OBJECT IDENTITY, not agreeing behaviour. Acceptance is
-  exactly ONE literal declaration of the six codepoints; a test asserting the
-  three sets are equal is NOT enough, because that is what exists now.
-  Then: ROADMAP slots-hold-leaks-an-unreapable-lane - LW and RC both carry
-  629c3d51. Close the row when RSC lands it; RSC was on 1c4f8af4 and is
-  non-blocking because it vendors the file and never acquires.
-  Then: ROADMAP usm-halo-probe-cuda-oom - re-run the failing spandrel test with
-  PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to separate fragmentation
-  from a genuine over-allocation, then cap the probe tile size if it is the
-  latter. Invisible to CI - no runner has CUDA.
-Verified state at 2026-09-06 23:25 local - re-verify, siblings move
-  independently:
-  ops/loop/winmutex.py 0b112a4f in LW + RC + RSC (rotation CLOSED, no block)
-  ops/loop/slots.py    629c3d51 in LW + RC; RSC on 1c4f8af4, non-blocking
-  hooks: 10 declared script targets, 0 missing (RC's corrected hookcheck; the
-    first version RC sent was VACUOUS and would have passed LW too)
-  worktrees: one, the repo itself; branches: main only, ahead=0 onremote=2
-  suite: 2574 passed / 18 skipped, run fresh
-Do NOT redo, all shipped and pushed tonight:
-  - charter replies to v1 + v2 with two dissents, broadcast to all five; RC
-    ACCEPTED BOTH in CHARTER v3 the same hour. Do not re-litigate either.
-  - handoff-write-gate (LEDGER 158, a573363) - one engine, two enforcement
-    points, no exemption list. Proven both directions on the real CLI: a clean
-    hand-off writes, a doctored one exits 2 with nothing written and no .tmp.
-  - sync-inbox-visible-at-session-start (LEDGER 159, 486c448) - seen FILENAMES,
-    never an mtime watermark; the hook reports and never acknowledges.
-Also open, unchanged: the 123f hand-clean (veil stage) in Photoshop - operator
-  manual work.
+LW NEXT SESSION
+===============
+
+Task: author the reap arm for a stale RESERVED slot lock. RC ACCEPTED this
+  amendment (its 2026-09-07-0020 note) and named LW as the author. It is
+  BLOCKED until the repo-key round lands - do not write the reservation
+  scheme itself, only the arm that proves reap reclaims one.
+Shape (agreed, both sides): plant a `reserved-cs.lock` older than the stale
+  window, run `reap`, assert CS can then acquire its floor. The failure this
+  prevents: under reservation a leaked lock is ONE repo silently losing its
+  guarantee while the other four see a healthy bucket - a missing reservation
+  reads as a policy decision, not as a leak, so nobody investigates it.
+Also agreed and unbuilt: pin "total holders never exceeds 5 + surplus" as an
+  assertion in the shared file's own test. LW's suite is the ONLY coverage
+  ops/loop/slots.py has on either side, so a property asserted in a note is
+  asserted nowhere.
+Blocker first: the five must agree the short repo keys `rc lw rsc cs ll`. LW
+  has ADOPTED them and takes `lw`. LW's acquirer passes `repo=str(ROOT)` at
+  ops/loop/loop_controller.py:951 - a full path with a space that CHANGED
+  under this week's rename. Do NOT change that value early; it goes in the
+  same ordered round as the slots.py change.
+
+Context: ops/loop/slots.py (byte-identical-by-contract with RC - any change
+  needs a re-sync and a re-hash from THIS disk), tests/test_loop_concurrency.py
+  (pinned digests; never regenerate them to make something pass),
+  moon_sync_inbox/ for the round.
+
+Second, unblocked and LW-local: build the executor throttle detector. RC
+  adopted LW's two-class split. LOUD = the six keys already at
+  ops/loop/loop_controller.py:499 plus rate_limit / overloaded / too many
+  requests / retry-after, logged with repo key + slot + cycle. QUIET = a cycle
+  whose wall-clock exceeds its own trailing median while producing fewer
+  output events than its trailing median. Today LW has NOTHING on the Claude
+  executor path - only the gemini director path is instrumented.
+
+Do NOT redo: the hook refusal probe (LEDGER 160, 0d5211a) is ported, proven by
+  mutation, and CI arms LW_REQUIRE_HOOK_GATE=1 in all three jobs. The settings
+  split (LEDGER 161, 09a68f4) and the acknowledgement fix (LEDGER 162) both
+  shipped. Repo keys, both slot amendments and the clock convention are
+  ANSWERED - do not re-litigate.
+
+Rituals that changed tonight, both because they were violated tonight:
+  * Stamp cross-repo notes with REAL wall clock and say so. LW's skew was the
+    worst measured (+375 min). Check `date` before naming a note.
+  * Read inbox notes, THEN ack. The ack now only marks what the last report
+    SHOWED, so the mechanism backs the ritual - but `--mark-inbox-seen --all`
+    still marks everything, so do not reach for it out of habit.
+
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
-  git log. The hook will hand you the unread mail.
+  git log. Read any unread mail FIRST, then ack.

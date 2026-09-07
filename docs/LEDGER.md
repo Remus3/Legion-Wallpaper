@@ -27,6 +27,139 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+162. DONE **2026-09-06 late night (acknowledgement marks what was REPORTED,
+   never the current listing).** MEASURED TWICE and both times by this project
+   on itself: `--mark-inbox-seen` acknowledged every note in the inbox,
+   including notes that landed AFTER the session-start report printed. Six notes
+   on 2026-09-05, five more on 2026-09-06 - marked read having been shown to
+   nobody. That is the mtime-watermark defect the watcher was built to replace,
+   wearing the ACK as a costume instead of the report, and the ritual fix
+   handed forward last session ("ack at session start, not at wrap") CANNOT
+   close it: a note that arrives one minute after the report is still in the
+   listing when the ack runs. A mechanism was needed, so the mechanism carries
+   it now.
+
+   The report RECORDS what it showed (`ops/runtime/sync_inbox_reported.json`,
+   gitignored, atomic, best-effort so it can never take the SessionStart hook
+   down) and the ack computes `seen = (already seen OR reported) AND still
+   present`. Unioning keeps yesterday's reading; intersecting with the listing
+   keeps the automatic pruning of an archived note, which is why the record is
+   rewritten rather than appended to. Two documented exits: no report record at
+   all (a tree where the hook has never run) falls back to the listing so a
+   first baseline is one command, and `--mark-inbox-seen --all` is the
+   deliberate reset. The CLI NAMES which mode it used, because printing "the
+   notes the last report showed" while actually falling back would be the same
+   false reassurance being removed.
+
+   TDD: 8 tests written RED first (`tests/test_lw_facts_inbox.py`, 25 total),
+   including the incident itself - report, then land a note, then ack, and
+   assert the new note is still UNREAD. Two PRE-EXISTING tests turned red and
+   were CORRECT to: they called `mark_inbox_seen` with a tmp seen file but let
+   `reported_path` default to the real machine record, so they read live
+   `ops/runtime` state. Fixed by injecting the path, which is the standing
+   hermetic-tests rule, not by loosening the assertion.
+
+   Also in this slice, a SEVERITY CORRECTION to ledger 161's guard docstring
+   rather than to its conclusion: the claim that a tracked bypass key "arrives
+   silently with a checkout" was overstated. Claude Code gates permissions above
+   the settings file - an unfamiliar path is untrusted, and an untrusted
+   workspace makes headless silently DISCARD `permissions.allow` (that half is
+   measured and is in CLAUDE.md; that the same gate covers `bypassPermissions`
+   and `defaultMode` is the operator's report, not a measurement). The ruling is
+   unchanged because it never rested on disclosure: a value identical across all
+   five projects on this box describes the ENVIRONMENT, not the repository.
+
+   Suite 2592 passed / 18 skipped.
+
+161. DONE **2026-09-06 late night (a public repo stops publishing the
+   operator's permission posture; commit 09a68f4).** MEASURED on this tree: the
+   TRACKED `.claude/settings.json` carried `bypassPermissions`,
+   `dangerouslySkipPermissions`, `defaultMode: bypassPermissions`,
+   `skipDangerousModePermissionPrompt` and a `permissions.allow` of `[".*"]`,
+   plus `model`, `effortLevel`, `theme`, `statusLine`, `enabledPlugins`,
+   `autoUpdates`, `spinnerTipsEnabled` and `agentPushNotifEnabled`. LW has been
+   public under Apache-2.0 since 2026-08-01.
+
+   Why those keys are not repo configuration: the operator confirmed the bypass
+   posture is MACHINE-WIDE, identical across all five projects on this box, and
+   a value that is the same in five trees describes the OPERATOR'S ENVIRONMENT.
+   Split: tracked keeps `env` + `hooks` (repo behaviour), everything else moved
+   to the gitignored `settings.local.json`. NO behaviour change here - the local
+   file takes precedence, allow lists were UNIONed so no entry was dropped (9),
+   and no pre-existing local value was overwritten, including `model`, which was
+   already shadowing the tracked value before the split.
+
+   LW keeps TRACKING the file, deliberately and unlike RC which gitignores
+   `.claude/` entirely: the hook wiring is the gate, and an untracked gate is
+   unreviewable - a missing script target becomes a silent no-op no diff ever
+   shows. RC shipped exactly that.
+
+   Guarded, not just fixed: `tests/test_tracked_settings_is_safe.py` names the
+   banned keys (a preference-vs-behaviour heuristic would be argued with, and
+   the argument is the failure mode), asserts the hook wiring is still present
+   so a cleanup cannot pass by emptying the file, and asserts every declared
+   hook script exists - basename-matched via `PureWindowsPath`, because the
+   commands carry Windows paths and CI runs on Linux, where the naive
+   `is_file()` would redden a healthy tree. Guard-the-guard: re-adding `theme`
+   and `permissions` turns it red. `drift_guard.scan_settings` now reports the
+   tracked file clean; it had been flagging the wildcard allow and empty deny.
+   Split documented in `docs/OPERATIONS.md`. See item 162 for the severity
+   correction to the framing (the conclusion stands).
+
+160. DONE **2026-09-06 late night (the git-hook refusal probe ships WITH a positive
+   control; commit 0d5211a).** Ported RC's real
+   `tests/test_git_hook_gate_e2e.py` out of `moon_sync_inbox/from-RC-verbatim/`
+   rather than authoring a fifth paraphrase of the probe. Five tests: the
+   POSITIVE CONTROL (a clean ASCII commit must SUCCEED - without it a gate that
+   refuses EVERYTHING passes both refusal tests, and that broken version is the
+   one that looks safest), the staged-content refusal (pre-commit), the
+   commit-message refusal (commit-msg, separate on purpose because
+   `.git/COMMIT_EDITMSG` does not exist yet at pre-commit time), the tracked
+   index-mode assertion (the 100644 regression that made all five RC hooks inert
+   on every Linux clone while CI stayed green; Lanternlight measured the same
+   2026-09-06), and a live-clone armed check. Each refusal asserts HEAD is
+   UNCHANGED, never that the command printed something.
+
+   Premise VERIFIED before porting: LW already had four real-commit tests in
+   `tests/test_git_hooks_gate.py`, so this was not net-new coverage of the happy
+   path - it was the FIXTURE that was thin. The ported fixture carries every
+   trap from RC's 0105 note that LW's did not: `GIT_CONFIG_GLOBAL` +
+   `GIT_CONFIG_SYSTEM` isolated (an inherited `core.hooksPath` / autocrlf / LFS
+   filter makes the probe measure the wrong repo and still look green), `PYTHON`
+   pinned to `sys.executable` (the hooks' default interpreter is a Legion path
+   that does not exist on the Linux runner, so the old fixture depended on PATH
+   resolution), `commit.gpgsign=false` (a signing prompt hangs CI),
+   `update-index --chmod=+x` so the fixture's own hooks carry the executable
+   index mode, a `--no-verify` baseline commit (the scaffolding is not what is
+   under test), and `commit -F` never `-m` (a non-ASCII MESSAGE through argv
+   tests the shell, not the gate - LW's older tests used `-m`). Glyph is
+   `chr(0x2014)`, never a literal, so the file does not trip the gate it tests.
+   A parse-guard reads the gate invocation out of the REAL hook bodies and
+   fails loudly if a hook grows a tool dependency the fixture neither copies
+   nor knows to be `[ -f ]`-guarded.
+
+   VERIFIED BY MUTATION, not by green: (a) making the fixture silently fail to
+   copy `tools/precommit_gate.py` leaves BOTH refusal tests PASSING and turns
+   only the positive control red - the exact false green the control exists for,
+   reproduced on LW's own tree; (b) swapping the banned glyph for an ASCII
+   hyphen turns both refusals red, so they depend on the glyph and not on the
+   harness; (c) guard-the-guard - un-arming the `check` job turns the new CI
+   parity test red.
+
+   CI: `LW_REQUIRE_HOOK_GATE=1` now prefixes the suite invocation in all three
+   jobs (`check`, `nightly-full-suite`, `cv-lane`), turning the probe's
+   environment skips into FAILURES so an unconfigured clone goes RED instead of
+   green-by-skipping - the failure mode that let RC's five hooks sit at mode
+   100644 for weeks. `tests/test_ci_gate_arming.py` gained
+   `test_every_job_running_the_suite_demands_the_hook_gate_probe` so a fourth
+   job cannot dodge it, matching the env var ATTACHED to the invocation (the
+   only placement that cannot drift into a different step).
+
+   Suite 2580 passed / 18 skipped local. Do-not-redo: this supersedes RC's
+   note-channel paraphrases of the probe; if the hooks gain a step, extend
+   `_SUPPORT_SCRIPTS` or `_KNOWN_GUARDED_TOOLS` rather than re-deriving the
+   fixture.
+
 159. DONE **2026-09-06 night (unread cross-repo mail is surfaced at session
    start; 486c448).** Premise VERIFIED, not assumed: `grep -rl moon_sync_inbox
    tools/ ops/ scripts/ .claude/` returned nothing and none of the three

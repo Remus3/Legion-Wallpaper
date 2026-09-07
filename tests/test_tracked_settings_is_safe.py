@@ -7,9 +7,17 @@ shows. That decision is right and this guard exists to keep it affordable.
 
 MEASURED 2026-09-06: the tracked file also carried `bypassPermissions`,
 `dangerouslySkipPermissions`, `defaultMode: bypassPermissions`,
-`skipDangerousModePermissionPrompt` and a `permissions.allow` of `[".*"]`, so
-every clone of a public repo received a permission-disabling default with no
-warning attached. The operator confirmed the bypass posture is MACHINE-WIDE
+`skipDangerousModePermissionPrompt` and a `permissions.allow` of `[".*"]`.
+
+SEVERITY, stated precisely rather than dramatically (corrected 2026-09-06 by a
+cross-repo note after the first framing overstated it): Claude Code gates this
+ABOVE the settings file - an unfamiliar folder is untrusted, and an untrusted
+workspace makes headless silently DISCARD `permissions.allow` (that half is
+MEASURED and is in CLAUDE.md; that the same gate covers `bypassPermissions` and
+`defaultMode` is the operator's report, not a measurement here). So a cloner
+was not being silently handed a bypass. What remains is a category error and
+noise - which is enough, because the load-bearing argument never depended on
+the disclosure risk. The operator confirmed the bypass posture is MACHINE-WIDE
 across all five projects on this box, which is exactly the test for what it is:
 a fact about the OPERATOR'S ENVIRONMENT, not about this repository. Uniform
 across five trees means it is not repo configuration, so it belongs in the
@@ -78,8 +86,9 @@ def test_no_operator_posture_or_preference_keys_are_published():
         "is identical across all five projects on this box, which is what "
         "makes it environment. Move them to .claude/settings.local.json, "
         "which is gitignored and takes precedence, so this box is unaffected. "
-        "The first four disable permission prompts for every cloner of a "
-        "PUBLIC repo.")
+        "The first four are permission posture, which the app gates on "
+        "workspace trust anyway - a category error rather than a hazard, "
+        "and it belongs in the local file for the same reason either way.")
 
 
 def test_the_hook_wiring_is_still_tracked():

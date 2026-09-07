@@ -60,6 +60,14 @@ _WAKEUP = _ROOT / "WAKEUP_NOTES.md"
 # mark_inbox_seen() rewriting from the CURRENT listing makes this self-heal.
 _INBOX = _ROOT / "moon_sync_inbox"
 _SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
+# What the LAST report actually SHOWED. Acknowledgement is an intersection with
+# this, never with the current listing: measured twice (6 notes 2026-09-05, 5
+# notes 2026-09-06), `--mark-inbox-seen` marked notes that landed AFTER the
+# session-start report and were never shown to anyone. That is the mtime
+# watermark defect wearing the ACK as a costume instead of the report, and the
+# ritual fix ("ack at session start") cannot close it - a note arriving a minute
+# after the report is still in the listing when the ack runs.
+_REPORTED = _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
 _INBOX_SHOWN = 10
 
 # Shared wall-clock budget (seconds). The hook timeout is 8s; every
@@ -299,8 +307,37 @@ def _seen_names(seen_path: Path) -> set[str]:
     return {n for n in names if isinstance(n, str)}
 
 
+def _reported_names(reported_path: Path) -> set[str] | None:
+    """What the last report showed. None = no usable record (never reported)."""
+    try:
+        doc = json.loads(reported_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    names = doc.get("reported") if isinstance(doc, dict) else doc
+    if not isinstance(names, list):
+        return None
+    return {n for n in names if isinstance(n, str)}
+
+
+def _write_reported(reported_path: Path, names: list[str]) -> None:
+    """Record what was shown. Best effort by contract: this runs inside the
+    SessionStart hook and must never be the reason the hook fails."""
+    try:
+        reported_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = reported_path.with_name(reported_path.name + ".tmp")
+        tmp.write_text(
+            json.dumps({"reported": names,
+                        "at": time.strftime("%Y-%m-%dT%H:%M:%S")}, indent=2)
+            + "\n",
+            encoding="utf-8", newline="\n")
+        tmp.replace(reported_path)
+    except OSError:
+        pass
+
+
 def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
-                 seen_path: Path | None = None) -> list[str]:
+                 seen_path: Path | None = None,
+                 reported_path: Path | None = None) -> list[str]:
     """Unread cross-repo notes. REPORTS ONLY - never acknowledges.
 
     Acknowledging here would make "unread" a property of whether this hook ran
@@ -314,15 +351,19 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
     """
     inbox = _INBOX if inbox is None else inbox
     seen_path = _SEEN if seen_path is None else seen_path
+    reported_path = _REPORTED if reported_path is None else reported_path
     try:
         if not inbox.is_dir():
             return [f"- moon_sync_inbox: absent at {inbox} - no cross-repo mail channel"]
         names = _inbox_names(inbox)
         unread = [n for n in names if n not in _seen_names(seen_path)]
         if not unread:
+            _write_reported(reported_path, [])
             return [f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
         lines = [f"- moon_sync_inbox: {len(unread)} UNREAD of {len(names)} notes"]
-        for n in unread[-_INBOX_SHOWN:]:
+        shown = unread[-_INBOX_SHOWN:]
+        _write_reported(reported_path, shown)
+        for n in shown:
             lines.append(f"  - {n}")
         if len(unread) > _INBOX_SHOWN:
             lines.append(f"  - ... and {len(unread) - _INBOX_SHOWN} more, oldest first")
@@ -342,16 +383,41 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
         return ["- moon_sync_inbox: probe failed"]
 
 
-def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None) -> int:
-    """Acknowledge every note currently in the inbox. Returns the count.
+def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
+                    reported_path: Path | None = None,
+                    all_notes: bool = False) -> int:
+    """Acknowledge the notes the last report actually SHOWED. Returns the count.
 
-    REWRITES the set from the current listing rather than unioning into it, so
-    an archived note prunes automatically and the record cannot grow without
-    bound. Atomic write - the hook may read it mid-run.
+    NOT the current listing. Measured twice - 6 notes on 2026-09-05 and 5 on
+    2026-09-06 - acknowledging the listing marked notes that landed AFTER the
+    session-start report and that nobody had been shown. That is the watermark
+    defect this design exists to avoid, moved from the report to the ack, and
+    the "ack at session start" ritual cannot close it: a note arriving a minute
+    after the report is still in the listing when the ack runs.
+
+    So the rule is: seen = (already seen OR reported) AND still present.
+    Unioning with the old set keeps yesterday's reading; intersecting with the
+    listing keeps the automatic pruning of an archived note, which is why the
+    record is rewritten rather than appended to.
+
+    Two deliberate exits from that rule, both explicit:
+      * NO report record at all (a tree where the hook has never run) falls
+        back to the listing, so a first baseline is still one command;
+      * `all_notes=True` (`--mark-inbox-seen --all`) is the operator's
+        deliberate baseline reset.
+
+    Atomic write - the hook may read the record mid-run.
     """
     inbox = _INBOX if inbox is None else inbox
     seen_path = _SEEN if seen_path is None else seen_path
-    names = _inbox_names(inbox)
+    reported_path = _REPORTED if reported_path is None else reported_path
+    listing = _inbox_names(inbox)
+    reported = _reported_names(reported_path)
+    if all_notes or reported is None:
+        names = listing
+    else:
+        keep = _seen_names(seen_path) | reported
+        names = [n for n in listing if n in keep]
     seen_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = seen_path.with_name(seen_path.name + ".tmp")
     tmp.write_text(
@@ -379,8 +445,19 @@ def main() -> int:
     # Acknowledgement is a SEPARATE action from the report, deliberately: the
     # hook must never mark mail read on the session's behalf.
     if "--mark-inbox-seen" in sys.argv[1:]:
-        n = mark_inbox_seen()
-        sys.stdout.write(f"marked {n} inbox note(s) seen -> {_SEEN}\n")
+        every = "--all" in sys.argv[1:]
+        n = mark_inbox_seen(all_notes=every)
+        # Name the mode honestly: with no report record yet the ack falls back
+        # to the listing, and calling that "what the report showed" would be
+        # the same false reassurance the whole change is removing.
+        if every:
+            how = "EVERY note - deliberate baseline"
+        elif _reported_names(_REPORTED) is None:
+            how = "EVERY note - no report record yet, baseline"
+        else:
+            how = "the notes the last report showed"
+        sys.stdout.write(
+            f"marked {n} inbox note(s) seen ({how}) -> {_SEEN}\n")
         return 0
 
     out: list[str] = []

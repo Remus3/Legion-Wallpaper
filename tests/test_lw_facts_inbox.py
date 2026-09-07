@@ -58,6 +58,12 @@ def _probe(box, rec, anomalies=None):
                                  inbox=box, seen_path=rec)
 
 
+def _probe_r(box, rec, rep, anomalies=None):
+    """_probe with the report record wired - the ack path depends on it."""
+    return lw_facts._inbox_lines(anomalies if anomalies is not None else [],
+                                 inbox=box, seen_path=rec, reported_path=rep)
+
+
 # ---------------------------------------------------------------------------
 # 1. the report
 # ---------------------------------------------------------------------------
@@ -140,10 +146,16 @@ def test_an_unacknowledged_note_re_reports(tmp_path):
 
 
 def test_acknowledge_rewrites_the_set_from_the_current_listing(tmp_path):
-    """Rewrite, not union - so an archived note prunes automatically."""
+    """Rewrite, not union - so an archived note prunes automatically.
+
+    `reported_path` is injected rather than defaulted: without it this reads the
+    REAL ops/runtime record off this machine and passes or fails on whatever the
+    last live session happened to be shown.
+    """
     box = _inbox(tmp_path, "current.md")
     rec = _record(tmp_path, ["archived-and-gone.md"])
-    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
+                             reported_path=tmp_path / "no-report.json")
     doc = json.loads(rec.read_text(encoding="utf-8"))
     assert set(doc["seen"]) == {"current.md"}
     assert "UNREAD" not in "\n".join(_probe(box, rec))
@@ -152,7 +164,8 @@ def test_acknowledge_rewrites_the_set_from_the_current_listing(tmp_path):
 def test_acknowledge_creates_the_record_when_absent(tmp_path):
     box = _inbox(tmp_path, "a.md")
     rec = tmp_path / "made" / "sync_inbox_seen.json"
-    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
+                             reported_path=tmp_path / "no-report.json")
     assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"a.md"}
 
 
@@ -209,3 +222,110 @@ def test_the_hook_output_carries_the_sync_inbox_section():
                          cwd=str(ROOT), capture_output=True, text=True, timeout=60)
     assert out.returncode == 0, out.stderr
     assert "## Sync inbox" in out.stdout
+
+
+# ---------------------------------------------------------------------------
+# 7. acknowledge only what was REPORTED
+#
+# MEASURED TWICE, on 2026-09-05 (6 notes) and again on 2026-09-06 (5 notes):
+# `--mark-inbox-seen` acknowledged EVERY note in the inbox, including notes that
+# landed AFTER the session-start report printed. Those notes were never shown to
+# anyone and were marked read anyway - the mtime-watermark defect this design
+# replaced, wearing the acknowledgement as a costume instead of the report.
+#
+# The ritual fix ("ack at session start, not at wrap") does not close it: a note
+# that arrives one minute after the report is still in the listing when the ack
+# runs. So the mechanism has to carry it. The report now RECORDS what it showed,
+# and the acknowledgement marks only that.
+# ---------------------------------------------------------------------------
+def _reported(tmp_path):
+    return tmp_path / "sync_inbox_reported.json"
+
+
+def test_the_report_records_what_it_showed(tmp_path):
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rep = _reported(tmp_path)
+    _probe_r(box, tmp_path / "absent.json", rep)
+    assert set(json.loads(rep.read_text(encoding="utf-8"))["reported"]) == {"a.md", "b.md"}
+
+
+def test_a_note_that_lands_after_the_report_is_not_acknowledged(tmp_path):
+    """THE incident, both times it happened."""
+    box = _inbox(tmp_path, "read-me.md")
+    rec = tmp_path / "sync_inbox_seen.json"
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+
+    (box / "arrived-mid-session.md").write_text("body\n", encoding="ascii")
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+
+    seen = set(json.loads(rec.read_text(encoding="utf-8"))["seen"])
+    assert seen == {"read-me.md"}, "a note nobody was shown was marked read"
+    assert "arrived-mid-session.md" in "\n".join(_probe_r(box, rec, rep))
+
+
+def test_acknowledge_still_prunes_a_note_that_left_the_inbox(tmp_path):
+    """Pruning is why the set is rewritten rather than unioned - keep it."""
+    box = _inbox(tmp_path, "current.md")
+    rec = _record(tmp_path, ["archived-and-gone.md"])
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"current.md"}
+
+
+def test_an_absent_report_record_falls_back_to_the_current_listing(tmp_path):
+    """A tree that has never run the hook still gets a baseline in one command.
+
+    Documented on purpose: this is the ONLY path that marks an unreported note,
+    and it exists so the first ack on a fresh tree is not a no-op. Once the hook
+    has run once the record exists and the intersection rule applies.
+    """
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = tmp_path / "sync_inbox_seen.json"
+    n = lw_facts.mark_inbox_seen(inbox=box, seen_path=rec,
+                                 reported_path=tmp_path / "never-written.json")
+    assert n == 2
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"a.md", "b.md"}
+
+
+def test_mark_all_is_the_deliberate_baseline_escape_hatch(tmp_path):
+    box = _inbox(tmp_path, "shown.md")
+    rec = tmp_path / "sync_inbox_seen.json"
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)
+    (box / "never-shown.md").write_text("body\n", encoding="ascii")
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep, all_notes=True)
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {
+        "shown.md", "never-shown.md"}
+
+
+def test_an_already_seen_note_stays_seen_when_a_new_one_is_reported(tmp_path):
+    """The reported set is what the LAST report showed, so union with the old
+    seen set - otherwise acking today un-acks everything read yesterday."""
+    box = _inbox(tmp_path, "old.md", "new.md")
+    rec = _record(tmp_path, ["old.md"])
+    rep = _reported(tmp_path)
+    _probe_r(box, rec, rep)          # shows only new.md; old.md is already seen
+    lw_facts.mark_inbox_seen(inbox=box, seen_path=rec, reported_path=rep)
+    assert set(json.loads(rec.read_text(encoding="utf-8"))["seen"]) == {"old.md", "new.md"}
+
+
+def test_the_report_record_lives_in_gitignored_runtime_state():
+    rel = lw_facts._REPORTED.relative_to(ROOT).as_posix()
+    assert rel == "ops/runtime/sync_inbox_reported.json"
+    out = subprocess.run(["git", "check-ignore", rel], cwd=str(ROOT),
+                         capture_output=True, text=True, timeout=30)
+    assert out.returncode == 0, "the report record must not be tracked"
+
+
+def test_writing_the_report_record_cannot_break_session_start(tmp_path):
+    """A probe must never take the live-state block down with it."""
+    box = _inbox(tmp_path, "a.md")
+    unwritable = tmp_path / "as-a-file"
+    unwritable.write_text("not a directory\n", encoding="ascii")
+    anomalies: list[str] = []
+    lines = lw_facts._inbox_lines(anomalies, inbox=box,
+                                  seen_path=tmp_path / "absent.json",
+                                  reported_path=unwritable / "nested" / "rep.json")
+    assert "1 UNREAD" in "\n".join(lines)
