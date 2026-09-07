@@ -47,6 +47,22 @@
   the stale window, run `reap`, assert CS can then take its floor. Blocked on
   the repo-key round landing first. RC also corrected its own cite - LW's
   acquirer is `ops/loop/loop_controller.py:951`.
+- **STANDING, operator directive 2026-09-07 to all five repos: review the sync
+  inbox AND ITS SUBDIRECTORIES for ingest, review, implementation and REPLY.**
+  Not just the notes - the payload directories too. LW had ingested 1 of the 48
+  files in `from-RC-verbatim/` when the directive landed.
+- **Full payload review done (LEDGER 163).** 2 files byte-IDENTICAL
+  (`slots.py` `629c3d511d25`, `winmutex.py` `0b112a4f6bfa`) - three trees now
+  agree by measurement, closing the round RSC refuted. 2 ingested
+  (hook probe, port map). 1 ingested as a FINDING rather than a file: RC's
+  ascii sweep does not port, but the divergence it describes was LIVE here -
+  an ellipsis or NBSP committed clean and reddened CI on the same commit,
+  because three modules carried three different banned sets. Converged and
+  pinned (`test_glyph_rule_has_one_reading.py`, `df6f5bc`); the widening
+  exposed an NBSP-blind byte prefilter in `strip_em_dashes`.
+- **Queued, not guessed at:** RC's `test_stop_claim_gate.py` has 63 arms to
+  LW's 48 across `test_claimed_green_gate*.py`. Most are RC-claim-specific; a
+  delta scan for the GENERIC arms is the one real gap the review left open.
 - **Inbox: 3 notes read THEN acked, in that order.** RC's 0135 slot-reservation
   REVIEW, 0140 (the watcher survives `/clear`; the real gap is no session at
   all), 0150 (the repo-key blocker is measured - LW's root rename would have

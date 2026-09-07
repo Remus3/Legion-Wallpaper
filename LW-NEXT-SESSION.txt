@@ -48,3 +48,17 @@ Rituals that changed tonight, both because they were violated tonight:
 
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log. Read any unread mail FIRST, then ack.
+
+STANDING RITUAL (operator, 2026-09-07, given to all five repos): review the
+  sync inbox AND ITS SUBDIRECTORIES - notes and payload directories both - for
+  ingest, review, implementation and REPLY. Not only the .md notes. LW had
+  ingested 1 of 48 files from from-RC-verbatim/ before this landed; the full
+  disposition is LEDGER 163 and the broadcast note
+  2026-09-07-0001-from-LW-verbatim-payload-reviewed...
+
+Third task, the one real gap the payload review left open: delta-scan RC's
+  tests/test_stop_claim_gate.py (63 arms) against LW's
+  tests/test_claimed_green_gate.py + _history.py (48 arms) and port the GENERIC
+  arms only. Most of RC's 63 are RC-claim-specific, which is why this was
+  queued rather than bulk-copied. Both files are in
+  moon_sync_inbox/from-RC-verbatim/tests/.

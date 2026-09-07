@@ -27,6 +27,60 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+163. DONE **2026-09-07 (the whole `from-RC-verbatim/` payload reviewed file by
+   file, not just the one file the hand-off named; commits df6f5bc + 77650b1).**
+   Operator directive tonight, broadcast to all five main sessions: review the
+   sync inbox AND ITS SUBDIRECTORIES for ingest, review, implementation and
+   reply. LW had ingested 1 of 48 files. Method: every file hashed against the
+   same path in LW's tree, sha256 from LW's own disk.
+
+   **PARITY MEASURED (2).** `ops/loop/slots.py` (`629c3d511d25`) and
+   `ops/loop/winmutex.py` (`0b112a4f6bfa`) are BYTE-IDENTICAL to RC's verbatim
+   delivery, and those are the digests RSC published from its own disk. Three
+   trees now agree by independent measurement rather than by assertion, which
+   closes the round RSC refuted - LW's earlier "you are still on the old
+   slots.py" was a nine-minute-stale read and RSC was right.
+
+   **INGESTED AS A FINDING (1), which is where the value was.**
+   `tests/test_ascii_source_sweep.py` does NOT port: RC's hole was a rule with
+   no enforcement on a fresh clone, and LW already sweeps tracked content twice
+   in CI, so a third sweep would re-check what already ran (the same reasoning
+   that keeps docs-guards out of this repo). RSC's underlying finding WAS live
+   here and was measured: `precommit_gate` 6 glyphs, `strip_em_dashes` 6,
+   `test_smart_quote_hygiene` 8 - so an ellipsis or a non-breaking space in
+   staged content COMMITTED clean and reddened CI on the same commit. All three
+   converged on the strictest reading and are pinned together by
+   `tests/test_glyph_rule_has_one_reading.py`, written RED first (it named
+   0x2026, then 0xa0). Widening surfaced a second defect the narrow set had
+   hidden: `strip_em_dashes` prefiltered on UTF-8 `E2 80`, which NBSP does not
+   carry (`C2 A0`), so an NBSP-only file was skipped by the fast path silently.
+   Prefilter is a tuple now, with a test that it still covers the whole set.
+
+   **INGESTED ADAPTED (1).** `tests/test_readme_port_map.py` ->
+   `tests/test_architecture_port_map.py`. LW's restatement lives in
+   `docs/ARCHITECTURE.md` and was unguarded in exactly RC's way (RC measured its
+   README missing a live `:8861`). Both directions asserted: a registered port
+   the doc omits, and a port the doc names that the registry does not know.
+   Cross-project weight, not a doc nit - `tools/lw_ports.py` carries the
+   doctrine that a band is verified against the OWNING registry IN SOURCE, so a
+   sibling reads that doc. Guard-the-guard: substituting an out-of-block number
+   for `:8901` reddens it.
+
+   **DECLINED (26) with a reason each, and DIFFERS (21) diffed not adopted** -
+   full disposition in the reply note broadcast to all four inboxes
+   (`2026-09-07-0001-from-LW-verbatim-payload-reviewed...`). Notable: RC-only
+   `drift_guard` functions `check_git_hooks_path` / `check_orphaned_git_hooks`
+   are covered here under `check_git_hooks` (which shells to
+   `install_git_hooks.py --check`, reporting both an unset `hooksPath` and INERT
+   shadowed hooks), so no gap; `ops/loop/intents.py` + `session_intent` are the
+   CONSUMER half of an intent file LW has no producer for; `rc_facts.py`,
+   `install_hooks.py`, `test_next_session_desktop_write.py` and
+   `test_stop_claim_gate.py` all exist here under different names. One genuine
+   open: RC's stop-claim suite has 63 arms against LW's 48, and a delta scan for
+   the GENERIC ones is QUEUED rather than guessed at.
+
+   Suite 2600 passed / 18 skipped.
+
 162. DONE **2026-09-06 late night (acknowledgement marks what was REPORTED,
    never the current listing).** MEASURED TWICE and both times by this project
    on itself: `--mark-inbox-seen` acknowledged every note in the inbox,
