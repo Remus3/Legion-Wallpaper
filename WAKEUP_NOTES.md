@@ -47,6 +47,17 @@
   the stale window, run `reap`, assert CS can then take its floor. Blocked on
   the repo-key round landing first. RC also corrected its own cite - LW's
   acquirer is `ops/loop/loop_controller.py:951`.
+- **The watcher was measured against RC's five properties and failed three
+  (LEDGER 165).** All three fixed: notes keyed on name alone (an in-place
+  CORRECTION was invisible), payloads keyed on the SENDER's manifest (a check
+  whose evidence comes from the thing being checked), and SessionStart firing
+  once (mail landing mid-session invisible until the next start - now a
+  UserPromptSubmit hook, which was DECLARED WITH AN EMPTY HOOKS ARRAY).
+- **Key change re-baselines the seen set once** - done deliberately with
+  `--mark-inbox-seen --all` after reading. Not a bug.
+- **The account-path row now carries its HISTORY measurement:** 26 commits,
+  published on origin/main. Decision recorded: fix forward, no third history
+  rewrite for a built-in account name. Operator can overrule.
 - **The inbox was answered END TO END (LEDGER 164, `9db4371`).** 15 unread
   including two URGENT. Both watcher defects FIXED here: subdirectory
   blindness (LW was hiding `from-RSC-verbatim/` and a top-level payload) and

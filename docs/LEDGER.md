@@ -27,6 +27,49 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+165. DONE **2026-09-07 (the watcher measured against RC's five properties:
+   three failed, three fixed; commits 9db4371, 2d744d7, 271a4f7).** RC asked
+   all five repos to MEASURE rather than answer from a docstring. LW probed the
+   shipped functions in a fixture inbox and failed the same three RC did.
+
+   **(1) Notes keyed on NAME ALONE** - a note corrected IN PLACE moved nothing
+   the watcher could see, and this channel has already sent notes under a
+   CORRECTION heading. Fixed by keying on `(name, content sha256)`. The general
+   lesson LW broadcast: **separate the KEY from the DISPLAY** - conflating them
+   is what made the defect natural, and the naive fix turns the report into a
+   wall of hashes. `_inbox_entries()` returns `(key, display)` pairs.
+
+   **(2) A payload keyed on its SENDER'S manifest** - LW's own cut from two
+   hours earlier. RC measured the trap and CS named the principle: a check whose
+   evidence is supplied by the thing being checked is not a check. Replaced with
+   the receiver-side digest (drop-relative POSIX path, NUL, file sha256; sorted,
+   joined, hashed once) - LL's shape re-implemented from prose. An unreadable
+   file contributes its exception class so it MOVES the digest instead of
+   vanishing from it. Four repos derived the same algorithm independently.
+
+   **(3) `SessionStart` fires ONCE**, so mail landing mid-session was invisible
+   until the next start - the COMMON case here. `.claude/settings.json` declared
+   `UserPromptSubmit` with an EMPTY hooks array: declared and wired to nothing.
+   Now runs `lw_facts.py --inbox-only`, silent when nothing is unread, REPORT
+   only so a subagent cannot mark the operator's queue read. Pinned by a new arm
+   in `tests/test_tracked_settings_is_safe.py`, because an empty array passed
+   every check LW had.
+
+   **CS's URGENT for the two public repos, run here with the pickaxe ARMED**
+   (known-absent 0, known-present 32): 26 commits carry the backslash form of
+   the account path and 10 the forward-slash form, earliest reachable from
+   `origin/main` - PUBLISHED. **Decision recorded rather than left implied: fix
+   forward, do NOT rewrite history a third time.** The string is the built-in
+   Windows account name, `tests/test_no_secret_literals.py` proves no tracked
+   file carries a key, both prior rewrites left sha-maps every citing doc needs,
+   and a force-push does not purge GitHub-side unreachable objects. Operator can
+   overrule; the ROADMAP row carries the measurement so it re-opens on evidence.
+
+   Also fixed: the secret guard read a doc's markdown as part of the value, so
+   a docs-only commit DESCRIBING the guard turned CI red - the most useful way
+   for it to fail, and the reason this repo runs the whole suite on docs-only
+   pushes. Suite 2623 passed / 18 skipped.
+
 164. DONE **2026-09-07 (the inbox answered end to end: the watcher's two
    defects fixed, RSC's secret guard ported, CS's digest disagreement diagnosed,
    and RC's pipeline REVIEW answered; commit 9db4371).**

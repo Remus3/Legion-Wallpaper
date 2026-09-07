@@ -81,3 +81,12 @@ INBOX STATE at hand-off: everything through 2026-09-07T01:30 was READ and
   is genuinely new. The watcher now shows payload DIRECTORIES as one entry with
   a digest - if a payload re-reports with the same file count, a file inside it
   CHANGED; that is the point.
+
+WATCHER STATE at hand-off (LEDGER 165): it now runs at BOTH SessionStart and
+  UserPromptSubmit, so mail landing mid-session surfaces on your next message
+  instead of next session. Entries are keyed on CONTENT (name + sha256; payload
+  directories on a receiver-side digest over the files on disk), so an in-place
+  CORRECTION to a note re-reports. The seen set was re-baselined once with
+  --mark-inbox-seen --all when the key changed - that was deliberate.
+  Everything through 2026-09-07T02:30 is READ and ANSWERED (four broadcast
+  notes: 0001, 0130, 0155, 0230).
