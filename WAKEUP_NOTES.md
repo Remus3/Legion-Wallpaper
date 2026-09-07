@@ -26,6 +26,35 @@ stamps a `_run` block with the providers actually BOUND - read off the live
 session, because ORT drops to CPU silently while still advertising CUDA in
 `get_available_providers()`.
 
+**Golden set RE-FROZEN under USM 35 (operator blessing granted mid-session).**
+All 12 regenerated through the live pipeline, `pv 6d43a6d4 -> ed249af6`, regress
+PASS 12/12 with `pv_changed=False`. The hand pin to USM 70 is retired - the
+frozen set finally validates the recipe that ships. Every fidelity metric
+improved on every case (msssim +0.0008, lpips -0.0083, halo_pct -0.0229 mean)
+and lap_ratio fell -0.4220, the 2026-08-02 census reproduced on a different
+sample. `1341679-banding` reads lap_ratio 0.8416 now - below the G1 floor,
+correctly ungated by ADR-006 for `downscale-only`, NOT a regression.
+`lw_golden candidates` + `data/golden/cases.json` shipped so the next re-freeze
+is three commands rather than archaeology.
+
+**Cross-repo: RSC's `slots.hold()` leak is real here too, and LW took the one
+measurement RC was blocked on.** A lockfile leaked by a lost unlink race keeps a
+LIVE pid, so both arms of `is_stale` say "not stale" and `reap()` skips it - the
+valve is disarmed by the case that trips it, and `loop_controller.py:952` holds
+a slot per cycle under one pid. RC proposed neutralizing the payload but would
+not ship without knowing whether a write is permitted against an open reader
+handle. Measured on this disk: `unlink` fails WinError 32, `write_text`
+SUCCEEDS, `tmp + os.replace` fails WinError 5. So the fix is viable and must be
+a NON-atomic in-place write, which collides with both repos' atomic-writes rule
+and will be tidied back into brokenness unless the comment says so. Ack filed in
+RSC's inbox. `slots.py` NOT touched - joint round, top ROADMAP item.
+
+**docs-guards badge: NO for LW, structurally.** RC's ci.yml ignores every `.md`
+so a docs-only commit fires nothing there; LW's carries no filter, so a
+docs-only push already runs the whole suite plus the drift gate. Recorded in the
+ci.yml header + CLAUDE.md Settled, with the trigger that would flip it. The
+header's "~28s suite" figure was stale and is now 2521/18.
+
 **QA of the previous hand-off, one correction.** "Settling the USM 70 -> 35
 question" reads as if USM were open. It is not: `USM_DEFAULT = (1.2, 35, 3)` is
 SETTLED (2026-08-02) and CLAUDE.md says so. The real entanglement is narrower

@@ -27,6 +27,77 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+153. DONE **2026-09-06 (cross-repo: the `slots.hold()` leak verified on LW's
+   disk, the one measurement RC was missing taken, and the docs-guards badge
+   question answered NO; `92b89ba` + inbox note).** THREE asks, all closed.
+   **(a) RSC's leak addendum, VERIFIED not adopted:** `hold()` releases with
+   `slot.unlink()` inside `except OSError: pass` (`ops/loop/slots.py:190`) with
+   the `released` log OUTSIDE the try, and `is_stale` (`slots.py:94`) answers
+   False when ts is recent AND pid is alive - so a lockfile leaked by a lost
+   ERROR_SHARING_VIOLATION race keeps a LIVE pid, `reap()` skips it, and the
+   fail-open valve is disarmed by exactly the case that trips it. LW's exposure
+   is RC's shape, confirmed at `ops/loop/loop_controller.py:952`: `slots.hold()`
+   is taken per CYCLE inside one long-lived process, so a leaked lane is
+   unreapable for the life of the run and narrows the bucket for all three
+   repos. **The contribution, not just an ack:** RC proposed neutralizing an
+   un-deletable lockfile's payload but would not ship on reasoning alone,
+   because nobody had measured whether a WRITE is even permitted while the
+   reader's handle is open. LW measured it: `unlink` -> `PermissionError`
+   WinError 32, `write_text` -> **SUCCEEDS**, `tmp + os.replace` -> `OSError`
+   WinError 5. So proposal 3 is viable AND must be a direct in-place write that
+   CANNOT be atomic - which collides with both repos' atomic-writes-only house
+   rule, so a later reviewer would tidy it back into the broken form. That
+   measurement went to RSC's `moon_sync_inbox` as
+   `2026-09-06-2129-from-LW-...md`. NOT FIXED HERE ON PURPOSE: `slots.py` is
+   byte-identical-by-contract across three trees, so a change is a joint round
+   with a re-pin; logged as the top ROADMAP item instead. **(b) docs-guards
+   badge: NO, and the reason is structural.** Verified against RC's live tree,
+   not its note: RC's `ci.yml` still carries a `paths-ignore` on every `.md`, so
+   a docs-only commit there fires NO workflow and `docs-guards.yml` exists
+   purely as the complement to that filter. LW's `ci.yml` deliberately carries
+   no such filter, so every docs-only push already runs `pytest tests/` whole
+   (mojibake / smart-quote / U+2500 guards included) plus the `strip_em_dashes`
+   drift gate; a second workflow would re-run guards that already ran and badge
+   it as new coverage. RC's `md_guard_selector.py` is moot here for the same
+   reason - LW runs the whole universe, so there is no subset to derive.
+   Recorded in the `ci.yml` header where anyone asking will look, plus a
+   CLAUDE.md Settled line, with the trigger that flips the answer stated
+   explicitly (if LW ever adds a paths filter, the complement becomes mandatory
+   in the SAME commit). The stale "~28s whole suite" figure in that header, from
+   bring-up, is corrected to 2521/18. **(c) Operator preference saved:**
+   background task names carry the expected runtime in shorthand, because the
+   running-task chip shows elapsed time but not the budget - memory
+   `feedback-task-names-with-duration`.
+
+152. DONE **2026-09-06 (golden set re-frozen under USM 35; `92b89ba`).** The
+   operator's blessing call from LEDGER 149, enacted. All 12 baselines froze
+   2026-07-05 under USM percent 70 while `USM_DEFAULT` moved to 35 on
+   2026-08-02, so the driver regress had to pin USM back to 70 BY HAND and the
+   frozen set was validating a recipe that had not shipped in five weeks.
+   Premise VERIFIED before acting: the over-target case and the USM question are
+   entangled, not adjacent - 4096x2305 is not exactly 2560x1440, so
+   `_usm_applies` is True and the downscale-only branch DOES sharpen
+   (`usm_applied=True` in the regenerate log, on both branches). Regenerated all
+   12 through the live pipeline (11 spandrel at ~35s, 1 downscale-only at
+   0.67s), re-froze, self-checked: `pv 6d43a6d4c2d4 -> ed249af6c004`, regress
+   **PASS 12/12 with `pv_changed=False`** - the manifest now hashes to the live
+   pipeline and the hand pin is retired. Direction of travel over all 12, old ->
+   new: msssim +0.0008 mean (improves on every case), lpips -0.0083 (every
+   case), halo_pct -0.0229 (every case), lap_ratio -0.4220 (every case). That
+   reproduces the 2026-08-02 USM census independently on a different sample:
+   weakening the mask buys fidelity and costs sharpening. `1341679-banding` now
+   reads `lap_ratio` 0.8416, BELOW the G1 floor of 1.0 and correctly ungated -
+   ADR-006 drops `lap_ratio` for backend `downscale-only` because a Lanczos
+   downscale of an over-target source is softer than its source at common scale
+   by construction; do not read it as a regression. SHIPPED so the next
+   re-freeze is not archaeology: `lw_golden candidates` regenerates every frozen
+   input through the live pipeline (TDD RED-first, 2 tests) and reports the
+   branch taken plus whether the USM ran, and `data/golden/cases.json` is the
+   tracked blessed-set definition (no image bytes; candidates gitignored on the
+   same privacy boundary). Recipe written into `docs/research/GOLDEN_SET.md`;
+   evidence `docs/GOLDEN_REFREEZE_USM35_2026-09-06.md`. Verified: ruff clean,
+   2521 passed / 18 skipped.
+
 151. DONE **2026-09-06 (the 5/6 localizer number re-measured on CUDA; `5f6f119`).**
    LEDGER 19 adopted DWPose at 5/6 wrist-on-weapon measured on the ONNX **CPU**
    provider; `0cce31a` moved DWPose onto CUDA, and one spot-checked frame is
