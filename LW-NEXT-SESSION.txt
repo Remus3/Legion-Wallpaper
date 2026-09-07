@@ -3,12 +3,13 @@ NEXT SESSION
 Task: pick the next open ROADMAP item. Two cheap ones LW owes the cross-repo
   channel: (a) measure LW own refs/pull/*/head count, which RSC asked for and
   LW has NOT taken - git fetch origin "+refs/pull/*/head:refs/remotes/pr/*"
-  into a scratch clone; (b) answer the 2 unread inbox notes.
-Context: moon_sync_inbox/ (2 unread at wrap), tools/lw_facts.py (the watcher),
+  into a scratch clone; (b) whatever new mail has landed.
+Context: moon_sync_inbox/ (0 unread at wrap - all 114 read and acknowledged,
+  so anything UNREAD next session is genuinely new), tools/lw_facts.py,
   ROADMAP.md top block, docs/LEDGER.md item 168. Live state: python
   tools/lw_facts.py --inbox.
 Acceptance: the refs/pull count is a MEASURED number in a note, not an
-  impression; unread inbox count is 0 only after the notes are actually read.
+  impression. Never acknowledge inbox mail you have not actually read.
 Do NOT redo: the ops/loop/slots.py pin is CLOSED - all three carriers hash
   equal (prefix 71fa2a68, 9627 bytes; the full digest is pinned in
   tests/test_loop_concurrency.py). Do not re-open it. Withdrawal reporting, its
