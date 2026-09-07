@@ -192,3 +192,62 @@ def test_register_cuda_dlls_puts_them_on_path(monkeypatch, tmp_path):
     assert str(sp / "torch" / "lib") in parts
     assert str(sp / "nvidia" / "cudnn" / "bin") in parts
     assert "PRE_EXISTING_ENTRY" in parts, "must not clobber PATH"
+
+
+# --- run() provenance: WHICH providers produced these numbers ----------------
+def _one_sample_run(monkeypatch, tmp_path, sessions):
+    """Drive run() over a single 8x8 stub image with a stub backend.
+
+    The dwpose sessions are injected, so the provenance policy is asserted the
+    same on a CI runner with no GPU as on the box.
+    """
+    from PIL import Image
+
+    Image.new("RGB", (8, 8), (30, 30, 30)).save(tmp_path / "t1.png")
+    monkeypatch.setattr(lle, "ROOT", tmp_path)
+    monkeypatch.setattr(lle, "SAMPLES", [("t1", "t1.png")])
+    monkeypatch.setattr(lle, "_DW_SESSIONS", sessions)
+    monkeypatch.setitem(
+        lle.BACKENDS, "stub",
+        lambda p: lle.BackendOutput(kp_map=dict.fromkeys(
+            ("nose", "neck", "RElbow", "RWrist", "LElbow", "LWrist"))),
+    )
+    return lle.run("stub", out_dir=str(tmp_path / "out"))["summary"]
+
+
+class _StubSession:
+    def __init__(self, providers):
+        self._p = providers
+
+    def get_providers(self):
+        return list(self._p)
+
+
+def test_summary_records_the_providers_that_actually_produced_it(monkeypatch, tmp_path):
+    """LEDGER 19's 5/6 wrist-on-weapon was measured on the CPU provider and the
+    artifact did not say so, so the number had to be re-measured from scratch
+    once DWPose moved onto CUDA. The BOUND providers are read off the live
+    session (not the requested list, which is what ORT falls back FROM when the
+    CUDA EP fails to load silently)."""
+    summary = _one_sample_run(
+        monkeypatch, tmp_path,
+        {"det": _StubSession(["CUDAExecutionProvider", "CPUExecutionProvider"])})
+    assert summary["_run"]["providers"] == ["CUDAExecutionProvider", "CPUExecutionProvider"]
+    assert summary["_run"]["backend"] == "stub"
+    assert "t1" in summary, "the sample rows must survive alongside the stamp"
+
+
+def test_summary_provider_is_null_when_no_onnx_session_ran(monkeypatch, tmp_path):
+    """The openpose backend builds no ORT session; the stamp must say so rather
+    than reporting the provider list some earlier run left cached."""
+    summary = _one_sample_run(monkeypatch, tmp_path, {})
+    assert summary["_run"]["providers"] is None
+
+
+def test_provenance_never_builds_a_session(monkeypatch):
+    """Reading the stamp must not allocate on the GPU: _dwpose_sessions() holds
+    no mutex of its own, so building one here would race the upscaler."""
+    monkeypatch.setattr(lle, "_DW_SESSIONS", {})
+    monkeypatch.setattr(lle, "_dwpose_sessions",
+                        lambda: (_ for _ in ()).throw(AssertionError("built a session")))
+    assert lle._run_provenance("dwpose")["providers"] is None

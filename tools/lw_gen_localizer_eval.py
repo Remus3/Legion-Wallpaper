@@ -26,6 +26,7 @@ import importlib.util
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
@@ -413,6 +414,28 @@ def contact_sheet(overlay_paths, out_path, cols=3, cell_w=640):
     return out_path
 
 
+def _run_provenance(backend_name: str) -> dict:
+    """Stamp a run with the execution providers that ACTUALLY produced it.
+
+    LEDGER 19's "5/6 wrist-on-weapon" was measured on the CPU provider and the
+    summary.json recorded no such thing, so once DWPose moved onto CUDA
+    (LEDGER 148) the number could not be told apart from a GPU one and had to be
+    re-measured from scratch. A number is only as portable as its provenance.
+
+    Read off the LIVE session rather than _dwpose_providers(): the requested
+    list is what ORT falls back FROM when the CUDA EP fails to load, silently
+    and while still advertising CUDA as available. Never builds a session - the
+    cache is read as-is, so a backend that runs no ORT (openpose) stamps null
+    and nothing allocates on the GPU outside gpu_lock().
+    """
+    det = _DW_SESSIONS.get("det")
+    return {
+        "backend": backend_name,
+        "providers": list(det.get_providers()) if det is not None else None,
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+
 def run(backend_name: str, out_dir: Optional[str] = None) -> dict:
     """Run one backend over the 6 samples -> overlays + contact sheet + summary."""
     from tools.lw_gen_weaponfix import weapon_roi_from_keypoints
@@ -441,6 +464,8 @@ def run(backend_name: str, out_dir: Optional[str] = None) -> dict:
             "meta": out.meta,
         }
     sheet = contact_sheet(overlays, str(outd / "contact_sheet.png"))
+    # "_run" (leading underscore) is provenance, not a sample row.
+    summary["_run"] = _run_provenance(backend_name)
     (outd / "summary.json").write_text(json.dumps(summary, indent=2), encoding="ascii")
     return {"backend": backend_name, "out_dir": str(outd), "sheet": sheet, "summary": summary}
 
