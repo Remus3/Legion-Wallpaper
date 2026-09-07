@@ -18,6 +18,12 @@ On a commit it inspects ONLY staged content of staged files (diff-filter ACM):
 Exit 2 (block) with a terse stderr report on any violation; exit 0 otherwise.
 Mirrors tools/edit_lint_check.py's banned set + frozen-skip; that hook is
 edit-time + advisory, this one is commit-time + blocking on net-new only.
+
+Also owns the HAND-OFF rule set (scan_handoff_text): ASCII, banned glyphs,
+32-hex literals, user-profile paths, secret-shaped literals. That one function
+is called from BOTH enforcement points - tools/lw_next_session.write_handoff
+before anything reaches disk, and _staged_violations over the staged blob - so
+the rule has a single reading. `--scan-files FILE...` runs it from a shell.
 """
 
 from __future__ import annotations
@@ -53,6 +59,102 @@ _HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 # Matches any casing of the trailer key, and only when the value names Claude or
 # anthropic.com - a human co-author trailer is legitimate and must survive.
 _CLAUDE_TRAILER = re.compile(r"^\s*co-authored-by:.*(claude|anthropic)", re.IGNORECASE)
+
+# ---------------------------------------------------------------------------
+# The HAND-OFF content rule set - ONE reading, TWO enforcement points.
+#
+# `LW-NEXT-SESSION.txt` is tracked in a PUBLIC repo and is the
+# highest-variance artifact in the tree: written fresh every session, never
+# reviewed before it is written, quoting freely from whatever that session
+# touched. A Desktop file that is wrong costs one edit; a tracked one costs a
+# history rewrite (Clockspeed's finding, 2026-09-06), and LW rewrote its whole
+# history twice that week.
+#
+# So the same function gates the WRITE (tools/lw_next_session.write_handoff,
+# before anything reaches disk) and the COMMIT (_staged_violations below, over
+# the whole staged blob). Deliberately one function object rather than two
+# agreeing copies: this repo already carries three separate declarations of the
+# banned-glyph rule, and they agree only by inspection.
+#
+# NOT solved with a per-session exemption list. An exemption list that grows
+# once per session is a gate disarmed one word at a time.
+# ---------------------------------------------------------------------------
+
+# The hand-off filename contract mirrors tools/lw_next_session.py: a bare
+# filename in the REPO ROOT starting with `LW-`. Pinned by
+# tests/test_handoff_write_gate.py so a rename cannot unhook the commit half.
+HANDOFF_BASENAME = "LW-NEXT-SESSION.txt"
+_HANDOFF_NAME = re.compile(r"LW-[A-Za-z0-9._-]*\.txt")
+
+# 32+ hex is the floor deliberately: a git short sha (7-12) and a `sha12=`
+# pipeline-log field must survive, a sha256/sha1 digest or a hex token must not.
+_HEX32 = re.compile(r"(?<![0-9A-Za-z])[0-9a-fA-F]{32,}(?![0-9A-Za-z])")
+
+# Path SHAPES only. An account name on its own is not matched: hard-coding the
+# operator's username into a public repo to detect it would be the disclosure
+# this gate exists to prevent.
+_USER_PROFILE = re.compile(
+    r"[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[A-Za-z0-9._~-]+"
+    r"|/(?:home|Users)/[A-Za-z0-9._~-]+"
+    r"|%USERPROFILE%|\$env:USERPROFILE|~/\.[A-Za-z0-9._-]+",
+    re.IGNORECASE,
+)
+
+_SECRET = re.compile(
+    r"sk-[A-Za-z0-9_-]{16,}"
+    r"|gh[pousr]_[A-Za-z0-9]{20,}"
+    r"|github_pat_[A-Za-z0-9_]{20,}"
+    r"|AIza[A-Za-z0-9_-]{20,}"
+    r"|AKIA[A-Z0-9]{12,}"
+    r"|xox[abposr]-[A-Za-z0-9-]{10,}"
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+    r"|(?:api[_-]?key|secret|token|password|passwd|passphrase)\s*[:=]\s*\S{8,}"
+    r"|bearer\s+[A-Za-z0-9._~+/-]{16,}",
+    re.IGNORECASE,
+)
+
+
+def is_handoff_path(path: str) -> bool:
+    """True for a repo-ROOT hand-off file, matching lw_next_session's contract."""
+    p = path.replace("\\", "/")
+    return "/" not in p and bool(_HANDOFF_NAME.fullmatch(p))
+
+
+def _mask_user(text: str) -> str:
+    """Show the path SHAPE without repeating the account name."""
+    head, sep, _tail = text.replace("\\", "/").rpartition("/")
+    return f"{head}{sep}<user>" if sep else "<user-profile>"
+
+
+def scan_handoff_text(text: str, label: str = "hand-off") -> list[str]:
+    """Every hand-off content rule, in one place. Returns [] when clean.
+
+    Rules: 7-bit ASCII, the banned glyph set, 32+ hex literals, user-profile
+    paths, and secret-shaped literals. Findings carry the line number and the
+    rule but never the matched value for the secret class - the report goes to
+    stderr and into logs, so echoing it there would just move the disclosure.
+    """
+    out: list[str] = []
+    for i, line in enumerate(text.splitlines(), 1):
+        hits = _glyph_hits(line)
+        if hits:
+            out.append(f"  {label}:{i}  banned glyph: {', '.join(hits)}")
+        try:
+            line.encode("ascii")
+        except UnicodeEncodeError as exc:
+            out.append(f"  {label}:{i}  non-ASCII at column {exc.start + 1}")
+        m = _HEX32.search(line)
+        if m:
+            out.append(
+                f"  {label}:{i}  32-hex literal ({len(m.group(0))} chars, "
+                f"starts {m.group(0)[:6]}...)"
+            )
+        m = _USER_PROFILE.search(line)
+        if m:
+            out.append(f"  {label}:{i}  user-profile path: {_mask_user(m.group(0))}")
+        if _SECRET.search(line):
+            out.append(f"  {label}:{i}  secret-shaped literal (value withheld)")
+    return out
 
 
 def _is_commit(command: str) -> bool:
@@ -160,6 +262,17 @@ def _staged_violations(root: str) -> list[str]:
             if hits:
                 violations.append(f"  {path}:{lineno}  banned glyph: {', '.join(hits)}")
 
+    # 1b. the hand-off artifact, WHOLE staged blob through the shared engine.
+    # Added lines are not enough here: the hand-off is rewritten wholesale, and
+    # a secret that survives from a previous session in an untouched line is
+    # exactly as public. This is the commit-time half of the WRITE-time gate in
+    # tools/lw_next_session.write_handoff - one function, two enforcement
+    # points, so the rule has one reading.
+    for path in staged:
+        if is_handoff_path(path):
+            blob = _git(["show", f":{path}"], root)
+            violations.extend(scan_handoff_text(blob, label=path))
+
     # 2. net-new ruff errors + py_compile on staged .py
     pyfiles = [
         p for p in staged if p.endswith(".py") and os.path.isfile(os.path.join(root, p))
@@ -264,10 +377,43 @@ def _message_mode(path: str) -> int:
     return 0
 
 
+def _scan_files_mode(paths: list[str]) -> int:
+    """Entry point for `--scan-files FILE...`: run the hand-off rule set over
+    files on disk. Converges with RC's CLI of the same name so one command
+    means the same thing across the sibling repos, and lets CI sweep the
+    tracked hand-off through the SAME engine the hook and the writer use.
+
+    Exit 2 on any violation, 0 when clean. An unreadable path is a violation,
+    not a silent pass - a gate that cannot read its target has not checked it.
+    """
+    violations: list[str] = []
+    for path in paths:
+        try:
+            text = open(path, encoding="utf-8", errors="strict").read()
+        except UnicodeDecodeError:
+            violations.append(f"  {path}  not decodable as UTF-8")
+            continue
+        except OSError as exc:
+            violations.append(f"  {path}  unreadable ({exc.__class__.__name__})")
+            continue
+        violations.extend(scan_handoff_text(text, label=path))
+    if violations:
+        sys.stderr.write(
+            "precommit_gate --scan-files REFUSED - hand-off rule violations:\n"
+            + "\n".join(violations)
+            + "\n"
+        )
+        return 2
+    sys.stdout.write(f"scan-files: {len(paths)} file(s) clean\n")
+    return 0
+
+
 def main() -> int:
     argv = sys.argv[1:]
     if "--git-hook" in argv:
         return _git_hook_mode()
+    if "--scan-files" in argv:
+        return _scan_files_mode(argv[argv.index("--scan-files") + 1:])
     if "--message-file" in argv:
         i = argv.index("--message-file")
         return _message_mode(argv[i + 1]) if i + 1 < len(argv) else 0

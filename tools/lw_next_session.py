@@ -26,6 +26,18 @@ not be able to fail an operator's `/done`, only to be ignored.
 Pure stdlib, so it runs on the CI interpreter. Coverage:
 tests/test_lw_next_session_guard.py.
 
+The CONTENT is gated too, and before the write rather than after the commit:
+`write_handoff` runs `precommit_gate.scan_handoff_text` over the string and
+refuses on non-ASCII, a banned glyph, a 32-hex literal, a user-profile path or
+a secret-shaped literal. Same function object as the commit-time gate, so the
+rule has one reading. This file is TRACKED in a PUBLIC repo and is the
+highest-variance artifact in the tree - written fresh every session, never
+reviewed before it is written - and a tracked hand-off that is wrong costs a
+history rewrite where a Desktop one cost a single edit. Coverage:
+tests/test_handoff_write_gate.py. NOT gated with a per-session exemption list:
+an exemption list that grows once per session is a gate disarmed one word at a
+time.
+
 CLI:
     python tools/lw_next_session.py --path            # print the resolved target
     python tools/lw_next_session.py --write FILE      # write FILE's content
@@ -39,6 +51,17 @@ import json
 import sys
 from pathlib import Path
 
+# The hand-off content rules live with the commit-time gate, and this module
+# calls that exact function object. Two agreeing copies would be a second
+# reading of one rule, which is the defect this consolidates - see
+# tests/test_handoff_write_gate.py, which asserts the IDENTITY, not the
+# behaviour.
+try:
+    from precommit_gate import scan_handoff_text
+except ImportError:  # running with tools/ off sys.path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from precommit_gate import scan_handoff_text
+
 ROOT = Path(__file__).resolve().parent.parent
 
 DEFAULT_NAME = "LW-NEXT-SESSION.txt"
@@ -50,6 +73,15 @@ INTENT_PATH = ROOT / "ops" / "runtime" / "next_session_intent.json"
 INTENT_KEY = "filename"
 
 _SEPARATORS = ("/", "\\")
+
+
+class HandoffRefused(ValueError):
+    """The hand-off carries content that must not reach a tracked public file.
+
+    Subclasses ValueError deliberately: the pre-existing contract was a
+    ValueError on non-ASCII and the `--write` CLI catches that, so growing the
+    rule set must not change what callers catch.
+    """
 
 
 def choose_filename(value):
@@ -108,17 +140,24 @@ def resolve_target(root=None, intent_path=None):
 def write_handoff(text, root=None, intent_path=None):
     """Atomically write `text` to the resolved target. Returns the path written.
 
-    Raises ValueError on non-ASCII content: the hand-off is authored text and
-    the repo-wide 7-bit ASCII rule applies to it like any other.
+    Raises HandoffRefused (a ValueError) when the content breaks a hand-off
+    rule - non-ASCII, a banned glyph, a 32-hex literal, a user-profile path or
+    a secret-shaped literal. The gate runs BEFORE anything reaches disk: this
+    file is TRACKED in a PUBLIC repo, so a bad hand-off caught at commit time
+    is already one push from world-readable and a bad one caught later costs a
+    history rewrite. Refusing while it is still a string in memory is the only
+    point at which the session can simply fix it.
+
+    On refusal NOTHING is written - no target, no `.tmp`, and any existing
+    hand-off is left exactly as it was.
     """
     if not isinstance(text, str):
         raise TypeError("hand-off content must be a string")
-    try:
-        text.encode("ascii")
-    except UnicodeEncodeError as exc:
-        raise ValueError(
-            f"hand-off content is not 7-bit ASCII at position {exc.start}: "
-            f"{text[exc.start:exc.end]!r}") from exc
+    violations = scan_handoff_text(text)
+    if violations:
+        raise HandoffRefused(
+            "hand-off REFUSED before writing - "
+            f"{len(violations)} rule violation(s):\n" + "\n".join(violations))
     target = resolve_target(root=root, intent_path=intent_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_name(target.name + ".tmp")
