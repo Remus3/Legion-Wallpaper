@@ -124,7 +124,13 @@ def scan_text(text: str) -> list[str]:
     for match in VENDOR_TOKEN.finditer(text):
         hits.append(f"vendor-prefixed token: {match.group(0)[:12]}...")
     for match in SECRET_BINDING.finditer(text):
-        if ENV_REFERENCE.search(match.group("value")):
+        # Strip the markup a DOC wraps a code sample in before deciding. The
+        # guard is about the VALUE, not the punctuation around it: LEDGER prose
+        # quoting `$env:GEMINI_API_KEY = $key` inside a markdown code span
+        # captured the value as "$key`" and failed the anchored env test, which
+        # turned CI red on a docs-only commit describing this very guard.
+        value = match.group("value").strip("`'\"*_,;)]}")
+        if ENV_REFERENCE.search(value):
             continue
         hits.append(f"secret name bound to a literal: {match.group(0)[:48]}")
     return hits
@@ -182,6 +188,9 @@ def test_a_planted_secret_is_caught(planted):
     'GEMINI_API_KEY: "${GEMINI_API_KEY}"',
     "SAUCENAO_API_KEY=%SAUCENAO_API_KEY%",
     'DEVIANTART_CLIENT_SECRET = "<set in the machine environment>"',
+    # A doc quoting the correct pattern inside a markdown code span. This is
+    # the CI-red case, kept as an arm so the normalisation cannot regress.
+    "prose: `$env:GEMINI_API_KEY = $key` is the correct destination",
 ])
 def test_a_legitimate_neighbour_survives(innocent):
     """The digests and the env lookups must stay legal or the guard gets deleted."""
