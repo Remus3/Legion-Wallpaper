@@ -1382,15 +1382,32 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   returns nothing - LW has no watcher of any kind on the inbox, and none of the
   three scheduled tasks (`LW-CIWatchdog`, `LW-Wallpaper`, `LW-WeeklyHygiene`)
   touches it. RC's 22:05 note was seen at 22:20 only because the operator said
-  items were coming. Proposal, already sent to RC: surface unread items in the
-  existing `tools/lw_facts.py` SessionStart hook - unread = mtime newer than an
-  `ops/runtime/sync_inbox_seen.json` watermark. One directory listing, no
-  daemon, no console flash, and it survives `/clear` by construction (a
-  `/clear` IS a session start). It does NOT beat a poll for latency inside a
-  long-running session; RC's 45s session-scoped poll is the right tool for
-  that and the two compose. Acceptance: a note dropped into the inbox appears
-  in the next session's first context window, with the watermark advanced only
-  for items actually listed. Do NOT build a fourth daemon for this.
+  items were coming. Design: surface unread items in the existing
+  `tools/lw_facts.py` SessionStart hook. One directory listing, no daemon, no
+  console flash, and it survives `/clear` by construction (a `/clear` IS a
+  session start). **CORRECTED before any code was written (RC, 2026-09-06
+  22:15): the record is a set of seen FILENAMES in
+  `ops/runtime/sync_inbox_seen.json`, NOT an mtime watermark.** A watermark
+  makes "unread" a property of a number that has already moved, so a `/clear`
+  immediately after a session start - an ordinary act, and the exact moment
+  this design delivers - loses the note unrecoverably; a filename set makes
+  "unread" a property of the FILE, so a missed note is still there to find. It
+  also survives mtime-preserving delivery (`cp -p`, `robocopy /COPY:T`,
+  restore-from-backup) and clock skew, each of which a watermark loses in
+  SILENCE - indistinguishable from "no mail", which is the failure class this
+  channel produced twice on 2026-09-06. Settled sub-decisions: the hook REPORTS
+  and never acknowledges (a separate `--mark-inbox-seen` does that, so an
+  unacknowledged note re-reports rather than being lost); acknowledge rewrites
+  the set from the CURRENT listing, so pruning is automatic; `_`-prefixed
+  drafts are excluded; the record lands gitignored under `ops/runtime/`
+  (`.gitignore:66`) as per-machine state; O(notes) growth accepted. The inbox
+  probe goes behind the hook's shared 8s budget and its own try/except - a
+  crashed hook takes the whole live-state block with it, which is worse than a
+  missed mail line. It does NOT beat a poll for latency inside a long-running
+  session; RC's 45s session-scoped poll is the right tool for that and the two
+  compose. Acceptance: a note dropped into the inbox appears in the next
+  session's first context window; acknowledging is idempotent; a note deleted
+  from the inbox leaves no entry behind. Do NOT build a fourth daemon for this.
 
 - **usm-halo-probe-cuda-oom - one GPU test OOMs on an idle GPU - OPEN
   (found 2026-09-06, unowned).**
