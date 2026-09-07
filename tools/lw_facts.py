@@ -46,7 +46,8 @@ _ROOT = Path(__file__).resolve().parent.parent
 _HEALTH = _ROOT / "ops" / "runtime" / "health.json"
 _WAKEUP = _ROOT / "WAKEUP_NOTES.md"
 
-# Cross-repo mail. UNREAD is a set of seen FILENAMES, never an mtime watermark:
+# Cross-repo mail. UNREAD is a set of seen KEYS - each a name plus a content
+# digest, see _inbox_entries() - and never an mtime watermark:
 # a watermark advances on WRITE, so a session cleared or killed before anyone
 # read the output moves it past a note nobody saw, and it also loses to
 # timestamp-preserving delivery (cp -p, robocopy /COPY:T, restore-from-backup)
@@ -397,6 +398,64 @@ def _write_reported(reported_path: Path, names: list[str]) -> None:
         pass
 
 
+def _stable_name(key: str) -> str:
+    """A key with its content digest stripped - the part a rewrite preserves.
+
+    Keys are `<name>#<digest12>` for a note and `<name>/#<digest12>` for a
+    drop, so everything up to the first `#` is the on-disk name (the drop keeps
+    its trailing slash, which is what distinguishes the two in a report).
+    """
+    return key.split("#", 1)[0]
+
+
+def _withdrawn_keys(present: list[str], seen: set[str],
+                    reported: set[str] | None) -> list[str]:
+    """Keys the operator was SHOWN or acknowledged that are no longer on disk.
+
+    The comparison is on the stable NAME, not the key. Once keys carry a
+    digest, an in-place EDIT and a RETRACTION both move the key, so a raw key
+    comparison reports an edited note in two contradictory sections at once -
+    UNREAD because its new key is unseen, WITHDRAWN because its old key is
+    absent. An edit keeps its name; only a retraction loses it.
+
+    The baseline is `reported | seen`, never `seen` alone. RC's 2026-09-07
+    incident - the one that proved this is worth a line of code, when it pulled
+    50 files back out of four inboxes - was notes LISTED at session start and
+    pulled before anyone ran the ack. Those live in the report record only, so
+    a seen-only baseline would score the motivating case as a non-event.
+    """
+    here = {_stable_name(k) for k in present}
+    baseline = seen | (reported or set())
+    return sorted(k for k in baseline if _stable_name(k) not in here)
+
+
+def _withdrawn_lines(gone: list[str], anomalies: list[str]) -> list[str]:
+    """The report half. A withdrawal is an ANOMALY, not an informational line.
+
+    It is the only inbox event that carries no artifact: the operator cannot
+    go and read the thing that changed, so if this line is missed there is
+    nothing left on disk to notice later.
+
+    Withdrawn keys are carried in the REPORT record until the ack prunes them
+    (the ack keeps `(seen | reported) AND still present`, and a withdrawn name
+    is by definition not present). Reporting a withdrawal exactly once would
+    put it back in the watermark's failure class: a session cleared before
+    anyone read the output would lose it with nothing on disk to recover from.
+    """
+    if not gone:
+        return []
+    shown = gone[-_INBOX_SHOWN:]
+    lines = [f"- moon_sync_inbox: {len(gone)} WITHDRAWN since shown "
+             f"(pulled by the sender, no longer on disk)"]
+    lines.extend(f"  - {name}" for name in shown)
+    if len(gone) > _INBOX_SHOWN:
+        lines.append(f"  - ... and {len(gone) - _INBOX_SHOWN} more")
+    anomalies.append(
+        f"{len(gone)} inbox note(s) WITHDRAWN after being shown: "
+        f"{', '.join(shown[-3:])}")
+    return lines
+
+
 def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
                  seen_path: Path | None = None,
                  reported_path: Path | None = None) -> list[str]:
@@ -424,19 +483,24 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
         # whose content changed carries a new key under the same display.
         unread_pairs = [(k, d) for k, d in entries if k not in seen]
         unread = [k for k, _ in unread_pairs]
+        withdrawn_keys = _withdrawn_keys(names, seen,
+                                         _reported_names(reported_path))
+        gone = sorted({_stable_name(k) for k in withdrawn_keys})
         if not unread:
-            _write_reported(reported_path, [])
-            return [f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
+            _write_reported(reported_path, withdrawn_keys)
+            return ([f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
+                    + _withdrawn_lines(gone, anomalies))
         lines = [f"- moon_sync_inbox: {len(unread)} UNREAD of {len(names)} notes"]
         shown_pairs = unread_pairs[-_INBOX_SHOWN:]
         shown = [k for k, _ in shown_pairs]
-        _write_reported(reported_path, shown)
+        _write_reported(reported_path, shown + withdrawn_keys)
         for _, display in shown_pairs:
             lines.append(f"  - {display}")
         if len(unread) > _INBOX_SHOWN:
             lines.append(f"  - ... and {len(unread) - _INBOX_SHOWN} more, oldest first")
         lines.append("- acknowledge (only after reading): "
                      "python tools/lw_facts.py --mark-inbox-seen")
+        lines.extend(_withdrawn_lines(gone, anomalies))
         # CHARTER v2 section 1 classifies in the title: REVIEW- wants a reply
         # from all five before the sender proceeds and ACTION- is blocking, so
         # an unread one of those is a real anomaly. FYI- is not.

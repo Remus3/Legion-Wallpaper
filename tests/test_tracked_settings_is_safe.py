@@ -36,6 +36,7 @@ the tracked file in THIS repo, which is the one that gets published.
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path, PureWindowsPath
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -109,6 +110,28 @@ def test_the_hook_wiring_is_still_tracked():
                 assert hook.get("command"), f"{event}: a hook entry has no command"
 
 
+def _tracked_script_names() -> set[str]:
+    """Basenames of TRACKED .py files. `git ls-files`, never a walk of the tree.
+
+    A walk from the repo root also descends `.claude/worktrees/`, where merged
+    worktree agents get left behind. RC measured the red version of this on
+    2026-09-07 - guards going red on a duplicate copy's content - but the shape
+    here fails the other way and that is worse: this guard asks whether a
+    declared hook script EXISTS, so a stale worktree holding the old copy of a
+    script deleted from the real tree answers yes. The guard would stay green
+    across exactly the deletion it was written to catch, and only on the
+    machine that happened to have the worktree.
+
+    Measured 2026-09-07: a file placed at `.claude/worktrees/<agent>/tools/x.py`
+    is visible to `ROOT.rglob("*.py")` and invisible to `git ls-files`.
+    Trackedness is the right corpus anyway - an untracked script is not
+    published, so a hook naming it is broken for everyone but this box.
+    """
+    out = subprocess.run(["git", "ls-files", "*.py"], cwd=ROOT,
+                         capture_output=True, text=True, check=True).stdout
+    return {Path(line).name for line in out.splitlines() if line.strip()}
+
+
 def test_every_declared_hook_script_exists():
     """A declared hook whose script is missing is a gate that silently is not there.
 
@@ -122,7 +145,7 @@ def test_every_declared_hook_script_exists():
     every hook and this guard would fail on a perfectly healthy tree.
     PureWindowsPath is what makes the basename come out right off-Windows.
     """
-    present = {p.name for p in ROOT.rglob("*.py") if "__pycache__" not in p.parts}
+    present = _tracked_script_names()
     missing = []
     for event, entries in _tracked()["hooks"].items():
         for entry in entries:
@@ -158,3 +181,19 @@ def test_the_inbox_watcher_runs_at_PROMPT_time_as_well_as_session_start():
     assert any("--inbox-only" in c for c in commands), (
         f"UserPromptSubmit runs {commands} but not the inbox watcher")
     assert any("lw_facts.py" in c for c in commands)
+
+
+def test_a_stale_worktree_copy_cannot_answer_for_a_deleted_script(tmp_path):
+    """The guard's corpus must not include `.claude/worktrees/`.
+
+    Regression for the false-GREEN above. Written as an assertion about the
+    CORPUS rather than by planting a file in the real tree: planting one is
+    what proved the defect, but a test that mutates the repo it is auditing
+    leaves the mess behind whenever it fails.
+    """
+    names = _tracked_script_names()
+    walked = {p.name for p in ROOT.rglob("*.py") if "__pycache__" not in p.parts}
+    assert names <= walked, "ls-files found a name the tree does not have"
+    stray = [p for p in ROOT.glob(".claude/worktrees/*/**/*.py")]
+    assert not (({p.name for p in stray}) & names), (
+        "a worktree copy is inside the guard's corpus: " f"{stray[:3]}")

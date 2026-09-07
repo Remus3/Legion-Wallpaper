@@ -1,4 +1,4 @@
-"""Unread cross-repo mail is surfaced at SESSION START, keyed on FILENAMES.
+"""Unread cross-repo mail is surfaced at SESSION START, keyed on CONTENT.
 
 WHY THIS EXISTS (ROADMAP `sync-inbox-visible-at-session-start`): before this,
 LW had no watcher on `moon_sync_inbox/` of any kind - measured, not assumed:
@@ -12,7 +12,7 @@ section 1): report from the SessionStart hook. One directory listing, no
 daemon, no console flash, and it survives `/clear` BY CONSTRUCTION because a
 `/clear` IS a session start.
 
-**Unread is a set of seen FILENAMES, never an mtime watermark.** This is the
+**Unread is a set of seen KEYS (name + content digest), never an mtime watermark.** This is the
 load-bearing decision and `test_a_seen_file_with_a_new_mtime_stays_read` plus
 `test_an_old_file_never_seen_is_unread` are the pair that pins it. A watermark
 advances on WRITE, so a session cleared or killed before anyone read the output
@@ -36,6 +36,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 import lw_facts  # noqa: E402
 
+NEWLINE = chr(10)
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -67,8 +68,17 @@ def _record(tmp_path, names, box=None):
 
 
 def _probe(box, rec, anomalies=None):
+    """Always wires a throwaway report record.
+
+    Leaving `reported_path` to its default pointed the probe at the operator's
+    LIVE `ops/runtime/sync_inbox_reported.json`: every test run rewrote real
+    state, and once the report started READING that record a test's result
+    depended on the machine it ran on. Same defect the memory
+    `hermetic-tests-machine-state` records - inject the state, never inherit it.
+    """
     return lw_facts._inbox_lines(anomalies if anomalies is not None else [],
-                                 inbox=box, seen_path=rec)
+                                 inbox=box, seen_path=rec,
+                                 reported_path=rec.with_name("_probe_rep.json"))
 
 
 def _probe_r(box, rec, rep, anomalies=None):
@@ -467,3 +477,96 @@ def test_a_stale_manifest_cannot_mask_an_edited_payload(tmp_path):
     (drop / "a.py").write_text("edited body" + chr(10), encoding="ascii")
     assert lw_facts._inbox_names(box) != before, (
         "the key must follow the CONTENTS on disk, not the sender's manifest")
+
+
+# ---------------------------------------------------------------------------
+# 6. withdrawal - a note that LEAVES the inbox
+# ---------------------------------------------------------------------------
+#
+# RC measured this on 2026-09-07 and is the repo that proved it matters: it
+# pulled 50 files back out of four inboxes and every arrival-keyed watcher on
+# the box reported silence while a whole payload vanished. The report is
+# computed as `entries - seen`, so a deletion simply stops appearing - there is
+# no line it could ever fail to print.
+#
+# The subtlety RC passed on, and the reason these tests pin an EDIT next to a
+# withdrawal: once keys carry a content digest, an edit and a retraction BOTH
+# move the key. Comparing raw keys reports an edited note twice, in two
+# contradictory sections. The comparison is on the STABLE NAME - an edit keeps
+# its name, a retraction loses it.
+#
+# The baseline is what the operator was SHOWN or has acknowledged (`reported`
+# union `seen`), not `seen` alone. RC's own case was notes listed at session
+# start and pulled mid-session, before anyone ran the ack: those live in the
+# report record only, and a seen-only baseline would call the exact incident
+# that motivated this feature a non-event.
+
+
+def _reported_with(tmp_path, names, box=None):
+    rep = tmp_path / "sync_inbox_reported.json"
+    shown = _keys(box, *names) if box is not None else list(names)
+    rep.write_text(json.dumps({"reported": shown}), encoding="ascii")
+    return rep
+
+
+def test_an_acknowledged_note_that_is_deleted_is_reported_as_withdrawn(tmp_path):
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, ["a.md", "b.md"], box=box)
+    (box / "b.md").unlink()
+    lines = _probe(box, rec)
+    assert any("WITHDRAWN" in ln for ln in lines), lines
+    assert any("b.md" in ln for ln in lines), lines
+
+
+def test_a_note_only_ever_SHOWN_is_still_reported_when_it_is_pulled(tmp_path):
+    """RC's actual incident: listed at session start, pulled before the ack."""
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, [])
+    rep = _reported_with(tmp_path, ["b.md"], box=box)
+    (box / "b.md").unlink()
+    lines = _probe_r(box, rec, rep)
+    block = NEWLINE.join(lines)
+    assert "WITHDRAWN" in block and "b.md" in block, lines
+
+
+def test_an_edited_note_reads_as_unread_and_never_as_withdrawn(tmp_path):
+    """Both move the key; only one loses the name. The discriminator is the name."""
+    box = _inbox(tmp_path, "a.md")
+    rec = _record(tmp_path, ["a.md"], box=box)
+    (box / "a.md").write_text("corrected body\n", encoding="ascii")
+    lines = _probe(box, rec)
+    assert any("UNREAD" in ln for ln in lines), lines
+    assert not any("WITHDRAWN" in ln for ln in lines), lines
+
+
+def test_a_note_nobody_was_ever_shown_leaves_no_trace_when_it_is_removed(tmp_path):
+    """No false withdrawals: a note that arrived and left unseen is a non-event."""
+    box = _inbox(tmp_path, "a.md", "ghost.md")
+    rec = _record(tmp_path, ["a.md"], box=box)
+    (box / "ghost.md").unlink()
+    lines = _probe(box, rec)
+    assert not any("WITHDRAWN" in ln for ln in lines), lines
+
+
+def test_a_withdrawn_payload_directory_is_reported_too(tmp_path):
+    box = _inbox(tmp_path, "a.md")
+    drop = box / "payload"
+    drop.mkdir()
+    (drop / "one.bin").write_bytes(b"x")
+    drop_display = [d for _, d in lw_facts._inbox_entries(box) if d.startswith("payload")][0]
+    rec = _record(tmp_path, ["a.md", drop_display], box=box)
+    (drop / "one.bin").unlink()
+    drop.rmdir()
+    lines = _probe(box, rec)
+    block = NEWLINE.join(lines)
+    assert "WITHDRAWN" in block and "payload" in block, lines
+
+
+def test_a_withdrawal_alone_still_reports_when_nothing_is_unread(tmp_path):
+    """The zero-unread early return is where a withdrawal is easiest to lose."""
+    box = _inbox(tmp_path, "a.md", "b.md")
+    rec = _record(tmp_path, ["a.md", "b.md"], box=box)
+    (box / "b.md").unlink()
+    lines = _probe(box, rec)
+    assert any("0 unread" in ln for ln in lines), lines
+    assert any("WITHDRAWN" in ln for ln in lines), lines

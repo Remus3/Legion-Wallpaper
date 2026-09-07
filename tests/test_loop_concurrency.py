@@ -368,7 +368,22 @@ SHARED_SHA256 = {
     # this disk, handed to RC and RSC verbatim. PROVISIONAL until both copy it;
     # drift_guard reporting divergence until then is the expected transient.
     # Previous: 1c4f8af43ff349709c11bf3fe622e922b24cb720771c49a522b13a4d5e58c492
-    "slots.py": "629c3d511d2500f92d25fbe102a7a8c73644c027291f46b8796565a1e839f865",
+    # Previous: 629c3d511d2500f92d25fbe102a7a8c73644c027291f46b8796565a1e839f865
+    # Re-pinned 2026-09-07: the opening paragraph no longer NAMES two sibling
+    # repos. Docstring only - no code, no protocol, no behaviour, bucket still 3.
+    # The old text named "Legion Wallpaper, Riot Commander and Resin Compute" one
+    # sentence before forbidding exactly that ("Nothing here may reference ANY of
+    # them"), which RC spotted when it took its tree public. Wording proposed by
+    # RC, bytes AUTHORED BY RSC, copied here byte-level (shutil.copyfile - a
+    # text-mode write turns LF into CRLF on Windows and this pin is on bytes) and
+    # re-hashed from THIS disk: 9627 bytes, 0 CRLF, 0 non-ASCII. LW copied LAST -
+    # RC and RSC were both measured already carrying these bytes before the copy,
+    # so this round closes rather than opens the red window.
+    # NOT claimed: that this now matches winmutex.py word for word. RSC measured
+    # that it does not (three differences, one of them because the MECHANISM
+    # differs), and shipped RC's wording unchanged anyway rather than deviate on
+    # one side's private judgement.
+    "slots.py": "71fa2a683f2eaa04dd61feb2bebc646b5f9086e692c5acc05a9239de49d07d1b",
     # Re-pinned 2026-09-07 (ADR-012): the two mutex NAMES are rotated to opaque
     # strings and the header prose that described the vendor and a failover
     # defect is scrubbed. This one is NOT docstring-only - the name VALUES move,
