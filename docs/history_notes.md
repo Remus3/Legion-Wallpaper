@@ -436,6 +436,45 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-06 (late night) - both gates built: the hand-off WRITE gate and the inbox watcher
+
+- **Charters reviewed and answered, both broadcast to all five.** LW ADOPTED
+  v2 sections 1-6 and v1 sections 1 and 3, and filed TWO dissents. RC accepted
+  BOTH within the hour in CHARTER v3: (1) v2 section 5's "no timebox" inverts
+  for a DEFECT FIX, which then waits on the slowest carrier (~7h) while the
+  defect runs - amended to "author may land, must broadcast the digest, pin
+  stays PROVISIONAL until trees hash equal", plus RC's addition that the
+  broadcast must carry the DEMONSTRATION not the assertion; (2) v1 0(b)'s
+  tie-break needed a party-disclosure line and reopen-on-new-evidence, because
+  RC owned four of the nine defects in v2's own table. **Do not re-litigate
+  either - both are settled in LW's favour.**
+- **`handoff-write-gate` SHIPPED (LEDGER 158, a573363).** One rule engine,
+  `precommit_gate.scan_handoff_text`, called at BOTH enforcement points - the
+  test asserts the function-object IDENTITY, not agreement. `--scan-files`
+  matches RC's CLI name deliberately. No exemption list.
+- **`sync-inbox-visible-at-session-start` SHIPPED (LEDGER 159, 486c448).**
+  Unread mail now prints at session start; UNREAD is a set of seen FILENAMES,
+  never a watermark. Acknowledge with `python tools/lw_facts.py
+  --mark-inbox-seen` and ONLY after reading. An unread `REVIEW-`/`ACTION-`
+  note raises an anomaly, which is how this session found the two REVIEWs it
+  answered. It caught three notes that landed WHILE the code was being written.
+- **Inbox baseline was set this session** (all 58 notes marked seen). Anything
+  the next session sees as UNREAD is genuinely new mail.
+- **LW's hooks are declared AND their targets exist**, by RC's corrected
+  `hookcheck.py` (the first version RC sent was vacuous and would have passed
+  LW too): 10 script targets checked, 0 missing, exit 0. `caveman_default.py`
+  and `lw_facts.py` both fire - their output is in this session's own context.
+- **LW has NO worktree/branch risk**: one worktree (the repo), one branch
+  (`main`), `ahead=0 onremote=2`. Nothing matching RC's `ahead>0 onremote=0`
+  single-copy shape.
+- **Still open and unchanged:** LW has no temp-repo hook refusal probe with a
+  positive control (RC was asked for the shape); LW's THREE separate
+  declarations of the banned-glyph rule are a real divergence risk and are
+  recorded as such; the `123f` hand-clean in Photoshop is operator manual work.
+- Suite 2574 passed / 18 skipped, run fresh after both changes.
+
+---
+
 ## 2026-09-06 (night) - the `claude` contributor purged, and the hand-off moved in-repo
 
 - **GitHub listed `claude` as a second Contributor; the cause was NOT
@@ -491,82 +530,6 @@ LongPathsEnabled (deferred).
   theirs to confirm - LW verified the file bytes.
 - **Next:** the 123f hand-clean (veil stage) in Photoshop - still untouched,
   unchanged from the last three hand-offs.
-
----
-
----
-
-## 2026-09-06 (evening) - driver bump, DWPose onto the GPU, and two silent guards
-
-Commits `1ef672e`, `81de837`, `a019586`, `0cce31a`, `6f07bd5`, `5715cf0`,
-`1998e2b`, `ce8b4ad`, `3a8a296`, `024d0a8`. All pushed, CI green on
-`024d0a8`. Suite 2516 passed, 18 skipped, ruff clean, drift_guard 0
-breaches. Ledger 146-150.
-
-CI went RED once on `3a8a296` and the local suite did not catch it: the new
-DLL-path test asserted Windows-only behaviour, and `os.pathsep` is `:` on the
-runner. Fixed in `024d0a8` by INJECTING the platform decision rather than
-skipping on POSIX - a skip there would have been the same green-by-skip hole
-closed one commit earlier.
-
-**The `.git` directory was destroyed during the folder move and rebuilt.** The
-tree arrived complete with no `.git`; `.git` carries the Windows HIDDEN
-attribute and the other dot-entries do not, so a copy that skipped hidden items
-took everything except the repository. Recovered from origin with `init` +
-`fetch` + `reset --mixed`: zero differences against `origin/main`, nothing
-tracked lost. Reflog and stashes are gone; `core.hooksPath` had to be
-reinstalled because it lived in the destroyed config. See
-memory `reference-git-dir-is-hidden`.
-
-**DWPose now runs on the GPU, and that has a cost worth remembering.** Three
-things had to be true, and only the first was the one reported: the CPU-only
-`onnxruntime` wheel, a hardcoded `["CPUExecutionProvider"]` in
-`lw_gen_localizer_eval.py`, and the DLL search path. On the last one,
-`os.add_dll_directory` does NOT work and neither does ctypes-preloading cuDNN -
-PATH does. ORT fails to load its CUDA provider and falls back to CPU SILENTLY
-while still listing CUDA as available, so "CUDAExecutionProvider in
-get_available_providers()" proves nothing. Install the CUDA-12 build with
-`--no-deps` from the ORT index; the PyPI default is CUDA 13 and will not load
-beside torch cu128. 0.29s -> 0.03s per image. `LW_ORT_PROVIDER=cpu` forces the
-old path.
-
-The cost: DWPose was exempt from the machine-wide GPU mutex *because* it ran on
-CPU. It now takes `GPU_MUTEX` and serializes against the upscaler and SDXL
-across both repos. `test_gpu_mutex_wiring` caught this immediately.
-
-**Golden regress, 12 cases, answering the driver question (610.62 -> 616.56):
-no measurable drift.** 11 of 12 pass within epsilon. The single flag is on the
-ONLY case that never touches the GPU - its 4096x2305 source takes the G0
-over-target downscale-only branch, and its baseline predates that branch by 64
-minutes (froze `37741ea`, gate landed `6cffc3d`). Stale baseline, not a
-regression. **Re-freezing it is a blessing call and is left to the operator.**
-
-The unit tests in `tests/test_lw_golden.py` do NOT exercise the GPU - they test
-the freeze/regress tool against tmp_path. Running them before and after a
-driver change proves nothing; `data/golden/golden_set.json` is the real
-baseline. `lw_golden` also hardcoded the USM recipe into `pipeline_version`
-while `USM_DEFAULT` moved on 2026-08-02, so the hash reported "unchanged"
-through a real pipeline change. Now pinned to the definition site, and `pv`
-correctly reads `ed249af6` against the manifest's `6d43a6d4`.
-
-**Two guards were silently blind, one on each side.** LW's rename disarmed RC's
-cross-repo guards for ~3 hours (RC held the old `LW_ROOT`; their suite went
-28/0 to 25/3 and stayed green). LW had the identical structure aimed at
-`C:\Riot Commander`. `drift_guard.resolve_sibling_root()` now returns
-present/renamed/absent - a rename is a breach, genuine absence still skips. The
-transferable rule: a guard whose target can move must tell moved from missing,
-and the renaming party sweeps the sibling's constants in the rename commit.
-
-Governor round is complete across all three trees, verified from this disk:
-`slots.py` `1c4f8af4...`, `winmutex.py` `f1b4b011...`, byte-equal in LW, RC and
-RSC. RSC is not a full participant yet - no `SHARED_SHA256`, no
-`max_concurrent_lanes`, nothing calling `slots.hold()` - so the bucket is 3 wide
-with two real acquirers. Do not lower it to 2.
-
-**Open, deliberately not done:** LEDGER 19's 5/6 wrist-on-weapon was measured on
-the CPU provider. One frame gave identical keypoints on both - parity evidence
-of exactly one image. Worth a proper pass over the recall_gate samples before
-trusting any DWPose number measured before today.
 
 ---
 
@@ -3983,6 +3946,82 @@ lane runs the operator's local py3.11 iopaint 1.6.0 install, WAKEUP
 > 8. API keys to project root (gitignored `API-Key-*.txt` convention):
 >    `API-Key-SauceNAO.txt`, `API-Key-DeviantArt.txt` (client-id/secret +
 >    refresh-token via `gallery-dl oauth:deviantart`).
+
+---
+
+---
+
+## 2026-09-06 (evening) - driver bump, DWPose onto the GPU, and two silent guards
+
+Commits `1ef672e`, `81de837`, `a019586`, `0cce31a`, `6f07bd5`, `5715cf0`,
+`1998e2b`, `ce8b4ad`, `3a8a296`, `024d0a8`. All pushed, CI green on
+`024d0a8`. Suite 2516 passed, 18 skipped, ruff clean, drift_guard 0
+breaches. Ledger 146-150.
+
+CI went RED once on `3a8a296` and the local suite did not catch it: the new
+DLL-path test asserted Windows-only behaviour, and `os.pathsep` is `:` on the
+runner. Fixed in `024d0a8` by INJECTING the platform decision rather than
+skipping on POSIX - a skip there would have been the same green-by-skip hole
+closed one commit earlier.
+
+**The `.git` directory was destroyed during the folder move and rebuilt.** The
+tree arrived complete with no `.git`; `.git` carries the Windows HIDDEN
+attribute and the other dot-entries do not, so a copy that skipped hidden items
+took everything except the repository. Recovered from origin with `init` +
+`fetch` + `reset --mixed`: zero differences against `origin/main`, nothing
+tracked lost. Reflog and stashes are gone; `core.hooksPath` had to be
+reinstalled because it lived in the destroyed config. See
+memory `reference-git-dir-is-hidden`.
+
+**DWPose now runs on the GPU, and that has a cost worth remembering.** Three
+things had to be true, and only the first was the one reported: the CPU-only
+`onnxruntime` wheel, a hardcoded `["CPUExecutionProvider"]` in
+`lw_gen_localizer_eval.py`, and the DLL search path. On the last one,
+`os.add_dll_directory` does NOT work and neither does ctypes-preloading cuDNN -
+PATH does. ORT fails to load its CUDA provider and falls back to CPU SILENTLY
+while still listing CUDA as available, so "CUDAExecutionProvider in
+get_available_providers()" proves nothing. Install the CUDA-12 build with
+`--no-deps` from the ORT index; the PyPI default is CUDA 13 and will not load
+beside torch cu128. 0.29s -> 0.03s per image. `LW_ORT_PROVIDER=cpu` forces the
+old path.
+
+The cost: DWPose was exempt from the machine-wide GPU mutex *because* it ran on
+CPU. It now takes `GPU_MUTEX` and serializes against the upscaler and SDXL
+across both repos. `test_gpu_mutex_wiring` caught this immediately.
+
+**Golden regress, 12 cases, answering the driver question (610.62 -> 616.56):
+no measurable drift.** 11 of 12 pass within epsilon. The single flag is on the
+ONLY case that never touches the GPU - its 4096x2305 source takes the G0
+over-target downscale-only branch, and its baseline predates that branch by 64
+minutes (froze `37741ea`, gate landed `6cffc3d`). Stale baseline, not a
+regression. **Re-freezing it is a blessing call and is left to the operator.**
+
+The unit tests in `tests/test_lw_golden.py` do NOT exercise the GPU - they test
+the freeze/regress tool against tmp_path. Running them before and after a
+driver change proves nothing; `data/golden/golden_set.json` is the real
+baseline. `lw_golden` also hardcoded the USM recipe into `pipeline_version`
+while `USM_DEFAULT` moved on 2026-08-02, so the hash reported "unchanged"
+through a real pipeline change. Now pinned to the definition site, and `pv`
+correctly reads `ed249af6` against the manifest's `6d43a6d4`.
+
+**Two guards were silently blind, one on each side.** LW's rename disarmed RC's
+cross-repo guards for ~3 hours (RC held the old `LW_ROOT`; their suite went
+28/0 to 25/3 and stayed green). LW had the identical structure aimed at
+`C:\Riot Commander`. `drift_guard.resolve_sibling_root()` now returns
+present/renamed/absent - a rename is a breach, genuine absence still skips. The
+transferable rule: a guard whose target can move must tell moved from missing,
+and the renaming party sweeps the sibling's constants in the rename commit.
+
+Governor round is complete across all three trees, verified from this disk:
+`slots.py` `1c4f8af4...`, `winmutex.py` `f1b4b011...`, byte-equal in LW, RC and
+RSC. RSC is not a full participant yet - no `SHARED_SHA256`, no
+`max_concurrent_lanes`, nothing calling `slots.hold()` - so the bucket is 3 wide
+with two real acquirers. Do not lower it to 2.
+
+**Open, deliberately not done:** LEDGER 19's 5/6 wrist-on-weapon was measured on
+the CPU provider. One frame gave identical keypoints on both - parity evidence
+of exactly one image. Worth a proper pass over the recall_gate samples before
+trusting any DWPose number measured before today.
 
 ---
 

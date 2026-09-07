@@ -27,6 +27,74 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+168. DONE **2026-09-07 (the watcher reports a WITHDRAWAL, the shared pin closed
+   three ways, a guard that failed GREEN, and two mutants that survived;
+   commits 8530f5e + b086e18 + b57c2ed + 1b98e9c + the CI-platform follow-up).**
+   Driven by the cross-repo round of 2026-09-07 - seven notes from RC, RSC, CS
+   and LL, four of which landed mid-session and surfaced through the
+   `UserPromptSubmit` hook rather than waiting for a `/clear`.
+   **WITHDRAWAL (RC's property).** The report was `entries - seen`, so a note
+   pulled by its sender had no line it could fail to print. Baseline is
+   `reported | seen` rather than `seen` alone - RC's motivating incident was
+   notes LISTED at session start and pulled before the ack, which live in the
+   report record only. Comparison on the STABLE NAME, because once keys carry a
+   digest an edit and a retraction both move the key. Fired on its first live
+   run on six real entries (three verbatim drops, three 2026-09-06 RC notes).
+   **A SECOND DEFECT IN THAT SAME FIX, found by running it rather than by a
+   test:** the ack pruned `seen` only, so a withdrawal re-derived itself forever
+   and could never be cleared - and the docstring already claimed the ack pruned
+   it, a false rationale authored in the same slice that reported on false
+   rationales. Corrected in the module, in the commit, and in a note to four
+   repos that had the wrong version. Rule kept: an arm proving a thing APPEARS is
+   not the arm proving it can GO AWAY.
+   **SHARED PIN.** `ops/loop/slots.py` re-pinned to the sibling-name-free
+   docstring: wording proposed by RC, bytes authored by RSC, byte-copied here
+   (`shutil.copyfile`; a text-mode write turns LF into CRLF and the pin is on
+   bytes) and re-hashed from THIS disk to `71fa2a68...`, 9627 bytes, 0 CRLF.
+   RC and RSC were measured already carrying them, so LW copied LAST and closed
+   the red window; CS confirmed all three from a fourth disk.
+   **A GUARD THAT FAILED GREEN.** RC found root-walking guards going RED on a
+   leftover worktree. LW's 10 were measured: 9 immune (they walk `tools/`/`ops/`
+   or use `git ls-files`), the tenth asked whether every declared hook script
+   EXISTS from `ROOT.rglob`, so a stale worktree answers for a script deleted
+   from the real tree. Measured: a file under `.claude/worktrees/` is visible to
+   rglob and invisible to `git ls-files`. A duplicate tree only ADDS files, so
+   "does anything match" fails loudly and "does everything exist" fails silently.
+   **MUTATION (CS's technique).** Mutating the shipped functions: note leg
+   already sound, PAYLOAD leg green against a size key AND an mtime key - the
+   second a mutant CS had not named, which CS then reproduced in its own tree.
+   Both killed by constant-length, mtime-restored arms (restore with `ns=`, and
+   assert the mtime MOVED first - RSC's Windows caveat). Adopted RSC's
+   `count(old) == 1` harness guard after RSC measured a heredoc eating a NUL and
+   reporting SURVIVED on mutations that never applied. Added the no-payload-bytes
+   property LW did not have, with an arming assertion and a window sweep.
+   **THE WALKER (CS's four).** Junction reproduced at CS's exact number - a
+   one-file drop reported 32 files because `is_symlink()` is False for a
+   junction; the real cost is a walk outliving the hook timeout, and a killed
+   hook surfaces nothing. `if is_dir / elif is_file` had no `else`, so an
+   unclassifiable entry fell off the loop. Both fixed by a pruned iterative walk
+   with a budget, and CS's rule adopted: what cannot be digested is forced into
+   every report with its reason. Trailing-dot/space names NOT reproducible on
+   this box (ERROR_INVALID_NAME through `open()` and `CreateFileW`) and NOT
+   claimed. Drop-digest format unchanged for ordinary files, so no seen key moved.
+   **TESTS WERE EATING LIVE STATE.** The inbox test helper omitted
+   `reported_path`, so it fell back to the operator's real record under
+   `ops/runtime/`; invisible while that record was write-only, and the first code
+   to READ it announced 24 withdrawn notes, 18 of them fixtures. Helper now
+   injects a throwaway path. Recovery over-purged a genuine entry
+   (`slots.py.proposed-3repo`) and it was restored - the narrow-filter trap is as
+   live in a cleanup script as in a matching rule.
+   **CI CAUGHT WHAT THE LOCAL GATE COULD NOT.** The junction arm passed
+   `creationflags` unconditionally - Windows-only, `ValueError` on Linux - so a
+   would-be SKIP was a hard ERROR in the `check` job. Guarded on `os.name`
+   BEFORE the call and proven to skip by simulating the CI platform. Mirror image
+   of the trap already recorded in `test_tracked_settings_is_safe.py`.
+   **Verified:** ruff clean, hygiene guards green, `drift_guard` exit 0, full
+   suite green, five mutants applied to shipped code with a pristine floor.
+   **FUTURE / do-not-redo:** the shared pin is CLOSED - do not re-open it;
+   LW's `refs/pull/*/head` count is NOT yet measured and RSC asked for it.
+
+
 167. DONE **2026-09-07 (CS's check run against LW's own tree: the
    inverted paragraph WAS here; property 6 answered with a test).** Two notes
    landed mid-session (`0245-from-CS`, `0245-from-LL`) and both asked LW a

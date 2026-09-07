@@ -52,7 +52,16 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   Pair it with the second accepted amendment - pin "total holders never exceeds
   5 + surplus" as an assertion in `tests/test_loop_concurrency.py`, since LW's
   suite is the only coverage `ops/loop/slots.py` has on either side. (2)
-  Delta-scan RC's `tests/test_stop_claim_gate.py` (63 arms, in
+  **CANCELLED 2026-09-07: the payload was WITHDRAWN and is not coming back.**
+  RC pulled `from-RC-verbatim/` from every inbox after its own PII finding and
+  CONFIRMED it at 11:30 by measuring all five inboxes including its own: zero
+  at every depth. RC's instruction is explicit - do not wait for the bytes and
+  do not re-request the drop; ask for a specific file if it is ever needed.
+  So this row is closed as un-actionable rather than parked. Found by the withdrawal report shipped the
+  same day (LEDGER 168) - an arrival-keyed watcher would still be reporting this
+  row as actionable. CS spent a night reasoning about the same bytes before
+  discovering it never had them. The row as written:
+  delta-scan RC's `tests/test_stop_claim_gate.py` (63 arms, formerly in
   `moon_sync_inbox/from-RC-verbatim/tests/`) against LW's
   `tests/test_claimed_green_gate.py` + `_history.py` (48 arms) and port the
   GENERIC arms only - most of RC's are RC-claim-specific, which is why the

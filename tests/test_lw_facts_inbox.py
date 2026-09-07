@@ -29,6 +29,7 @@ An unacknowledged note re-reports next session rather than being lost.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -745,10 +746,26 @@ def test_acknowledging_a_withdrawal_does_not_mark_UNREAD_mail_as_read(tmp_path):
 
 
 def _junction(link, target) -> bool:
-    """A real NTFS junction, or False if this box will not make one."""
+    """A real NTFS junction, or False if this box will not make one.
+
+    Guarded on `os.name` FIRST. `creationflags` is Windows-only and raises
+    ValueError on every other platform, so passing it unconditionally turns a
+    would-be SKIP into a hard ERROR the moment the suite runs on Linux - which
+    is exactly what it did in CI, on the same push that added this arm. That is
+    the mirror image of the trap already recorded in
+    `test_tracked_settings_is_safe.py`: this repo is authored on Windows and
+    gated on Linux, so any Windows-only construct in a test needs the platform
+    guard before the call, not inside the failure handling after it.
+    """
     import subprocess
-    r = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
-                       capture_output=True, text=True, creationflags=0x08000000)
+    if os.name != "nt":
+        return False
+    try:
+        r = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
+                           capture_output=True, text=True,
+                           creationflags=0x08000000)
+    except (OSError, ValueError):
+        return False
     return r.returncode == 0
 
 
