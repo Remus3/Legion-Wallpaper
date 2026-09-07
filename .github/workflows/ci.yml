@@ -121,7 +121,13 @@ jobs:
           # Same surface as the check job for now - the split exists so the
           # nightly can absorb slow/full product suites (TBD - product not
           # yet defined) without slowing per-push CI.
-          pytest tests/ -q --tb=short
+          # LW_REQUIRE_HOOK_GATE=1 turns tests/test_git_hook_gate_e2e.py's
+          # environment skips into FAILURES, so an unarmed or git-less runner
+          # cannot report green by skipping the end-to-end hook probe. A
+          # skipped test is a green tick - that is exactly how RC's five hooks
+          # sat at mode 100644 for weeks with CI green. Kept in parity across
+          # every suite job by tests/test_ci_gate_arming.py.
+          LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q --tb=short
       # The style drift gate used to live here, nightly-only, because the .md
       # surface it scans was excluded from per-push CI. That filter is gone, so
       # the gate moved to the `check` job where it can block rather than report.
@@ -198,7 +204,13 @@ jobs:
           # error fails the job - no exit-code masking. Catches authored-text
           # drift at PR time so it is never dismissed as "pre-existing / not
           # in CI".
-          pytest tests/ -q --tb=line
+          # LW_REQUIRE_HOOK_GATE=1 turns tests/test_git_hook_gate_e2e.py's
+          # environment skips into FAILURES, so an unarmed or git-less runner
+          # cannot report green by skipping the end-to-end hook probe. A
+          # skipped test is a green tick - that is exactly how RC's five hooks
+          # sat at mode 100644 for weeks with CI green. Kept in parity across
+          # every suite job by tests/test_ci_gate_arming.py.
+          LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q --tb=line
 
       - name: style drift gate
         run: |
@@ -269,7 +281,13 @@ jobs:
           # else can reach it: pytest.ini pins testpaths=tests, and the file
           # lives in tools/ beside the module it imports. Until 2026-08-12 no
           # lane ran it at all - 8 tests of solver coverage executing nowhere.
-          pytest tests/test_lw_clean_dekel_align.py tools/test_lw_clean_dekel.py \
+          # LW_REQUIRE_HOOK_GATE=1 turns tests/test_git_hook_gate_e2e.py's
+          # environment skips into FAILURES, so an unarmed or git-less runner
+          # cannot report green by skipping the end-to-end hook probe. A
+          # skipped test is a green tick - that is exactly how RC's five hooks
+          # sat at mode 100644 for weeks with CI green. Kept in parity across
+          # every suite job by tests/test_ci_gate_arming.py.
+          LW_REQUIRE_HOOK_GATE=1 pytest tests/test_lw_clean_dekel_align.py tools/test_lw_clean_dekel.py \
             -q --tb=short --junitxml=cv-lane.xml
 
       - name: fail on a silently-skipped suite

@@ -29,6 +29,12 @@ WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 # free to change (-q, --tb=short vs --tb=line) without changing the contract.
 SUITE = "pytest tests/"
 ARMER = "tools/install_git_hooks.py"
+# The end-to-end hook probe (tests/test_git_hook_gate_e2e.py) SKIPS its
+# live-clone assertions when the gate was never armed, and a skipped test is a
+# green tick. This env var turns those skips into failures, so it has to be in
+# scope wherever the suite runs - matched attached to the invocation because
+# that is the only placement that cannot drift into a different step.
+REQUIRER = "LW_REQUIRE_HOOK_GATE=1 " + SUITE
 
 _JOB = re.compile(r"^  ([A-Za-z0-9_-]+):\s*$")
 
@@ -112,3 +118,22 @@ def test_the_arming_step_also_verifies_with_check():
         assert f"{ARMER} --check" in text, (
             f"job {name} installs the hooks but never runs "
             f"`{ARMER} --check` to prove they fire")
+
+
+def test_every_job_running_the_suite_demands_the_hook_gate_probe():
+    """An unarmed runner must FAIL the hook probe, never skip it.
+
+    tests/test_git_hook_gate_e2e.py degrades to skips on a clone that never ran
+    tools/install_git_hooks.py - deliberately, so a fresh developer checkout is
+    not red for a local config step. On CI that degradation is the false green
+    this whole family of guards exists to remove, so CI opts out of it.
+    """
+    offenders = []
+    for name, body in _jobs().items():
+        text = "\n".join(body)
+        if SUITE in text and REQUIRER not in text:
+            offenders.append(name)
+    assert not offenders, (
+        f"CI job(s) {offenders} run `{SUITE}` without `{REQUIRER}`. Without it "
+        "the end-to-end hook probe SKIPS on an unarmed runner and the job goes "
+        "green having proven nothing about the gate.")
