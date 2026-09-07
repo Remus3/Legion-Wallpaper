@@ -27,6 +27,36 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+154. DONE **2026-09-06 (GitHub Contributors showed `claude`; 84 legacy
+    co-author trailers purged from history; commit `16bc443`).** Premise
+    VERIFIED before acting: all 483 commits were already authored AND committed
+    by `Moonbeam <redacted>` - the second contributor came purely
+    from `Co-Authored-By: Claude ... <noreply@anthropic.com>` trailers on 84
+    commits dated 2026-07-03 to 2026-07-26, i.e. every commit BEFORE
+    `.githooks/commit-msg` began stripping the trailer (63 `Opus 4.8`, 18
+    `Fable 5`, 3 `Opus 5`). GitHub credits co-author trailers to the matching
+    account, so nothing short of a history rewrite could drop the contributor.
+    Built as: full `git bundle --all` backup -> dry run of the rewrite on a
+    throwaway clone -> verify -> apply. `git filter-repo --force
+    --message-callback` stripped any line-anchored `Co-authored-by:` naming
+    Claude or `anthropic.com`. All 483 shas moved (the first affected commit is
+    the repo's first), old HEAD `aa99af3` -> new `16bc443`. Verified: 483
+    commits in and 483 out, zero trailers left, authors and committers
+    untouched, and the HEAD tree byte-identical either side of the rewrite
+    (`1c558e45...`), so no file content changed. Force-pushed with
+    `--force-with-lease` pinned to the pre-rewrite sha. Post-push probe of
+    `GET /repos/Remus3/Legion-Wallpaper/contributors` returns exactly one
+    entry: `Remus3`, 483 contributions. Kept deliberately: the one PROSE mention
+    of the trailer in the body of `a7dfde5`'s successor - it describes the ban,
+    carries no email, and is not attributable. Docs: new
+    `docs/_archive/2026-09-06-sha-rewrite-map.md` maps all 255 old shas cited in
+    tracked Markdown to their replacements, and chains explicitly to the
+    2026-08-01 map (walk the older map first, then this one); the CLAUDE.md
+    Settled line on the public repo now records BOTH rewrites. FUTURE / do not
+    redo: recurrence is already blocked by `.githooks/commit-msg` (re-verified
+    active this session via `install_git_hooks.py --check`) - no further trailer
+    sweep is needed, and any future rewrite must ship its own map doc.
+
 153. DONE **2026-09-06 (cross-repo: the `slots.hold()` leak verified on LW's
    disk, the one measurement RC was missing taken, and the docs-guards badge
    question answered NO; `92b89ba` + inbox note).** THREE asks, all closed.
