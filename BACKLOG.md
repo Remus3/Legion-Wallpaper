@@ -353,8 +353,8 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
   `tools/lw_next_session.py` now resolves and guards the target (optional
   `ops/runtime/next_session_intent.json`; absolute paths, drive letters, `..`,
   separators, empty, non-string, malformed doc and any non-`LW-` filename all
-  fall back to the default) and `done.md` section 10b makes the write
-  mandatory. 40 tests in `tests/test_lw_next_session_guard.py`, including the
+  fall back to the default) and `done.md` makes the write mandatory (section
+  10b then; section 6 since the 2026-09-07 gate-ordering fix). 40 tests in `tests/test_lw_next_session_guard.py`, including the
   headline case: an intent document naming `RC-NEXT-SESSION.txt` is ignored.
 
 - _Also candidates: pre-commit hooks hardening, suite speed, local tooling._

@@ -43,26 +43,37 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   key. Recorded exceptions the guard permits by RULE (not by name):
   `docs/_archive/**`, dated artifacts, and the append-only ledgers. Evidence:
   LEDGER 166.
-- **gate-grades-a-tree-the-push-does-not-ship - OPEN, found by CS 2026-09-07 and
-  MEASURED on LW's own commit the same evening.** CS hit it as a race: its
-  `pre-push` hook graded `5192aaf` while the remote ended at `1ee8b64`, a commit
-  CS created while the hook was still running, so a commit shipped that the
-  suite never saw. **LW does NOT have that hook form** - measured, `.githooks/`
-  holds `commit-msg` and `pre-commit` only, `core.hooksPath=.githooks`, and the
-  pre-commit gate is glyphs + staged-line ruff, not a suite. **LW has the same
-  hole in RITUAL form and it is worse, because it is not a race - it is the
-  documented order of `/done`:** run the full suite, THEN edit ROADMAP + LEDGER
-  + WAKEUP, THEN commit everything and push. Every session ships living-doc
-  edits the graded run never saw, deterministically. It fired on `e62543b`
-  tonight; CI caught nothing because there was nothing to catch, which is luck
-  and not a defence. **Fix is ordering, not code:** the gate must be the LAST
-  act before the push, with no authored edit between them - so `/done` section 0
-  runs AFTER section 6/6b's doc edits, or runs twice with the second run
-  binding. Acceptance: a `/done` whose final full-suite run is provably against
-  the exact tree that gets pushed (compare `git stash list`-clean + `git diff
-  HEAD` empty at gate time and the pushed sha equal to HEAD at gate time). CS
-  filed its half as CS-954 tier 1 with the reproduction first; LW's half needs
-  no reproduction because the ordering is deliberate and readable in the ritual.
+- **gate-grades-a-tree-the-push-does-not-ship - DONE 2026-09-07 (cb19250).**
+  Found by CS as a pre-push RACE: its hook graded `5192aaf` while the remote
+  ended at `1ee8b64`. **LW never had that hook** - measured, `.githooks/` holds
+  `commit-msg` and `pre-commit` only - so LW could not have the race. LW had the
+  same hole in the WORSE form: the documented ORDER of `/done` (gate, THEN edit
+  ROADMAP + LEDGER + WAKEUP + hand-off, THEN commit and push), so every session
+  shipped doc edits the graded run never saw, deterministically. It fired on
+  `e62543b` the same evening.
+  **Fixed as ordering AND as an assertion.** `.claude/commands/done.md` is
+  reordered: section 0 is now an explicitly non-binding pre-flight, every
+  authored file (code, living docs, `LW-NEXT-SESSION.txt`) is committed in
+  sections 1-6, and section 7 is the binding gate immediately before the push.
+  Sections renumbered into run order; every cross-reference was internal to the
+  document. Ordering alone is a sentence nothing checks, so `tools/done_gate.py`
+  makes it provable: `bind` refuses a dirty tree (exit 2), refuses a tree that
+  MOVED while the checks ran (CS's race, the one case a pre-run check cannot
+  see), exits 1 on a red check, and only on green records the graded sha to a
+  gitignored atomic receipt; `verify-push` refuses unless remote == HEAD ==
+  graded. **Two deliberate departures from the acceptance line as written:**
+  clean is `git status --porcelain`, not `git diff HEAD` - the latter is blind
+  to an untracked authored file, exactly the shape of a new test module that
+  gets graded locally and never pushed; and the pushed sha is read with
+  `git ls-remote`, not `git rev-parse origin/main`, because that cache agrees
+  with a push that never landed. `git stash list` is recorded on the receipt,
+  never fatal - a stash does not change the tree being graded.
+  14 arms in `tests/test_done_gate.py`, including the ritual document's own
+  section order, so a re-shuffle goes red instead of quiet. Mutation-proven
+  6 of 6 killed; two mutants initially SURVIVED because the implementation's
+  pre-run and post-run checks cover for each other, and each needed an isolating
+  arm (a check that tidies up after itself; a local commit the remote never
+  got). LEDGER 171.
 
 - **verbatim-payload-followups - two rows the 2026-09-07 review left open, both
   cheap and both named by RC.** (1) The `reap` arm for a stale

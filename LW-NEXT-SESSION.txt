@@ -1,28 +1,23 @@
 NEXT SESSION
 ------------
-Task: ROADMAP high-priority `gate-grades-a-tree-the-push-does-not-ship` - fix
-  the ORDER of the /done ritual so the final full-suite run grades the exact
-  tree that gets pushed. Found by CS 2026-09-07 as a pre-push RACE; LW's form
-  is not a race, it is the ritual's documented order (gate, THEN edit
-  ROADMAP/LEDGER/WAKEUP, THEN commit and push). LW has NO pre-push hook -
-  measured, `.githooks/` holds commit-msg and pre-commit only.
-Context: `.claude/commands/done.md` (or wherever the /done skill body lives -
-  grep for "Local check gate"), ROADMAP.md line 46, `.githooks/`,
-  `tools/precommit_gate.py`. Inbox first: moon_sync_inbox/ prints unread at
-  SessionStart; read THEN ack with
-  `python tools/lw_facts.py --mark-inbox-seen`.
-Acceptance: a /done whose final suite run is provably against the pushed tree -
-  `git diff HEAD` empty at gate time and the pushed sha equal to HEAD at gate
-  time, asserted rather than described. `python -m pytest tests/ -q` green
-  (baseline 2677 passed / 18 skipped, ~123s on 2026-09-07), ruff clean,
-  drift_guard exit 0.
-Do NOT redo: RC's ceiling property is PINNED and pushed (e62543b, LEDGER 170) -
-  7 arms in tests/test_loop_concurrency.py, mutation-proven 6 of 6 killed,
-  slots.py untouched and byte-exact. CI green. The paired `reap` arm for a
-  stale `reserved-<key>.lock` stays BLOCKED until the five repos agree the
-  short keys `rc lw rsc cs ll` - do not start it. RSC was told about its
-  two-spelling trust disagreement (LW note 18:34); do not re-raise or edit it.
-  RC's 18:30 note answers RSC, not LW - LW is not a carrier of that trial and
-  arms nothing.
+Task: ROADMAP high-priority `verbatim-payload-followups` row (1) is still
+  BLOCKED - do NOT start it. Pick the next open ROADMAP item instead; the
+  gate-ordering row is DONE and the payload row (2) is CANCELLED, so the top of
+  ROADMAP.md is the place to choose from.
+Context: ROADMAP.md "Open items - High priority", BACKLOG.md for aspirational
+  work. Inbox first: moon_sync_inbox/ prints unread at SessionStart; read THEN
+  ack with `python tools/lw_facts.py --mark-inbox-seen`.
+Acceptance: whatever the chosen item states. Standing bar: `python -m pytest
+  tests/ -q` green (baseline 2693 passed / 18 skipped, ~146s on 2026-09-07),
+  ruff clean, drift_guard exit 0.
+Do NOT redo: the /done gate ordering is FIXED and pushed (LEDGER 171).
+  `.claude/commands/done.md` is renumbered - the binding gate is section 7, the
+  hand-off write is section 6 (was 10b), section 0 is a NON-BINDING pre-flight.
+  `tools/done_gate.py bind` + `verify-push` are the assertion; 14 arms in
+  tests/test_done_gate.py, mutation-proven 6 of 6. Every future /done MUST run
+  bind AFTER all doc edits are committed and verify-push after the push - the
+  ritual doc's own section order is pinned by a test, so do not re-shuffle it.
+  The `reap` arm for a stale `reserved-<key>.lock` stays BLOCKED until the five
+  repos agree the short keys `rc lw rsc cs ll`.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log.

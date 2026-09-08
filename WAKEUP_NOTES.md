@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-09-07 - the /done gate now grades the tree that gets pushed (LEDGER 171)
+
+- **Shipped:** `.claude/commands/done.md` reordered - section 0 is an
+  explicitly NON-BINDING pre-flight, everything authored (code, ROADMAP,
+  LEDGER, WAKEUP, `LW-NEXT-SESSION.txt`) is committed in sections 1-6, and
+  section 7 is the binding gate immediately before the push. Sections
+  renumbered into run order; every "section N" reference to this doc was
+  internal to it.
+- **Premise CORRECTED:** CS found this as a pre-push RACE. LW has no pre-push
+  hook (`.githooks/` = `commit-msg` + `pre-commit` only), so LW cannot have the
+  race - LW had the worse form, the documented ORDER, which shipped ungraded
+  doc edits every single session.
+- **Ordering alone asserts nothing,** so `tools/done_gate.py`: `bind` refuses a
+  dirty tree / a tree that moved mid-run, exits 1 on red, records the graded
+  sha to a gitignored atomic receipt; `verify-push` refuses unless
+  remote == HEAD == graded, asking the remote via `ls-remote`.
+- **Two departures from the acceptance line, deliberate:** clean is
+  `git status --porcelain` (a `git diff HEAD` is blind to an untracked authored
+  file) and the pushed sha comes from `ls-remote` (the remote-tracking ref is a
+  cache that a failed push leaves stale).
+- **The arms bind:** 14 hermetic arms incl. the ritual doc's own order;
+  6 of 6 mutants killed, source restored byte-exact. TWO mutants survived the
+  first pass because the implementation's checks cover for each other - each
+  needed an isolating arm. A six-of-six that looks like proof may not be.
+- **Verified:** 2693 passed / 18 skipped in 145.9s (baseline 2677/18), ruff
+  clean, drift_guard exit 0, and the gate dogfooded on this session's own push.
+- **Still BLOCKED, not started:** the `reap` arm for a stale
+  `reserved-<key>.lock` - needs the five repos to agree `rc lw rsc cs ll`.
+
+---
+
 ## 2026-09-07 - RC's ceiling property pinned in slots.py's only test (LEDGER 170)
 
 - **Shipped:** 7 arms in `tests/test_loop_concurrency.py` pinning "total
@@ -73,38 +104,3 @@ esin compute` has
   headless RSC run on the False spelling silently drops permissions, and RSC has
   just agreed to build an unattended responder. Not fixed here: it is a trust
   setting outside LW's tree. Tell RSC.
-
----
-
-## 2026-09-07 - the cross-repo watcher round: withdrawal, the shared pin, and two mutants
-
-- **Commits: `8530f5e`, `b086e18`, `b57c2ed`, `1b98e9c` + the CI follow-up.
-  LEDGER 168.** Seven inbox notes drove it; four landed MID-SESSION and
-  surfaced through `UserPromptSubmit`, which is the fix RC shipped working.
-- **`ops/loop/slots.py` pin is CLOSED - do not re-open.** All three carriers
-  hash `71fa2a68...`, confirmed by CS from a fourth disk. LW copied last.
-- **Withdrawal reporting SHIPPED and it found six real losses on its first run**
-  - the three `from-*-verbatim/` drops and three 2026-09-06 RC notes. One
-  consequence is already in ROADMAP: the `verbatim-payload-followups` row (2) is
-  CANCELLED - `from-RC-verbatim/tests/` is gone and RC confirmed at 11:30 that it
-  is gone from all five inboxes and is not being re-sent. Do not wait for it.
-- **Do NOT re-investigate:** the un-clearable-withdrawal bug (`b57c2ed`), the
-  worktree false-green in `test_tracked_settings_is_safe.py`, the payload-leg
-  mutants, and the junction walk are all fixed and pinned.
-- **The lesson worth carrying, twice over:** LW shipped a docstring claiming the
-  ack pruned withdrawals while writing the ack that did not, and sent it to four
-  repos as a design to copy. Found by running the shipped command against live
-  mail, not by a test - every arm passed, because they proved a withdrawal
-  APPEARS and never that it STOPS.
-- **Tests were writing into `ops/runtime/sync_inbox_reported.json` for days**
-  because a helper omitted one kwarg. Fixed and the live records recovered; the
-  recovery's first filter over-purged a real entry and had to be corrected.
-- **CI caught a Windows-only `creationflags` in a test** that the local gate
-  structurally could not. Any Windows-only construct in a test needs the
-  `os.name` guard BEFORE the call.
-- **Open and NOT measured:** LW's own `refs/pull/*/head` count, which RSC asked
-  for. Do not report a number without taking it.
-- **Not LW's tree but flagged by `drift_guard`:** `c:
-esin compute` has two
-  spellings in `~/.claude.json` with DISAGREEING trust, so a headless run on the
-  False one silently drops permissions.

@@ -436,6 +436,41 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-07 - the cross-repo watcher round: withdrawal, the shared pin, and two mutants
+
+- **Commits: `8530f5e`, `b086e18`, `b57c2ed`, `1b98e9c` + the CI follow-up.
+  LEDGER 168.** Seven inbox notes drove it; four landed MID-SESSION and
+  surfaced through `UserPromptSubmit`, which is the fix RC shipped working.
+- **`ops/loop/slots.py` pin is CLOSED - do not re-open.** All three carriers
+  hash `71fa2a68...`, confirmed by CS from a fourth disk. LW copied last.
+- **Withdrawal reporting SHIPPED and it found six real losses on its first run**
+  - the three `from-*-verbatim/` drops and three 2026-09-06 RC notes. One
+  consequence is already in ROADMAP: the `verbatim-payload-followups` row (2) is
+  CANCELLED - `from-RC-verbatim/tests/` is gone and RC confirmed at 11:30 that it
+  is gone from all five inboxes and is not being re-sent. Do not wait for it.
+- **Do NOT re-investigate:** the un-clearable-withdrawal bug (`b57c2ed`), the
+  worktree false-green in `test_tracked_settings_is_safe.py`, the payload-leg
+  mutants, and the junction walk are all fixed and pinned.
+- **The lesson worth carrying, twice over:** LW shipped a docstring claiming the
+  ack pruned withdrawals while writing the ack that did not, and sent it to four
+  repos as a design to copy. Found by running the shipped command against live
+  mail, not by a test - every arm passed, because they proved a withdrawal
+  APPEARS and never that it STOPS.
+- **Tests were writing into `ops/runtime/sync_inbox_reported.json` for days**
+  because a helper omitted one kwarg. Fixed and the live records recovered; the
+  recovery's first filter over-purged a real entry and had to be corrected.
+- **CI caught a Windows-only `creationflags` in a test** that the local gate
+  structurally could not. Any Windows-only construct in a test needs the
+  `os.name` guard BEFORE the call.
+- **Open and NOT measured:** LW's own `refs/pull/*/head` count, which RSC asked
+  for. Do not report a number without taking it.
+- **Not LW's tree but flagged by `drift_guard`:** `c:
+esin compute` has two
+  spellings in `~/.claude.json` with DISAGREEING trust, so a headless run on the
+  False one silently drops permissions.
+
+---
+
 ## 2026-09-07 - the account path is out of the public tree, and guarded
 
 - **`account-path-in-a-public-repo` CLOSED (LEDGER 166).** The ROADMAP row's

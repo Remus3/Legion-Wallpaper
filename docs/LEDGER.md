@@ -27,6 +27,70 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+171. DONE **2026-09-07 (the /done gate now grades the tree that gets pushed;
+   cb19250 + this doc sync).** Premise CORRECTED before any code: CS reported
+   this as a pre-push RACE (its hook graded `5192aaf`, the remote ended at
+   `1ee8b64`), and the natural next move was to look for LW's pre-push hook.
+   There is none - `.githooks/` holds `commit-msg` and `pre-commit` only,
+   `core.hooksPath=.githooks`, and the pre-commit gate is banned glyphs plus
+   staged-line ruff, not a suite. So LW cannot have CS's race, and the finding
+   still applied: LW carries the same hole in the WORSE form, because it is not
+   a race at all. It is the written ORDER of `/done` - run the full suite, THEN
+   edit ROADMAP + LEDGER + WAKEUP + the hand-off file, THEN commit and push -
+   so every session shipped living-doc edits no run had ever graded. It fired on
+   `e62543b` that evening; CI catching nothing was luck, not a defence.
+
+   **Shipped, two halves.** (1) `.claude/commands/done.md` reordered so the gate
+   is the LAST act before the push: section 0 is now an explicitly NON-BINDING
+   pre-flight (it exists so a broken suite is found before the session's tail is
+   spent writing docs, and it licenses the commit and nothing else), sections
+   1-6 commit everything authored including the living docs and
+   `LW-NEXT-SESSION.txt`, and section 7 binds and pushes. Sections were
+   renumbered into run order - checked first that every "section N" reference to
+   this document is internal to it (`sync-all-md.md`, `headless-upgrade.md` and
+   the rest cite their OWN sections). (2) `tools/done_gate.py`, because ordering
+   alone is a sentence in a markdown file that nothing checks: `bind` refuses a
+   dirty tree (exit 2), refuses a tree that MOVED while the checks ran (CS's
+   race, and the one case a pre-run check structurally cannot see), exits 1 on a
+   red check, and only on green writes the graded sha to a gitignored atomic
+   receipt; `verify-push` refuses unless remote == HEAD == graded.
+
+   **Two deliberate departures from the acceptance line as written.** The line
+   named `git diff HEAD` empty; the gate uses `git status --porcelain`, a strict
+   superset, because `git diff HEAD` is blind to an UNTRACKED authored file -
+   exactly the shape of a new test module a session wrote, graded locally and
+   never pushed. And the pushed sha is read with `git ls-remote`, not
+   `git rev-parse origin/main`: the remote-tracking ref is a local cache that a
+   failed push leaves stale, so the cache-reading version agrees with itself
+   about a push that never landed. `git stash list` is recorded on the receipt
+   and is never fatal - a stash does not change the tree being graded, though a
+   session that stashed believes something is outstanding.
+
+   **The arms bind, proven.** 14 arms in `tests/test_done_gate.py`, hermetic
+   (each builds its own throwaway repo and bare remote in `tmp_path`; the one
+   deliberate exception reads this repo's `done.md`, because that document's
+   ORDER is the thing under test - a re-shuffle goes red instead of quiet).
+   Mutation-proven 6 of 6 killed, source restored byte-exact (sha256 equal
+   either side). Two mutants SURVIVED the first pass - dropping the pre-run
+   clean check, and dropping `HEAD == graded` in verify-push - because the
+   implementation's checks partly cover for each other; each got an isolating
+   arm (a check that tidies up the dirt after itself, so only the pre-run check
+   can see it; a local commit the remote never got, so only the HEAD comparison
+   can see it). This is `feedback-mutation-prove-the-arm-binds` applied twice
+   over: the first six-arm result LOOKED like proof and was not.
+
+   **One existing guard moved with it.** `test_lw_next_session_guard.py` pinned
+   the hand-off write to "section 10b"; that section is now 6. The arm was
+   rewritten to pin the PROPERTY (the write is ALWAYS, the target is the repo
+   file and not the Desktop) rather than the number, and `BACKLOG.md`'s shipped
+   note was corrected to match.
+
+   **Verified:** `pytest tests/ -q` = 2693 passed / 18 skipped in 145.9s
+   (baseline 2677/18; +14 arms here, +2 because the per-file hygiene guards
+   parametrize over the two new files), ruff clean, `drift_guard.py` exit 0.
+   The binding gate was dogfooded on this very session: the push was licensed
+   by a `bind` against the fully committed tree and confirmed by `verify-push`.
+
 170. DONE **2026-09-07 (RC's ceiling property pinned in the shared file's only
    test: "total concurrent holders never exceeds 5 + surplus", mutation-proven).**
    RC's 2026-09-07 01:35 design review listed four properties of the proposed
