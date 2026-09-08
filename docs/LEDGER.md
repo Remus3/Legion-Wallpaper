@@ -27,6 +27,70 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+174. DONE **2026-09-08 (the whole-token guards were probed for split blindness;
+   the probe found something worse first, and both halves are now guarded).**
+   PREMISE CORRECTED BEFORE ANY CODE. The hand-off named two guards to probe.
+   Only ONE exists: `git grep` over `tests/`, `tools/` and `.githooks/` for
+   `email` / `mail` / `noreply` / `user.email` found no operator-email guard
+   anywhere, and `tools/drift_guard.py`, `tools/done_gate.py` and
+   `tools/precommit_gate.py` contain no email check at all. The LEDGER 172
+   purge left exactly one backstop, `git config user.email`, which constrains
+   the commit IDENTITY FIELD and says nothing about file CONTENT. So the
+   question was never whether that guard was blind to a split value; it was
+   that nothing was looking. **And nothing had been looking:** `git grep` for
+   the surname found the operator's personal address CONTIGUOUS and tracked in
+   FIVE places across THREE files - `WAKEUP_NOTES.md`, `docs/LEDGER.md` item
+   172 and `docs/_archive/2026-09-07-sha-rewrite-map.md` - every one of them an
+   artifact written to RECORD the purge. That is Lanternlight's finding in its
+   plainest form: the session documenting the leak wrote the leak, and this
+   time it did not even need a split to survive.
+   THE PROBE ON THE GUARD THAT DOES EXIST. `tests/test_no_account_paths.py`
+   parses the account segment out of a contiguous regex match, so a break AT
+   the separator ends the match: `C:\Users\` + newline + `account\Desktop`,
+   the same break made by a markdown code span closing and reopening, and the
+   whole path written backwards are all MISSED. Proven, not asserted - the
+   three fixtures are a standing arm in that file that fails if either half
+   ever stops behaving as documented.
+   BUILT (TDD, RED first: the new test file errored on `ModuleNotFoundError:
+   split_scan` before `tools/split_scan.py` existed). The scanner never reads
+   raw bytes. It reduces text to a NORMALIZED view - lowercase, `[a-z0-9]`
+   only - which deletes every separator a split can be made of (newline,
+   indent, backtick, emphasis marker, list bullet, comment hash), then scans
+   that view AND its reverse. Values are pinned by sha256, never spelled out: a
+   guard that named the string it forbids would publish it, which is exactly
+   how the three artifacts above leaked it. `(first character, length, digest)`
+   is the pin, and only windows starting with that character get hashed, which
+   is what keeps a 6.6 MB corpus at ~1.3s for the whole file.
+   THE LIMIT IS ASSERTED, NOT IMPLIED. Two halves separated by UNRELATED text
+   (Lanternlight's 26 characters) never become adjacent under normalisation.
+   The answer is not a cleverer window, it is the CHOICE OF FRAGMENT: every pin
+   must be distinctive on its own so nothing has to be assembled. Both the
+   limit and that rule are pinned by arms, so widening the scanner fails a test
+   rather than quietly staling a docstring.
+   EXEMPTION IS A PROPERTY OF THE VALUE, NOT OF THE MECHANISM. The account name
+   inherits the append-only / dated-artifact exemptions
+   `test_no_account_paths.py` already records (rewriting those was weighed and
+   REJECTED on 2026-09-07), by IMPORTING that module's `_would_be_exempt` so
+   there is one definition. The personal address is exempt NOWHERE, and an arm
+   asserts it can never become exemptible.
+   VERIFIED. The sweep FIRED on the live tree before the fix: 10 hits over 9
+   files, 444 scanned. Both real pins are mutation-proven against real content
+   and proven to CLEAR - the pre-edit `HEAD` blob of each scrubbed file reports
+   its fragment and the worktree copy reports none (`docs/LEDGER.md` still
+   reports `account-in-path`, which is the recorded exemption working). The
+   four re-published address occurrences are scrubbed to a description of the
+   value; `git grep` for the surname now returns nothing. The account guard's
+   own planted fixtures were de-identified to a fake account (`mdunning`), so
+   the guard's fixtures are no longer the last tracked copy of the real one.
+   Suite 2750 passed / 18 skipped (was 2728/18; +22), ruff clean.
+   FUTURE / do-not-redo: history was NOT rewritten and must not be for this.
+   The address re-entered the tree in commits made AFTER the 2026-09-07 rewrite,
+   so it is in reachable history again, and the standing ruling holds - a
+   force-push does not purge GitHub-side unreachable objects, the fix is
+   forward, and the guard is what keeps it fixed. Do not re-add the domain as a
+   pin: it names millions of people, would fire on prose, and a guard that fires
+   on prose gets deleted.
+
 173. DONE **2026-09-08 (0.Originals ingest + first pass on the batch;
    d327642 plus pipeline-only mutations).** Body: 122 loose originals ingested
    to 117 slugs (5 refused by the near-dup gate and deliberately left in
@@ -63,7 +127,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 172. DONE **2026-09-07 (the operator's email is out of the working tree AND
    out of history; `219fdb7` scrubbed the docs, then a filter-repo rewrite
    moved all 526 shas to new HEAD `3dec9e3`).** Premise VERIFIED before acting:
-   `git grep` found the address `close.benham@gmail.com` in exactly two tracked
+   `git grep` found the operator's personal address in exactly two tracked
    files (`docs/LEDGER.md` item 154, `docs/_archive/2026-09-06-sha-rewrite-map.md`)
    and `git log --all --format='%ae|%ce'` found it on the author AND committer
    field of all 526 commits - so the doc scrub alone would have left nearly all

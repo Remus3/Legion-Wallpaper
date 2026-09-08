@@ -22,6 +22,29 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   gate (`ops/runtime/intake_refused_2026-09-07.txt` records why, since the CLI
   prints that refusal to stdout ONLY and no log or state file captures it).
 
+- **split-value-blindness-in-the-guards - DONE 2026-09-08. Both halves are
+  guarded now, and the probe found a live leak before it found the blindness.**
+  The hand-off named two guards to probe; only ONE existed. There was no
+  operator-email guard anywhere in `tests/`, `tools/` or `.githooks/` - the
+  LEDGER 172 purge left `git config user.email`, which constrains the commit
+  identity field and says nothing about file content. And the address was
+  tracked CONTIGUOUSLY in five places across three files, every one of them an
+  artifact written to RECORD that purge. Scrubbed to a description of the
+  value; `git grep` for it now returns nothing.
+  New `tools/split_scan.py` + `tests/test_no_split_identity.py` pin each value
+  by sha256 (never spelled out - a guard that names what it forbids publishes
+  it) and scan a NORMALISED, separator-free view plus its reverse, so a break
+  at a newline, a code span or mid-word cannot hide it. The documented limit -
+  halves separated by unrelated text - is pinned by its own arm, and the answer
+  to it is the choice of fragment, not a wider window.
+  `tests/test_no_account_paths.py` now carries a standing arm proving its own
+  contiguous regex MISSES a split path and naming the sibling that catches it,
+  and its planted fixtures were de-identified so the guard's fixtures are no
+  longer the last tracked copy of the real account. Exemptions follow the
+  VALUE, not the mechanism: the account name keeps the recorded append-only /
+  dated-artifact exemptions (imported, not copied), the personal address is
+  exempt NOWHERE. Suite 2750/18, ruff clean. Detail: LEDGER 174.
+
 - **account-path-in-a-public-repo - DONE 2026-09-07. Every tracked file is
   clean and `tests/test_no_account_paths.py` is the standing guard.** The row's
   own count was WRONG and the fix started by correcting it: 32 was a

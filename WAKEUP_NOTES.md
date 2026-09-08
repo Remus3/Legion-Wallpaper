@@ -2,6 +2,46 @@
 
 ---
 
+## 2026-09-08 - split-value blindness probed; the leak was found first (LEDGER 174)
+
+- **Premise corrected before any code.** The hand-off named two guards. Only
+  `tests/test_no_account_paths.py` exists - there is NO operator-email guard in
+  `tests/`, `tools/` or `.githooks/`, and `drift_guard` / `done_gate` /
+  `precommit_gate` contain no email check. LEDGER 172 left one backstop,
+  `git config user.email`, which is the commit IDENTITY field, not file content.
+- **The leak, found by grepping instead of assuming:** the operator's personal
+  address was tracked CONTIGUOUSLY in 5 places across 3 files - WAKEUP_NOTES.md,
+  LEDGER item 172, and the 2026-09-07 sha-rewrite map. All three were written to
+  RECORD the purge. Lanternlight's finding in its plainest form, and it did not
+  even need a split to survive. Scrubbed; `git grep` returns nothing.
+- **The probe on the guard that does exist:** a break AT the separator ends the
+  contiguous match, so `C:\Users\` + newline + account, the same break made by a
+  markdown code span, and the path written backwards are all MISSED. Now a
+  standing arm in that file, not a claim.
+- **Shipped:** `tools/split_scan.py` + `tests/test_no_split_identity.py`. Values
+  pinned by sha256 and never spelled out; scan runs over a normalised
+  (`[a-z0-9]` only) view AND its reverse; only windows starting with the pinned
+  first character get hashed, which keeps 6.6 MB at ~1.3s. Exemption is a
+  property of the VALUE: the account name imports `_would_be_exempt` from the
+  sibling, the address is exempt nowhere and an arm asserts it cannot become so.
+- **Proof it binds AND clears:** the sweep fired on the live tree (10 hits / 9
+  files / 444 scanned) before the fix; each scrubbed file's pre-edit HEAD blob
+  reports its fragment and its worktree copy reports none. Suite 2750/18
+  (baseline 2728/18), ruff clean.
+- **Do NOT redo:** no history rewrite for this. The address re-entered AFTER the
+  2026-09-07 rewrite, the ruling is fix-forward, and a force-push does not purge
+  GitHub-side objects anyway. Do not pin the mail domain: it names millions of
+  people, would fire on prose, and a guard that fires on prose gets deleted.
+- **Answered for CS (their 2026-09-08 1859 correction note):** LW's SessionStart
+  wiring IS in the TRACKED `.claude/settings.json`, but `moon_sync_inbox/` is
+  gitignored (.gitignore:180), so a clone gets the watcher and no channel. LW
+  does NOT have their silent-failure half: measured in-process, an absent inbox
+  reports `- moon_sync_inbox: absent at <path> - no cross-repo mail channel`
+  with no anomaly and no non-zero exit. Separately, every LW hook command
+  hard-codes the absolute project path, so a clone elsewhere runs none of them.
+
+---
+
 ## 2026-09-08 - 0.Originals ingest, then first pass on the batch (LEDGER 173)
 
 - **Intake:** 122 loose files in `0.Originals` -> **117 intaken**, 5 refused by
@@ -35,7 +75,7 @@
 ## 2026-09-07 - the operator email is out of the tree AND out of history (LEDGER 172)
 
 - **Shipped:** two scrubs. `219fdb7` replaced
-  `Moonbeam <close.benham@gmail.com>` with `Moonbeam <redacted>` in the only
+  the operator's personal address with `Moonbeam <redacted>` in the only
   two tracked files that carried it (`docs/LEDGER.md` item 154,
   `docs/_archive/2026-09-06-sha-rewrite-map.md`). Then a `git filter-repo`
   rewrite of ALL 526 commits took it out of history.

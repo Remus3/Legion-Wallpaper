@@ -41,12 +41,21 @@ from __future__ import annotations
 
 import re
 import subprocess
+import sys
 from functools import lru_cache
 from pathlib import Path
 
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT / "tools"))
+
+from split_scan import pin, scan_fragments  # noqa: E402  (path shim above)
+
+# The fake account planted below, pinned the way the split-proof sibling pins a
+# real one. Synthetic, so the arm that proves the sibling still works does not
+# have to name anybody.
+_FIXTURE_ACCOUNT_PIN = pin("fixture-account", "usersmdunning")
 
 # `C:\Users\NAME`, `C:/Users/NAME`, the JSON/Python-escaped `C:\\Users\\NAME`,
 # and the Git-Bash `/c/Users/NAME`. The separator alternatives are spelled out
@@ -162,11 +171,16 @@ def test_no_tracked_file_carries_an_account_path():
         "prose that has to show the shape. This repo is PUBLIC.")
 
 
+# The planted accounts are FAKE on purpose. An earlier revision used this
+# machine's real account name, which made the guard's own fixtures the last
+# tracked copy of it - `tests/test_no_split_identity.py` reported them on its
+# first run. The rule is about the CLASS, so a fixture that names nobody proves
+# exactly as much and leaves nothing to exempt.
 @pytest.mark.parametrize("planted", [
-    r"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe",
-    "C:/Users/Administrator/Pictures",
-    r'"transcript_dir": "C:\\Users\\Administrator\\.claude"',
-    "/c/Users/Administrator/Desktop",
+    r"C:\Users\mdunning\AppData\Local\Programs\Python\Python314\python.exe",
+    "C:/Users/mdunning/Pictures",
+    r'"transcript_dir": "C:\\Users\\mdunning\\.claude"',
+    "/c/Users/mdunning/Desktop",
     r"D:\Users\jsmith\Desktop",
 ])
 def test_a_planted_account_path_is_caught(planted):
@@ -215,6 +229,34 @@ def test_every_exempt_file_would_trip_the_sweep(exempt):
     assert scan_text(text), (
         f"{exempt} no longer trips the detector, so its exemption is dead "
         "weight - remove the exemption or restore the planted fixtures")
+
+
+@pytest.mark.parametrize("split", [
+    # Broken right after the trailing separator, onto the next line.
+    "C:\\Users\\\nmdunning\\Desktop",
+    # The same break, made by a markdown code span closing and reopening.
+    "`C:\\Users\\`\n`mdunning\\Desktop`",
+    # Written backwards.
+    "potkseD\\gninnudm\\sresU\\:C",
+])
+def test_this_guard_is_blind_to_a_split_path_and_names_its_sibling(split):
+    """The probe Lanternlight's 2026-09-07 note asked for, kept as a standing arm.
+
+    A contiguous regex is silently a CLAIM that the value is contiguous, and the
+    claim is false for every one of these. The detector above is not widened to
+    cover them: it parses the account segment out of live text, and the only way
+    to reach across a break is to delete the separators, which would read the
+    word after a code span that closes on `C:\\Users\\` as somebody's login. So
+    the split half lives in `tests/test_no_split_identity.py`, which pins a
+    NORMALISED value by digest, and this arm is what keeps the two halves
+    honest: it fails the moment either one stops behaving as documented.
+    """
+    assert not scan_text(split), (
+        "the contiguous detector now catches a split path - if that is "
+        "deliberate, this arm and the docstring above are both stale")
+    assert scan_fragments(split, (_FIXTURE_ACCOUNT_PIN,)), (
+        "the split-proof sibling no longer catches what this guard misses, so "
+        "the class is now unguarded by BOTH halves")
 
 
 if __name__ == "__main__":

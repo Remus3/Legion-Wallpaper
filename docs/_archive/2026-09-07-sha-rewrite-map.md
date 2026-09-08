@@ -1,6 +1,6 @@
 # SHA rewrite map - 2026-09-07 operator-email purge
 
-The operator's real email address, `close.benham@gmail.com`, was readable in a
+The operator's real personal email address was readable in a
 PUBLIC repo in two places: the `author` and `committer` identity fields of all
 526 commits, and the body text of two tracked docs (`docs/LEDGER.md` item 154
 and `docs/_archive/2026-09-06-sha-rewrite-map.md`). Commit 219fdb7 scrubbed the
@@ -12,7 +12,7 @@ rewrote ALL 526 commits (the identity change touches the repo's first commit,
 so every downstream sha moved - 0 of 526 shas survived). Two filters ran
 together:
 
-- `--mailmap`: `Moonbeam <close.benham@gmail.com>` ->
+- `--mailmap`: `Moonbeam <the operator's personal address>` ->
   `Moonbeam <7991173+Remus3@users.noreply.github.com>` on BOTH the author and
   the committer field of every commit. The name is unchanged. GitHub's
   ID-prefixed noreply address is the deliberate choice: an arbitrary
