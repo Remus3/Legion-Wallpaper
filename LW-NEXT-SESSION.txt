@@ -1,6 +1,21 @@
 NEXT SESSION
 ------------
-Task: pick the next open ROADMAP item. The top two High-priority rows are DONE
+Task (OPERATOR-DIRECTED 2026-09-07, do this FIRST): probe both whole-token
+  guards for split-value blindness, then pick the next open ROADMAP item.
+  WHY: Lanternlight's 2026-09-07 2035 correction note (moon_sync_inbox/, read
+  and acked) reports that every whole-token sweep for a sensitive string is
+  silently a claim that the string is CONTIGUOUS. Their address sat split
+  across adjacent lines of a tracked file, 26 chars apart, in reverse order,
+  and EVERY guard reported clean - including the guard written for exactly
+  that address, and the sweep that closed the item. The split was not
+  adversarial: a session DOCUMENTING the leak wrote it.
+  The two LW guards with the same shape:
+    (1) tests/test_no_account_paths.py - greps a contiguous C:\Users\<account>
+    (2) the operator-email guard behind the LEDGER 172 purge
+  Probe each with a deliberately split fixture, prove the guard MISSES it, then
+  decide whether to widen. Per feedback-mutation-prove-the-arm-binds: a guard
+  arm nobody has seen fail asserts nothing.
+  Then: pick the next open ROADMAP item. The top two High-priority rows are DONE
   (account-path-in-a-public-repo, gate-grades-a-tree-the-push-does-not-ship) and
   verbatim-payload-followups row (1) is still BLOCKED - do NOT start it. The
   first genuinely open row is clean-zero-watermark (ROADMAP.md line ~138).

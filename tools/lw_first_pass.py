@@ -158,16 +158,129 @@ def anchored_crop_box(w, h, sides):
     return (0, top, w, top + new_h)
 
 
-def parse_crop_overrides(path):
-    """Read a {slug: sides} operator override file. Returns {slug: [sides]}.
+def _validate_crop_offset(spec):
+    """Validate a {side: offset} instruction; return (side, offset).
 
-    Values may be a comma-separated string ("left,top") or a list. Every side
-    is validated here so a typo fails at parse time, not mid-batch after the
-    GPU has already burned minutes on earlier slugs.
+    Exactly one key, drawn from CROP_SIDES, mapped to a non-negative int. bool
+    is rejected explicitly: it is an int subclass, so `{"top": true}` would
+    otherwise read as an offset of 1 and silently crop one row off a frame the
+    operator meant to describe some other way.
+    """
+    if len(spec) != 1:
+        raise ValueError(
+            f"crop offset wants exactly one side, got {sorted(spec)}")
+    side, offset = next(iter(spec.items()))
+    if side not in CROP_SIDES:
+        raise ValueError(f"unknown crop side: {side!r}; want {CROP_SIDES}")
+    if isinstance(offset, bool) or not isinstance(offset, int):
+        raise ValueError(
+            f"crop offset for {side!r} must be an int, got {offset!r}")
+    if offset < 0:
+        raise ValueError(f"crop offset for {side!r} must be >= 0, got {offset}")
+    return side, offset
+
+
+def offset_crop_box(w, h, spec):
+    """Exact-16:9 crop box placed at an operator-named pixel offset.
+
+    `spec` is a one-key dict {side: offset} meaning "remove exactly `offset`
+    pixels from that edge; the remainder comes off the opposite edge". This
+    GENERALIZES anchored_crop_box rather than replacing it: on a too-tall frame
+    `sides=["bottom"]` is already `{"top": 0}` and `sides=["top"]` is already
+    `{"top": remove}`, so the offset form names any window in between - which
+    the sides grammar cannot express (it has only three anchors per axis).
+
+    Same shape rules as anchored_crop_box: a frame within ASPECT_TOL of 16:9 is
+    returned whole; a too-wide frame needs a left/right key and a too-tall frame
+    needs a top/bottom key (wrong axis -> ValueError); the offset must satisfy
+    0 <= offset <= remove. A bottom/right key measures from THAT edge, so it
+    maps to the opposite anchor (top = remove - offset).
+    """
+    side, offset = _validate_crop_offset(spec)
+
+    ratio = w / h
+    if abs(ratio - TARGET_ASPECT) <= ASPECT_TOL:
+        return (0, 0, w, h)
+
+    if ratio > TARGET_ASPECT:  # too wide - the width shrinks
+        if side not in ("left", "right"):
+            raise ValueError(
+                f"frame is too wide but the crop offset names {side!r}; "
+                "want left or right")
+        new_w = min(round(h * 16 / 9), w)
+        remove = w - new_w
+        if offset > remove:
+            raise ValueError(
+                f"crop offset {offset} exceeds the {remove}px the width may "
+                f"lose (max {remove})")
+        left = offset if side == "left" else remove - offset
+        return (left, 0, left + new_w, h)
+
+    if side not in ("top", "bottom"):  # too tall - the height shrinks
+        raise ValueError(
+            f"frame is too tall but the crop offset names {side!r}; "
+            "want top or bottom")
+    new_h = min(round(w * 9 / 16), h)
+    remove = h - new_h
+    if offset > remove:
+        raise ValueError(
+            f"crop offset {offset} exceeds the {remove}px the height may "
+            f"lose (max {remove})")
+    top = offset if side == "top" else remove - offset
+    return (0, top, w, top + new_h)
+
+
+def resolve_crop_box(w, h, instruction):
+    """Dispatch a crop instruction to the form that understands it.
+
+    A list/tuple of sides goes to anchored_crop_box, a {side: offset} dict to
+    offset_crop_box. Callers hold one instruction object and never branch on
+    its grammar.
+    """
+    if isinstance(instruction, dict):
+        return offset_crop_box(w, h, instruction)
+    if isinstance(instruction, (list, tuple)):
+        return anchored_crop_box(w, h, instruction)
+    raise ValueError(
+        f"crop instruction must be a list of sides or a {{side: offset}} "
+        f"dict, got {type(instruction).__name__}")
+
+
+def crop_instruction_record(instruction):
+    """JSON-safe copy of a crop instruction for the plan/manifest.
+
+    WHY this exists: the call sites used to record `list(crop_sides)`, and
+    list() on a dict yields its KEYS - so an offset instruction would have been
+    written to the manifest as ["top"], indistinguishable from a hard-top sides
+    grant and losing the offset that actually produced the box.
+    """
+    if isinstance(instruction, dict):
+        return dict(instruction)
+    return list(instruction)
+
+
+def parse_crop_overrides(path):
+    """Read a {slug: instruction} operator override file.
+
+    Two grammars, per slug:
+      sides  - a comma-separated string ("left,top") or a list; returned as a
+               list of sides. Behaviour unchanged.
+      offset - a one-key {side: pixels} object, e.g. {"top": 125}; returned as
+               a dict. Means "remove exactly that many pixels from that edge".
+
+    Everything is validated here so a typo fails at parse time, not mid-batch
+    after the GPU has already burned minutes on earlier slugs.
     """
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     out = {}
     for slug, val in raw.items():
+        if isinstance(val, dict):
+            try:
+                side, offset = _validate_crop_offset(val)
+            except ValueError as exc:
+                raise ValueError(f"{slug}: bad crop offset {val!r}: {exc}") from exc
+            out[slug] = {side: offset}
+            continue
         sides = ([s.strip() for s in val.split(",")]
                  if isinstance(val, str) else list(val))
         sides = [s for s in sides if s]
@@ -525,10 +638,11 @@ def condition_source(src_path, tmp_dir, crop_sides=None):
     - 'crop_ok'    -> writes a center-cropped exact-16:9 temp PNG, cropped True.
     - 'crop_heavy' -> returns (None, plan) so the caller HOLDs.
 
-    `crop_sides` is the operator override: it anchors the crop to the permitted
-    edges AND authorises an area loss past AREA_LOSS_MAX, turning what would be
-    a HOLD into a real crop classed 'crop_override'. An already-16:9 source
-    stays a passthrough whatever sides are named.
+    `crop_sides` is the operator override - either a list of permitted sides or
+    a {side: offset} dict (see resolve_crop_box). It anchors the crop AND
+    authorises an area loss past AREA_LOSS_MAX, turning what would be a HOLD
+    into a real crop classed 'crop_override'. An already-16:9 source stays a
+    passthrough whatever instruction is given.
     """
     from PIL import Image
 
@@ -536,7 +650,7 @@ def condition_source(src_path, tmp_dir, crop_sides=None):
         w, h = im.size
         cls, box, area_loss = aspect_class(w, h)
         if crop_sides and cls != "ok":
-            box = anchored_crop_box(w, h, crop_sides)
+            box = resolve_crop_box(w, h, crop_sides)
             left, top, right, bottom = box
             area_loss = 1.0 - ((right - left) * (bottom - top)) / (w * h)
             cls = "crop_override"
@@ -544,7 +658,7 @@ def condition_source(src_path, tmp_dir, crop_sides=None):
                 "area_loss": round(area_loss, 6), "crop_box": box,
                 "cropped": False}
         if crop_sides:
-            plan["crop_sides"] = list(crop_sides)
+            plan["crop_sides"] = crop_instruction_record(crop_sides)
         if cls == "ok":
             return src_path, plan
         if cls == "crop_heavy":
@@ -620,7 +734,7 @@ def process_slug(slug, source_urls, tmp_dir, dry_run=False, crop_sides=None):
         w, h = im.size
     cls, box, area_loss = aspect_class(w, h)
     if crop_sides and cls != "ok":
-        box = anchored_crop_box(w, h, crop_sides)
+        box = resolve_crop_box(w, h, crop_sides)
         left, top, right, bottom = box
         area_loss = 1.0 - ((right - left) * (bottom - top)) / (w * h)
         cls = "crop_override"
@@ -628,7 +742,7 @@ def process_slug(slug, source_urls, tmp_dir, dry_run=False, crop_sides=None):
             "aspect_class": cls, "src_dims": [w, h],
             "area_loss": round(area_loss, 6), "crop_box": box}
     if crop_sides:
-        plan["crop_sides"] = list(crop_sides)
+        plan["crop_sides"] = crop_instruction_record(crop_sides)
 
     if cls == "crop_heavy":
         hold_metrics = {"hold": "aspect_crop_heavy", "src_dims": [w, h],
@@ -674,9 +788,10 @@ def process_slug(slug, source_urls, tmp_dir, dry_run=False, crop_sides=None):
         "verdict": v["verdict"], "reasons": v["reasons"],
         "source_choice": kind, "aspect_class": cls, "crop_box": box,
         "area_loss": round(area_loss, 6), "cropped": cplan.get("cropped"),
-        # crop_sides is the operator's directed-crop instruction; recording it
-        # is what makes a >AREA_LOSS_MAX crop auditable rather than silent.
-        "crop_sides": list(crop_sides) if crop_sides else None,
+        # crop_sides is the operator's directed-crop instruction (a sides list
+        # or a {side: offset} dict); recording it FAITHFULLY is what makes a
+        # >AREA_LOSS_MAX crop auditable rather than silent.
+        "crop_sides": crop_instruction_record(crop_sides) if crop_sides else None,
         # usm_applied tells a reviewer whether halo_pct measured a real
         # sharpening pass or a no-resample passthrough (see params above).
         # source_mode + alpha_flattened make the always-RGB output's alpha drop
@@ -775,8 +890,9 @@ def main(argv=None):
     p.add_argument("--dry-run", action="store_true",
                    help="print the plan without mutating")
     p.add_argument("--crop-overrides", metavar="JSON",
-                   help="operator directed-crop file {slug: 'top,left'}; "
-                        "anchors the crop and reopens a HELD slug")
+                   help="operator directed-crop file: {slug: 'top,left'} for "
+                        "permitted sides or {slug: {'top': 125}} for an exact "
+                        "offset; anchors the crop and reopens a HELD slug")
     args = p.parse_args(argv)
 
     overrides = (parse_crop_overrides(args.crop_overrides)
