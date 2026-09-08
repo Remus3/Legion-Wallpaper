@@ -436,6 +436,37 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-07 - the /done gate now grades the tree that gets pushed (LEDGER 171)
+
+- **Shipped:** `.claude/commands/done.md` reordered - section 0 is an
+  explicitly NON-BINDING pre-flight, everything authored (code, ROADMAP,
+  LEDGER, WAKEUP, `LW-NEXT-SESSION.txt`) is committed in sections 1-6, and
+  section 7 is the binding gate immediately before the push. Sections
+  renumbered into run order; every "section N" reference to this doc was
+  internal to it.
+- **Premise CORRECTED:** CS found this as a pre-push RACE. LW has no pre-push
+  hook (`.githooks/` = `commit-msg` + `pre-commit` only), so LW cannot have the
+  race - LW had the worse form, the documented ORDER, which shipped ungraded
+  doc edits every single session.
+- **Ordering alone asserts nothing,** so `tools/done_gate.py`: `bind` refuses a
+  dirty tree / a tree that moved mid-run, exits 1 on red, records the graded
+  sha to a gitignored atomic receipt; `verify-push` refuses unless
+  remote == HEAD == graded, asking the remote via `ls-remote`.
+- **Two departures from the acceptance line, deliberate:** clean is
+  `git status --porcelain` (a `git diff HEAD` is blind to an untracked authored
+  file) and the pushed sha comes from `ls-remote` (the remote-tracking ref is a
+  cache that a failed push leaves stale).
+- **The arms bind:** 14 hermetic arms incl. the ritual doc's own order;
+  6 of 6 mutants killed, source restored byte-exact. TWO mutants survived the
+  first pass because the implementation's checks cover for each other - each
+  needed an isolating arm. A six-of-six that looks like proof may not be.
+- **Verified:** 2693 passed / 18 skipped in 145.9s (baseline 2677/18), ruff
+  clean, drift_guard exit 0, and the gate dogfooded on this session's own push.
+- **Still BLOCKED, not started:** the `reap` arm for a stale
+  `reserved-<key>.lock` - needs the five repos to agree `rc lw rsc cs ll`.
+
+---
+
 ## 2026-09-07 - RC's ceiling property pinned in slots.py's only test (LEDGER 170)
 
 - **Shipped:** 7 arms in `tests/test_loop_concurrency.py` pinning "total

@@ -27,6 +27,48 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+176. DONE **2026-09-08 (the GitHub community checklist is complete, written for
+   what this repo IS; `eacb64e`).** Operator-directed side task off the Insights
+   > Community Standards screen: Description / README / License were already
+   green, the other five were empty. Written from the repo's actual shape rather
+   than from a template, because a boilerplate CONTRIBUTING promises a
+   contribution flow that does not exist here and a boilerplate SECURITY.md
+   asks for an email address the operator deliberately does not publish.
+   - `CODE_OF_CONDUCT.md` - original, short, enforceable by one maintainer with
+     no committee and no appeal, and carrying the do-not-publish-personal-data
+     clause that LEDGER 174 exists because of.
+   - `CONTRIBUTING.md` - welcome: factual errors with `file:line`, defects with
+     a reproduction, security reports via the private channel. Not welcome:
+     feature requests, unsolicited PRs, anything touching the corpus. Then the
+     exact gates an invited change must clear (RED-first TDD, full suite, ruff,
+     7-bit ASCII with the PowerShell reason, the three publication guards, no
+     Claude co-author trailer, hooks PROVEN to fire rather than present).
+   - `SECURITY.md` - scope is a process repo, not a service, so the report
+     classes are narrowed to the ones that are real here: a committed
+     credential, personal or machine-identifying data INCLUDING split across
+     lines, and a guard that reports clean on input it should reject. Routes to
+     GitHub private advisories - no email address, deliberately - and says
+     plainly that a public issue about a leaked value republishes the value.
+   - `.github/ISSUE_TEMPLATE/` - `defect.md` + `doc-error.md`, blank issues
+     OFF, and three contact links that redirect the things this repo does not
+     take. The doc-error template warns that a SHA cited before 2026-09-07 may
+     not resolve and names the archive maps that walk it forward.
+   - `.github/pull_request_template.md` - premise check, RED-first evidence,
+     suite + lint lines, sibling-case grep, the corrupted-data backfill
+     question, and the ASCII / no-personal-data / hooks-fire hygiene boxes.
+   README gains the publication-guards row in the reusable table and points at
+   the three new documents; repo topics refreshed to the 20 maximum (added
+   `agentic-ai`). All new files pass the three publication guards, the ASCII
+   sweep and drift_guard.
+   FUTURE / do-not-redo: GitHub **private vulnerability reporting is currently
+   DISABLED** on the repo (`gh api repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`
+   answers `{"enabled":false}`), and `SECURITY.md` plus the issue-template
+   contact link both point at it. Enabling it is a repo SETTINGS change and was
+   deliberately NOT made without the operator: one command closes it -
+   `gh api -X PUT repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`.
+   Until then the documents' fallback path (a detail-free public issue asking
+   for a private channel) is the live one.
+
 175. DONE **2026-09-08 (a RED from the /done gate now names what failed).**
    Found by paying for it, in the same session as item 174: `done_gate bind`
    reported `pytest tests/ -q -> 1` on commit `ae9b277`, and the suite was green
