@@ -35,6 +35,11 @@ pytestmark = pytest.mark.skipif(shutil.which("git") is None,
 # ruff/pytest/drift_guard trio is what keeps these arms hermetic and fast.
 OK_CHECK = [[sys.executable, "-c", "pass"]]
 RED_CHECK = [[sys.executable, "-c", "raise SystemExit(1)"]]
+# A red check that SAYS something on both streams, which is what a real pytest
+# failure looks like and what a bare exit code throws away.
+NOISY_RED = [[sys.executable, "-c",
+              "import sys; print('FAILED tests/test_x.py::test_y'); "
+              "print('assert 1 == 2', file=sys.stderr); raise SystemExit(1)"]]
 
 
 def _run(repo: Path, *args: str) -> subprocess.CompletedProcess:
@@ -165,6 +170,41 @@ def test_bind_separates_a_red_check_from_a_broken_ordering(tmp_path):
     data = json.loads(receipt.read_text())
     assert data["passed"] is False
     assert data["graded_sha"] == DG.head_sha(repo)
+
+
+def test_a_red_check_says_WHAT_failed_and_not_only_that_it_failed(tmp_path, capsys):
+    """A RED that names no test is a RED nobody can act on.
+
+    Measured 2026-09-08: this gate reported `pytest tests/ -q -> 1` on a tree
+    whose suite was green on three runs either side of it, and the output that
+    would have named the test had gone to the caller's `tail`. Two full-suite
+    re-runs bought nothing, because the evidence no longer existed. So the gate
+    keeps the child's output instead of assuming its caller did.
+    """
+    repo = _make_repo(tmp_path)
+    receipt = tmp_path / "receipt.json"
+
+    assert DG.bind(repo, receipt, checks=NOISY_RED) == 1
+    printed = capsys.readouterr().out
+    assert "FAILED tests/test_x.py::test_y" in printed, "stdout was thrown away"
+    assert "assert 1 == 2" in printed, "stderr was thrown away"
+
+    log = DG.failure_log(receipt)
+    assert log.exists(), "the full output must survive a truncated terminal"
+    assert "FAILED tests/test_x.py::test_y" in log.read_text(encoding="utf-8")
+    assert str(log) in printed, "the log has to be findable from the RED line"
+
+
+def test_a_green_run_clears_a_previous_failure_log(tmp_path):
+    """Appears is not goes-away: a stale log would misdate the next diagnosis."""
+    repo = _make_repo(tmp_path)
+    receipt = tmp_path / "receipt.json"
+
+    assert DG.bind(repo, receipt, checks=NOISY_RED) == 1
+    assert DG.failure_log(receipt).exists()
+
+    assert DG.bind(repo, receipt, checks=OK_CHECK) == 0
+    assert not DG.failure_log(receipt).exists(), "the stale log outlived its RED"
 
 
 def test_bind_writes_the_receipt_atomically(tmp_path):

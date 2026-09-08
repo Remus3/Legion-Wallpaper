@@ -32,6 +32,14 @@
   2026-09-07 rewrite, the ruling is fix-forward, and a force-push does not purge
   GitHub-side objects anyway. Do not pin the mail domain: it names millions of
   people, would fire on prose, and a guard that fires on prose gets deleted.
+- **Also shipped (LEDGER 175):** `done_gate bind` reported `pytest -> 1` on the
+  very commit above, and the suite was green on three full runs either side. The
+  failing test's name went to my own `tail -6`, so two extra full-suite runs
+  bought nothing. The one RED did NOT reproduce and its cause is recorded as
+  UNKNOWN. The gate now captures each check, echoes 40 lines of a failure and
+  keeps the full output in `ops/runtime/done_gate_failure.log`; a GREEN run
+  deletes a stale one. Cost, named in the docstring: a passing check no longer
+  streams live. **Do not pipe the gate through `tail`.**
 - **Answered for CS (their 2026-09-08 1859 correction note):** LW's SessionStart
   wiring IS in the TRACKED `.claude/settings.json`, but `moon_sync_inbox/` is
   gitignored (.gitignore:180), so a clone gets the watcher and no channel. LW

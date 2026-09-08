@@ -29,6 +29,15 @@ wrote and has not staged, which would be graded by the local run and then never
 pushed. Ignored files are excluded (no `--ignored`), so runtime droppings and
 the receipt itself stay invisible.
 
+A RED HAS TO NAME WHAT FAILED. Measured 2026-09-08: this gate reported
+`pytest tests/ -q -> 1` on a tree whose suite was green on three runs either
+side of it, and the output that would have named the test had gone to the
+caller's `tail`. Two full-suite re-runs bought nothing, because the evidence no
+longer existed. So `bind` CAPTURES each check, echoes the tail of a failing one
+and keeps the whole thing beside the receipt. The cost is deliberate and worth
+naming: a passing check no longer streams live, so a long `pytest` run shows its
+per-check line only when it finishes.
+
 THE REMOTE SHA IS ASKED OF THE REMOTE. `git rev-parse origin/main` reads a
 local cache that a failed push leaves stale, which would make this gate agree
 with itself about a push that never landed. `git ls-remote` asks the server.
@@ -119,6 +128,22 @@ def read_receipt(path: Path) -> dict | None:
         return None
 
 
+# How much of a failing check gets echoed. The FULL output always goes to the
+# log; this is only what survives a caller that pipes the gate into `tail`.
+TAIL_LINES = 40
+
+
+def failure_log(receipt: Path) -> Path:
+    """Where a RED check's full output lands. Beside the receipt, so it is
+    gitignored by the same rule and cannot dirty the tree being graded."""
+    return receipt.with_name("done_gate_failure.log")
+
+
+def _tail(text: str, n: int) -> list[str]:
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    return lines[-n:]
+
+
 def bind(repo: Path, receipt: Path, checks: list[list[str]] | None = None,
          verbose: bool = True) -> int:
     """Grade a clean tree and record which sha was graded.
@@ -148,15 +173,30 @@ def bind(repo: Path, receipt: Path, checks: list[list[str]] | None = None,
             print("done_gate: REFUSED - no HEAD commit to grade")
         return 2
 
+    log = failure_log(receipt)
+    try:                                    # a stale log misdates the next RED
+        log.unlink()
+    except OSError:
+        pass
+
     results = []
     failed = False
+    captured: list[str] = []
     for cmd in checks:
-        r = subprocess.run(cmd, cwd=str(repo), creationflags=NO_WINDOW)
+        r = subprocess.run(cmd, cwd=str(repo), creationflags=NO_WINDOW,
+                           capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
         results.append({"cmd": cmd, "returncode": r.returncode})
         if verbose:
             print(f"done_gate: check {' '.join(cmd)} -> {r.returncode}")
         if r.returncode != 0:
             failed = True
+            body = (f"$ {' '.join(cmd)}\n-> {r.returncode}\n"
+                    f"--- stdout ---\n{r.stdout}\n--- stderr ---\n{r.stderr}\n")
+            captured.append(body)
+            if verbose:
+                for line in _tail(body, TAIL_LINES):
+                    print(f"  | {line}")
 
     # The tree must not have moved WHILE the checks ran. This is CS's race, and
     # it is the one failure the pre-run check above cannot see.
@@ -179,8 +219,16 @@ def bind(repo: Path, receipt: Path, checks: list[list[str]] | None = None,
         "bound_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     })
     if failed:
+        try:
+            log.parent.mkdir(parents=True, exist_ok=True)
+            tmp = log.with_name(log.name + ".tmp")
+            tmp.write_text("\n".join(captured), encoding="utf-8", newline="\n")
+            tmp.replace(log)
+        except OSError:                     # a lost log must not lose the RED
+            pass
         if verbose:
-            print(f"done_gate: RED on {graded[:12]} - do not push")
+            print(f"done_gate: RED on {graded[:12]} - do not push. "
+                  f"Full output: {log}")
         return 1
     if verbose:
         print(f"done_gate: GREEN and BOUND to {graded[:12]} - push this sha, "

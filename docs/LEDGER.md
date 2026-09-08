@@ -27,6 +27,35 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+175. DONE **2026-09-08 (a RED from the /done gate now names what failed).**
+   Found by paying for it, in the same session as item 174: `done_gate bind`
+   reported `pytest tests/ -q -> 1` on commit `ae9b277`, and the suite was green
+   on three full runs either side of it (2750 passed / 18 skipped, twice, plus
+   the re-run that bound the sha). The failing test's name was printed by the
+   child and thrown away by the caller's `tail -6`, so two extra full-suite runs
+   (~4.5 minutes) bought nothing: the evidence no longer existed. The root cause
+   of that one RED is UNKNOWN and is recorded as unknown - it did not reproduce,
+   and inventing a cause for it would be exactly the thing the verification
+   rules forbid.
+   What IS fixable is that the gate depended on its caller to keep the evidence.
+   `bind` now captures each check, echoes the last 40 non-blank lines of a
+   failing one behind a `  | ` prefix, and writes the full stdout+stderr to
+   `done_gate_failure.log` beside the receipt - under `ops/runtime/`, so it is
+   gitignored by the same rule and cannot dirty the tree being graded, and
+   written atomically per the CLAUDE.md rule. A GREEN run DELETES a previous
+   log, because a stale one would misdate the next diagnosis (arm:
+   `test_a_green_run_clears_a_previous_failure_log`, the appears-vs-goes-away
+   rule). RED first: both new arms failed on `AttributeError: failure_log`
+   before the implementation existed.
+   THE COST IS DELIBERATE AND NAMED IN THE DOCSTRING: a passing check no longer
+   streams live, so a 130s `pytest` prints its per-check line only when it
+   finishes. That is the trade for a RED that can be acted on, and it is stated
+   where the next reader will look rather than discovered.
+   Suite 2752 passed / 18 skipped (was 2750/18; +2), ruff clean.
+   FUTURE / do-not-redo: do not pipe the gate through `tail` - that is what
+   destroyed the diagnosis this item exists because of. The log survives it now,
+   but the echo is what a reader sees first.
+
 174. DONE **2026-09-08 (the whole-token guards were probed for split blindness;
    the probe found something worse first, and both halves are now guarded).**
    PREMISE CORRECTED BEFORE ANY CODE. The hand-off named two guards to probe.
