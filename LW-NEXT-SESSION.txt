@@ -1,23 +1,27 @@
 NEXT SESSION
 ------------
-Task: ROADMAP high-priority `verbatim-payload-followups` row (1) is still
-  BLOCKED - do NOT start it. Pick the next open ROADMAP item instead; the
-  gate-ordering row is DONE and the payload row (2) is CANCELLED, so the top of
-  ROADMAP.md is the place to choose from.
+Task: pick the next open ROADMAP item. The top two High-priority rows are DONE
+  (account-path-in-a-public-repo, gate-grades-a-tree-the-push-does-not-ship) and
+  verbatim-payload-followups row (1) is still BLOCKED - do NOT start it. The
+  first genuinely open row is clean-zero-watermark (ROADMAP.md line ~138).
 Context: ROADMAP.md "Open items - High priority", BACKLOG.md for aspirational
   work. Inbox first: moon_sync_inbox/ prints unread at SessionStart; read THEN
   ack with `python tools/lw_facts.py --mark-inbox-seen`.
 Acceptance: whatever the chosen item states. Standing bar: `python -m pytest
-  tests/ -q` green (baseline 2693 passed / 18 skipped, ~146s on 2026-09-07),
-  ruff clean, drift_guard exit 0.
-Do NOT redo: the /done gate ordering is FIXED and pushed (LEDGER 171).
-  `.claude/commands/done.md` is renumbered - the binding gate is section 7, the
-  hand-off write is section 6 (was 10b), section 0 is a NON-BINDING pre-flight.
-  `tools/done_gate.py bind` + `verify-push` are the assertion; 14 arms in
-  tests/test_done_gate.py, mutation-proven 6 of 6. Every future /done MUST run
-  bind AFTER all doc edits are committed and verify-push after the push - the
-  ritual doc's own section order is pinned by a test, so do not re-shuffle it.
-  The `reap` arm for a stale `reserved-<key>.lock` stays BLOCKED until the five
-  repos agree the short keys `rc lw rsc cs ll`.
+  tests/ -q` green (baseline 2693 passed / 18 skipped, ~136s on 2026-09-07),
+  ruff clean, drift_guard exit 0, `python tools/done_gate.py bind` exit 0.
+Do NOT redo: the operator-email purge is DONE and pushed (LEDGER 172). History
+  was rewritten a THIRD time - all 526 shas moved, new HEAD 3dec9e3, one commit
+  (219fdb7) pruned as empty. Any sha cited in a doc predating 2026-09-07 needs
+  docs/_archive/*-sha-rewrite-map.md walked forward oldest-first. Commit
+  identity is now 7991173+Remus3@users.noreply.github.com globally AND
+  repo-locally - do not change it back, GitHub credits contributions by email.
+  STILL OPEN, operator decision: a force-push does NOT purge GitHub-side
+  unreachable objects - the old shas still answered 200 after the push, so the
+  old email remains readable to anyone holding one. Only a GitHub Support purge
+  or delete-and-recreate closes it. Backup bundle (still contains the address,
+  by design) at C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle.
+  Also DONE earlier: the /done gate ordering (LEDGER 171) - do not re-shuffle
+  .claude/commands/done.md, its section order is pinned by a test.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log.

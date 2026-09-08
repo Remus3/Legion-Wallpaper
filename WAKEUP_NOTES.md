@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-09-07 - the operator email is out of the tree AND out of history (LEDGER 172)
+
+- **Shipped:** two scrubs. `219fdb7` replaced
+  `Moonbeam <close.benham@gmail.com>` with `Moonbeam <redacted>` in the only
+  two tracked files that carried it (`docs/LEDGER.md` item 154,
+  `docs/_archive/2026-09-06-sha-rewrite-map.md`). Then a `git filter-repo`
+  rewrite of ALL 526 commits took it out of history.
+- **Why the second scrub was the real one:** the address was on the author AND
+  committer field of every commit. The doc scrub closed the smaller half; the
+  operator asked for the rewrite on exactly that finding.
+- **One mailmap line + one replace-text literal.** Identity ->
+  `7991173+Remus3@users.noreply.github.com`, GitHub's ID-prefixed noreply for
+  this account. That choice is load-bearing: GitHub attributes commits BY
+  EMAIL, so any other replacement would have zeroed the contribution credit.
+- **526 in, 525 out.** Only `219fdb7` pruned - once replace-text put `redacted`
+  into its parent, its own diff was empty. HEAD tree byte-identical at
+  `336db8f1` before and after, which doubles as proof the automated replacement
+  wrote exactly what the manual edit did. New HEAD `3dec9e3`; 0 of 526 shas
+  survived.
+- **Verified live on the GitHub API after the force-push:** HEAD author +
+  committer read the noreply address, the commit still resolves to `Remus3`,
+  and `/contributors` returns one entry, `Remus3` with 525 contributions.
+  Locally: one identity across 525 commits, zero hits in any blob over
+  `git rev-list --all`, never in a commit message.
+- **NOT purged, and it matters:** `GET /commits/219fdb70...` still answered 200
+  after the push. Old shas still resolve on GitHub and their identity fields
+  still carry the address. Only a Support purge or delete-and-recreate closes
+  that - the standing CLAUDE.md ruling, re-confirmed here rather than assumed.
+- **Followed up so it cannot come back:** `git config user.email` reset to the
+  noreply address globally and repo-locally.
+- Map `docs/_archive/2026-09-07-sha-rewrite-map.md` (275 cited shas, chaining
+  note for walking three maps oldest-first). Backup bundle off-repo at
+  `C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle` - it still contains the
+  address by design, it is the rollback path.
+
+---
+
 ## 2026-09-07 - the /done gate now grades the tree that gets pushed (LEDGER 171)
 
 - **Shipped:** `.claude/commands/done.md` reordered - section 0 is an
@@ -67,40 +104,3 @@
   matters before RSC's proposed 19:00 trial window because an untrusted
   workspace makes a headless run silently DISCARD `permissions.allow`. Surfaced,
   not edited. LW is not a carrier of that trial and armed nothing.
-
----
-
-## 2026-09-07 - independent audit of RC's public history (67c87bf, 4fd66f7)
-
-- **RC invited it; the operator authorised it.** RC went public at 15:15 by
-  DELETE-and-RECREATE (13 `refs/pull/N/head` are permanent) and reported 11
-  sibling-name hits in 8 blobs of the two byte-pinned modules.
-- **RC's 11 is EXACT** - re-derived hit-by-hit from an ANONYMOUS mirror clone
-  (`-c credential.helper=`, so it measures what a stranger gets), all 66620
-  objects streamed and split by object TYPE. **RC's "all in" is NOT:** 14 hits /
-  10 blobs / 4 filenames, the extra 3 in two DOCUMENTS a module-scoped scan
-  cannot see. Per-name: LW 8, RSC 3, Red Moon 3, LL 0, CS 0. Trees 0, commits 0.
-- **The one worth carrying: LW's first Red Moon pass returned 653 and was
-  wrong.** All substring matches inside longer words (`form-empowe`+`red moon`+
-  `stone`). Anchoring took it to 3 - a 218x inflation. Caught ONLY because the
-  tool printed a sample line beside the count. Rule: a name-matching rule is not
-  evidence until run against a string it must NOT match; a count without its
-  matched text is not reviewable.
-- **Three things RC did not measure:** `refs/pull` is a genuine zero with a
-  control; `backup-pre-scrub-20260621` is public but CLEAN (ancestor of main
-  inside the rewritten history); and **6 commits carry the operator's personal
-  email plus 5 Claude attributions, all post-recreate.** A history rewrite has
-  no opinion about the commits you make after it - same operator, all five repos.
-- **Delivered:** RC 18:13, then CS/LL/RSC 18:17 as three byte-identical copies
-  (sha256 `ded8c547849ead67`), plus an 18:20 correction to RC because the copy
-  reversed a sentence already in RC's tree. Sibling copy OMITS the email
-  deliberately - unknown whether they track their inboxes.
-- **Do NOT redo:** the audit is done and the mirror clone deleted; reproduction
-  recipe is in the notes. Operator DECLINED a further RC rewrite of LW's name.
-- **Live finding, not acted on:** `drift_guard` reports `c:
-esin compute` has
-  2 spellings in `~/.claude.json` with DISAGREEING trust [False, True] - the
-  exact bug CLAUDE.md records as fixed machine-wide 2026-09-05, regressed. A
-  headless RSC run on the False spelling silently drops permissions, and RSC has
-  just agreed to build an unattended responder. Not fixed here: it is a trust
-  setting outside LW's tree. Tell RSC.

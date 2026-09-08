@@ -27,6 +27,44 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+172. DONE **2026-09-07 (the operator's email is out of the working tree AND
+   out of history; `219fdb7` scrubbed the docs, then a filter-repo rewrite
+   moved all 526 shas to new HEAD `3dec9e3`).** Premise VERIFIED before acting:
+   `git grep` found the address `close.benham@gmail.com` in exactly two tracked
+   files (`docs/LEDGER.md` item 154, `docs/_archive/2026-09-06-sha-rewrite-map.md`)
+   and `git log --all --format='%ae|%ce'` found it on the author AND committer
+   field of all 526 commits - so the doc scrub alone would have left nearly all
+   of the exposure in place, and the operator asked for the rewrite on exactly
+   that finding. Built as: full `git bundle --all` backup (kept off-repo at
+   `C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle`) -> dry run of the
+   rewrite on a throwaway `--no-local` clone -> verify -> apply with `--force`.
+   One `--mailmap` line remapped both identity fields to GitHub's ID-prefixed
+   noreply address `7991173+Remus3@users.noreply.github.com`, chosen
+   deliberately: GitHub attributes commits BY EMAIL, so an arbitrary
+   replacement would have zeroed the operator's contribution credit. One
+   `--replace-text` literal reached the address inside the historical versions
+   of the two doc blobs. Verified: 526 commits in, 525 out (only `219fdb7`
+   pruned - `--replace-text` made its diff empty, and its content survives as
+   what every version of those files now says); 0 of 526 shas unchanged; HEAD
+   tree byte-identical at `336db8f1` before and after, which is also the proof
+   that the automated replacement produced exactly the bytes the manual edit
+   did; `git log --all` reports ONE identity across 525 commits; `git grep`
+   over every object in `git rev-list --all` finds zero occurrences in any
+   blob, and it never appeared in a commit message. Verified live on the GitHub
+   API after the force-push: HEAD author + committer both read the noreply
+   address, the commit still resolves to the `Remus3` account, and
+   `/contributors` returns exactly one entry, `Remus3` with 525 contributions.
+   `git config user.email` was reset to the noreply address globally AND
+   repo-locally so the next commit cannot reintroduce the address. Docs: map at
+   `docs/_archive/2026-09-07-sha-rewrite-map.md` (275 cited shas, THIRD rewrite,
+   chaining note added), CLAUDE.md Settled line updated from TWICE to THREE.
+   FUTURE / do-not-redo: a force-push does NOT purge GitHub-side unreachable
+   objects - `GET /commits/219fdb70...` still answered 200 after the push, so
+   the old commits and their identity fields remain readable to anyone holding
+   an old sha. Only a GitHub Support purge or delete-and-recreate closes that;
+   until then treat the address as recoverable by a determined party. The
+   backup bundle intentionally still contains it - it is the rollback path.
+
 171. DONE **2026-09-07 (the /done gate now grades the tree that gets pushed;
    cb19250 + this doc sync).** Premise CORRECTED before any code: CS reported
    this as a pre-push RACE (its hook graded `5192aaf`, the remote ended at

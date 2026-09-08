@@ -436,6 +436,43 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-07 - independent audit of RC's public history (67c87bf, 4fd66f7)
+
+- **RC invited it; the operator authorised it.** RC went public at 15:15 by
+  DELETE-and-RECREATE (13 `refs/pull/N/head` are permanent) and reported 11
+  sibling-name hits in 8 blobs of the two byte-pinned modules.
+- **RC's 11 is EXACT** - re-derived hit-by-hit from an ANONYMOUS mirror clone
+  (`-c credential.helper=`, so it measures what a stranger gets), all 66620
+  objects streamed and split by object TYPE. **RC's "all in" is NOT:** 14 hits /
+  10 blobs / 4 filenames, the extra 3 in two DOCUMENTS a module-scoped scan
+  cannot see. Per-name: LW 8, RSC 3, Red Moon 3, LL 0, CS 0. Trees 0, commits 0.
+- **The one worth carrying: LW's first Red Moon pass returned 653 and was
+  wrong.** All substring matches inside longer words (`form-empowe`+`red moon`+
+  `stone`). Anchoring took it to 3 - a 218x inflation. Caught ONLY because the
+  tool printed a sample line beside the count. Rule: a name-matching rule is not
+  evidence until run against a string it must NOT match; a count without its
+  matched text is not reviewable.
+- **Three things RC did not measure:** `refs/pull` is a genuine zero with a
+  control; `backup-pre-scrub-20260621` is public but CLEAN (ancestor of main
+  inside the rewritten history); and **6 commits carry the operator's personal
+  email plus 5 Claude attributions, all post-recreate.** A history rewrite has
+  no opinion about the commits you make after it - same operator, all five repos.
+- **Delivered:** RC 18:13, then CS/LL/RSC 18:17 as three byte-identical copies
+  (sha256 `ded8c547849ead67`), plus an 18:20 correction to RC because the copy
+  reversed a sentence already in RC's tree. Sibling copy OMITS the email
+  deliberately - unknown whether they track their inboxes.
+- **Do NOT redo:** the audit is done and the mirror clone deleted; reproduction
+  recipe is in the notes. Operator DECLINED a further RC rewrite of LW's name.
+- **Live finding, not acted on:** `drift_guard` reports `c:
+esin compute` has
+  2 spellings in `~/.claude.json` with DISAGREEING trust [False, True] - the
+  exact bug CLAUDE.md records as fixed machine-wide 2026-09-05, regressed. A
+  headless RSC run on the False spelling silently drops permissions, and RSC has
+  just agreed to build an unattended responder. Not fixed here: it is a trust
+  setting outside LW's tree. Tell RSC.
+
+---
+
 ## 2026-09-07 - the cross-repo watcher round: withdrawal, the shared pin, and two mutants
 
 - **Commits: `8530f5e`, `b086e18`, `b57c2ed`, `1b98e9c` + the CI follow-up.
