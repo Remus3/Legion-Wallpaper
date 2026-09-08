@@ -72,6 +72,7 @@ around it is general and is the reason the repo is public:
 | Commit and hygiene gates | `tools/precommit_gate.py`, `tools/install_git_hooks.py` | Blocks banned glyphs and net-new lint on staged lines; `--check` proves the hooks actually fire |
 | Drift guard | `tools/drift_guard.py` | Wrap-up probe for doc and repo drift: budgets, memory index, cited SHAs, untracked authored files, and whether the git hooks actually fire |
 | Agent-config scanner | `tools/drift_guard.py` (`check_agent_config`, `check_claude_path_keys`) | Parses `.claude/settings.json` (invalid JSON is a breach: an unparsed config presents exactly as one with no hooks), flags hook scripts that suppress their own errors, and reports directories whose `~/.claude.json` spellings DISAGREE on trust |
+| Publication guards | `tests/test_no_secret_literals.py`, `tests/test_no_account_paths.py`, `tests/test_no_split_identity.py`, `tools/split_scan.py` | Sweep every tracked file for credential literals, account home paths, and personal identity - including a value SPLIT across lines or written in reverse, which a whole-token grep silently claims cannot happen. Values are pinned by sha256, never spelled out: a guard that names what it forbids publishes it |
 | Headless run loop | `ops/loop/` | Self-continuing `claude -p` executor with slot arbitration and a truth gate |
 | Pipeline state machine | `tools/lw_pipeline.py` | Atomic stage transitions, per-image manifests, append-only transition log |
 
@@ -83,10 +84,15 @@ believe it.
 
 Active personal project, built in the open. It is shaped entirely around one
 machine, one corpus, and one operator, so it is a reference to read and borrow
-from rather than a product to install. Issues and pull requests are not being
-solicited, and the roadmap is driven by `ROADMAP.md` alone. Requirements are
-Windows plus Python 3.14, with GPU-backed upscaling and inpainting venvs that
-are provisioned outside the repo.
+from rather than a product to install. Pull requests are not being solicited and
+the roadmap is driven by `ROADMAP.md` alone; `CONTRIBUTING.md` says exactly what
+is and is not welcome, and what an invited change would have to clear.
+Requirements are Windows plus Python 3.14, with GPU-backed upscaling and
+inpainting venvs that are provisioned outside the repo.
+
+A security or privacy problem - a committed credential, or personal data in a
+tracked file - goes through the private channel in `SECURITY.md`, never a public
+issue. `CODE_OF_CONDUCT.md` covers the rest of the interaction surface.
 
 ## Where things live
 
@@ -100,6 +106,7 @@ are provisioned outside the repo.
 | Pipeline transition log (append-only, gitignored) | `PIPELINE_LOG.md` |
 | Operating rules (per-session auto-load) | `CLAUDE.md` |
 | Harness config, hooks, agents, commands | `.claude/` |
+| Contribution scope, security channel, conduct | `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` |
 | Roadmap (highest priority at TOP) | `ROADMAP.md` |
 | Aspirational backlog | `BACKLOG.md` |
 | Session hand-off notes (newest-first) | `WAKEUP_NOTES.md` |
