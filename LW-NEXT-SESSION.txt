@@ -1,42 +1,40 @@
 NEXT SESSION
 ------------
 Task (OPERATOR-DIRECTED 2026-09-07, do this FIRST): probe both whole-token
-  guards for split-value blindness, then pick the next open ROADMAP item.
-  WHY: Lanternlight's 2026-09-07 2035 correction note (moon_sync_inbox/, read
-  and acked) reports that every whole-token sweep for a sensitive string is
-  silently a claim that the string is CONTIGUOUS. Their address sat split
-  across adjacent lines of a tracked file, 26 chars apart, in reverse order,
-  and EVERY guard reported clean - including the guard written for exactly
-  that address, and the sweep that closed the item. The split was not
+  guards for split-value blindness, then work the first-pass batch leftovers.
+  WHY: Lanternlight's 2026-09-07 2035 correction note (read + acked) reports
+  that every whole-token sweep for a sensitive string is silently a claim that
+  the string is CONTIGUOUS. Their address sat split across adjacent lines of a
+  tracked file, 26 chars apart, reversed, and EVERY guard reported clean -
+  including the guard written for exactly that address. The split was not
   adversarial: a session DOCUMENTING the leak wrote it.
-  The two LW guards with the same shape:
+  The two LW guards with that shape:
     (1) tests/test_no_account_paths.py - greps a contiguous C:\Users\<account>
     (2) the operator-email guard behind the LEDGER 172 purge
-  Probe each with a deliberately split fixture, prove the guard MISSES it, then
-  decide whether to widen. Per feedback-mutation-prove-the-arm-binds: a guard
-  arm nobody has seen fail asserts nothing.
-  Then: pick the next open ROADMAP item. The top two High-priority rows are DONE
-  (account-path-in-a-public-repo, gate-grades-a-tree-the-push-does-not-ship) and
-  verbatim-payload-followups row (1) is still BLOCKED - do NOT start it. The
-  first genuinely open row is clean-zero-watermark (ROADMAP.md line ~138).
-Context: ROADMAP.md "Open items - High priority", BACKLOG.md for aspirational
-  work. Inbox first: moon_sync_inbox/ prints unread at SessionStart; read THEN
-  ack with `python tools/lw_facts.py --mark-inbox-seen`.
+  Probe each with a deliberately split fixture, prove the guard MISSES it,
+  then decide whether to widen. Per feedback-mutation-prove-the-arm-binds: a
+  guard arm nobody has seen fail asserts nothing.
+Then: ROADMAP first-pass-batch-2026-09-08 leftovers (operator decisions).
+  (a) 108 slugs await approve/reject in _firstneedauth - operator's gate, do
+      NOT self-approve.
+  (b) 7 slugs HELD aspect_crop_heavy need a framing call (3 pintrest lose
+      68-71% of area to reach 16:9). Mechanism exists: --crop-overrides takes
+      {slug: {"top": N}} for an exact offset (d327642).
+  (c) 3 slugs failed G1 lap_ratio 0.91-0.93 vs floor 1.0 - soft SOURCES, not
+      the double-resample bug; they kept their _firstworking.
+Context: ROADMAP.md "Open items - High priority" top row; PIPELINE_LOG.md;
+  ops/runtime/{tier2_queue,intake_refused,crop_overrides}_2026-09-07.*;
+  docs/LEDGER.md 173. Inbox first: moon_sync_inbox/ prints unread at
+  SessionStart; read THEN ack with `python tools/lw_facts.py --mark-inbox-seen`.
 Acceptance: whatever the chosen item states. Standing bar: `python -m pytest
-  tests/ -q` green (baseline 2693 passed / 18 skipped, ~136s on 2026-09-07),
+  tests/ -q` green (baseline 2728 passed / 18 skipped, ~131s on 2026-09-08),
   ruff clean, drift_guard exit 0, `python tools/done_gate.py bind` exit 0.
-Do NOT redo: the operator-email purge is DONE and pushed (LEDGER 172). History
-  was rewritten a THIRD time - all 526 shas moved, new HEAD 3dec9e3, one commit
-  (219fdb7) pruned as empty. Any sha cited in a doc predating 2026-09-07 needs
-  docs/_archive/*-sha-rewrite-map.md walked forward oldest-first. Commit
-  identity is now 7991173+Remus3@users.noreply.github.com globally AND
-  repo-locally - do not change it back, GitHub credits contributions by email.
-  STILL OPEN, operator decision: a force-push does NOT purge GitHub-side
-  unreachable objects - the old shas still answered 200 after the push, so the
-  old email remains readable to anyone holding one. Only a GitHub Support purge
-  or delete-and-recreate closes it. Backup bundle (still contains the address,
-  by design) at C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle.
-  Also DONE earlier: the /done gate ordering (LEDGER 171) - do not re-shuffle
-  .claude/commands/done.md, its section order is pinned by a test.
+Do NOT redo: intake of this batch is DONE (117 slugs, LEDGER 173). The two
+  dmrl7u8-* slugs are NOT duplicates - one deviation, phash 26 apart, a
+  multi-image upload; both crops are operator-approved and shipped. Tier 0 was
+  a REAL null for this batch (control verified), so do not re-run it hoping.
+  The offset crop grammar is shipped in d327642 - do not re-design it.
+  The operator-email purge is DONE (LEDGER 172); STILL OPEN is the GitHub-side
+  unreachable objects, which only Support or delete-and-recreate closes.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log.

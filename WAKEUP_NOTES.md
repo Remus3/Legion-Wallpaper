@@ -2,6 +2,36 @@
 
 ---
 
+## 2026-09-08 - 0.Originals ingest, then first pass on the batch (LEDGER 173)
+
+- **Intake:** 122 loose files in `0.Originals` -> **117 intaken**, 5 refused by
+  the near-dup perceptual gate and LEFT in place (`--allow-near-dup` is an
+  operator override; not taken). 117 INTAKE + 117 ANNOTATE log lines all `ok`,
+  `lw_pipeline verify` ok on 713 images, verifier subagent PASS on all 7 claims.
+- **Recovery:** Tier 0 (pHash vs 292 reference_pictures) found NOTHING for this
+  batch - 0 accepts, 1 borderline 14/14 review, and a self-match control proved
+  the hash path live, so it is a real null. Tier 1 decoded 9/9 DeviantArt
+  tokens, 4 oEmbed-confirmed alive. The other 108 are QUEUED for Tier 2 in
+  `ops/runtime/tier2_queue_2026-09-07.txt` - SauceNAO free tier is ~4/30s and
+  ~100/day, so it is an overnight batch, NEVER a loop.
+- **Shipped code (d327642):** `--crop-overrides` gained a second grammar, a
+  one-key `{side: pixels}` offset. The sides grammar could only say three
+  anchors per axis and the operator picked a frame between them. It also fixed
+  a latent bug: `list(crop_sides)` on a dict yields its KEYS, so an offset
+  would have been recorded in the manifest as `["top"]` with the offset lost.
+  35 new tests, RED-first evidence captured. Suite 2728/18 (was 2693/18).
+- **First pass:** 111 processed, **108 submitted** to `_firstneedauth`, all
+  exactly 2560x1440, upscaler V3detail DAT2 via spandrel at 4x (ADR-004).
+- **Do NOT redo:** the two `dmrl7u8-*` slugs are NOT duplicates. They share one
+  deviation (1376595440) but are phash 26 / dhash 27 apart - a multi-image
+  upload. Both crops are operator-approved and already shipped.
+- **Open, needs the operator:** 108 await approve/reject (never self-approved);
+  7 slugs HELD `aspect_crop_heavy` need a framing call (3 pintrest lose 68-71%
+  of area to reach 16:9); 3 slugs failed G1 on `lap_ratio` 0.91-0.93 vs floor
+  1.0 - soft SOURCES, not the double-resample bug, and they kept their working.
+
+---
+
 ## 2026-09-07 - the operator email is out of the tree AND out of history (LEDGER 172)
 
 - **Shipped:** two scrubs. `219fdb7` replaced
@@ -67,40 +97,3 @@
   clean, drift_guard exit 0, and the gate dogfooded on this session's own push.
 - **Still BLOCKED, not started:** the `reap` arm for a stale
   `reserved-<key>.lock` - needs the five repos to agree `rc lw rsc cs ll`.
-
----
-
-## 2026-09-07 - RC's ceiling property pinned in slots.py's only test (LEDGER 170)
-
-- **Shipped:** 7 arms in `tests/test_loop_concurrency.py` pinning "total
-  concurrent holders never exceeds 5 + surplus" - RC's fourth property, the
-  amendment RC accepted at 00:20. Ceiling at widths 1/2/3/5/7 (3 = configured
-  today, 5 = ladder option 2, 7 = option 3), the same property measured ON DISK
-  from a sampler thread, and a negative control against an unbounded governor.
-- **No production change.** `ops/loop/slots.py` is byte-identical-by-contract
-  and was not touched. Test-only.
-- **The arm BINDS, proven:** one mutant (`range(max_slots + 1)` in
-  `try_acquire`) killed 6 of 6 ceiling arms; source restored byte-exact, sha256
-  equal either side. This is RSC's tested-but-never-consulted finding applied to
-  a test - an arm nobody has seen fail is the same class.
-- **Scope stated beside the number:** today's bucket has NO reservation, so the
-  ceiling is the only one of RC's four properties that holds. The arms assert
-  the TOTAL and say nothing about who holds what. The lock-name assertion is a
-  deliberate tripwire that goes red the day `reserved-<key>.lock` appears.
-- **Still BLOCKED, not started:** the paired `reap` arm for a stale
-  `reserved-<key>.lock` - needs the five to agree `rc lw rsc cs ll`.
-- **Verified:** 2677 passed / 18 skipped in 122.9s (baseline 2670/18), ruff
-  clean, drift_guard exit 0.
-- **New OPEN item from CS's 20:20 note, measured on LW:** `/done` runs the full
-  suite BEFORE it edits ROADMAP/LEDGER/WAKEUP, so every session pushes doc edits
-  the graded run never saw. CS hit the same shape as a pre-push RACE; LW's is
-  not a race, it is the ritual's documented order. LW has NO pre-push hook
-  (measured: `.githooks/` = commit-msg + pre-commit only). Fix is ordering, not
-  code. ROADMAP `gate-grades-a-tree-the-push-does-not-ship`.
-- **RC's 18:30 note needs nothing from LW** - it answers RSC's section 1 (RC not
-  built, cannot arm, run LATENCY-ONLY). LW is not a carrier of that trial.
-- **Outbound:** one note to RSC (18:34) - RSC's own checkout has two path
-  spellings in `~/.claude.json` with DISAGREEING trust [False, True], which
-  matters before RSC's proposed 19:00 trial window because an untrusted
-  workspace makes a headless run silently DISCARD `permissions.allow`. Surfaced,
-  not edited. LW is not a carrier of that trial and armed nothing.

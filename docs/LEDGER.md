@@ -27,6 +27,39 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+173. DONE **2026-09-08 (0.Originals ingest + first pass on the batch;
+   d327642 plus pipeline-only mutations).** Body: 122 loose originals ingested
+   to 117 slugs (5 refused by the near-dup gate and deliberately left in
+   `0.Originals` - `--allow-near-dup` is an operator override, not a default).
+   Recovery waterfall run cheapest-first: Tier 0 returned a REAL null for the
+   whole batch (0 accepts, 1 borderline 14/14, distance floor 14 / median 22,
+   and a self-match control returning 0/0 proved the hash path live rather
+   than broken); Tier 1 decoded 9/9 DeviantArt tokens with 4 oEmbed-confirmed
+   alive; the remaining 108 were QUEUED for Tier 2 rather than looped, because
+   the SauceNAO free tier is ~4/30s and ~100/day. Provenance annotated on all
+   117 via the sanctioned `lw_pipeline annotate` writer. Verifier subagent
+   returned PASS on all 7 claims including an 18-slug sha256 sample across
+   original/scratch/backup. **Premise CORRECTED mid-session:** a first count of
+   9 Tier-1 candidates was re-measured as 10 against `lw_recover`'s own regex,
+   then corrected BACK to 9 when the tenth proved to be the pre-existing
+   scratch slug, not a new intake. **Code shipped (d327642, TDD RED-first, 35
+   new tests, failure output captured before implementation):** `--crop-
+   overrides` gained a `{side: pixels}` offset grammar generalizing the sides
+   form (`sides=["bottom"]` IS `{"top": 0}`, asserted by test so the claim stays
+   pinned), because the sides grammar has only three anchors per axis and the
+   operator picked a frame between them. Same commit fixed a latent recording
+   bug: `list(crop_sides)` on a dict yields its KEYS, so an offset instruction
+   would have reached the manifest as `["top"]` with the offset silently lost.
+   Verified: suite 2728 passed / 18 skipped (baseline 2693/18) re-run
+   independently, ruff clean, drift_guard exit 0. First pass then processed 111
+   slugs, submitting 108 at exactly 2560x1440 via V3detail DAT2 at 4x (ADR-004).
+   **FUTURE / do-not-redo:** the two `dmrl7u8-*` slugs share deviation 1376595440
+   but are phash 26 / dhash 27 apart - a multi-image upload, NOT duplicates, and
+   both operator-approved crops have shipped. Still open for the operator: 108
+   awaiting approve/reject (never self-approved), 7 HELD `aspect_crop_heavy`
+   needing a framing call, 3 G1 `lap_ratio` failures at 0.91-0.93 that read as
+   soft sources rather than the double-resample bug.
+
 172. DONE **2026-09-07 (the operator's email is out of the working tree AND
    out of history; `219fdb7` scrubbed the docs, then a filter-repo rewrite
    moved all 526 shas to new HEAD `3dec9e3`).** Premise VERIFIED before acting:

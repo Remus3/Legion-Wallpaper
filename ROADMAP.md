@@ -6,6 +6,22 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **first-pass-batch-2026-09-08 leftovers - OPEN, needs operator decisions.**
+  The 2026-09-08 ingest + first pass left three queues, none of them blocked on
+  code. (a) **108 slugs await approve/reject** in `_firstneedauth`; the gate is
+  the operator's by design and was never self-approved. (b) **7 slugs HELD**
+  `aspect_crop_heavy` need a per-image framing call - 4 alphacoders at 10-26%
+  area loss, 3 pintrest at 68-71%, which is a "is this even a 16:9 wallpaper"
+  question rather than a routine crop. The mechanism to answer it now exists:
+  `--crop-overrides` takes `{slug: {"top": N}}` for an exact offset (d327642).
+  (c) **3 slugs failed G1** on `lap_ratio` 0.91-0.93 against the 1.0 floor;
+  all sit above the <0.9 double-resample band and the other 108 cleared the
+  same gate, so they read as soft SOURCES wanting a param retry, not a pipeline
+  defect. They kept their `_firstworking` and were not submitted.
+  Also parked: 5 files still in `0.Originals`, each refused by the near-dup
+  gate (`ops/runtime/intake_refused_2026-09-07.txt` records why, since the CLI
+  prints that refusal to stdout ONLY and no log or state file captures it).
+
 - **account-path-in-a-public-repo - DONE 2026-09-07. Every tracked file is
   clean and `tests/test_no_account_paths.py` is the standing guard.** The row's
   own count was WRONG and the fix started by correcting it: 32 was a
