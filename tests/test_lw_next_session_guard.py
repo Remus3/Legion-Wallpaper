@@ -187,10 +187,16 @@ def test_written_content_is_ascii_only_by_contract(tmp_path):
 # 6. the ritual doc must not drift back to the Desktop
 # ---------------------------------------------------------------------------
 def test_the_done_ritual_writes_the_handoff_from_its_ALWAYS_section():
-    """Writing the hand-off is unconditional; only consuming an intent is gated."""
+    """Writing the hand-off is unconditional; only consuming an intent is gated.
+
+    The section carrying this was 10b until 2026-09-07, when /done was reordered
+    so every authored file is committed before the binding gate; the hand-off
+    write moved up to section 6 with it. The number is incidental - what this
+    arm pins is that the write stays ALWAYS and stays off the Desktop.
+    """
     doc = (ns.ROOT / ".claude" / "commands" / "done.md").read_text(encoding="utf-8")
     assert "python tools/lw_next_session.py --write -" in doc
-    head, _, tail = doc.partition("### 10b.")
-    assert tail, "done.md has no section 10b"
-    assert "(ALWAYS)" in tail.splitlines()[0], "10b must be marked ALWAYS"
-    assert "Desktop hand-off" not in tail, "10b still calls the target a Desktop file"
+    head, _, tail = doc.partition("### 6. Next-session prompt")
+    assert tail, "done.md has no next-session prompt section"
+    assert "(ALWAYS" in tail.splitlines()[0], "the hand-off write must be ALWAYS"
+    assert "Desktop hand-off" not in tail, "the target is a repo file, not Desktop"
