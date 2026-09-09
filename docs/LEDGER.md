@@ -27,6 +27,52 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+180. DONE **2026-09-08 (scoped_revert held-out measurement: the conclusion
+   stands, the cited statistic never carried it, and 95 percent of the changed
+   area is vouched for only by the stopping rule).** Follow-up to the LEDGER 179
+   probe, which flagged that `scoped_revert` (`lw_clean_spot.py:232-240`) grows
+   its band 4/8/16/32px and returns on the first candidate the acceptance
+   verdict passes, while LEDGER 2354 cites the resulting "`held` is 0 in all 28"
+   as evidence it worked - a search that stops when the verdict passes will
+   report the verdict passing. MEASURED, not argued, over the plans already on
+   disk (`ops/runtime/clean/creditline/`), no re-run. FINDING 1, correcting my
+   own flag: `held` IS the verdict's own output and cannot be evidence, but it
+   was never the load-bearing number. `run_spot_heal`'s docstring rests the case
+   on the mark handed back and on the count of slugs a reader still finds a line
+   in, and the latter (`still_reads`) is recorded in every lane plan, produced by
+   reading the OUTPUT, and optimised by nothing in the search. FINDING 2, the
+   held-out result: paired over the 39 slugs common to both lanes, `run` ->
+   `run_scoped` moves still_reads 13 -> 2 (12 improved, 1 regressed), and
+   `run_stubs` -> `run_stubs_scoped` independently reproduces 13 -> 2 (12
+   improved, 1 regressed) under a different stub condition. Same direction, same
+   margin, twice, off the stopping rule. scoped_revert is SUPPORTED and stays
+   the default. The single regression is named rather than buried:
+   `dark-cosmic-ahri-by-pebano1-dlnxav6-pre` reads in the scoped output where
+   the whole revert had cleared it - 12 against 1, not the clean sweep the
+   contaminated statistic implied. FINDING 3, the real consequence: both cited
+   measures count RESIDUE, and on residue scoped cannot lose BY CONSTRUCTION -
+   the band is a subset of the blob and the verdict must still pass, which the
+   code states outright at `lw_clean_spot.py:330-332`. The axis where it can
+   lose is art damage, and nothing in the pipeline measures it; the operator's
+   akali note ("a blocky smear where the bodysuit strap was") is the only
+   evidence on that axis and it is anecdotal. FINDING 4, sizing that hole: over
+   the 20 steps where the whole-revert lane reverted and the scoped lane did
+   not, scoped KEEPS 256,726 of 270,109 blob px = **95.0 percent** of the area
+   the whole revert handed back (41 steps / 326,277 px / 94.4 percent in the
+   stubs condition), while the restored corridor is tiny beside it (seraphine:
+   blob 42,941, corridor 372). So 95 percent of the changed area is vouched for
+   by the acceptance verdict - the same verdict that stopped the search. LIMITS
+   STATED, not glossed: `handed_back_px` postdates most lanes and exists only in
+   `run_shipdefault` (1.91 percent), so the docstring's 28.13 -> 1.80 percent is
+   NOT reproducible from disk; `still_reads` is a coarse per-slug reader verdict;
+   cross-lane comparison is confounded (`run_ringfix` reaches still_reads 0 with
+   no scoping at all) so only the two paired comparisons isolate the change.
+   Full write-up `docs/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`. NEXT, not done
+   here: a no-reference artifact measure over the kept-fill region against its
+   neighbourhood - a smear is a region whose local gradient energy collapses
+   relative to the surrounding art. That is the only thing that stops the 95
+   percent being vouched for by the stopping rule.
+
 179. DONE **2026-09-08 (the G1 MS-SSIM arm is a geometric tripwire, not
    decoration - premise INVERTED by measurement).** Opened as a
    selection-contamination probe of the gate ladder. Two accusations were
