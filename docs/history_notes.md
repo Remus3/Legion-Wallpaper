@@ -436,6 +436,43 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-07 - the operator email is out of the tree AND out of history (LEDGER 172)
+
+- **Shipped:** two scrubs. `219fdb7` replaced
+  the operator's personal address with `Moonbeam <redacted>` in the only
+  two tracked files that carried it (`docs/LEDGER.md` item 154,
+  `docs/_archive/2026-09-06-sha-rewrite-map.md`). Then a `git filter-repo`
+  rewrite of ALL 526 commits took it out of history.
+- **Why the second scrub was the real one:** the address was on the author AND
+  committer field of every commit. The doc scrub closed the smaller half; the
+  operator asked for the rewrite on exactly that finding.
+- **One mailmap line + one replace-text literal.** Identity ->
+  `7991173+Remus3@users.noreply.github.com`, GitHub's ID-prefixed noreply for
+  this account. That choice is load-bearing: GitHub attributes commits BY
+  EMAIL, so any other replacement would have zeroed the contribution credit.
+- **526 in, 525 out.** Only `219fdb7` pruned - once replace-text put `redacted`
+  into its parent, its own diff was empty. HEAD tree byte-identical at
+  `336db8f1` before and after, which doubles as proof the automated replacement
+  wrote exactly what the manual edit did. New HEAD `3dec9e3`; 0 of 526 shas
+  survived.
+- **Verified live on the GitHub API after the force-push:** HEAD author +
+  committer read the noreply address, the commit still resolves to `Remus3`,
+  and `/contributors` returns one entry, `Remus3` with 525 contributions.
+  Locally: one identity across 525 commits, zero hits in any blob over
+  `git rev-list --all`, never in a commit message.
+- **NOT purged, and it matters:** `GET /commits/219fdb70...` still answered 200
+  after the push. Old shas still resolve on GitHub and their identity fields
+  still carry the address. Only a Support purge or delete-and-recreate closes
+  that - the standing CLAUDE.md ruling, re-confirmed here rather than assumed.
+- **Followed up so it cannot come back:** `git config user.email` reset to the
+  noreply address globally and repo-locally.
+- Map `docs/_archive/2026-09-07-sha-rewrite-map.md` (275 cited shas, chaining
+  note for walking three maps oldest-first). Backup bundle off-repo at
+  `C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle` - it still contains the
+  address by design, it is the rollback path.
+
+---
+
 ## 2026-09-07 - the /done gate now grades the tree that gets pushed (LEDGER 171)
 
 - **Shipped:** `.claude/commands/done.md` reordered - section 0 is an

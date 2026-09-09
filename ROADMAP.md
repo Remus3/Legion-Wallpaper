@@ -4,7 +4,44 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ---
 
+## Recently shipped
+
+- **model-weight pins + ignored-tracked guard - DONE 2026-09-08 (`18cf063`).**
+  `config/model_pins.json` + `tools/lw_model_pins.py`, asserted above the torch
+  import in `upscale_spandrel()`; `drift_guard.check_tracked_but_ignored` plus
+  the `.gitignore` `/_archive/` anchor that was its root cause. LEDGER 178.
+- **G1 MS-SSIM arm proven load-bearing - DONE 2026-09-08 (`5b0cef1`).** Never
+  bound in 719 audits, but it is the only geometric guard in the ladder; floor
+  deliberately NOT re-fitted. LEDGER 179.
+- **scoped_revert held-out measurement - DONE 2026-09-08 (`ba3263f`).**
+  LEDGER 180.
+
 ## Open items - High priority
+
+- **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
+  not close.** scoped_revert is supported on an independent, replicated residue
+  measure (`still_reads` 13 -> 2 across two conditions), but both cited measures
+  count RESIDUE, an axis it cannot lose on by construction. 95.0 percent of the
+  changed area (256,726 of 270,109 blob px over 20 flipped steps) is vouched for
+  only by the acceptance verdict that was the search's own stopping rule. Needs
+  a no-reference artifact measure over the kept-fill region against its
+  neighbourhood - a smear is a region whose local gradient energy collapses
+  relative to the surrounding art. Evidence:
+  `docs/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`.
+
+- **`dists` is computed and gated by nothing - OPEN, operator call.** No entry
+  in `_METRIC_RULES` or `DEFAULT_G1_THRESHOLDS`, so a catastrophic 0.5777
+  changes no verdict, even though ADR-007 moved the common-scale pixel budget
+  specifically to recover DISTS for 63 of 230 images. Current inert behaviour is
+  PINNED by `tests/test_g1_msssim_arm_binds.py`; adding a rule must update it.
+  Whether DISTS should gate at all is a decision, not a defect (LEDGER 179).
+
+- **inbox responder - ON OPERATOR STANDBY 2026-09-08.** Operator directed LW to
+  build one, then placed CS/LW/LL on standby ("keeping it to the test for now")
+  while RSC and RC continue headless. RSC's 22:04 correction records LW's
+  silence as STANDBY, not dissent, and asks nothing of LW. Positions on RSC's
+  Q1-Q5 are drafted and evidenced in WAKEUP_NOTES - held, not sent. Do not
+  build or file until the standby lifts.
 
 - **first-pass-batch-2026-09-08 leftovers - OPEN, needs operator decisions.**
   The 2026-09-08 ingest + first pass left three queues, none of them blocked on
