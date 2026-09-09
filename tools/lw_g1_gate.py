@@ -168,6 +168,17 @@ def gpu_lock(device="cuda", log=None):
 # --------------------------------------------------------------------------
 DEFAULT_G1_THRESHOLDS: Dict[str, Dict[str, float]] = {
     # MS-SSIM: pass >= 0.98, flag 0.96-0.98, fail < 0.96 (higher = closer).
+    # AUDITED 2026-09-08 and KEPT UNCHANGED. Across all 719 recorded G1 audits
+    # this arm had never bound once (min 0.9814 vs a 0.98 floor) and it tracks
+    # lpips at r = -0.872, which together look exactly like a redundant arm.
+    # Measuring it settled the question the other way: at common scale a 16px
+    # SHIFT is msssim 0.8598 (hard fail) while lpips only grazes its flag at
+    # 0.1206 and dists is a clean 0.0704. MS-SSIM is the only geometric guard
+    # in the gate; it has never fired because no frame has ever been
+    # misaligned. Floor deliberately NOT re-fitted to those 719 samples -
+    # calibrating a threshold on the outputs it then gates is the contamination
+    # that audit was opened to find. Behaviour is pinned instead, with the full
+    # degradation table, in tests/test_g1_msssim_arm_binds.py.
     "msssim": {"pass": 0.98, "fail": 0.96},
     # LPIPS (alex): pass <= 0.12, flag 0.12-0.20, fail > 0.20 (lower = closer).
     "lpips": {"pass": 0.12, "fail": 0.20},

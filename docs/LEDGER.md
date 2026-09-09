@@ -27,6 +27,57 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+179. DONE **2026-09-08 (the G1 MS-SSIM arm is a geometric tripwire, not
+   decoration - premise INVERTED by measurement).** Opened as a
+   selection-contamination probe of the gate ladder. Two accusations were
+   CLEARED on evidence and one real defect was found underneath. CLEARED (H1):
+   the G1 thresholds are NOT fitted to the winning upscaler's own output -
+   `lw_g1_gate.py:164-167` records them as seeds from `realesrgan-x4plus-anime`,
+   the model that LOST the ADR-004 A/B, and `lw_golden.py` is a drift detector,
+   not a threshold source. CLEARED (H2): "17 gated slugs" in the USM census
+   means "has a G1 verdict", not "passed" (10 PASS / 7 FLAG / 0 FAIL), so the
+   USM_DEFAULT conclusion is not conditioned on the outcome and survives.
+   THE REAL FINDING, and it went the opposite way to the hypothesis: a sweep of
+   every recorded G1 audit (719 carrying msssim) showed the arm had NEVER bound
+   once - min 0.9814 against a 0.98 pass floor, p01 0.9900 - while halo_pct
+   bound 112 times, band_delta 8, lpips 5 and lap_ratio 4. It also tracks lpips
+   at r = -0.872. Silent plus redundant reads as decoration, and by this
+   repo's own rule an arm nobody has seen fail asserts nothing. I called it
+   decoration; MEASURING IT REVERSED THAT. Real metric stack (`.venv-metrics`,
+   pyiqa, `fr_metrics` at common scale) against a real corpus frame degraded
+   the ways this pipeline could plausibly fail: blur r1 0.9981 / r3 0.9781 /
+   r8 0.9327, shift 16px 0.8598, crop-zoom 20pct 0.8221, wrong image 0.4900.
+   The floor is REACHABLE (blur r8 clears the 0.96 fail floor), and MS-SSIM is
+   the ONLY arm in the gate that catches a GEOMETRIC error: at a 16px shift
+   lpips only grazes its flag (0.1206) and dists is a clean 0.0704 - better
+   than dists scores on a blur nobody would notice. Drop msssim and a
+   misaligned frame ships. The arm has never bound because no frame has ever
+   been misaligned: a tripwire that correctly never fired, not a dead gate.
+   DELIBERATELY NOT DONE: re-fitting the floor to those 719 samples. Fitting a
+   threshold to the outputs it then gates is the exact contamination the probe
+   was opened to find, so the floors stay where AUDIT_GATES put them and
+   BEHAVIOUR is pinned instead - `tests/test_g1_msssim_arm_binds.py` (9 tests)
+   carries the degradation table, proves the flag and fail bands are both
+   reachable, proves msssim is stricter than lpips on moderate blur, and
+   mutation-proves load-bearingness: strip the msssim rule and a 16px-shifted
+   frame degrades from FAIL to a mere FLAG, which routes to vision audit
+   instead of being rejected. The evidence is also recorded at the threshold
+   itself so the next reader does not re-derive it. SEPARATE GAP FOUND, pinned
+   but NOT closed: `dists` has no rule at all (`_METRIC_RULES:705-711`, no
+   entry in DEFAULT_G1_THRESHOLDS), so it is computed and stored on every audit
+   and consumed by nothing - a catastrophic 0.5777 changes no verdict - even
+   though ADR-007 moved the common-scale pixel budget specifically to recover
+   dists for 63 of 230 images. A characterization test pins the current inert
+   behaviour so adding a dists rule has to be deliberate. Suite **2813 passed /
+   18 skipped** (+9, exactly this file), ruff clean, ASCII clean. STILL OPEN
+   from the same probe, not worked here: `scoped_revert`
+   (`lw_clean_spot.py:232-240`) grows its radius until the acceptance verdict
+   passes, and LEDGER 2354 cites the resulting "held is 0 in all 28" as
+   evidence it worked - a search that stops when the verdict passes will report
+   the verdict passing. That needs a held-out measurement, not a code change.
+   Also unverified: `lw_clean_creditline.py:104-113` constants are in-sample
+   grid winners quoted as achieved performance.
+
 178. DONE **2026-09-08 (recorded is not pinned: model-weight pins + the
    ignored-tracked trap, and the .gitignore cause behind it).** Two guards, both
    for drift this repo could not see. (A) `lw_upscale.py:449` has always
