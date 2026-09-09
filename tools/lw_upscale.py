@@ -59,6 +59,7 @@ from PIL import Image, ImageFilter
 GPU_MUTEX_TIMEOUT_S = 1800.0
 _WINMUTEX_MOD = "lw_loop_winmutex"
 _GPU_TAG = "lw_upscale"
+_MODEL_PINS_MOD = "lw_model_pins"
 
 
 def _bind_gpu_busy():
@@ -83,6 +84,32 @@ def _bind_gpu_busy():
 
 # The ONE GpuBusy. Never re-declare it here - see tools/lw_gpu_busy.py.
 GpuBusy = _bind_gpu_busy().GpuBusy
+
+
+def _model_pins():
+    """Bind tools/lw_model_pins.py BY PATH (the _bind_gpu_busy pattern, same reasons).
+
+    tools/ has no __init__.py and .venv-upscale does not carry the repo root on
+    sys.path, so `from tools import lw_model_pins` would pass in CI and fail in
+    every place this module actually executes. Cached under a fixed sys.modules
+    key so `except ModelPinMismatch` matches by identity across importers - a
+    second module object would break every cross-module catch.
+
+    lw_model_pins is stdlib-only, so this does not widen this module's
+    PIL + numpy + stdlib import contract.
+    """
+    for key in (_MODEL_PINS_MOD, "tools." + _MODEL_PINS_MOD):
+        mod = _sys.modules.get(key)
+        if mod is not None:
+            return mod
+    path = _Path(__file__).resolve().parent / "lw_model_pins.py"
+    spec = _importlib_util.spec_from_file_location(_MODEL_PINS_MOD, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load lw_model_pins from {path}")
+    mod = _importlib_util.module_from_spec(spec)
+    _sys.modules[_MODEL_PINS_MOD] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _gpu_log(msg):
@@ -396,7 +423,27 @@ def upscale_spandrel(src_path, model_path, tile=512, overlap=32, device="cuda"):
     Returns (raw_4x_pil_image, meta_dict). The returned image is the raw AI
     upscale (NOT yet finished - no downscale, no unsharp). torch and spandrel
     are lazy-imported here.
+
+    Weight pin (config/model_pins.json): a PINNED model that is present and
+    drifted refuses here with ModelPinMismatch.
+
+    Why this call site and not another. It is the narrowest one that is still
+    complete: this is the ONLY function in the pipeline that loads a weight file
+    for inference, so every path that could produce drifted pixels passes
+    through it - first_pass's spandrel branch, lw_golden, and any direct caller.
+    Putting it in first_pass instead would miss direct callers and would also
+    fire on the downscale-only and ncnn branches, which load no pinned weight at
+    all. Putting it after ModelLoader would be after the fact.
+
+    Why it sits ABOVE `import torch` and above the gpu_lock. It must fire before
+    inference, not after: the audit's model_sha256 is written at the END of the
+    run, so by the time the recorded hash exists the drifted PNG has already
+    been produced. Refusing before the torch import also means a drifted weight
+    never acquires the machine-wide GPU mutex, so it cannot stall another repo's
+    loop while failing.
     """
+    _model_pins().assert_pinned(model_path)
+
     import torch
     from spandrel import ModelLoader
 

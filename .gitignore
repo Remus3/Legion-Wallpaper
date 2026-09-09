@@ -22,8 +22,20 @@ API-Key-*.txt
 .playwright-mcp/
 
 # Audit-cleanup quarantine (move-not-delete pattern; safe to rm after
-# stability confirmed)
-_archive/
+# stability confirmed). ANCHORED: an unanchored `_archive/` matches at every
+# depth and silently swallowed docs/_archive/, whose sha-rewrite maps are
+# tracked and load-bearing - `git add -A` there exited 0 and added nothing.
+/_archive/
+
+# docs/_archive/ is TRACKED (sha-rewrite maps, dated write-ups). Only the
+# runtime artifacts beside them stay out: logs and jsonl ledgers are not
+# source, and this repo is public. Stated explicitly - until 2026-09-08 they
+# were hidden by an unanchored `_archive/` that also made the tracked files'
+# siblings silently un-addable.
+docs/_archive/*.log
+docs/_archive/*.log.[0-9]
+docs/_archive/*.jsonl
+docs/_archive/.gitkeep
 
 # Scratch / session-debug logs (pytest output, wakeup snapshots, iter loggings)
 _scratch/

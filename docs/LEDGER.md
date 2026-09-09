@@ -27,6 +27,56 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+178. DONE **2026-09-08 (recorded is not pinned: model-weight pins + the
+   ignored-tracked trap, and the .gitignore cause behind it).** Two guards, both
+   for drift this repo could not see. (A) `lw_upscale.py:449` has always
+   RECORDED `model_sha256` into every upscale audit and NOTHING asserted it, so
+   a re-fetched, swapped or truncated weight would drift the frozen golden
+   (ADR-004, pv 6d43a6d4) while the provenance record still looked perfect.
+   New `config/model_pins.json` (the only TRACKED statement of which bytes the
+   calibration holds - `tools/models/` is gitignored) plus `tools/lw_model_pins.py`,
+   wired as a refusal at the top of `upscale_spandrel()` ABOVE the torch import,
+   so a drifted weight refuses before it takes the machine-wide GPU mutex and
+   before it can write a PNG whose audit records the drift after the fact.
+   FOUR states, not two: MATCH / MISMATCH / ABSENT / UNPINNED, `ok` true only
+   for MATCH so ABSENT (CI, fresh clone) can never read as verified - the
+   `.claude/settings.json` silent-pass shape. A malformed manifest RAISES
+   rather than reading as "no pins", same reason. Escape hatch
+   `LW_ALLOW_MODEL_PIN_MISMATCH=1` is RUN-scoped by deliberate design and does
+   NOT reach the session gate: it lets one inference run proceed, it does not
+   make the recorded calibration true, and a gate any env var can silence is a
+   gate that dies. Live: the real V3 DAT2 weight MATCHes
+   (`eb9faf6a...6181`, 139793020 bytes). (B) New `drift_guard.check_tracked_but_ignored`
+   for a trap with no prior guard: a rule covering a directory that already
+   holds TRACKED files keeps those, but every NEW sibling is silently
+   un-addable. Proven live, not theorised - `echo x > docs/_archive/_probe.md;
+   git add -A` exited 0 and added nothing. ROOT CAUSE found and FIXED rather
+   than exempted: `.gitignore` read `_archive/` unanchored, written for the root
+   audit-cleanup quarantine, matching at every depth and swallowing
+   `docs/_archive/` - which holds the three sha-rewrite maps CLAUDE.md names as
+   the only way to resolve a pre-2026-09-07 sha. Now `/_archive/`, with the
+   archive's runtime artifacts (`*.log`, `*.jsonl`, `.gitkeep`) named
+   explicitly, because anchoring un-hid 5 previously-invisible files and this
+   repo is PUBLIC - they stay out deliberately and in writing. The exemption the
+   build agent added to tolerate the bug is RETIRED to an empty tuple rather
+   than left as a standing hole. Verified: `check-ignore` proves root `_archive/`
+   still ignored and `docs/_archive/*.md` addable again; the arm's own note
+   flipped to "no tracked path is covered by an ignore rule", so it CLEARS.
+   Both arms mutation-proved: deleting the single `assert_pinned` line takes
+   test_model_pins 21 passed -> 3 failed (restored byte-exact); stubbing
+   `find_tracked_but_ignored` to `return []` gives 10 failed, inverting its
+   condition 13 failed. My own drift_guard wiring caught two real bugs in
+   itself under test (`r.message` did not exist, and the absent-note matched a
+   "verified" substring). Suite **2804 passed / 18 skipped** (delta exactly +50
+   = 21 + 18 + 11 over a re-measured HEAD baseline of **2754 passed / 18
+   skipped** - the 2752 in the hand-off was stale). Ruff clean, drift_guard
+   exit 0 / 0 breaches, all files 7-bit ASCII. NOTED, pre-existing, NOT
+   introduced here: the suite runs one more item than it collects (2772 run vs
+   2771 collected at HEAD without these files) - measured both with and
+   without, unexplained, left alone. FUTURE: only the V3 DAT2 weight is pinned;
+   the V1 DAT2 fallback and the gen/clean weights report UNPINNED and need
+   manifest entries only, no code change.
+
 177. DONE **2026-09-08 (private vulnerability reporting is ENABLED; the item
    176 premise was CORRECTED by a live probe; docs-only).** Item 176 left one
    operator action open: GitHub private vulnerability reporting read

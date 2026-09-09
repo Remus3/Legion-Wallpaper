@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "note": "Pinned model weights. tools/models/ is gitignored (weights are never tracked), so this manifest is the ONLY tracked record of which bytes the pipeline was calibrated on. A present-and-mismatched pinned model is a hard refusal; an absent one is a skip, because CI and fresh clones have no weights. Add an entry per model: basename -> {sha256, bytes, role, why}.",
+  "model_root": "tools/models",
+  "models": {
+    "4x_IllustrationJaNai_V3detail_DAT2_28k_bf16.safetensors": {
+      "sha256": "eb9faf6a37de81406765e0c99e76ad7dafe67e4877f32e186085ac277a0e6181",
+      "bytes": 139793020,
+      "role": "first-pass primary upscaler (spandrel/torch, arch DAT, scale 4)",
+      "why": "ADR-004 (2026-07-05) promoted IllustrationJaNai V3 detail DAT2 to the primary first-pass upscaler and re-baselined the golden set on it (pipeline_version d9ec8125 -> 6d43a6d4). The G1 thresholds and the frozen golden are calibrated on THESE bytes: a swapped, re-downloaded or corrupted weight drifts the golden silently. No upstream checksum is published - this sha256 was computed here at fetch time and is quoted verbatim in ADR-004."
+    }
+  }
+}

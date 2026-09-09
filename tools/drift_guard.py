@@ -21,6 +21,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import lw_model_pins  # noqa: E402  (sibling tool, not a package)
 import lw_paths  # noqa: E402  (sibling tool, not a package)
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -172,6 +173,141 @@ def check_untracked_authored() -> None:
             bad.append(rel)
     if bad:
         warn(f"UNTRACKED: {len(bad)} authored command doc(s) not in git: {bad[:5]}")
+
+
+# Directory prefixes whose tracked-but-ignored state is DELIBERATE, so they
+# report as a note instead of a breach. Explicit prefixes only, each with the
+# reason - never a blanket suppression, because the sibling-file trap below is
+# live in exactly these directories.
+IGNORED_TRACKED_EXEMPT = (
+    # DELIBERATELY EMPTY. This arm found exactly one hit when it was written -
+    # docs/_archive/**, swallowed by an unanchored `_archive/` that was meant for
+    # the ROOT audit-cleanup quarantine and matched at every depth, which made
+    # `git add -A` on a new file beside the tracked sha-rewrite maps exit 0 and
+    # add nothing. That CAUSE was fixed (.gitignore now anchors `/_archive/` and
+    # names the archive's runtime artifacts explicitly), so the exemption it
+    # needed is retired rather than left behind as a standing hole. Add an entry
+    # here ONLY with a comment saying why that path is ignored on purpose.
+)
+IGNORED_TRACKED_SAMPLE = 5
+
+
+def find_tracked_but_ignored(repo: pathlib.Path | str) -> list[str]:
+    """Tracked paths that the ignore rules would nonetheless ignore.
+
+    ONE batched `check-ignore --stdin` fed from `ls-files`, not one spawn per
+    file: this runs at every session start against 450+ tracked paths. Both
+    sides use -z because LW's own root has a space in it and paths here do too.
+
+    `check-ignore` exits 1 for "nothing matched", which is the CLEAN case, and
+    128 for a real error; only 0 and 1 are answers. `--no-index` is what makes
+    the question askable at all - without it git reports what the INDEX says
+    (tracked, therefore not ignored) and the answer is always empty.
+    """
+    repo = str(repo)
+    ls = subprocess.run(
+        ["git", "-C", repo, "ls-files", "-z"],
+        capture_output=True, text=True, creationflags=NO_WINDOW,
+    )
+    if ls.returncode != 0 or not ls.stdout:
+        return []
+    ci = subprocess.run(
+        ["git", "-C", repo, "check-ignore", "-z", "--no-index", "--stdin"],
+        input=ls.stdout, capture_output=True, text=True, creationflags=NO_WINDOW,
+    )
+    if ci.returncode not in (0, 1):
+        return []
+    return sorted(p for p in ci.stdout.split("\0") if p)
+
+
+def check_tracked_but_ignored(repo: pathlib.Path | str | None = None) -> None:
+    r"""An ignore rule covering a directory that already holds TRACKED files.
+
+    THE TRAP. This .gitignore is deny-by-default with re-includes (images/**,
+    tools/models/*, ops/loop/control/*). Where a rule covers a directory that
+    already has tracked files, git keeps those - the index wins over .gitignore
+    for a path already in it - but every NEW sibling created there is silently
+    un-addable. Measured on this repo 2026-09-08:
+
+        echo x > docs/_archive/_probe.md ; git add -A ; git status --porcelain
+        -> exit 0, NO output, the file never lands.
+
+    `git add -A` does not warn; only naming the path explicitly earns a hint,
+    and nothing in the normal add-commit flow does that. The directory LOOKS
+    tracked because six files in it are, so nothing on the surface says the
+    seventh will vanish. Same "presence is not proof" class as the hook gate.
+
+    SEVERITY, chosen after running it against the live repo rather than in the
+    abstract. It reported six real paths, all of them deliberately tracked, so
+    a flat breach would have shipped a permanently-red /done and taught the
+    operator to skim past it - the way a gate dies. But a flat note would be a
+    blanket suppression of a trap that is live TODAY. So: an explicit,
+    individually-commented prefix in IGNORED_TRACKED_EXEMPT downgrades to a
+    note that still names the directory and the fix; anything else is a BREACH,
+    because an ignore rule newly swallowing a tracked path is drift that will
+    eat the next file written beside it.
+    """
+    repo = ROOT if repo is None else repo
+    hits = find_tracked_but_ignored(repo)
+    if not hits:
+        notes.append("no tracked path is covered by an ignore rule")
+        return
+    known = [h for h in hits if h.startswith(IGNORED_TRACKED_EXEMPT)]
+    rogue = [h for h in hits if not h.startswith(IGNORED_TRACKED_EXEMPT)]
+    if known:
+        dirs = sorted({d for d in IGNORED_TRACKED_EXEMPT
+                       if any(h.startswith(d) for h in known)})
+        notes.append(
+            f"{len(known)} tracked path(s) sit under an ignore rule by design "
+            f"({', '.join(dirs)}) - a NEW sibling file there is silently "
+            f"un-addable: `git add` exits 0, prints nothing, and it never "
+            f"lands. Narrow the covering .gitignore rule (or re-include the "
+            f"dir) before adding anything beside them."
+        )
+    if rogue:
+        warn(
+            f"IGNORED-BUT-TRACKED: {len(rogue)} tracked path(s) match an ignore "
+            f"rule: {rogue[:IGNORED_TRACKED_SAMPLE]}. Git keeps these because "
+            f"the index already holds them, but any NEW sibling file is "
+            f"silently un-addable - `git add` exits 0, prints nothing, and the "
+            f"file never lands. Run `git check-ignore -v <path>` to find the "
+            f"rule, then narrow or re-include it in .gitignore - or, if the "
+            f"rule is right, `git rm --cached` the paths. Deliberate cases go "
+            f"in IGNORED_TRACKED_EXEMPT with a comment saying why."
+        )
+
+
+def check_model_pins(pins_path: str | None = None) -> None:
+    """Pinned model weights on disk still hash to the bytes the manifest pins.
+
+    lw_upscale RECORDS model_sha256 into every audit and, until 2026-09-08,
+    nothing ever ASSERTED it. A re-fetched or corrupted weight would drift the
+    frozen golden (pv 6d43a6d4) while the provenance record still looked
+    perfect. Recorded is not pinned. ABSENT is a note, not a breach: CI and a
+    fresh clone have no weights, and absent must never read as verified.
+    """
+    # OSError = manifest missing/unreadable, ValueError = will not parse
+    # (json.JSONDecodeError subclasses it). Both are drift: an unparsed manifest
+    # presents exactly like one with no pins, the .claude/settings.json trap.
+    try:
+        summary = lw_model_pins.verify_pins(pins_path=pins_path)
+    except (OSError, ValueError) as exc:
+        warn(f"MODEL PINS: manifest unreadable ({exc.__class__.__name__}: {exc})")
+        return
+    # DELIBERATE: the LW_ALLOW_MODEL_PIN_MISMATCH hatch is RUN-scoped and does
+    # not reach here. It lets one inference run proceed on an unpinned weight;
+    # it does not make the recorded calibration true. This gate reports STATE
+    # and stays red until the manifest says which bytes are now calibrated.
+    for r in summary["results"]:
+        if r.failed:
+            warn(f"MODEL PIN MISMATCH: {r.describe()}")
+    if summary["absent"]:
+        notes.append(
+            f"{len(summary['absent'])} pinned model weight(s) absent - not "
+            "verified (expected on CI and a fresh clone; weights are gitignored)"
+        )
+    if summary["verified"]:
+        notes.append(f"{len(summary['verified'])} pinned model weight(s) verified")
 
 
 def check_cited_shas() -> None:
@@ -435,6 +571,8 @@ def main() -> int:
     check_version_anchors(old_version)
     check_counted_claims()
     check_untracked_authored()
+    check_tracked_but_ignored()
+    check_model_pins()
     check_cited_shas()
     check_git_hooks()
     check_shared_loop_files()
