@@ -45,10 +45,10 @@
   `.github/ISSUE_TEMPLATE/` (defect + doc-error, blank issues off) and
   `.github/pull_request_template.md`, all written for what this repo IS rather
   than from a template. README gains the publication-guards row; topics now 20
-  (added `agentic-ai`). **Open for the operator:** private vulnerability
-  reporting is DISABLED and SECURITY.md points at it - one command enables it,
-  `gh api -X PUT repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`.
-  Not run here: it is a repo settings change.
+  (added `agentic-ai`). **CLOSED 2026-09-08 (LEDGER 177):** private
+  vulnerability reporting is ENABLED - the operator flipped it by hand, and a
+  live re-probe reads `{"enabled":true}` with the anonymous advisory form at
+  HTTP 200, so the SECURITY.md and issue-template links resolve.
 - **Answered for CS (their 2026-09-08 1859 correction note):** LW's SessionStart
   wiring IS in the TRACKED `.claude/settings.json`, but `moon_sync_inbox/` is
   gitignored (.gitignore:180), so a clone gets the watcher and no channel. LW

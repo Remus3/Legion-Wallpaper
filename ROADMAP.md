@@ -22,18 +22,19 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   gate (`ops/runtime/intake_refused_2026-09-07.txt` records why, since the CLI
   prints that refusal to stdout ONLY and no log or state file captures it).
 
-- **github-community-checklist - DONE 2026-09-08 (`eacb64e`), with ONE operator
-  action left.** All five empty items on Insights > Community Standards are
+- **github-community-checklist - DONE 2026-09-08 (`eacb64e`), and the one
+  operator action is now CLOSED.** All five empty items on Insights > Community
+  Standards are
   filled - `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, two issue
   templates with blank issues off, and a PR template - written for a
   one-operator repo that does not solicit PRs rather than from a template.
   README points at them and carries the publication-guards row; topics are at
-  the 20 maximum. **Operator action:** GitHub private vulnerability reporting
-  is DISABLED, and `SECURITY.md` plus the issue-template contact link both
-  route to it. One command closes it, and it was deliberately not run here
-  because it is a repo settings change:
-  `gh api -X PUT repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`.
-  Detail: LEDGER 176.
+  the 20 maximum. GitHub private vulnerability reporting is **ENABLED** - the
+  operator flipped it by hand on 2026-09-08, so the `SECURITY.md` and
+  issue-template contact links resolve instead of dead-ending. Re-probed live:
+  `gh api repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`
+  answers `{"enabled":true}` and the anonymous advisory form returns HTTP 200.
+  Detail: LEDGER 176 + 177.
 
 - **split-value-blindness-in-the-guards - DONE 2026-09-08. Both halves are
   guarded now, and the probe found a live leak before it found the blindness.**

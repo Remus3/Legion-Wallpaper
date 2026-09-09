@@ -27,6 +27,38 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+177. DONE **2026-09-08 (private vulnerability reporting is ENABLED; the item
+   176 premise was CORRECTED by a live probe; docs-only).** Item 176 left one
+   operator action open: GitHub private vulnerability reporting read
+   `{"enabled":false}`, while `SECURITY.md` and the issue-template contact link
+   both routed to it, so both pointed at a channel that did not exist. Operator
+   selected this item and the enabling `PUT` was run - but the BEFORE probe in
+   the same shell already answered `{"enabled":true}`, so the `PUT` was a
+   verified no-op (`rc=0`, idempotent) and NOT the thing that flipped it.
+   Premise CORRECTED, cause confirmed by the operator in-session: they had
+   enabled it by hand through the web UI between the two sessions. Recorded
+   plainly rather than claimed as this session's work. Verified live, twice
+   over and by two independent paths: the REST endpoint
+   `gh api repos/Remus3/Legion-Wallpaper/private-vulnerability-reporting`
+   answers `{"enabled":true}`, and an UNAUTHENTICATED `curl -L` of
+   `https://github.com/Remus3/Legion-Wallpaper/security/advisories/new` returns
+   HTTP **200** - the second check is the one that matters, because the REST
+   flag says the setting is on while the 200 proves the form an outside
+   reporter actually lands on is reachable, which is the whole point of the
+   item. `SECURITY.md` needed NO edit: its "Reporting" section names the
+   Security -> Advisories -> Report a vulnerability path, and its fallback
+   paragraph (smallest possible public issue, no detail and no value, wait to
+   be contacted) stays correct as an evergreen path for anyone the form is not
+   available to. Doc sync: `ROADMAP.md` github-community-checklist row flipped
+   from "with ONE operator action left" to CLOSED with the probe evidence
+   inline, and the matching `WAKEUP_NOTES.md` bullet flipped from "Open for the
+   operator" to CLOSED. Item 176's own FUTURE note is left as written - the
+   ledger is append-only and that note was accurate when recorded; this entry
+   supersedes it. FUTURE / do-not-redo: do NOT re-run the `PUT` and do not
+   re-open this as an operator action - the setting is on. If it ever needs
+   re-checking, the two-path probe above is the check, and the anonymous 200 is
+   the authoritative half.
+
 176. DONE **2026-09-08 (the GitHub community checklist is complete, written for
    what this repo IS; `eacb64e`).** Operator-directed side task off the Insights
    > Community Standards screen: Description / README / License were already
