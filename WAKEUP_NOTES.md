@@ -2,6 +2,98 @@
 
 ---
 
+## NEXT SESSION - headless, operator-directed 2026-09-08
+
+**Task A: build LW's inbox responder.** RC proposed it 2026-09-07
+(`moon_sync_inbox/2026-09-07-1752-from-RC-proposal-auto-responder-...md`) and
+LW never opted in - there is NO responder code in `tools/` and no ROADMAP entry.
+The operator has now directed LW to build one, which is the human adoption act
+the proposal's D3 requires; a responder can never adopt it for itself.
+Shape (RC's, adopt do not re-litigate): a task separate from the poller, its own
+process, spawning a DETACHED HEADLESS session in this repo on a new note - never
+typing into the operator's window. Auto-run allowlist is A1 read-only
+measurement in own tree / A2 run own suite and report counts / A3 byte-verbatim
+vendor of an already-shared file ONLY when the note supplies a digest and the
+copied bytes hash to it / A4 move a digest pin to what the copied bytes hash to.
+Everything else DRAFTS AND WAITS, default deny - explicitly D1 history rewrite,
+D2 visibility or public push, D3 charter/policy, D4 deletions, D5 scheduled
+tasks/hooks/services, D6 frozen files, D7 anything the note marks
+operator-gated. NOTE THE TRAP: registering `LW-InboxResponder` is itself D5, so
+BUILD and TEST it headless, then leave the `schtasks` registration as the one
+step that waits for the operator. No stop rule - RC's operator ruled to run a
+trial and measure, so do not smuggle one in. CS already said yes to the pairwise
+trial restricted to A1-A4 and refuted A4; read that note before designing.
+
+**Task B: adjacent filings, propagate this session's transferable findings.**
+Write one note per sibling into their `moon_sync_inbox/` (hand-copied - there is
+NO outbound tool, and writing into another tree is the ONE exception this
+channel already sanctions). Siblings on disk: `C:\Riot Commander`,
+`C:\Clockspeed`, `C:\Lanternlight`; locate RSC, it is not under `C:\ReSin*`.
+What is worth propagating, all measured here, none of it LW-specific:
+1. **Recorded is not pinned** (LEDGER 178). A hash written into an audit that
+   nothing asserts is provenance theatre. Every sibling that records a model,
+   binary or dependency digest should check whether anything COMPARES it.
+2. **Silent is not dead** (LEDGER 179). Before calling a never-firing gate arm
+   decoration, measure REACHABILITY with constructed failures. LW's MS-SSIM arm
+   had never bound in 719 audits and turned out to be the only geometric guard
+   in the ladder. And never re-fit a threshold on the samples it gates.
+3. **The ignored-tracked trap** (LEDGER 178). A rule covering a directory that
+   already holds tracked files keeps those, but every NEW sibling is silently
+   un-addable - `git add -A` exits 0 and adds nothing. One batched
+   `git check-ignore --no-index --stdin` finds it. Likely live in any repo with
+   a deny-by-default `.gitignore`, which is all of them.
+4. **Selection contamination** (LEDGER 179/180), the method not the result: ask
+   whether the measure that SELECTS is the measure that REPORTS, and whether the
+   reported axis is one the treatment can lose on. LW's scoped_revert survived
+   on an independent replicated measure, but 95 percent of the changed area is
+   still vouched for only by the search's stopping rule.
+Offer 1-3 as propose-then-adopt with digests, per the shared-file shape. Do NOT
+write code into a sibling tree.
+
+**Acceptance:** `python -m pytest tests/ -q` green, ruff clean,
+`python tools/drift_guard.py` exit 0, `python tools/done_gate.py bind` exit 0,
+then push the bound sha. Baseline as of 2026-09-08: **2813 passed / 18 skipped**
+(NOT the 2752 an older hand-off quotes). Note a PRE-EXISTING oddity, not yours:
+the suite runs one more item than it collects.
+
+**Do NOT redo:** LEDGER 177-180 are shipped and pushed (b4c9d1a, 18cf063,
+5b0cef1, ba3263f). PVR is enabled. The `.gitignore` `_archive/` anchor is fixed
+and its exemption retired - do not re-add it. The msssim floor is deliberately
+UNCHANGED; do not "fix" it by re-fitting. `dists` is measured but ungated and
+that is PINNED as current behaviour - adding a rule is a deliberate act that
+must update `tests/test_g1_msssim_arm_binds.py`.
+
+---
+
+## 2026-09-08 - PVR closed, two guards shipped, and two contamination probes (LEDGER 177-180)
+
+- **PVR (177):** premise CORRECTED - the enabling `PUT` was a verified no-op
+  because the operator had already flipped it by hand. Verified two ways: REST
+  reads `{"enabled":true}` AND an unauthenticated `curl -L` of the advisories
+  form returns 200, which is the half that proves an outside reporter can
+  actually land on it.
+- **Model pins (178):** `lw_upscale.py:449` RECORDED `model_sha256` and nothing
+  asserted it. Now `config/model_pins.json` + `tools/lw_model_pins.py`, asserted
+  at the top of `upscale_spandrel()` ABOVE the torch import so a drifted weight
+  refuses before taking the GPU mutex. Four states - ABSENT never reads as
+  verified. The run-scoped hatch deliberately does NOT silence the session gate.
+- **Ignored-tracked (178):** proven live, `git add -A` on a new file in
+  `docs/_archive/` exited 0 and added nothing. Root cause was an unanchored
+  `_archive/`; fixed rather than exempted, and anchoring un-hid 5 invisible
+  files which now stay out explicitly because the repo is public.
+- **MS-SSIM (179):** I called the arm decoration on 719 audits of silence and
+  r=-0.872 redundancy. Measuring inverted it - it is the ONLY arm catching a
+  geometric error (16px shift: msssim 0.8598 FAIL, lpips 0.1206, dists 0.0704).
+  Behaviour pinned, floor untouched. Found `dists` has no rule at all.
+- **scoped_revert (180):** the cited "held is 0 in all 28" IS contaminated but
+  was never load-bearing; `still_reads` 13 -> 2 replicates across two conditions
+  off the stopping rule. The real hole is that both cited measures count
+  residue, where scoped cannot lose by construction, and 95 percent of the
+  changed area has no art-damage measure at all.
+- Suite 2813 passed / 18 skipped, ruff clean, drift_guard 0 breaches.
+
+---
+
 ## 2026-09-08 - split-value blindness probed; the leak was found first (LEDGER 174)
 
 - **Premise corrected before any code.** The hand-off named two guards. Only
