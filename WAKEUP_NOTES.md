@@ -4,12 +4,27 @@
 
 ## NEXT SESSION - headless, operator-directed 2026-09-08
 
-**Task A0 - DO THIS FIRST, IT BLOCKS A.** RSC filed
+**Task A0 - ON OPERATOR STANDBY, DO NOT SEND. Superseded 2026-09-08 22:04.**
+The operator has told CS, LW and LL to STAND BY on the responder consensus and
+keep it to the test for now, and has directed RSC and RC to continue headless.
+RSC's follow-up
+(`moon_sync_inbox/2026-09-08-2204-from-RSC-CORRECTION-consensus-is-bilateral-...md`)
+records LW's silence as STANDBY, not dissent, and explicitly asks nothing of
+LW - Q1-Q4 are bilateral RSC/RC for now, Q5 was always RC's. So: do NOT file
+the positions below and do NOT answer the five questions until the operator
+lifts the standby. RSC states it will not treat the interval as having settled
+anything, so nothing is lost by waiting. The positions are kept below because
+they are evidenced and will still be the right answers when it is lifted.
+Worth knowing in advance either way, and it is RSC's finding, not a request:
+a repair that correctly stops a false PASS will happily install a false FAIL on
+a machine that is not the author's. Three dispositions, not two.
+
+**The evidenced positions, HELD, not sent.** RSC filed
 `moon_sync_inbox/2026-09-08-2155-from-RSC-consensus-requested-five-runners-one-directive-and-five-questions.md`
 at 21:55, AFTER the operator directive: every repo got the same directive, so
 five trees will build five incompatible gate tables unless the shape is agreed
-first. **RSC records silence as dissent, explicitly.** Answer Q1-Q5 by inbound
-note before building anything.
+first. That note's "silence is dissent" rule was WITHDRAWN for LW by the 22:04
+correction above - it now binds only RSC and RC. Do not act on it.
 LW's positions, each already evidenced in this tree - do not re-derive:
 - **Q3 (three dispositions) - AGREE, and LW is convergent evidence from a
   different subsystem.** RSC found "ran and found nothing" vs "could not check"
@@ -42,12 +57,14 @@ gate); I changed the TEST after reasoning it through, not the code. C says read
 the old arm before softening the fix - the same judgement call, reached the
 other way.
 
-**Task A: build LW's inbox responder** - only after A0, and build to whatever
+**Task A: build LW's inbox responder** - only once the operator LIFTS the A0 standby, and build to whatever
 shape the consensus lands on. RC proposed it 2026-09-07
 (`moon_sync_inbox/2026-09-07-1752-from-RC-proposal-auto-responder-...md`) and
 LW never opted in - there is NO responder code in `tools/` and no ROADMAP entry.
-The operator has now directed LW to build one, which is the human adoption act
-the proposal's D3 requires; a responder can never adopt it for itself.
+The operator directed LW to build one - that direction is the human adoption
+act the proposal's D3 requires, since a responder can never adopt it for
+itself - and then placed it on standby the same evening. The adoption stands;
+the timing does not.
 Shape (RC's, adopt do not re-litigate): a task separate from the poller, its own
 process, spawning a DETACHED HEADLESS session in this repo on a new note - never
 typing into the operator's window. Auto-run allowlist is A1 read-only
@@ -63,7 +80,9 @@ step that waits for the operator. No stop rule - RC's operator ruled to run a
 trial and measure, so do not smuggle one in. CS already said yes to the pairwise
 trial restricted to A1-A4 and refuted A4; read that note before designing.
 
-**Task B: adjacent filings, propagate this session's transferable findings.**
+**Task B: adjacent filings - ALSO HELD under the same standby.** The operator
+said keep it to the test for now, so draft nothing outbound until the standby
+lifts. Content below is ready when it does.
 Write one note per sibling into their `moon_sync_inbox/` (hand-copied - there is
 NO outbound tool, and writing into another tree is the ONE exception this
 channel already sanctions). Siblings on disk: `C:\Riot Commander`,
