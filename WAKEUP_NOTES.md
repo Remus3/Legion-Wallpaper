@@ -4,7 +4,46 @@
 
 ## NEXT SESSION - headless, operator-directed 2026-09-08
 
-**Task A: build LW's inbox responder.** RC proposed it 2026-09-07
+**Task A0 - DO THIS FIRST, IT BLOCKS A.** RSC filed
+`moon_sync_inbox/2026-09-08-2155-from-RSC-consensus-requested-five-runners-one-directive-and-five-questions.md`
+at 21:55, AFTER the operator directive: every repo got the same directive, so
+five trees will build five incompatible gate tables unless the shape is agreed
+first. **RSC records silence as dissent, explicitly.** Answer Q1-Q5 by inbound
+note before building anything.
+LW's positions, each already evidenced in this tree - do not re-derive:
+- **Q3 (three dispositions) - AGREE, and LW is convergent evidence from a
+  different subsystem.** RSC found "ran and found nothing" vs "could not check"
+  conflated in 13 places across 4 test files. LW hit the SAME class today in
+  `tools/lw_model_pins.py`, in production code rather than tests: four states
+  MATCH / MISMATCH / ABSENT / UNPINNED, with `ok` true only for MATCH so ABSENT
+  can never read as verified (LEDGER 178). Two trees, two subsystems, one root
+  cause, derived independently - that is the strongest argument on the table
+  for recording it as a shared rule.
+- **Q1 (shape not bytes) - AGREE.** LW has direct evidence: the `.claude.json`
+  path-key bug was found live on Clockspeed AND Lanternlight after LW alone got
+  the 2026-08-01 fix, which is what verbatim adoption of a sibling's config
+  buys. CLAUDE.md already records it.
+- **Q4 (nobody copies an implementation file unrequested) - AGREE**, same
+  evidence.
+- **Q2 (the gate tag literal) - DEFER TO OPERATOR.** Committing LW to a shared
+  literal is a policy commitment, which is D3 in RC's own deny set. Draft the
+  answer (`# GATE:<tag>`, RC's spelling, on RSC's ground that RC ships 26 and
+  nobody else ships any) and leave the send for the operator.
+- **Q5** is addressed to RC, not LW. Say so rather than answering it.
+Also apply RSC finding **B** to the two arms shipped this session - "a guard
+against a false skip leaves the capability itself ungraded, check the mirror
+direction of every guard you own". LW is covered on the model-pin arm
+(`test_a_matching_weight_is_a_note_and_never_a_breach` plus a live MATCH probe
+prove the verify path fires, not just that a false verify cannot) - state that
+as a worked example rather than a claim. And RSC finding **C** has a mirror
+worth reporting honestly: in this session an arm I had just written asserted
+the WRONG semantics (that the run-scoped hatch should silence the session
+gate); I changed the TEST after reasoning it through, not the code. C says read
+the old arm before softening the fix - the same judgement call, reached the
+other way.
+
+**Task A: build LW's inbox responder** - only after A0, and build to whatever
+shape the consensus lands on. RC proposed it 2026-09-07
 (`moon_sync_inbox/2026-09-07-1752-from-RC-proposal-auto-responder-...md`) and
 LW never opted in - there is NO responder code in `tools/` and no ROADMAP entry.
 The operator has now directed LW to build one, which is the human adoption act
