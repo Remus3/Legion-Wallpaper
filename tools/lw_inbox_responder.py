@@ -55,6 +55,7 @@ the `schtasks` line; nothing here executes it, and
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -87,6 +88,15 @@ STATE_PATH = ROOT / "ops" / "runtime" / "inbox_responder_seen.json"
 #     Kill:    type nul > "ops\runtime\inbox_responder\HALT"
 #     Release: del "ops\runtime\inbox_responder\HALT"
 HALT_PATH = ROOT / "ops" / "runtime" / "inbox_responder" / "HALT"
+
+# THE ONLY DURABLE TRACE A CYCLE LEAVES. The task runs detached with `stdout`
+# at DEVNULL, because a scheduled task has nowhere to put it - so before this
+# existed, a DRAFT refusal, a deferred remainder and a halted cycle were all
+# indistinguishable from a responder that never fired. It records what the
+# cycle DID; it is deliberately NOT a liveness signal, since the scheduler's
+# own `LastRunTime` plus `LastTaskResult` already answer that better and an
+# idle line every five minutes would bury the handful that carry an answer.
+RUNLOG_PATH = HALT_PATH.parent / "runs.jsonl"
 
 # 0 off Windows so the module still imports and tests on a CI runner.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
@@ -404,6 +414,51 @@ def halted(halt_path: Path) -> str | None:
     return body or "HALT file present"
 
 
+# ---------------------------------------------------------------------------
+# The run log
+# ---------------------------------------------------------------------------
+
+def _utc_now() -> str:
+    """A REAL wall clock, to the second, marked as UTC.
+
+    Note FILENAMES on this channel carry a fictional timestamp that drifts per
+    sender and grows through a session - LW measured one at +375 minutes. The
+    log is sorted and read by the operator, so it stamps itself.
+    """
+    return dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _append_runlog(path: Path, record: dict) -> None:
+    """Append ONE newline-terminated JSON object.
+
+    APPEND, not the atomic tmp-replace this repo mandates for state files. The
+    two are for different shapes: tmp-replace protects a document a consumer may
+    poll mid-write, and applying it here would rewrite the whole ledger every
+    cycle - the one operation that can lose history it already holds. A single
+    `write()` of a complete line is the append-only `.jsonl` pattern the tree
+    already uses, and a torn final line is DETECTABLE, which a truncated
+    rewrite is not.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def _record_cycle(path: Path, payload: dict, **record) -> None:
+    """Log the cycle, and never let the log become the failure.
+
+    A responder that dies because its disk is full is worse than one that runs
+    unobserved, so the write is swallowed - but COULD-NOT-WRITE is not WROTE,
+    and a silently swallowed failure turns an empty log into a claim that
+    nothing happened. The reason goes back into the printed payload, which is
+    where a hand-run `--once` can still see it.
+    """
+    try:
+        _append_runlog(path, {"ts": _utc_now(), **record})
+    except OSError as exc:
+        payload["runlog_error"] = f"{type(exc).__name__}: {exc}"
+
+
 def windowless_python() -> str:
     """`pythonw.exe` beside the pinned interpreter, else the plain one.
 
@@ -437,6 +492,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--state", type=Path, default=STATE_PATH)
     ap.add_argument("--halt", type=Path, default=HALT_PATH,
                     help="kill switch; its presence stops the cycle before anything runs")
+    ap.add_argument("--runlog", type=Path, default=RUNLOG_PATH,
+                    help="append-only record of what each non-idle cycle did")
     ap.add_argument("--print-register-command", action="store_true",
                     help="print the scheduled-task registration for the OPERATOR to run")
     args = ap.parse_args(argv)
@@ -458,7 +515,10 @@ def main(argv: list[str] | None = None) -> int:
     # change, so a switch checked after it would already have acted.
     stop = halted(args.halt)
     if stop is not None:
-        print(json.dumps({"halted": stop, "spawned": []}, indent=2))
+        payload = {"halted": stop, "spawned": []}
+        if not args.dry_run:
+            _record_cycle(args.runlog, payload, event="halted", halted=stop, spawned=[])
+        print(json.dumps(payload, indent=2))
         return 0
 
     notes = new_notes(args.inbox, args.state)
@@ -470,10 +530,13 @@ def main(argv: list[str] | None = None) -> int:
     # could-not-check-is-not-checked rule the gate runs on. So the first run
     # records the baseline and spawns NOTHING, and says which it did.
     if not args.state.exists():
+        payload = {"cold_start": True, "baselined": len(notes),
+                   "dry_run": args.dry_run, "spawned": []}
         if not args.dry_run:
             record_seen(args.inbox, args.state, notes)
-        print(json.dumps({"cold_start": True, "baselined": len(notes),
-                          "dry_run": args.dry_run, "spawned": []}, indent=2))
+            _record_cycle(args.runlog, payload, event="cold_start",
+                          baselined=len(notes), spawned=[])
+        print(json.dumps(payload, indent=2))
         return 0
 
     capped = notes[:MAX_SPAWNS_PER_CYCLE]
@@ -485,8 +548,14 @@ def main(argv: list[str] | None = None) -> int:
     if not args.dry_run:
         handled = [n for n, s in zip(capped, spawned, strict=True) if s["verdict"] == AUTO]
         record_seen(args.inbox, args.state, handled)
-    print(json.dumps({"new_notes": len(notes), "dry_run": args.dry_run,
-                      "deferred": len(notes) - len(capped), "spawned": spawned}, indent=2))
+    payload = {"new_notes": len(notes), "dry_run": args.dry_run,
+               "deferred": len(notes) - len(capped), "spawned": spawned}
+    # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
+    # source, and 288 empty lines a day would bury the ones that matter.
+    if notes and not args.dry_run:
+        _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
+                      deferred=len(notes) - len(capped), spawned=spawned)
+    print(json.dumps(payload, indent=2))
     return 0
 
 

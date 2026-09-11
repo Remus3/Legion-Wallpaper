@@ -27,6 +27,46 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+184. DONE **2026-09-11 (the inbox responder's run log, and the hermeticity
+   defect adding it exposed).** Audited the sync-inbox lane end to end on
+   operator question and found three of four legs already sound: `lw_facts.py`
+   reported `0 unread of 142` at SessionStart with the LEDGER 162
+   report-then-ack split live; LW's newest outbound note was present in all
+   four sibling inboxes (RC 123, CS 104, LL 106, RSC 160); `LW-InboxResponder`
+   read `Ready`, `LastRunTime` 08:46:46, `LastTaskResult` 0, and
+   `--once --dry-run` returned `new_notes 0 deferred 0`. The GAP was
+   observability: the task runs detached with `stdout` at DEVNULL, so a DRAFT
+   refusal, a deferred remainder and a halted cycle all left the same trace as
+   a responder that never fired - `ops/runtime/inbox_responder/` was empty and
+   `logs/2026-09-11.log` had 0 inbox lines. SHIPPED `RUNLOG_PATH` =
+   `ops/runtime/inbox_responder/runs.jsonl`, `_utc_now()`, `_append_runlog()`,
+   `_record_cycle()` and a `--runlog` flag, wired into all three exits of
+   `main()`. TDD RED-first: 13 arms written and run BEFORE the implementation,
+   13/13 failed, then 13/13 passed. DESIGN CALLS, logged so they are not
+   re-litigated: (a) an IDLE cycle writes NOTHING - liveness already has a
+   better source in `Get-ScheduledTaskInfo`, and 288 empty lines a day would
+   bury the handful that answer a question; (b) APPEND, not the repo's usual
+   atomic tmp-replace - a per-cycle whole-file rewrite is the one operation
+   that can lose an append-only ledger's existing history, and a torn final
+   line is detectable where a truncated rewrite is not; (c) a log write failure
+   never kills the cycle, but COULD-NOT-WRITE is not WROTE, so the reason goes
+   back into the printed payload as `runlog_error`; (d) the record carries
+   `verdict` + `rule` + `checked`, keeping CHECKED-AND-REFUSED apart from
+   COULD-NOT-CHECK; (e) no rotation, since only non-idle cycles write. DEFECT
+   FOUND AND FIXED IN THE SAME SLICE: the 10 existing `main()` arms in
+   `tests/test_inbox_responder.py` drove cycles with no `--runlog`, so the
+   first suite run after the log landed appended 13 records of INVENTED cold
+   starts to the operator's live file (1411 bytes, measured, then removed as
+   fabricated history). Injected a tmp `--runlog` at all 10 sites and added an
+   autouse mtime guard to BOTH responder test files; the guard is
+   mutation-proven - removing the flag from one site makes it fire, and the
+   file was restored byte-exact (sha256 1ff69cd565246b07) with 60/60 green
+   after. VERIFIED: `ruff` clean on all three files, full suite **2895 passed,
+   18 skipped** in 156s, live `--once` idle and correctly silent, and the live
+   log untouched by the suite. Docs: the `LW-InboxResponder` row in
+   `docs/OPERATIONS.md` now carries the log path, the record shape and the
+   idle-writes-nothing rule beside the kill switch.
+
 183. DONE **2026-09-11 (LW-InboxResponder ARMED on operator direction, plus the
    kill switch that arming it required).** The registration LEDGER 181 and 182
    deliberately left for a human. The operator directed it; that direction is

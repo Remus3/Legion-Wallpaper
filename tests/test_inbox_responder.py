@@ -30,6 +30,25 @@ sys.path.insert(0, str(ROOT / "tools"))
 import lw_inbox_responder as responder  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _the_live_run_log_is_never_touched():
+    """A test that writes `ops/runtime/inbox_responder/runs.jsonl` fabricates
+    responder history in the operator's real tree.
+
+    MEASURED, not hypothetical: the cycle arms below drove `main()` without a
+    `--runlog`, and the first suite run after the log landed appended 13 records
+    of invented cold starts to the live file. Injecting the path at each call
+    site fixes those arms; this fixture is what keeps the NEXT one honest, and
+    it guards by MTIME rather than by patching the constant, so the arm pinning
+    the real default still reads the real default.
+    """
+    real = responder.RUNLOG_PATH
+    before = real.stat().st_mtime_ns if real.exists() else None
+    yield
+    after = real.stat().st_mtime_ns if real.exists() else None
+    assert after == before, f"an arm wrote the live run log at {real}"
+
+
 # --------------------------------------------------------------------------
 # The gate: allowed actions, both directions
 # --------------------------------------------------------------------------
@@ -493,7 +512,8 @@ def test_a_cold_start_baselines_the_inbox_and_spawns_nothing(tmp_path, capsys, m
     monkeypatch.setattr(responder, "spawn",
                         lambda *_a, **_k: pytest.fail("cold start spawned a session"))
 
-    assert responder.main(["--once", "--inbox", str(inbox), "--state", str(state)]) == 0
+    assert responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["cold_start"] is True
     assert payload["baselined"] == 5
@@ -507,11 +527,13 @@ def test_after_the_baseline_a_new_note_does_spawn(tmp_path, capsys, monkeypatch)
     _fill(inbox, 2)
     state = tmp_path / "seen.json"
     monkeypatch.setattr(responder, "spawn", lambda *_a, **_k: responder._auto("spawn", "fake"))
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state)])
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)])
     capsys.readouterr()
 
     (inbox / "2026-09-10-9999-from-CS-fresh.md").write_text("fresh", encoding="utf-8")
-    assert responder.main(["--once", "--inbox", str(inbox), "--state", str(state)]) == 0
+    assert responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["new_notes"] == 1
     assert [s["note"] for s in payload["spawned"]] == ["2026-09-10-9999-from-CS-fresh.md"]
@@ -522,12 +544,14 @@ def test_a_burst_is_capped_and_the_remainder_is_deferred_not_dropped(tmp_path, c
     _fill(inbox, 1)
     state = tmp_path / "seen.json"
     monkeypatch.setattr(responder, "spawn", lambda *_a, **_k: responder._auto("spawn", "fake"))
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state)])
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)])
     capsys.readouterr()
 
     for i in range(5):
         (inbox / f"2026-09-10-8{i:03d}-from-LL-burst.md").write_text(f"b{i}", encoding="utf-8")
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state)])
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)])
     payload = json.loads(capsys.readouterr().out)
     assert len(payload["spawned"]) == responder.MAX_SPAWNS_PER_CYCLE
     assert payload["deferred"] == 5 - responder.MAX_SPAWNS_PER_CYCLE
@@ -549,7 +573,8 @@ def test_a_halt_file_stops_a_cycle_before_anything_is_spawned(tmp_path, capsys, 
     monkeypatch.setattr(responder, "spawn",
                         lambda *_a, **_k: pytest.fail("HALT did not stop the spawn"))
 
-    rc = responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+    rc = responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state),
                          "--halt", str(halt)])
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
@@ -564,7 +589,8 @@ def test_an_empty_halt_file_still_halts(tmp_path, capsys):
     _fill(inbox, 1)
     halt = tmp_path / "HALT"
     halt.write_text("", encoding="utf-8")
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(tmp_path / "s.json"),
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(tmp_path / "s.json"),
                     "--halt", str(halt)])
     assert json.loads(capsys.readouterr().out)["halted"]
 
@@ -577,7 +603,8 @@ def test_halt_beats_the_cold_start_baseline_too(tmp_path, capsys):
     state = tmp_path / "seen.json"
     halt = tmp_path / "HALT"
     halt.write_text("stop", encoding="utf-8")
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state),
                     "--halt", str(halt)])
     assert json.loads(capsys.readouterr().out)["halted"]
     assert not state.exists(), "a halted cycle still wrote the baseline"
@@ -588,7 +615,8 @@ def test_without_a_halt_file_the_cycle_runs(tmp_path, capsys, monkeypatch):
     inbox = tmp_path / "moon_sync_inbox"
     _fill(inbox, 1)
     state = tmp_path / "seen.json"
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state),
                     "--halt", str(tmp_path / "absent-HALT")])
     payload = json.loads(capsys.readouterr().out)
     assert "halted" not in payload
@@ -596,7 +624,8 @@ def test_without_a_halt_file_the_cycle_runs(tmp_path, capsys, monkeypatch):
 
     monkeypatch.setattr(responder, "spawn", lambda *_a, **_k: responder._auto("spawn", "fake"))
     (inbox / "2026-09-11-0001-from-RC-new.md").write_text("new", encoding="utf-8")
-    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state),
                     "--halt", str(tmp_path / "absent-HALT")])
     assert len(json.loads(capsys.readouterr().out)["spawned"]) == 1
 
