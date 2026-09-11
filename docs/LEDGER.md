@@ -27,6 +27,54 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+185. DONE **2026-09-11 (the same hermeticity defect measured across all five
+   trees; two more found and fixed in LW; f319583).** Follow-on from LEDGER 184
+   on operator direction. METHOD CORRECTED MID-TASK, and the correction is the
+   durable part: the obvious probe - hash the live files, run the suite, diff -
+   is INVALID on this box. A 300-second IDLE control with no suite running
+   showed all four candidate files changing anyway (`LL armwatch_heartbeat
+   .json` rewritten, `LL docguard_observed.json` -11681 B, `RSC inbox_
+   invocations.log` +334 B, `RSC logs/2026-09-11.log` +35192 B), because
+   daemons and concurrent Claude sessions write those trees - `lanternlight
+   .armwatch` PID 21680 holds the heartbeat path. Two of the first three
+   conclusions were withdrawn on that evidence. Replaced with an in-process
+   pytest plugin wrapping `builtins.open`, `os.replace` and `os.rename` that
+   counts BYTES and names the nodeid; process-local, so no other writer can
+   contaminate it. Both halves matter: an append-mode open is not a write, and
+   `os.replace` is invisible to an open() wrapper because the open it sees is
+   the TMP name. Known limit, stated not papered over: writes from a subprocess
+   are missed. FINDINGS. **RC** worst - 181,285 B into `logs/agents/supervisor
+   .log` from 840 tests, plus 7 live JSON state files REPLACED (`data/tft_
+   coaching_data.json`, `tft_live_data.json`, `placement_heatmap.json`,
+   `ratings/last_tft.json`, `ops/runtime/coaching_ts_{aram,arena,tft}.json`);
+   RC already carried a live-surface guard in `tests/test_inbox_responder_
+   runner.py` that FIRES in a full-suite run but passes file-alone, an ordering
+   effect. **RSC** 17,492 B into the live day log from 51 tests / 12 files, via
+   `core/log_setup.get_logger()` binding a FileHandler at import; its
+   `inbox_invocations.log` redirect fixture HOLDS and that file was the
+   concurrency confound, not its suite. **CS** 23 `*.copy.sav` into the live
+   `work/saves/`. **LL CLEAN** - its one live write is the documented
+   audit-hook recorder, and the heartbeat was the daemon. LW'S OWN TWO, both
+   fixed here: (a) `lw_facts._INBOX/_SEEN/_REPORTED` bind at IMPORT, so an arm
+   patching `_ROOT` kept the live paths and `main()` wrote the real
+   `ops/runtime/sync_inbox_reported.json` - half the report-then-ack split, so
+   a suite run marked live mail as SHOWN and the next `--mark-inbox-seen` would
+   have acknowledged notes nobody saw, LEDGER 162's defect re-entered through
+   the suite; fixed at the ROOT with `_inbox_path()` / `_seen_path()` /
+   `_reported_path()` deriving from `_ROOT` at use, so a single `_ROOT` patch
+   is sufficient as every arm already assumed; (b) `lw_monitor.main()`
+   hard-called `setup_logging(MONITOR_LOG)`, now `--monitor-log`. TDD RED-first,
+   4 arms. VERIFIED: ruff clean, full suite **2899 passed, 18 skipped**, and a
+   second traced run reports `wrote_bytes {}` / `written_by {}` /
+   `opened_for_write_only {}` across `ops/runtime`, `logs`, `moon_sync_inbox`
+   and `images`. NOTHING was edited in any sibling tree - findings went out on
+   the mail channel (1043 note plus a CORRECTION note carrying the full-run RC
+   figures, since the first RC pass used `-x` and was a lower bound). RC read
+   the 1043 note and wrote its own `tools/live_write_tracer.py` 25 minutes
+   later. GENERALISATION worth keeping: a module constant computed from a repo
+   root AT IMPORT cannot be redirected by patching the root afterwards, and
+   every instance across all five trees is that one shape.
+
 184. DONE **2026-09-11 (the inbox responder's run log, and the hermeticity
    defect adding it exposed).** Audited the sync-inbox lane end to end on
    operator question and found three of four legs already sound: `lw_facts.py`
