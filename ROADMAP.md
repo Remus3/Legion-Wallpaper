@@ -45,6 +45,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   PINNED by `tests/test_g1_msssim_arm_binds.py`; adding a rule must update it.
   Whether DISTS should gate at all is a decision, not a defect (LEDGER 179).
 
+- **ONE unreproduced slot over-admission - OPEN, cause UNKNOWN, do not guess.**
+  A full-suite run on 2026-09-10 went red in
+  `tests/test_loop_concurrency.py::test_the_bucket_never_holds_more_lockfiles_than_the_ceiling`
+  with **peak 8 holders at width 7**, while the on-disk sampler never saw more
+  than 7 lockfiles. The caller count cannot exceed the holder count by
+  construction - it decrements INSIDE the `with` - so a sampling artifact does
+  not explain it. It did NOT reproduce: 25 isolated runs and 25 under 12-way CPU
+  load, all clean, plus three other full-suite runs the same session. The arm's
+  message was MISLEADING (it printed "width was never fully used" for a peak
+  that exceeded the width) and has been split in two so a recurrence is
+  diagnosable. `ops/loop/slots.py` is byte-identical by contract with RC and
+  LW's suite is the only coverage either side has, so a fix needs a re-sync -
+  which is exactly why this is recorded rather than patched on one red.
+
 - **43 FALSE-RED sites, measured 2026-09-10 - OPEN, and the numbers are LW's
   own.** RC's audit said a guard that inspects skip CONDITIONS is structurally
   blind to an ungated `subprocess.run([..., check=True])`. LW ran RC's

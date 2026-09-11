@@ -77,6 +77,12 @@ it collects - PRE-EXISTING, not yours.
   withdrawn-and-refiled arm was added.
 - **43 false-RED sites**, measured with RC's own reproduction. Mirror direction
   measured too: skips 18 -> 57, so 39 arms already degrade correctly.
+- **One RED nobody can reproduce, recorded not buried.** A full-suite run
+  inside `done_gate bind` failed the slots ceiling arm with peak 8 at width 7.
+  25 isolated runs and 25 under 12-way CPU load were clean, as were three other
+  full-suite runs. Cause UNKNOWN. The arm's message was wrong for the
+  over-admission case and is now split in two. `ops/loop/slots.py` is
+  byte-identical by contract with RC - see ROADMAP.
 - Suite 2870 passed / 18 skipped, ruff clean, drift_guard 0 breaches.
 
 ---

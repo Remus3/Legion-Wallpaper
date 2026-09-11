@@ -826,6 +826,21 @@ def test_the_bucket_never_holds_more_lockfiles_than_the_ceiling(tmp_path: Path):
         f"index-named ONLY - if this went red because reserved-<key>.lock now "
         f"exists, the ceiling arms here need re-deriving against BOTH schemes and "
         f"reap() must have learned both too, or a repo loses its floor silently.")
+    # TWO assertions, not one, because a single `peak == CEILING` reported
+    # "width was never fully used" for a peak that EXCEEDED the width. Measured
+    # 2026-09-10: one full-suite run went red here with peak 8 at width 7 and
+    # printed the not-contended message, which is the opposite of what happened.
+    # It did NOT reproduce - 25 isolated runs and 25 under 12-way CPU load, both
+    # clean - so the cause is UNKNOWN and recorded as such rather than guessed
+    # at. If it recurs, this message says which of the two it is.
+    assert peak <= CEILING, (
+        f"OVER-ADMISSION: {peak} holders were live at width {CEILING} while the "
+        f"bucket sampler never saw more than {seen_max} lockfile(s). The caller "
+        f"count cannot exceed the holder count by construction (it decrements "
+        f"INSIDE the with), so this is the governor admitting an extra holder, "
+        f"not a sampling artifact. ops/loop/slots.py is byte-identical by "
+        f"contract with RC - a fix needs a re-sync, and LW's suite is the only "
+        f"coverage either side has.")
     assert peak == CEILING, (
         f"width {CEILING} was never fully used - the arm did not actually contend")
 

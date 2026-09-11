@@ -242,7 +242,11 @@ def test_registering_the_responder_task_is_itself_denied():
 # --------------------------------------------------------------------------
 
 def test_the_output_filter_refuses_a_reply_carrying_an_account_path():
-    hits = responder.filter_reply(r"the fix is in C:\Users\someaccount\AppData\Local")
+    """`example` is deliberate: it is in `PLACEHOLDER_ACCOUNTS`, so this fixture
+    does not itself trip `tests/test_no_account_paths.py` on a PUBLIC repo. The
+    filter under test exempts no account name - only a `<...>` placeholder - so
+    the arm still measures what it says it does."""
+    hits = responder.filter_reply(r"the fix is in C:\Users\example\AppData\Local")
     assert hits
     assert any("account path" in h for h in hits)
 
