@@ -67,6 +67,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import lw_facts  # noqa: E402  - flat tools/ directory, imported by bare name
+import lw_paths  # noqa: E402
 import split_scan  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,9 +97,32 @@ TASK_NAME = "LW-InboxResponder"
 MAX_SPAWNS_PER_CYCLE = 3
 
 # A string, never an argv. See the module docstring and the arms.
+#
+# POWERSHELL, NOT `schtasks`. The first spelling shipped here was a `schtasks`
+# one-liner with `\"` around a path containing a space, and it FAILED in the
+# operator's hands on 2026-09-10:
+#
+#     ERROR: Invalid argument/option - '--once /F'
+#
+# `\"` is cmd.exe's escape. PowerShell strips the backslashes while building the
+# argv, so schtasks received a `/TR` value that ended at the first inner quote
+# and read the remainder as its own arguments. Register-ScheduledTask takes the
+# executable and its arguments as SEPARATE parameters, so the quoting question
+# does not arise at all - which is the actual fix rather than a better escape.
 REGISTER_COMMAND = (
-    'schtasks /Create /TN "LW-InboxResponder" /SC MINUTE /MO 5 /RL LIMITED '
-    '/TR "pythonw.exe \\"{script}\\" --once" /F'
+    'Register-ScheduledTask -TaskName "{task}" -Force -RunLevel Limited '
+    '-Action (New-ScheduledTaskAction -Execute "{python}" '
+    "-Argument '\"{script}\" --once' -WorkingDirectory \"{root}\") "
+    "-Trigger (New-ScheduledTaskTrigger -Once -At (Get-Date) "
+    "-RepetitionInterval (New-TimeSpan -Minutes 5))"
+)
+
+# cmd.exe fallback, for a shell where `\"` IS the escape. Kept because the
+# PowerShell cmdlets need an elevated-enough session on some boxes, and a reader
+# who copies the wrong one should at least get a command that works in ITS shell.
+REGISTER_COMMAND_CMD = (
+    'schtasks /Create /F /TN "{task}" /SC MINUTE /MO 5 /RL LIMITED '
+    '/TR "\\"{python}\\" \\"{script}\\" --once"'
 )
 
 _DENY_KINDS = {
@@ -354,9 +378,24 @@ def spawn(note_path: Path, dry_run: bool = False) -> Disposition:
     return _auto("spawn", f"detached headless session pid {proc.pid}")
 
 
-def register_command() -> str:
-    """The `schtasks` line for the operator to run. Printed, never executed."""
-    return REGISTER_COMMAND.format(script=Path(__file__).resolve())
+def windowless_python() -> str:
+    """`pythonw.exe` beside the pinned interpreter, else the plain one.
+
+    pythonw so a task firing every five minutes does not flash a console over
+    whatever the operator is doing. Resolved at RUNTIME from `lw_paths` - the
+    literal must never be written into tracked source, since it contains the
+    account name and this repo is public.
+    """
+    python = Path(lw_paths.system_python())
+    windowless = python.with_name("pythonw.exe")
+    return str(windowless if windowless.exists() else python)
+
+
+def register_command(shell: str = "powershell") -> str:
+    """The registration line for the OPERATOR to run. Printed, never executed."""
+    template = REGISTER_COMMAND if shell == "powershell" else REGISTER_COMMAND_CMD
+    return template.format(task=TASK_NAME, python=windowless_python(),
+                           script=Path(__file__).resolve(), root=ROOT)
 
 
 # ---------------------------------------------------------------------------
@@ -375,7 +414,11 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     if args.print_register_command:
+        print("# PowerShell (the shell this box prompts in):")
         print(register_command())
+        print("\n# cmd.exe, if you are in one. The escaping differs, and mixing")
+        print("# the two is exactly what broke the first version of this output:")
+        print(register_command("cmd"))
         print("\nNot run from here. Registering a scheduled task is D5 in the "
               "deny set this responder obeys, so it stays an operator act.")
         return 0

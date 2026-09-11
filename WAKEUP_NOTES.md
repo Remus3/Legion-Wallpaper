@@ -2,51 +2,57 @@
 
 ---
 
-## NEXT SESSION - repair the 43, or pick the parked pipeline queue
+## NEXT SESSION - the parked pipeline queue
 
-**The responder lane is DONE and closed.** Positions filed, responder built,
-RC's audit run on LW. Do NOT re-file the positions and do NOT re-measure the
-false-RED count. Two candidates for the next slice, pick one:
+**The responder lane AND the false-RED repair are both DONE and closed.** Do not
+re-file the positions, do not re-measure the false-RED count (it is 0; re-run
+`python tools/lw_false_red_probe.py` only after touching an external-binary call
+site, and only on an otherwise IDLE box - a contended run reported 2 phantom
+failures and cost a re-run).
 
-**Candidate 1 - repair the 43 false-RED sites (`docs/FALSE_RED_PROBE_2026-09-10.md`).**
-Measured this session: with git on PATH the suite is exit 0, 2865 passed / 18
-skipped; with git stripped it is 15 failed / 2783 passed / 57 skipped / 28
-errors, and **43 of those are RED only because a tool is not installed**. They
-cluster in `tests/test_git_hooks_gate.py` (21), `tests/test_loop_executor.py`
-(9) and the tracked-corpus sweeps (7, which select with `git ls-files`). Rules
-that must hold for the repair, all of them learned the expensive way by someone:
-- Three dispositions, per site. A missing tool is a TRUE SKIP with a reason
-  that is true, not a FAIL and never a silent pass.
-- Do NOT widen a matcher or write one sweep helper to cover all 43. RSC's
-  charter records that widening after the second defeat is the wrong response,
-  and four rounds on one file relocated its conflation rather than fixing it.
-- Build the guard in BOTH directions or do not build one. RC's 2116-line guard
-  is blind to its own dominant defect because it audits skip CONDITIONS. The
-  mirror arm - the capability still fires - is the one that is easy to skip.
-- Re-run `python tools/lw_false_red_probe.py` at the END and quote the delta.
-  Both arms must see the SAME tree; the first attempt this session compared a
-  mid-session tree against a later one and was discarded as a measurement
-  error, not reported as a result.
+**The work: the parked pipeline queue**, kept verbatim in
+`docs/NEXT_SESSION_PARKED_2026-09-10.md` - 108 `needauth`, 7
+`aspect_crop_heavy`, 3 `lap_ratio`, plus the scoped_revert art-damage measure
+and the `dists` gating decision. RE-PROBE its counts before acting;
+`0.Originals` has moved twice already.
 
-**Candidate 2 - the parked pipeline queue**, kept verbatim in
-`docs/NEXT_SESSION_PARKED_2026-09-10.md`: 108 `needauth`, 7 `aspect_crop_heavy`,
-3 `lap_ratio`, plus the scoped_revert art-damage measure and the `dists` gating
-decision. RE-PROBE its counts before acting - `0.Originals` has moved again.
+**Still open and NOT to be guessed at:** the one unreproduced slot
+over-admission (peak 8 at width 7, 50 clean re-runs, cause UNKNOWN, ROADMAP has
+it). `ops/loop/slots.py` is byte-identical by contract with RC.
 
-**If a sibling replies to the filed note.** The responder exists but is NOT
-armed and must stay that way until the operator runs the printed `schtasks`
-line - registering it is D5 in the deny set it obeys. Handle a reply by hand:
-`python tools/lw_inbox_responder.py --once --dry-run` shows what it WOULD do
-without touching state. Note LW committed to filing the probe result to the
-siblings and has done so; do not file it twice.
+**Still waiting on the operator:** registering `LW-InboxResponder`. The printed
+command was BROKEN on the first attempt (cmd escaping run in PowerShell) and is
+fixed - `python tools/lw_inbox_responder.py --print-register-command` now emits
+a PowerShell form and a cmd form, and the PowerShell one is parse-checked by an
+arm. Registering is D5; it stays the operator's act.
 
-**Acceptance, unchanged:** `python -m pytest tests/ -q` green (baseline is now
-**2870 passed / 18 skipped**, ~156s, up from 2813/18 by this session's 54
-authored arms plus 3 that its two new `tools/` files add to tool-set-parametrised
-arms; the probe doc's 2865 is the same suite measured before those existed),
-ruff clean, `python tools/drift_guard.py` exit 0, `python tools/done_gate.py
-bind` exit 0, then push the bound sha. The suite still runs one more item than
-it collects - PRE-EXISTING, not yours.
+**Acceptance, unchanged:** `python -m pytest tests/ -q` green, ruff clean,
+`python tools/drift_guard.py` exit 0, `python tools/done_gate.py bind` exit 0,
+then push the bound sha. The suite still runs one more item than it collects -
+PRE-EXISTING.
+
+---
+
+## 2026-09-10 - the 43 false-RED sites repaired, 43 -> 0 (LEDGER 182)
+
+- **Repaired the same day they were measured.** `tests/gitdep.py` answers one
+  factual question and each site decides what it means there: module-level
+  `pytestmark` where all 21 arms build a repository, a fixture-level skip where
+  only 9 of 35 do, a per-arm decorator for the remaining 13. NOT a sweep, NOT a
+  matcher - widening one matcher over 43 sites relocates a conflation.
+- **Graded behaviourally, both directions.**
+  `tests/test_git_absence_is_a_skip.py` runs a representative node per repaired
+  file with git stripped AND with git present: SKIP then RUN. Reading skip
+  conditions is the blindness RC reported against its own guard.
+- **Without git: 0 failed / 0 errors / 2794 passed / 101 skipped** (was 15 / 28
+  / 2783 / 57). With git: exit 0, 2877 passed / 18 skipped. 5 mutants, 5 killed.
+- **The same measurement error, twice.** The first post-repair probe said 2
+  remaining - both timing arms, neither git-related - because a mutation harness
+  was hammering the box. Uncontended: 0.
+- **The registration line was broken in the operator's hands** - cmd's `\"`
+  escape run in PowerShell. Fixed by removing the quoting question entirely
+  (`Register-ScheduledTask` takes execute and arguments separately), with an arm
+  that PARSES the emitted PowerShell and never runs it.
 
 ---
 

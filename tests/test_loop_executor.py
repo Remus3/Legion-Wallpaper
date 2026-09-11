@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pytest
 
+import gitdep
+
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location(
     "lw_loop_executor_under_test", ROOT / "ops" / "loop" / "executor.py")
@@ -266,12 +268,22 @@ def test_build_returns_sdk_channel_since_p2(tmp_path: Path):
 # buys nothing on a fresh clone until someone sets it. Verified empirically:
 # a clone of this repo reports core.hooksPath unset and the gate INERT.
 
+@gitdep.requires_git
 def test_gate_reason_is_none_in_this_repo():
-    """LW itself has the gate active - the loop must not refuse to start here."""
+    """LW itself has the gate active - the loop must not refuse to start here.
+
+    Needs git: `gate_inactive_reason` asks git for `core.hooksPath`, and with no
+    git the gate's state is unknowable rather than inactive.
+    """
     assert executor.gate_inactive_reason(ROOT) is None
 
 
+@gitdep.requires_git
 def test_gate_reason_reports_a_repo_with_no_hookspath(tmp_path: Path):
+    # The `clone unavailable` skip below was already an attempt to degrade, and
+    # it did NOT cover this case: with no git BINARY the `subprocess.run` raises
+    # before any of it runs. A guard against one failure mode is not a guard
+    # against the family.
     import subprocess
     clone = tmp_path / "clone"
     subprocess.run(["git", "clone", "-q", str(ROOT), str(clone)],
@@ -309,11 +321,16 @@ def _git_in(repo: Path, *args: str):
 def worktree_pair(tmp_path: Path):
     """(main checkout, linked worktree) shaped exactly like LW.
 
+    Skips without a git binary: this fixture BUILDS a repository, so a missing
+    git surfaced as an ERROR in setup rather than a FAILED in the test.
+
     The throwaway repo carries its own copy of the installer because
     `gate_inactive_reason` returns None for any tree that lacks one - without
     this the worktree assertions would pass vacuously.
     """
     import shutil
+
+    gitdep.skip_if_git_missing()
 
     main = tmp_path / "main"
     (main / ".githooks").mkdir(parents=True)

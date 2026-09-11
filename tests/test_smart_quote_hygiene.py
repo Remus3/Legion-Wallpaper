@@ -68,6 +68,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import gitdep
+
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -194,6 +196,7 @@ def _is_pure_mojibake_201d(raw: bytes) -> bool:
     return n_moji == total
 
 
+@gitdep.requires_git
 def test_no_smart_quotes_in_authored_source() -> None:
     """Walk every enumerated source file and assert no banned codepoint bytes."""
     violations: list[tuple[str, int, str, int]] = []

@@ -25,6 +25,8 @@ import json
 import sys
 from pathlib import Path
 
+import gitdep
+
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
@@ -58,6 +60,7 @@ def test_the_real_target_is_the_repo_root_not_the_desktop():
     assert "Desktop" not in target.parts
 
 
+@gitdep.requires_git
 def test_the_repo_root_target_is_trackable_by_git():
     """A hand-off in an ignored path is exactly as invisible as the Desktop one."""
     import subprocess

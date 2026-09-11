@@ -52,6 +52,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import gitdep
+
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -129,6 +131,7 @@ def _tracked_files() -> list[Path]:
     return [_REPO_ROOT / p for p in out.decode("utf-8").split("\0") if p]
 
 
+@gitdep.requires_git
 def test_no_mojibake_signature_in_authored_source() -> None:
     """Walk every enumerated source file and assert no mojibake signature."""
     violations: list[tuple[str, int, int]] = []  # (rel, n_a, n_b)

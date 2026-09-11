@@ -39,6 +39,8 @@ import json
 import subprocess
 from pathlib import Path, PureWindowsPath
 
+import gitdep
+
 ROOT = Path(__file__).resolve().parent.parent
 TRACKED = ROOT / ".claude" / "settings.json"
 
@@ -132,6 +134,7 @@ def _tracked_script_names() -> set[str]:
     return {Path(line).name for line in out.splitlines() if line.strip()}
 
 
+@gitdep.requires_git
 def test_every_declared_hook_script_exists():
     """A declared hook whose script is missing is a gate that silently is not there.
 
@@ -183,6 +186,7 @@ def test_the_inbox_watcher_runs_at_PROMPT_time_as_well_as_session_start():
     assert any("lw_facts.py" in c for c in commands)
 
 
+@gitdep.requires_git
 def test_a_stale_worktree_copy_cannot_answer_for_a_deleted_script(tmp_path):
     """The guard's corpus must not include `.claude/worktrees/`.
 

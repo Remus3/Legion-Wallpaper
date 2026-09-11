@@ -16,6 +16,8 @@ rather than reading the verdict alone.
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -399,7 +401,55 @@ def test_the_spawn_is_detached_and_windowless(monkeypatch):
 
 def test_the_register_command_is_printed_and_never_executed():
     cmd = responder.register_command()
-    assert "schtasks" in cmd and "LW-InboxResponder" in cmd
+    assert "Register-ScheduledTask" in cmd and "LW-InboxResponder" in cmd
+    assert "lw_inbox_responder.py" in cmd and "--once" in cmd
+
+
+def test_the_script_path_is_quoted_inside_the_argument_string():
+    """THE DEFECT THIS ARM EXISTS FOR. The first shipped spelling was a
+    `schtasks` line using cmd's `\\"` escape, run from PowerShell, which strips
+    the backslashes: schtasks saw `/TR` end at the first inner quote and read the
+    rest as its own options - `ERROR: Invalid argument/option - '--once /F'`, in
+    the operator's hands. The repo root contains a space, so an unquoted script
+    path is not a style question."""
+    cmd = responder.register_command()
+    script = str(responder.ROOT / "tools" / "lw_inbox_responder.py")
+    assert f"'\"{script}\" --once'" in cmd, cmd
+    assert "\\\"" not in cmd, "cmd.exe escaping in the PowerShell form is the bug"
+
+
+def test_the_cmd_form_uses_cmds_own_escaping_and_not_powershells():
+    """MIRROR: the fallback is for a shell where `\\"` IS the escape."""
+    cmd = responder.register_command("cmd")
+    assert cmd.startswith("schtasks ")
+    assert '\\"' in cmd and "Register-ScheduledTask" not in cmd
+
+
+def test_the_register_command_spells_no_account_name_in_source():
+    """It resolves the interpreter at runtime through `lw_paths`. A literal would
+    publish the account name, and this repo is PUBLIC."""
+    source = (ROOT / "tools" / "lw_inbox_responder.py").read_text(encoding="utf-8")
+    assert "lw_paths.system_python()" in source
+    assert "Users\\" not in source
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None and shutil.which("pwsh") is None,
+                    reason="no PowerShell on this machine, so the emitted command "
+                           "cannot be parse-checked here - could not check, which is "
+                           "not the same as checked and found clean")
+def test_the_emitted_powershell_actually_parses():
+    """Parses it, never runs it. Registering the task is D5."""
+    exe = shutil.which("powershell") or shutil.which("pwsh")
+    probe = (
+        "$errs=$null;"
+        "$null=[System.Management.Automation.Language.Parser]::ParseInput("
+        "$env:LW_REG_CMD,[ref]$null,[ref]$errs);"
+        "if($errs.Count -eq 0){'OK'}else{$errs|%{$_.Message}}"
+    )
+    env = dict(os.environ, LW_REG_CMD=responder.register_command())
+    out = subprocess.run([exe, "-NoProfile", "-NonInteractive", "-Command", probe],
+                         capture_output=True, text=True, env=env).stdout
+    assert out.strip() == "OK", out
 
 
 def test_no_process_launch_in_this_module_mentions_schtasks():

@@ -6,6 +6,16 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **43 false-RED sites repaired - DONE 2026-09-10, 43 -> 0.** `tests/gitdep.py`
+  answers one factual question (can this machine resolve git) and each site
+  decides what that means there: module-level `pytestmark` where all 21 arms
+  build a repository, a fixture-level skip where only 9 of 35 do, a per-arm
+  decorator for the remaining 13. NOT a sweep and not a matcher. Graded
+  behaviourally by `tests/test_git_absence_is_a_skip.py`, which runs a
+  representative node per repaired file with git stripped AND with git present -
+  SKIP then RUN, because a marker that always skips grades nothing. Without git
+  the suite is now 0 failed / 0 errors / 101 skipped (was 15 / 28 / 57). 5
+  mutants, 5 killed. `docs/FALSE_RED_PROBE_2026-09-10.md`. LEDGER 182.
 - **inbox responder built + positions filed - DONE 2026-09-10.**
   `tools/lw_inbox_responder.py` + `tests/test_inbox_responder.py` (51 arms, 18
   mutants killed, no survivors). Built to RC's SHAPE with CS's and RSC's
@@ -58,24 +68,6 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   diagnosable. `ops/loop/slots.py` is byte-identical by contract with RC and
   LW's suite is the only coverage either side has, so a fix needs a re-sync -
   which is exactly why this is recorded rather than patched on one red.
-
-- **43 FALSE-RED sites, measured 2026-09-10 - OPEN, and the numbers are LW's
-  own.** RC's audit said a guard that inspects skip CONDITIONS is structurally
-  blind to an ungated `subprocess.run([..., check=True])`. LW ran RC's
-  reproduction rather than static-reading: full suite with git stripped off
-  PATH. With git, 2865 passed / 18 skipped, exit 0. Without git, 15 failed /
-  2783 passed / 57 skipped / 28 errors - **43 items that go RED for a tool that
-  is simply not installed**, none of them a real defect in the thing under
-  test. They cluster: `test_git_hooks_gate.py` 21, `test_loop_executor.py` 9,
-  the identity/secret/mojibake sweeps 7 (they select their corpus with
-  `git ls-files`), plus `test_lw_facts_inbox` 2 and
-  `test_lw_next_session_guard` 1. The mirror direction is the good news and is
-  also measured: skips rose 18 -> 57, so 39 arms already degrade correctly.
-  Latent, because CI and Legion both ship git. The fix is the three-disposition
-  rule applied at each site - COULD-NOT-CHECK is a true skip, not a failure -
-  and it is a per-site repair, not a matcher. Probe:
-  `scratchpad/probe_no_git.py` shape, re-runnable from
-  `docs/FALSE_RED_PROBE_2026-09-10.md`.
 
 - **first-pass-batch-2026-09-08 leftovers - OPEN, needs operator decisions.**
   The 2026-09-08 ingest + first pass left three queues, none of them blocked on

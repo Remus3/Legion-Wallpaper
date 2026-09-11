@@ -34,6 +34,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import gitdep
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
 import lw_facts  # noqa: E402
 
@@ -233,6 +235,7 @@ def test_an_unread_fyi_note_does_not_raise_an_anomaly(tmp_path):
 # ---------------------------------------------------------------------------
 # 6. wiring: the record is per-machine state and the hook actually emits this
 # ---------------------------------------------------------------------------
+@gitdep.requires_git
 def test_the_record_lives_in_gitignored_runtime_state():
     rel = lw_facts._SEEN.relative_to(ROOT).as_posix()
     assert rel == "ops/runtime/sync_inbox_seen.json"
@@ -340,6 +343,7 @@ def test_an_already_seen_note_stays_seen_when_a_new_one_is_reported(tmp_path):
         _keys(box, "old.md", "new.md"))
 
 
+@gitdep.requires_git
 def test_the_report_record_lives_in_gitignored_runtime_state():
     rel = lw_facts._REPORTED.relative_to(ROOT).as_posix()
     assert rel == "ops/runtime/sync_inbox_reported.json"

@@ -27,6 +27,70 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+182. DONE **2026-09-10 (43 false-RED sites repaired, 43 -> 0, and the
+   registration command the operator could not run).** Same-day follow-up to
+   LEDGER 181, which measured the count and shipped no repair.
+
+   **The repair.** `tests/gitdep.py` answers ONE factual question - can this
+   machine resolve a git executable - and each call site decides for itself what
+   that answer means there. Deliberately NOT a sweep and NOT a matcher: widening
+   one matcher over 43 sites is the move RSC's charter names as the wrong
+   response after the second defeat, and it would have relocated the conflation
+   rather than closing it. Three site shapes, each chosen from what the file
+   actually does, measured rather than assumed: module-level `pytestmark` in
+   `test_git_hooks_gate.py` (all 21 arms build a real repository with
+   `git init`, so it cannot over-skip); a fixture-level `skip_if_git_missing()`
+   in `test_loop_executor.py` (only 9 of 35 arms need git, and they reach it
+   through `worktree_pair`, which is why they arrived as ERRORs in setup rather
+   than FAILEDs in the test); and a per-arm decorator on the 13 named arms
+   across the remaining eight files, leaving the rest of each file untouched.
+   What it deliberately does not do: a git that IS installed and then fails is
+   still a FAIL. `gitdep` knows about absence only.
+
+   **Graded in BOTH directions, behaviourally.**
+   `tests/test_git_absence_is_a_skip.py` reads no skip condition - that is the
+   structural blindness RC reported against its own 2116-line guard. It RUNS one
+   representative node per repaired file twice, once with git stripped and once
+   with git present, and asserts SKIP then RUN. The mirror half is the one that
+   matters: a marker that always skips satisfies the absence half perfectly and
+   grades nothing. A third arm asserts the skip reason names git. The stripped
+   environment is ASSERTED git-less before anything is measured.
+
+   **Measured, uncontended:** without git **0 failed / 0 errors / 2794 passed /
+   101 skipped** (was 15 failed / 28 errors / 2783 passed / 57 skipped, 43
+   attributable). With git, exit 0, 2877 passed / 18 skipped. 5 mutants, one per
+   repair shape plus both halves of the primitive, 5 KILLED, each restored
+   byte-exact.
+
+   **The same measurement error, made twice, recorded both times.** The first
+   post-repair probe reported 2 remaining failures - both timing-sensitive
+   concurrency arms, neither git-related - because it ran while a mutation
+   harness was hammering the same box. Re-run uncontended: 0. A probe on a
+   contended machine is no more a result than one on a mid-session tree, which
+   is the error LEDGER 181 already recorded in its other form.
+
+   **The registration command was BROKEN in the operator's hands, and that was
+   LW's defect.** The `schtasks` line LEDGER 181 shipped used cmd.exe's `\"`
+   escape and the operator ran it in PowerShell, which strips the backslashes:
+   schtasks saw `/TR` end at the first inner quote and read the remainder as its
+   own options - `ERROR: Invalid argument/option - '--once /F'`. Fixed by
+   removing the quoting question rather than by finding a better escape:
+   `Register-ScheduledTask` takes executable and arguments as SEPARATE
+   parameters. The cmd.exe form is kept and labelled for a shell where `\"` IS
+   the escape. Four new arms: the script path is quoted inside the argument
+   string (the repo root contains a space), the cmd form uses cmd's escaping and
+   not PowerShell's, the source spells no account name (it resolves the
+   interpreter through `lw_paths` at runtime - this repo is PUBLIC), and the
+   emitted PowerShell PARSES, checked by parsing it and never running it, with a
+   skip that says so when no PowerShell is present.
+
+   **Verified:** suite green, ruff clean, drift_guard 0 breaches, mutation 5/5
+   on the repair and the earlier 18/18 still standing. **Do NOT redo:** the
+   false-RED count is 0 and re-measuring costs 10 minutes; re-run
+   `python tools/lw_false_red_probe.py` only after touching an external-binary
+   call site, and only on an otherwise idle box. The responder is STILL not
+   registered - that is D5 and stays the operator's.
+
 181. DONE **2026-09-10 (inbox responder built and NOT armed, positions filed to
    four siblings, and 43 false-RED sites measured).** Three deliverables, one
    session, all three measured rather than asserted.

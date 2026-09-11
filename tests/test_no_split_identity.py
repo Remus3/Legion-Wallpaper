@@ -50,6 +50,8 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
+import gitdep
+
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -113,12 +115,14 @@ def sweep() -> tuple[int, list[str]]:
     return scanned, offenders
 
 
+@gitdep.requires_git
 def test_the_sweep_selects_a_real_corpus():
     """Guard the guard: a sweep that scanned nothing would pass vacuously."""
     scanned, _ = sweep()
     assert scanned > 200, f"only {scanned} tracked files scanned - the corpus is wrong"
 
 
+@gitdep.requires_git
 def test_no_tracked_file_carries_an_identity_fragment():
     _, offenders = sweep()
     assert not offenders, (

@@ -22,6 +22,14 @@ from pathlib import Path
 
 import pytest
 
+import gitdep
+
+# EVERY arm in this file drives a real repository it creates with `git init`, so
+# the module-level marker is not over-skipping - measured, all 21 went red with
+# git off PATH on 2026-09-10. The failures arrived as ERRORs because the shelling
+# out happens in the `repo` fixture, during setup rather than during the test.
+pytestmark = gitdep.requires_git
+
 ROOT = Path(__file__).resolve().parent.parent
 GATE = ROOT / "tools" / "precommit_gate.py"
 INSTALLER = ROOT / "tools" / "install_git_hooks.py"
