@@ -4,6 +4,23 @@
 
 ## NEXT SESSION - the parked pipeline queue
 
+**The Clockspeed call is CLOSED and CS is fixed and pushed** (CS `10a7e52`,
+LEDGER 187). Do not re-measure it, do not re-file it, and do not re-open the
+cross-repo audit - RSC self-fixed at `7786955`, RC has its own tracer, LL was
+told about its inbox ack state, and LW itself was fixed at `ec9c8d6` /
+`f319583`. The operator's answer was FIX CS DIRECTLY and that authority was for
+that repair; it is NOT a standing licence to edit sibling trees. Ask again next
+time.
+
+**The one durable lesson, and it cost a red run:** do not edit a sibling's
+tracked file MID-FILE without checking its line pins first. CS pins source line
+numbers from `docs/item_notes/` and an insertion above line 2089 in
+`tests/save/test_phase4_gate.py` reddened `test_docs_citations.py` twice. The
+repair is to APPEND AT THE FOOT, never to re-cut the digest - that guard's own
+message names re-cutting as the trap. CS's own `tests/conftest.py` records the
+same rule for the same reason.
+
+
 **The responder lane AND the false-RED repair are both DONE and closed.** Do not
 re-file the positions, do not re-measure the false-RED count (it is 0; re-run
 `python tools/lw_false_red_probe.py` only after touching an external-binary call

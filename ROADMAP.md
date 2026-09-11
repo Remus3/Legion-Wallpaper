@@ -17,10 +17,14 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   17,492 B (RSC self-fixed at 7786955), LL writes its own inbox ack state.
   LEDGER 184-185.
 
-- **NEXT / OPEN: Clockspeed writes 23 `*.copy.sav` into its live `work/saves/`**
-  and nobody is on it. The operator was asked whether LW should fix CS (and RSC,
-  now moot) directly and had not answered at wrap. LW has edited nothing in any
-  sibling tree.
+- **Clockspeed's write leak fixed in CS's own tree - DONE 2026-09-11 (CS
+  `10a7e52`).** Operator answered FIX CS DIRECTLY, so this is the first sibling
+  tree LW has edited. CS already had it open as CS-973, whose acceptance asked
+  for a full-suite before/after count that DISCOVERS the writer - not just the
+  two redirects LW's report named. Shipped there: autouse redirects in both
+  modules, a regression arm in each, a session-scoped count guard in
+  `tests/conftest.py`, 3 mutants killed. CS green at 6226 passed / 7 skipped
+  with the tracer's control proved and every bucket empty. LEDGER 187.
 
 - **LW-InboxResponder ARMED - DONE 2026-09-11 (operator direction).**
   Registered with `Register-ScheduledTask`, PT5M indefinite, Limited, pythonw.

@@ -27,6 +27,51 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+187. DONE **2026-09-11 (the Clockspeed write leak fixed in CS's own tree on
+   operator direction; CS commit `10a7e52`, LW docs-only).** The operator was
+   asked at the previous wrap whether LW should repair a sibling directly and
+   had not answered; asked again at the top of this session and answered FIX CS
+   DIRECTLY. This is the first time LW has edited another project's tree.
+   PREMISE RE-VERIFIED BEFORE ACTING, not carried forward: 23 `*.copy.sav`
+   counted live in `C:\Clockspeed\work\saves\`.
+   **CS ALREADY HAD THE ITEM OPEN AS CS-973**, filed from LW's report, and its
+   acceptance asked for MORE than the two redirects LW's hand-off described - a
+   full-suite before/after count whose arm DISCOVERS the writer rather than
+   encoding the two already known. Shipping only the redirects would have left
+   the item's own acceptance unmet while looking done.
+   **THE HAND-OFF'S ATTRIBUTION WAS RIGHT ON THE FILES AND INCOMPLETE ON THE
+   ARMS.** A traced run named three: `test_a_real_world_parses_end_to_end`,
+   `test_every_real_save_in_the_library_loads_through_the_one_entry_point` and
+   `test_every_endpoint_bootstrap_names_answers_over_verified_tls`. Root cause
+   is one fact, not two bugs: `world.load_world` copies through
+   `workdir.copy_for_read` before parsing and the work root DEFAULTS to
+   `<repo>/work`. The acceptance module was the instructive one - no arm in it
+   names the save layer, the copy happens inside a MODULE-scoped fixture, so a
+   function-scoped redirect would be installed and torn down AFTER the writes.
+   **Shipped in CS:** autouse redirects in both modules, a regression arm in
+   each, and a session-scoped count guard in `tests/conftest.py`. Three mutants,
+   three killed, each restored byte-exact - the third (phase 4 redirect removed,
+   ONLY the library sweep selected) proves the session guard binds alone.
+   **LW BROKE A CS GUARD AND CS CAUGHT IT.** The first attempt put the phase 4
+   blocks in the section where they read best, moving `WRITER_WRITE_SURFACE` off
+   line 2089 and reddening `test_docs_citations.py` twice, because
+   `docs/item_notes/phase4.md` pins that line for the still-open CS-446. Fixed
+   by moving the blocks to the FOOT rather than by re-cutting the digest, which
+   that guard's own message names as the trap. **Do not edit a sibling's tracked
+   file mid-file without checking its line pins first.**
+   **Verified in CS, not claimed:** `pytest tests/` 6226 passed / 7 skipped /
+   exit 0 under the tracer with `control.proved` true and every finding bucket
+   EMPTY, `work/saves/` left at the count it started with, `ruff check tests/`
+   and `ruff format --check` clean, precommit gate PASS, and the pre-push hook's
+   own suite green at 6243 passed before `f568d95..10a7e52` landed.
+   **One unrelated finding, filed not fixed:** `tests/test_edit_lint_check.py`
+   writes its CS-841 bait under `work/` instead of `tmp_path`. Self-cleaning, no
+   file survives, so it is placement and not pollution - recorded in CS's ledger
+   entry where a CS session will see it.
+   **Do not redo:** CS is closed and pushed. RSC self-fixed at `7786955`, RC has
+   its own tracer, LL was told about its inbox ack state. LW itself was fixed at
+   `ec9c8d6` / `f319583`.
+
 186. DONE **2026-09-11 (the tracer promoted, shipped to four repos, and two of
    LW's own published figures corrected; 7a5f92b, 7ca9396).** RC replied asking
    for the instrumentation by name (operator-approved on their side) and LL
