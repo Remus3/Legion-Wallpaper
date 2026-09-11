@@ -6,6 +6,22 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Responder run log + the cross-repo hermeticity audit - DONE 2026-09-11
+  (ec9c8d6, f319583, ebbb6f3, 7a5f92b, 7ca9396).** `ops/runtime/inbox_responder/
+  runs.jsonl`, one record per NON-IDLE cycle (idle writes nothing; liveness is
+  `Get-ScheduledTaskInfo`). Three LW sites fixed where the suite wrote the live
+  tree, the worst being `lw_facts` writing the real `sync_inbox_reported.json` -
+  LEDGER 162's defect re-entered through the suite. `tools/lw_write_tracer.py`
+  shipped as a tested artifact (13 arms) and sent to all four siblings.
+  Measured: RC 181,285 B + 7 live JSON state files replaced, CS 23 saves, RSC
+  17,492 B (RSC self-fixed at 7786955), LL writes its own inbox ack state.
+  LEDGER 184-185.
+
+- **NEXT / OPEN: Clockspeed writes 23 `*.copy.sav` into its live `work/saves/`**
+  and nobody is on it. The operator was asked whether LW should fix CS (and RSC,
+  now moot) directly and had not answered at wrap. LW has edited nothing in any
+  sibling tree.
+
 - **LW-InboxResponder ARMED - DONE 2026-09-11 (operator direction).**
   Registered with `Register-ScheduledTask`, PT5M indefinite, Limited, pythonw.
   Verified Ready, forced run `LastTaskResult` 0, baselined under supervision at

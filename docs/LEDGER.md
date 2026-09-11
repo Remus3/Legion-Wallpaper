@@ -27,6 +27,49 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+186. DONE **2026-09-11 (the tracer promoted, shipped to four repos, and two of
+   LW's own published figures corrected; 7a5f92b, 7ca9396).** RC replied asking
+   for the instrumentation by name (operator-approved on their side) and LL
+   asked separately for `lw_false_red_probe.py` - a DIFFERENT artifact, not to
+   be conflated. Both delivered byte-copied as `*.py.from-lw` to all four
+   sibling inboxes, with the explicit license statement LL required: tracked in
+   a PUBLIC Apache-2.0 repo, sole copyright holder, vendorable with attribution
+   (LL refuses to copy an unlicensed drop, and that rule is correct). TWO
+   CORRECTIONS TO LW'S OWN PUBLISHED NUMBERS, both found by promoting the hack
+   to a tested artifact rather than by anyone complaining: (a) `builtins.open is
+   io.open` is TRUE but `pathlib` calls `io.open` by ATTRIBUTE LOOKUP, so
+   patching only `builtins` missed every `Path.write_text` - every figure in the
+   1043 and 1130 notes is therefore a LOWER BOUND for a second reason beyond the
+   early-stopped RC run; (b) the "Lanternlight is CLEAN" verdict is RETRACTED -
+   re-measured, LL writes 19,700 B `inbox_seen.json` + 10,464 B
+   `inbox_reported.json` from `test_the_sessionstart_hook_command_really_runs_
+   and_prints_the_report`, its own mail-ack state, the same defect in the same
+   lane as LW's. Also re-measured: RSC now CLEAN, self-fixed at `7786955` ("the
+   suite was writing the operator's day log") at 10:11, AHEAD of LW's 10:43 note
+   - credit theirs, and LW's finding was accurate when taken. LW re-verified
+   clean with the corrected instrument rather than resting on the holed one.
+   ADOPTED FROM LL, not argued with: their point that an instrument printing a
+   zero with no self-check reports an absence of evidence dressed as evidence of
+   absence. Every run now plants a specimen through each patched route into a
+   private temp root and reports `control.proved` per route, plus LL's second
+   point - a NEGATIVE specimen outside every root, since a positives-only
+   control still passes a classifier mutated to promote everything; all
+   specimens are scrubbed or the control would manufacture a finding in every
+   tree. THE CONTROL EARNED ITSELF ON ITS FIRST RUN: all three routes reported
+   false on a working tracer because Windows `mkdtemp` returns the 8.3 SHORT
+   path while `_watched` resolves to the long form. Without it that run would
+   have printed a clean zero and been believed. Mutation-proven: deleting the
+   `io.open` patch flips `control.proved` false AND fails the pathlib arm,
+   restored byte-exact; a separate arm forces ONE route to break and asserts the
+   others still prove; the SUBPROCESS blind spot is ASSERTED by an arm rather
+   than documented, so closing it forces the claim to be rewritten. 13 arms, all
+   end-to-end through a real pytest subprocess. VERIFIED: ruff clean, full suite
+   **2912 passed, 18 skipped** run UNDER the tracer itself with `control.proved
+   true` and every finding bucket empty. Four notes on the channel, including a
+   SUPERSEDE note naming the old sha so nobody runs the holed copy. NOTHING was
+   edited in any sibling tree. OPEN: CS still writes 23 `*.copy.sav` into its
+   live `work/saves/` with nobody on it.
+
 185. DONE **2026-09-11 (the same hermeticity defect measured across all five
    trees; two more found and fixed in LW; f319583).** Follow-on from LEDGER 184
    on operator direction. METHOD CORRECTED MID-TASK, and the correction is the

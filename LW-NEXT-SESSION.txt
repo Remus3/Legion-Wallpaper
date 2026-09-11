@@ -1,37 +1,26 @@
 NEXT SESSION
 ------------
-Task: The parked pipeline queue. It is the only substantive open work left:
-  108 slugs awaiting approve/reject in _firstneedauth, 7 HELD
-  aspect_crop_heavy needing a per-image framing call (use --crop-overrides
-  {slug: {"top": N}}), 3 failing G1 on lap_ratio 0.91-0.93 against the 1.0
-  floor. Also open and OPERATOR CALLS, not code: the scoped_revert art-damage
-  measure (95 percent of the changed area is vouched for only by the search's
-  own stopping rule) and whether `dists` should gate at all.
-Context: docs/NEXT_SESSION_PARKED_2026-09-10.md holds the queue verbatim.
-  RE-PROBE the counts before acting - 0.Originals has already moved twice.
-  ROADMAP.md top. Inbox first: read, THEN `python tools/lw_facts.py
-  --mark-inbox-seen`.
-LIVE AND UNATTENDED: LW-InboxResponder is ARMED as of 2026-09-11 (LEDGER 183).
-  It fires every 5 minutes and spawns a DETACHED HEADLESS bypassPermissions
-  session on any note that is new by content digest. Do NOT re-register and do
-  NOT re-baseline - re-baselining swallows every note that arrived since. Stop
-  it mid-flight with `type nul > "ops\runtime\inbox_responder\HALT"` (an empty
-  file counts; it is checked before the inbox is read), release with `del`.
-  Known and deliberate: the allowlist is enforced as prompt INSTRUCTIONS, not
-  mechanically. If the trial misbehaves, that is where to look first.
-Still open, do not guess at it: ONE unreproduced slot over-admission - peak 8
-  holders at width 7, 50 clean re-runs (25 isolated, 25 under load), cause
-  UNKNOWN, ROADMAP has it. ops/loop/slots.py is byte-identical by contract with
-  RC, so a fix needs a re-sync and one red does not justify a patch.
-Acceptance: `python -m pytest tests/ -q` green (baseline 2882 passed / 18
-  skipped, ~152s on 2026-09-11), ruff clean, `python tools/drift_guard.py`
-  exit 0, `python tools/done_gate.py bind` exit 0, then push the bound sha.
-  Pre-existing, NOT yours: the suite runs one more item than it collects.
-Do NOT redo: LEDGER 181-183 shipped and pushed (eed19c7, d7811ba, 925d4df,
-  b9d1731). Positions on RSC's Q1-Q5 are FILED to all four siblings; RC
-  answered Q5 on 2026-09-08 and the answer is in the inbox. The 43 false-RED
-  sites are repaired, 43 -> 0 - re-run `python tools/lw_false_red_probe.py`
-  only after touching an external-binary call site, and only on an IDLE box.
-  The responder's registration command is fixed and parse-checked.
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
-  git log.
+Task: Decide the Clockspeed call, then pick the next ROADMAP item. CS writes 23
+  *.copy.sav files into its LIVE work/saves/ (tests/save/test_phase4_gate.py and
+  tests/surface/test_acceptance.py copy the operator's real saves beside the
+  originals instead of into tmp). Nobody is on it. The operator was asked at
+  wrap whether LW should fix CS directly and had not answered - ask again before
+  touching another repo's tree. LW has edited nothing in any sibling tree.
+Context: tools/lw_write_tracer.py is the instrument - process-local, patches
+  builtins.open + io.open + os.replace + os.rename, counts bytes, plants a
+  control every run. Run it as:
+  pytest tests/ -p lw_write_tracer --trace-roots "<dirs>" --trace-out out.json
+  with the tool directory on PYTHONPATH. CS roots are ops;data;work;config;
+  memory;moon_sync_inbox - CS has NO ops/runtime and NO logs, so watching those
+  is a vacuous probe. Read control.proved in the report before believing a zero.
+  Parked pipeline queue still sits in docs/NEXT_SESSION_PARKED_2026-09-10.md.
+Acceptance: a traced CS run reports control.proved true and every finding bucket
+  empty, or the operator has explicitly declined the CS fix.
+Do NOT redo: LW is fixed and verified - 3 sites closed (ec9c8d6, f319583), suite
+  traces clean at 2912 passed with control proved. Do not re-measure LW. Do not
+  use a snapshot/mtime diff to attribute writes on this box: a 300s idle control
+  proved it attributes nothing. RSC self-fixed at 7786955 and measures clean;
+  RC has its own tracer and is on it; LL was told about its inbox ack state.
+  The sync inbox lane itself is healthy - report, ack, fan-out and the armed
+  responder were all probed live this session.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.

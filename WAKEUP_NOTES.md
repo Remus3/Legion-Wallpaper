@@ -38,6 +38,39 @@ PRE-EXISTING.
 
 ---
 
+## 2026-09-11 - the inbox responder's run log, and the hermeticity bug it exposed in four trees (LEDGER 184-185)
+
+Started from "is the sync inbox lane properly set up". It was: report, ack,
+outbound fan-out and the armed responder all probed live and working. The one
+gap was observability, and closing it uncovered a bug class in four repos.
+
+Shipped: ec9c8d6 run log (`ops/runtime/inbox_responder/runs.jsonl`, non-idle
+cycles only, append not tmp-replace), f319583 two further LW live-write fixes,
+ebbb6f3 LEDGER 185, 7a5f92b `tools/lw_write_tracer.py` promoted to a tracked
+tested artifact, 7ca9396 the planted control.
+
+**METHOD, and it is the durable lesson.** A snapshot diff around a suite run is
+INVALID on this box - a 300s idle control with NO suite running showed all four
+candidate files changing anyway (daemons, other sessions). Two of the first
+three conclusions were withdrawn on that evidence. Use
+`tools/lw_write_tracer.py`: process-local, patches `builtins.open`, `io.open`,
+`os.replace`, `os.rename`, counts BYTES, plants a control every run.
+
+**`io.open` is a SEPARATE binding from `builtins.open`.** Patching only
+`builtins` misses every `Path.write_text`. That hole made every figure published
+before 7a5f92b a lower bound and produced one wrong CLEAN verdict.
+
+Do NOT redo: the LW fixes are shipped and the suite traces clean (control
+proved, all buckets empty, 2912 passed). Do not re-measure LW. Do not re-run the
+snapshot-diff approach. RSC fixed itself (7786955); RC is on it with its own
+tracer; LL was told its suite writes its own inbox ack state.
+
+Open: CS has 23 `*.copy.sav` written into live `work/saves/` and nobody on it -
+the operator was asked whether LW should fix CS and RSC directly and had not
+answered at wrap. Nothing in any sibling tree has been edited by LW.
+
+---
+
 ## 2026-09-11 - LW-InboxResponder armed, and the kill switch that required (LEDGER 183)
 
 - **Armed on operator direction.** PT5M indefinite, Limited, pythonw so nothing
@@ -74,40 +107,3 @@ PRE-EXISTING.
   escape run in PowerShell. Fixed by removing the quoting question entirely
   (`Register-ScheduledTask` takes execute and arguments separately), with an arm
   that PARSES the emitted PowerShell and never runs it.
-
----
-
-## 2026-09-10 - the responder lane: positions filed, responder built and NOT armed, 43 false-RED sites measured (LEDGER 181)
-
-- **Standby lifted, positions filed.** One note, byte-identical by construction
-  (sha256 `f627670e967f1603...`, 13627 bytes), into all four sibling inboxes
-  plus LW's own record. RSC located at `C:\Resin Compute` - it is NOT under
-  `C:\ReSin*`. No code written into any sibling tree.
-- **The conftest claim, refuted on a SECOND tree.** RSC's "already latent in the
-  conftest all five of us share" was retracted after RC refuted it; LW measured
-  its own rather than taking either side. No root `conftest.py` exists;
-  `tests/conftest.py` is 56 lines, has ZERO external-binary calls and encodes no
-  skip/fail policy - it is the YOLO_AUTOINSTALL + PIL guard and nothing else.
-  Q3 stands anyway: LW's evidence is `tools/lw_model_pins.py`, production code.
-- **Responder built to the REPAIRED list, not the proposed one.** CS and RSC had
-  both refuted parts of RC's A1-A4 before LW wrote a line, so A3 needs two
-  INDEPENDENT corroborating carriers, A4 never moves a pin alone, A2 is bounded
-  and reports counts not a verdict, and A5 exists at all. Gate is three-valued:
-  AUTO / DRAFT / UNAVAILABLE, `checked` separating REFUSED from COULD-NOT-CHECK.
-- **Caught by running it:** the first dry run against the real inbox reported
-  139 new notes and would have spawned 139 headless sessions. Cold start now
-  baselines and spawns nothing; `MAX_SPAWNS_PER_CYCLE = 3` bounds a burst.
-- **18 mutants, 18 killed, byte-exact restore.** Two honest misses recorded
-  rather than quietly fixed: the A3-independence mutant SURVIVED the first pass
-  (the existing arm was already refused by the count, so the rule read as tested
-  when it was not), and `record_seen`'s prune-to-live survived until a
-  withdrawn-and-refiled arm was added.
-- **43 false-RED sites**, measured with RC's own reproduction. Mirror direction
-  measured too: skips 18 -> 57, so 39 arms already degrade correctly.
-- **One RED nobody can reproduce, recorded not buried.** A full-suite run
-  inside `done_gate bind` failed the slots ceiling arm with peak 8 at width 7.
-  25 isolated runs and 25 under 12-way CPU load were clean, as were three other
-  full-suite runs. Cause UNKNOWN. The arm's message was wrong for the
-  over-admission case and is now split in two. `ops/loop/slots.py` is
-  byte-identical by contract with RC - see ROADMAP.
-- Suite 2870 passed / 18 skipped, ruff clean, drift_guard 0 breaches.

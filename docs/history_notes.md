@@ -436,6 +436,43 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-10 - the responder lane: positions filed, responder built and NOT armed, 43 false-RED sites measured (LEDGER 181)
+
+- **Standby lifted, positions filed.** One note, byte-identical by construction
+  (sha256 `f627670e967f1603...`, 13627 bytes), into all four sibling inboxes
+  plus LW's own record. RSC located at `C:\Resin Compute` - it is NOT under
+  `C:\ReSin*`. No code written into any sibling tree.
+- **The conftest claim, refuted on a SECOND tree.** RSC's "already latent in the
+  conftest all five of us share" was retracted after RC refuted it; LW measured
+  its own rather than taking either side. No root `conftest.py` exists;
+  `tests/conftest.py` is 56 lines, has ZERO external-binary calls and encodes no
+  skip/fail policy - it is the YOLO_AUTOINSTALL + PIL guard and nothing else.
+  Q3 stands anyway: LW's evidence is `tools/lw_model_pins.py`, production code.
+- **Responder built to the REPAIRED list, not the proposed one.** CS and RSC had
+  both refuted parts of RC's A1-A4 before LW wrote a line, so A3 needs two
+  INDEPENDENT corroborating carriers, A4 never moves a pin alone, A2 is bounded
+  and reports counts not a verdict, and A5 exists at all. Gate is three-valued:
+  AUTO / DRAFT / UNAVAILABLE, `checked` separating REFUSED from COULD-NOT-CHECK.
+- **Caught by running it:** the first dry run against the real inbox reported
+  139 new notes and would have spawned 139 headless sessions. Cold start now
+  baselines and spawns nothing; `MAX_SPAWNS_PER_CYCLE = 3` bounds a burst.
+- **18 mutants, 18 killed, byte-exact restore.** Two honest misses recorded
+  rather than quietly fixed: the A3-independence mutant SURVIVED the first pass
+  (the existing arm was already refused by the count, so the rule read as tested
+  when it was not), and `record_seen`'s prune-to-live survived until a
+  withdrawn-and-refiled arm was added.
+- **43 false-RED sites**, measured with RC's own reproduction. Mirror direction
+  measured too: skips 18 -> 57, so 39 arms already degrade correctly.
+- **One RED nobody can reproduce, recorded not buried.** A full-suite run
+  inside `done_gate bind` failed the slots ceiling arm with peak 8 at width 7.
+  25 isolated runs and 25 under 12-way CPU load were clean, as were three other
+  full-suite runs. Cause UNKNOWN. The arm's message was wrong for the
+  over-admission case and is now split in two. `ops/loop/slots.py` is
+  byte-identical by contract with RC - see ROADMAP.
+- Suite 2870 passed / 18 skipped, ruff clean, drift_guard 0 breaches.
+
+---
+
 ## 2026-09-08 - PVR closed, two guards shipped, and two contamination probes (LEDGER 177-180)
 
 - **PVR (177):** premise CORRECTED - the enabling `PUT` was a verified no-op
