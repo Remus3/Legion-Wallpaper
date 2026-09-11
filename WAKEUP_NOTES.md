@@ -20,13 +20,15 @@ wrap ritual: `done_gate bind` prints 12 chars, `gh run list --commit` matches 40
 Any sha is resolved now. If a CI poll ever sits on `queued` forever again, check
 what was ASKED before believing the answer.
 
-**THE HEADLESS LANES ARE DISARMED as of this wrap (operator direction).** Both
-kill switches are on disk: `ops\runtime\inbox_responder\HALT` and
-`ops\runtime\ci_watchdog\HALT`. The scheduled tasks are still registered and
-still Ready - the HALT files are what stop them, checked before any work is
-done. RE-ARM is deleting the two files, and it is the OPERATOR'S call, not a
-next session's housekeeping. Do not delete them to "fix" a task that looks
-idle.
+**ALL THREE HEADLESS LANES ARE DISARMED as of this wrap (operator direction;
+LEDGER 189 + 191 - the weekly-hygiene lane had NO switch at all and one was
+added, arms in tests/test_headless_lane_kill_switches.py).** The kill switches
+are on disk: `ops\runtime\inbox_responder\HALT`, `ops\runtime\ci_watchdog\HALT`
+and `ops\runtime\weekly_hygiene\HALT`. The scheduled tasks are still registered
+and still Ready - the HALT files are what stop them, checked before any work is
+done, and all three were PROVED halted by running them. RE-ARM is deleting the
+three files, and it is the OPERATOR'S call, not a next session's housekeeping.
+Do not delete them to "fix" a task that looks idle.
 
 
 **The Clockspeed call is CLOSED and CS is fixed and pushed** (CS `10a7e52`,

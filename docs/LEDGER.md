@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+191. DONE **2026-09-11 (the THIRD headless lane had no kill switch at all; found
+   while disarming the other two, fixed and proved).** `LW-WeeklyHygiene`
+   (Sunday 04:17) runs `tools/weekly_hygiene_run.ps1`, which spawns
+   `claude -p --model claude-sonnet-5 --dangerously-skip-permissions` with Edit
+   and Write in its allowed tools and NOBODY WATCHING, and it commits and
+   pushes. It was registered 2026-08-02 and had NO HALT check in it: the only
+   way to stop it was `Disable-ScheduledTask`, a change to the operator's
+   scheduler configuration to achieve what an empty file achieves for the other
+   two lanes. It was missed because the disarm request was read against the two
+   lanes that ADVERTISE a kill switch in `docs/OPERATIONS.md` - the lane without
+   one was the lane with nothing to find. ADDED: a HALT check as the first thing
+   the script does after resolving the repo, before anything is written or
+   spawned, at `ops\runtime\weekly_hygiene\HALT`, with the empty-file ruling the
+   responder and `ci_watchdog.halted` already carry (`type nul > HALT` is how an
+   operator makes one under stress; reading that as "no halt" disarms the switch
+   exactly when it is being used). PROVED by running the real script with the
+   switch in place: it printed the reason and exited 0 without invoking claude.
+   New file `tests/test_headless_lane_kill_switches.py`, 6 arms, pinning the
+   property rather than the wording - a switch EXISTS, an empty one still halts,
+   and the check PRECEDES the `claude` launch, because a switch read after the
+   session starts stops nothing. Mutation-proven: deleting the check reddens 3
+   of the 6, restored byte-exact. `docs/OPERATIONS.md` now says THREE lanes.
+   FUTURE: any new unattended lane gets its HALT check in the same commit that
+   arms it, and adding one to that test file is the cheapest way to keep this
+   from recurring.
+
+---
+
 190. DONE **2026-09-11 (truth_gate read a COMPLETED GREEN as `queued` whenever
    the sha was abbreviated; found by using it, fixed RED-first).** Confirming
    CI at this session's wrap, `truth_gate.check_ci('ebbd0f9b852e')` answered

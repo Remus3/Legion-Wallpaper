@@ -25,6 +25,22 @@ $ErrorActionPreference = "Continue"
 $repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
 
+# KILL SWITCH, checked BEFORE claude is invoked and before anything is written.
+# Same convention as the other two headless lanes (ops\runtime\inbox_responder\HALT,
+# ops\runtime\ci_watchdog\HALT): an EMPTY file still halts, because
+# `type nul > HALT` is how an operator makes one under stress and reading that
+# as "no halt" would disarm the switch exactly when it is being used. This lane
+# spawns `claude -p --dangerously-skip-permissions` with nobody watching, and
+# until 2026-09-11 it was the one headless lane here with no way to stop it
+# short of unregistering the task.
+$halt = Join-Path $repo "ops\runtime\weekly_hygiene\HALT"
+if (Test-Path -LiteralPath $halt) {
+    $reason = (Get-Content -LiteralPath $halt -Raw -ErrorAction SilentlyContinue)
+    if ([string]::IsNullOrWhiteSpace($reason)) { $reason = "HALT file present" }
+    Write-Host "[weekly_hygiene] HALT: $($reason.Trim())"
+    exit 0
+}
+
 $stamp = Get-Date -Format "yyyy-MM-dd"
 $log   = Join-Path $repo "logs\weekly_hygiene_$stamp.log"
 
