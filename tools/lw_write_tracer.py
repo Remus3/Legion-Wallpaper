@@ -51,6 +51,38 @@ BOUND for a suite that spawns processes. The limit is asserted by an arm in
 `tests/test_lw_write_tracer.py` rather than merely written down, so that
 closing it forces this paragraph to be updated instead of quietly outliving
 the truth.
+
+BYTES MOVED IS NOT STATE CHANGED
+--------------------------------
+This instrument answers ONE question: did this process write bytes into a
+watched path. It cannot answer whether the operator's STATE ended up
+different. The two come apart exactly where it matters most - a test that
+SNAPSHOTS a live record, lets something modify it, and RESTORES it in a
+`finally` is reported here as a writer of that record, and the write it is
+reported for is the RESTORE. A guard's repair looks identical to the damage.
+
+Both readings of this tracer taken on 2026-09-11, LW's own and Lanternlight's,
+made that mistake in opposite directions. LW published a finding against a
+sibling's suite whose two records were afterwards measured BYTE-IDENTICAL
+across the run; the bytes were its restore putting the operator's mail state
+back, performed by the one test documented as allowed to touch it, and the
+hook's real writes happened in a SUBPROCESS this tracer cannot see. So before
+filing anything this reports, hash the path before and after: a finding that
+survives that is a state change, and one that does not is a repair.
+
+The limit compounds with the subprocess one above rather than being covered by
+it. There a number is too LOW; here a number can be real and still mean the
+opposite of what it looks like.
+
+IF YOU VENDOR THIS
+------------------
+Reported by Lanternlight from a live vendoring on 2026-09-11, and it is a real
+trap: a linter will offer to autofix the `builtins.open` and `os.replace` calls
+inside the planted control into their `pathlib` equivalents. Those ARE the
+patched routes the control exists to exercise, so the autofix disarms the
+control silently while leaving every arm green - the failure mode this control
+was added to prevent. Exclude the vendored copy from lint, and write that reason
+next to the exclusion.
 """
 from __future__ import annotations
 
@@ -67,6 +99,11 @@ LIMITS = {
                   "that shells out yields a LOWER BOUND",
     "c_level": "a write issued through a C extension that bypasses open() and "
                "os.replace() is not seen",
+    "bytes_not_state": "BYTES MOVED is not STATE CHANGED. A test that "
+                       "snapshots a live record and RESTORES it in a finally "
+                       "is reported here as a writer of it, and the bytes are "
+                       "the repair. Hash the path before and after before "
+                       "filing anything from this report",
 }
 
 _state: dict = {}

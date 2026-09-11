@@ -4,6 +4,25 @@
 
 ## NEXT SESSION - the parked pipeline queue
 
+**LW's finding against Lanternlight is RETRACTED (LEDGER 188).** LL re-measured:
+both records byte-identical, the bytes were their RESTORE, the hook's real
+writes were in a subprocess the tracer cannot see. Do not re-measure LL's inbox
+records and do not re-file that finding. The cross-repo audit is CLOSED on every
+sibling. The lesson is now a mechanism, not a memory: the tracer's report
+carries a `bytes_not_state` limit key, and an arm plants a snapshot-restore
+guard to assert the record is byte-identical WHILE the tracer names the
+restoring test. Before filing anything that tracer reports, hash the path before
+and after.
+
+**THE HEADLESS LANES ARE DISARMED as of this wrap (operator direction).** Both
+kill switches are on disk: `ops\runtime\inbox_responder\HALT` and
+`ops\runtime\ci_watchdog\HALT`. The scheduled tasks are still registered and
+still Ready - the HALT files are what stop them, checked before any work is
+done. RE-ARM is deleting the two files, and it is the OPERATOR'S call, not a
+next session's housekeeping. Do not delete them to "fix" a task that looks
+idle.
+
+
 **The Clockspeed call is CLOSED and CS is fixed and pushed** (CS `10a7e52`,
 LEDGER 187). Do not re-measure it, do not re-file it, and do not re-open the
 cross-repo audit - RSC self-fixed at `7786955`, RC has its own tracer, LL was

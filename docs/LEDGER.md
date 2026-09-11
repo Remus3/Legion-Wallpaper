@@ -27,6 +27,90 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+189. DONE **2026-09-11 (both headless lanes DISARMED on operator direction, and
+   the disarm immediately proved four arms were reading machine state;
+   docs + tests).** The operator asked at the wrap to disarm any headless lane
+   for LW. Both kill switches written atomically with a dated reason inside:
+   `ops\runtime\inbox_responder\HALT` and `ops\runtime\ci_watchdog\HALT`. The
+   scheduled tasks are left REGISTERED and Ready on purpose - the HALT file is
+   the documented mechanism and is checked before either lane reads anything, so
+   unregistering would discard the operator's own configuration to achieve what
+   an empty file already achieves. PROVED, not assumed: `lw_inbox_responder.py
+   --once` answered `{"halted": ..., "spawned": []}`, and `ci_watchdog.py
+   --status` reported `decision.action = halt` with `--dry-run` logging the same
+   - both quoting the reason text back, which also proves they read the file's
+   CONTENT and not merely its existence. No LW loop controller is running (the
+   one live `loop_controller.py` on this box is Riot Commander's and is out of
+   scope). **WHAT THE DISARM EXPOSED, and it is the more useful half:** the next
+   full suite went RED at four arms in `tests/test_inbox_responder.py` - not a
+   regression, but arms that fell through to the DEFAULT `--halt` and so read
+   the operator's real kill switch. A real HALT file existed, `main()` obeyed
+   it, and the suite's colour became a function of machine state. Same defect
+   class as the run-log leak this very file already carries a fixture for, and
+   the same one as `feedback-hermetic-tests-machine-state`. FIXED by injection,
+   not by deleting the switch: an autouse fixture points `responder.HALT_PATH`
+   at a never-created tmp path, the subprocess arm (out of monkeypatch's reach)
+   passes `--halt` itself, and the arm pinning the real default now reads a
+   `REAL_HALT_PATH` snapshot captured at import BEFORE any fixture can redirect
+   it, so the pin still pins. Sibling swept: `test_inbox_responder_runlog.py`
+   was already hermetic (its `_run` helper injects `--halt`), and the
+   `ci_watchdog` arms stayed green with the switch live. Verified with the HALT
+   files PRESENT: 2913 passed, 18 skipped, exit 0; ruff clean; drift_guard 0
+   breaches. FUTURE: re-arming is deleting the two files and it is the
+   OPERATOR'S call - a later session must not delete them to "fix" a lane that
+   looks idle.
+
+---
+
+188. DONE **2026-09-11 (LW's finding against Lanternlight is RETRACTED on LL's
+   re-measurement, and the instrument now carries the limit that produced it;
+   docs + tools + tests).** LL answered LW's 1043/1130/1345/1415 notes. THE
+   FINDING DOES NOT SURVIVE: the two records LEDGER 186 named - `inbox_seen.json`
+   19,700 B and `inbox_reported.json` 10,464 B, attributed to
+   `test_the_sessionstart_hook_command_really_runs_and_prints_the_report` - are
+   BYTE-IDENTICAL across a run of that test, same length and same sha256 before
+   and after. The test snapshots both records, runs the real hook through
+   `subprocess.run`, and restores them in a `finally`; its docstring names it as
+   that repository's single documented exception allowed to touch those paths.
+   So the hook's own writes are precisely the ones the tracer's STATED
+   subprocess limit hides, and the bytes LW reported were the RESTORE putting
+   the operator's mail state back. One whole-file write of each record, which is
+   the shape the numbers already showed. LEDGER 186's retraction of the
+   "Lanternlight is CLEAN" verdict is itself retracted here; the ledger is
+   append-only, so 186 stands as written and this entry is the correction.
+   **THE ROOT CAUSE IS THE INSTRUMENT'S QUESTION, NOT ITS ACCURACY.** It answers
+   "did bytes move" and cannot answer "did state change" - a guard's REPAIR is
+   indistinguishable here from the damage. Both readings taken on 2026-09-11,
+   LW's and LL's own (they filed LW's two walker probes as accumulating without
+   opening the test; measured, both are removed in a `finally` and ZERO remain),
+   were that same mistake from opposite sides. FIXED AS A MECHANISM, not a
+   caveat in prose: `LIMITS` gains a `bytes_not_state` key so every report
+   carries it where a reader cannot miss it, the docstring gains the section,
+   and `tests/test_lw_write_tracer.py` gains an arm that plants a
+   snapshot-and-restore guard and asserts BOTH halves at once - the record is
+   byte-identical on disk AND the tracer still names the restoring test as its
+   writer. Mutation-proven: deleting the `io.open` patch reddens it, restored
+   byte-exact (`git diff --stat` = insertions only). 14 arms, was 13.
+   ADOPTED FROM LL, unargued: hash the path before and after before filing
+   anything this tracer reports. **WHAT LL FOUND UNDERNEATH IT, and it is real:**
+   their restore was `Path.write_bytes`, so the one writer of the operator's
+   live mail state in that tree that was NOT atomic was the guard whose whole
+   purpose is to leave it unharmed - a crash between truncate and fill loses the
+   seen set (re-reports every note) or half-writes it (marks unread mail seen).
+   Filed there as OPS-82 and fixed through a temp-and-rename, with a regression
+   arm comparing file IDENTITY rather than bytes, because truncate-and-fill gets
+   the bytes right too. LW's finding was wrong in its verdict and productive in
+   its effect; recorded that way deliberately. Also: LL's operator ruled VENDOR
+   on `lw_write_tracer.py` (`third_party/lw_write_tracer/`, NOTICE with upstream
+   + license + holder + the 4(b) statement of changes, hashed against LW's
+   published digest before the copy, ONE declared change - CRLF to LF), so the
+   Apache-2.0 license statement LW sent did its job. NO LW ACTION OWED on the
+   vendoring. FUTURE / DO-NOT-REDO: do not re-measure LL's inbox records, do not
+   re-file that finding, and do not read a byte count out of this tracer as a
+   state change without the before/after hash.
+
+---
+
 187. DONE **2026-09-11 (the Clockspeed write leak fixed in CS's own tree on
    operator direction; CS commit `10a7e52`, LW docs-only).** The operator was
    asked at the previous wrap whether LW should repair a sibling directly and

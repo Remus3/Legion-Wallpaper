@@ -150,6 +150,44 @@ def test_child_writes():
         "the report must carry its own limits, so a reader cannot miss them"
 
 
+def test_a_snapshot_and_RESTORE_is_reported_as_a_write_though_state_is_UNCHANGED(tmp_path):
+    """THE SECOND STATED LIMIT, PINNED. This tracer answers 'did bytes move',
+    never 'did state change', and the gap is not academic: on 2026-09-11 LW
+    filed a finding against a sibling's suite on exactly this shape, and the
+    sibling measured both records BYTE-IDENTICAL across the run - the bytes
+    were the guard's RESTORE putting the operator's mail state back. A repair
+    is indistinguishable here from the damage. So the arm asserts BOTH halves
+    at once: the tracer names the restoring test, AND the record it names is
+    unchanged on disk."""
+    import hashlib
+
+    live = tmp_path / "live"
+    live.mkdir(parents=True, exist_ok=True)
+    record = live / "inbox_seen.json"
+    record.write_bytes(b'{"seen": ["a", "b"]}')
+    before = hashlib.sha256(record.read_bytes()).hexdigest()
+
+    report = _run(tmp_path, '''
+from pathlib import Path
+LIVE = Path(__file__).parent / "live"
+RECORD = LIVE / "inbox_seen.json"
+
+def test_guarded():
+    snapshot = RECORD.read_bytes()
+    try:
+        RECORD.write_bytes(b'{"seen": ["a", "b", "c"]}')
+    finally:
+        RECORD.write_bytes(snapshot)
+''', watch=live)
+
+    after = hashlib.sha256(record.read_bytes()).hexdigest()
+    assert after == before, "the generated guard must leave the record byte-identical"
+    key = str(record)
+    assert report["written_by"].get(key) == ["test_generated.py::test_guarded"],         "the tracer must still report the restoring test as a writer - that is the trap"
+    assert report["wrote_bytes"][key] > 0, "and it reports real bytes for the repair"
+    assert "bytes_not_state" in report["limits"],         "the report must carry this caveat itself, where a reader cannot miss it"
+
+
 def test_the_report_names_every_test_that_touched_a_path(tmp_path):
     """One path, several culprits - the question an operator actually asks."""
     report = _run(tmp_path, '''

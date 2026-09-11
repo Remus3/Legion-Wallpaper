@@ -120,6 +120,18 @@ type nul > "ops\runtime\inbox_responder\HALT"
 del "ops\runtime\inbox_responder\HALT"
 ```
 
+**BOTH HEADLESS LANES ARE CURRENTLY DISARMED (2026-09-11, operator direction at
+a session wrap; LEDGER 189).** `ops\runtime\inbox_responder\HALT` and
+`ops\runtime\ci_watchdog\HALT` both exist and carry a dated reason inside. The
+scheduled tasks stay REGISTERED and Ready on purpose: the HALT file is the
+documented mechanism and is checked before either lane reads anything, so
+unregistering would discard the operator's configuration to achieve what an
+empty file already achieves. Both were PROVED halted after the switch landed -
+the responder answered `{"halted": ..., "spawned": []}` and the watchdog
+reported `decision.action = halt`, each quoting the reason text back. RE-ARMING
+IS THE OPERATOR'S CALL: delete the two files. A session must not delete them to
+"fix" a lane that looks idle.
+
 ```
 REM REGISTERED 2026-08-02, ARGS CORRECTED 2026-08-17.
 REM -WindowStyle Hidden is LOAD-BEARING: without it powershell.exe opens a

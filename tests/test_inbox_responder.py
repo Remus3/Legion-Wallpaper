@@ -29,6 +29,11 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import lw_inbox_responder as responder  # noqa: E402
 
+# Captured BEFORE any fixture can redirect it, so the arm pinning the real
+# default still reads the real default even while every other arm runs against
+# an injected one.
+REAL_HALT_PATH = responder.HALT_PATH
+
 
 @pytest.fixture(autouse=True)
 def _the_live_run_log_is_never_touched():
@@ -47,6 +52,23 @@ def _the_live_run_log_is_never_touched():
     yield
     after = real.stat().st_mtime_ns if real.exists() else None
     assert after == before, f"an arm wrote the live run log at {real}"
+
+
+@pytest.fixture(autouse=True)
+def _the_live_kill_switch_is_never_read(monkeypatch, tmp_path):
+    """An arm that falls through to the default `--halt` reads the OPERATOR'S
+    kill switch, so the suite's colour depends on machine state.
+
+    MEASURED 2026-09-11: the operator disarmed both headless lanes at a session
+    wrap, and four arms here went red - not because anything regressed, but
+    because a real HALT file existed and `main()` obeyed it. That is the test's
+    defect, not the operator's. Sibling rule already in this file for the run
+    log: inject the path rather than inherit it.
+
+    The subprocess arm cannot be reached by monkeypatch and passes `--halt`
+    itself; `REAL_HALT_PATH` keeps the default-pinning arm honest.
+    """
+    monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "never-created-HALT")
 
 
 # --------------------------------------------------------------------------
@@ -631,8 +653,8 @@ def test_without_a_halt_file_the_cycle_runs(tmp_path, capsys, monkeypatch):
 
 
 def test_the_default_halt_path_is_under_runtime_state():
-    assert responder.HALT_PATH.name == "HALT"
-    assert responder.HALT_PATH.parent.parent.name == "runtime"
+    assert REAL_HALT_PATH.name == "HALT"
+    assert REAL_HALT_PATH.parent.parent.name == "runtime"
 
 
 def test_cli_once_dry_run_reports_json_and_changes_no_state(tmp_path):
@@ -642,7 +664,8 @@ def test_cli_once_dry_run_reports_json_and_changes_no_state(tmp_path):
     state = tmp_path / "seen.json"
     proc = subprocess.run(
         [sys.executable, str(ROOT / "tools" / "lw_inbox_responder.py"),
-         "--once", "--dry-run", "--inbox", str(inbox), "--state", str(state)],
+         "--once", "--dry-run", "--inbox", str(inbox), "--state", str(state),
+         "--halt", str(tmp_path / "never-created-HALT")],
         capture_output=True, text=True, cwd=str(ROOT),
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
