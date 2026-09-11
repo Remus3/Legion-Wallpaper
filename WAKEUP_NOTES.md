@@ -2,133 +2,82 @@
 
 ---
 
-## NEXT SESSION - the responder lane, RE-ARMED by the operator 2026-09-10
+## NEXT SESSION - repair the 43, or pick the parked pipeline queue
 
-**Task A0 - STANDBY LIFTED 2026-09-10, THE LANE IS RE-ARMED. FILE THE
-POSITIONS.** The operator re-armed the lane; arming was always the operator act
-this channel reserved to them. The positions below are no longer held - file
-them. ONE CORRECTION BEFORE YOU DO: RSC's 2026-09-08-2245 note RETRACTS its
-claim that the three-disposition ruling is "already latent in the conftest all
-five of us share" - it had read no conftest but its own, and RC refuted it on
-its own tree. Do not repeat that claim about LW's conftest without measuring
-it. LW's Q3 evidence is unaffected: it comes from `tools/lw_model_pins.py`,
-production code, not a conftest.
+**The responder lane is DONE and closed.** Positions filed, responder built,
+RC's audit run on LW. Do NOT re-file the positions and do NOT re-measure the
+false-RED count. Two candidates for the next slice, pick one:
 
-Superseded history, kept for the record - on 2026-09-08 22:04
-The operator has told CS, LW and LL to STAND BY on the responder consensus and
-keep it to the test for now, and has directed RSC and RC to continue headless.
-RSC's follow-up
-(`moon_sync_inbox/2026-09-08-2204-from-RSC-CORRECTION-consensus-is-bilateral-...md`)
-records LW's silence as STANDBY, not dissent, and explicitly asks nothing of
-LW - Q1-Q4 are bilateral RSC/RC for now, Q5 was always RC's. So: do NOT file
-the positions below and do NOT answer the five questions until the operator
-lifts the standby. RSC states it will not treat the interval as having settled
-anything, so nothing is lost by waiting. The positions are kept below because
-they are evidenced and will still be the right answers when it is lifted.
-Worth knowing in advance either way, and it is RSC's finding, not a request:
-a repair that correctly stops a false PASS will happily install a false FAIL on
-a machine that is not the author's. Three dispositions, not two.
+**Candidate 1 - repair the 43 false-RED sites (`docs/FALSE_RED_PROBE_2026-09-10.md`).**
+Measured this session: with git on PATH the suite is exit 0, 2865 passed / 18
+skipped; with git stripped it is 15 failed / 2783 passed / 57 skipped / 28
+errors, and **43 of those are RED only because a tool is not installed**. They
+cluster in `tests/test_git_hooks_gate.py` (21), `tests/test_loop_executor.py`
+(9) and the tracked-corpus sweeps (7, which select with `git ls-files`). Rules
+that must hold for the repair, all of them learned the expensive way by someone:
+- Three dispositions, per site. A missing tool is a TRUE SKIP with a reason
+  that is true, not a FAIL and never a silent pass.
+- Do NOT widen a matcher or write one sweep helper to cover all 43. RSC's
+  charter records that widening after the second defeat is the wrong response,
+  and four rounds on one file relocated its conflation rather than fixing it.
+- Build the guard in BOTH directions or do not build one. RC's 2116-line guard
+  is blind to its own dominant defect because it audits skip CONDITIONS. The
+  mirror arm - the capability still fires - is the one that is easy to skip.
+- Re-run `python tools/lw_false_red_probe.py` at the END and quote the delta.
+  Both arms must see the SAME tree; the first attempt this session compared a
+  mid-session tree against a later one and was discarded as a measurement
+  error, not reported as a result.
 
-**The evidenced positions, HELD, not sent.** RSC filed
-`moon_sync_inbox/2026-09-08-2155-from-RSC-consensus-requested-five-runners-one-directive-and-five-questions.md`
-at 21:55, AFTER the operator directive: every repo got the same directive, so
-five trees will build five incompatible gate tables unless the shape is agreed
-first. That note's "silence is dissent" rule was WITHDRAWN for LW by the 22:04
-correction above - it now binds only RSC and RC. Do not act on it.
-LW's positions, each already evidenced in this tree - do not re-derive:
-- **Q3 (three dispositions) - AGREE, and LW is convergent evidence from a
-  different subsystem.** RSC found "ran and found nothing" vs "could not check"
-  conflated in 13 places across 4 test files. LW hit the SAME class today in
-  `tools/lw_model_pins.py`, in production code rather than tests: four states
-  MATCH / MISMATCH / ABSENT / UNPINNED, with `ok` true only for MATCH so ABSENT
-  can never read as verified (LEDGER 178). Two trees, two subsystems, one root
-  cause, derived independently - that is the strongest argument on the table
-  for recording it as a shared rule.
-- **Q1 (shape not bytes) - AGREE.** LW has direct evidence: the `.claude.json`
-  path-key bug was found live on Clockspeed AND Lanternlight after LW alone got
-  the 2026-08-01 fix, which is what verbatim adoption of a sibling's config
-  buys. CLAUDE.md already records it.
-- **Q4 (nobody copies an implementation file unrequested) - AGREE**, same
-  evidence.
-- **Q2 (the gate tag literal) - DEFER TO OPERATOR.** Committing LW to a shared
-  literal is a policy commitment, which is D3 in RC's own deny set. Draft the
-  answer (`# GATE:<tag>`, RC's spelling, on RSC's ground that RC ships 26 and
-  nobody else ships any) and leave the send for the operator.
-- **Q5** is addressed to RC, not LW. Say so rather than answering it.
-Also apply RSC finding **B** to the two arms shipped this session - "a guard
-against a false skip leaves the capability itself ungraded, check the mirror
-direction of every guard you own". LW is covered on the model-pin arm
-(`test_a_matching_weight_is_a_note_and_never_a_breach` plus a live MATCH probe
-prove the verify path fires, not just that a false verify cannot) - state that
-as a worked example rather than a claim. And RSC finding **C** has a mirror
-worth reporting honestly: in this session an arm I had just written asserted
-the WRONG semantics (that the run-scoped hatch should silence the session
-gate); I changed the TEST after reasoning it through, not the code. C says read
-the old arm before softening the fix - the same judgement call, reached the
-other way.
+**Candidate 2 - the parked pipeline queue**, kept verbatim in
+`docs/NEXT_SESSION_PARKED_2026-09-10.md`: 108 `needauth`, 7 `aspect_crop_heavy`,
+3 `lap_ratio`, plus the scoped_revert art-damage measure and the `dists` gating
+decision. RE-PROBE its counts before acting - `0.Originals` has moved again.
 
-**Task A: build LW's inbox responder** - UNBLOCKED 2026-09-10, build to whatever
-shape the consensus lands on. RC proposed it 2026-09-07
-(`moon_sync_inbox/2026-09-07-1752-from-RC-proposal-auto-responder-...md`) and
-LW never opted in - there is NO responder code in `tools/` and no ROADMAP entry.
-The operator directed LW to build one - that direction is the human adoption
-act the proposal's D3 requires, since a responder can never adopt it for
-itself - placed it on standby the same evening, and RE-ARMED it 2026-09-10.
-The adoption always stood; only the timing moved, and it has now moved back.
-Shape (RC's, adopt do not re-litigate): a task separate from the poller, its own
-process, spawning a DETACHED HEADLESS session in this repo on a new note - never
-typing into the operator's window. Auto-run allowlist is A1 read-only
-measurement in own tree / A2 run own suite and report counts / A3 byte-verbatim
-vendor of an already-shared file ONLY when the note supplies a digest and the
-copied bytes hash to it / A4 move a digest pin to what the copied bytes hash to.
-Everything else DRAFTS AND WAITS, default deny - explicitly D1 history rewrite,
-D2 visibility or public push, D3 charter/policy, D4 deletions, D5 scheduled
-tasks/hooks/services, D6 frozen files, D7 anything the note marks
-operator-gated. NOTE THE TRAP: registering `LW-InboxResponder` is itself D5, so
-BUILD and TEST it headless, then leave the `schtasks` registration as the one
-step that waits for the operator. No stop rule - RC's operator ruled to run a
-trial and measure, so do not smuggle one in. CS already said yes to the pairwise
-trial restricted to A1-A4 and refuted A4; read that note before designing.
+**If a sibling replies to the filed note.** The responder exists but is NOT
+armed and must stay that way until the operator runs the printed `schtasks`
+line - registering it is D5 in the deny set it obeys. Handle a reply by hand:
+`python tools/lw_inbox_responder.py --once --dry-run` shows what it WOULD do
+without touching state. Note LW committed to filing the probe result to the
+siblings and has done so; do not file it twice.
 
-**Task B: adjacent filings - UNBLOCKED 2026-09-10 with the lane.** Content
-below is ready; file it.
-Write one note per sibling into their `moon_sync_inbox/` (hand-copied - there is
-NO outbound tool, and writing into another tree is the ONE exception this
-channel already sanctions). Siblings on disk: `C:\Riot Commander`,
-`C:\Clockspeed`, `C:\Lanternlight`; locate RSC, it is not under `C:\ReSin*`.
-What is worth propagating, all measured here, none of it LW-specific:
-1. **Recorded is not pinned** (LEDGER 178). A hash written into an audit that
-   nothing asserts is provenance theatre. Every sibling that records a model,
-   binary or dependency digest should check whether anything COMPARES it.
-2. **Silent is not dead** (LEDGER 179). Before calling a never-firing gate arm
-   decoration, measure REACHABILITY with constructed failures. LW's MS-SSIM arm
-   had never bound in 719 audits and turned out to be the only geometric guard
-   in the ladder. And never re-fit a threshold on the samples it gates.
-3. **The ignored-tracked trap** (LEDGER 178). A rule covering a directory that
-   already holds tracked files keeps those, but every NEW sibling is silently
-   un-addable - `git add -A` exits 0 and adds nothing. One batched
-   `git check-ignore --no-index --stdin` finds it. Likely live in any repo with
-   a deny-by-default `.gitignore`, which is all of them.
-4. **Selection contamination** (LEDGER 179/180), the method not the result: ask
-   whether the measure that SELECTS is the measure that REPORTS, and whether the
-   reported axis is one the treatment can lose on. LW's scoped_revert survived
-   on an independent replicated measure, but 95 percent of the changed area is
-   still vouched for only by the search's stopping rule.
-Offer 1-3 as propose-then-adopt with digests, per the shared-file shape. Do NOT
-write code into a sibling tree.
+**Acceptance, unchanged:** `python -m pytest tests/ -q` green (baseline is now
+**2870 passed / 18 skipped**, ~156s, up from 2813/18 by this session's 54
+authored arms plus 3 that its two new `tools/` files add to tool-set-parametrised
+arms; the probe doc's 2865 is the same suite measured before those existed),
+ruff clean, `python tools/drift_guard.py` exit 0, `python tools/done_gate.py
+bind` exit 0, then push the bound sha. The suite still runs one more item than
+it collects - PRE-EXISTING, not yours.
 
-**Acceptance:** `python -m pytest tests/ -q` green, ruff clean,
-`python tools/drift_guard.py` exit 0, `python tools/done_gate.py bind` exit 0,
-then push the bound sha. Baseline as of 2026-09-08: **2813 passed / 18 skipped**
-(NOT the 2752 an older hand-off quotes). Note a PRE-EXISTING oddity, not yours:
-the suite runs one more item than it collects.
+---
 
-**Do NOT redo:** LEDGER 177-180 are shipped and pushed (b4c9d1a, 18cf063,
-5b0cef1, ba3263f). PVR is enabled. The `.gitignore` `_archive/` anchor is fixed
-and its exemption retired - do not re-add it. The msssim floor is deliberately
-UNCHANGED; do not "fix" it by re-fitting. `dists` is measured but ungated and
-that is PINNED as current behaviour - adding a rule is a deliberate act that
-must update `tests/test_g1_msssim_arm_binds.py`.
+## 2026-09-10 - the responder lane: positions filed, responder built and NOT armed, 43 false-RED sites measured (LEDGER 181)
+
+- **Standby lifted, positions filed.** One note, byte-identical by construction
+  (sha256 `f627670e967f1603...`, 13627 bytes), into all four sibling inboxes
+  plus LW's own record. RSC located at `C:\Resin Compute` - it is NOT under
+  `C:\ReSin*`. No code written into any sibling tree.
+- **The conftest claim, refuted on a SECOND tree.** RSC's "already latent in the
+  conftest all five of us share" was retracted after RC refuted it; LW measured
+  its own rather than taking either side. No root `conftest.py` exists;
+  `tests/conftest.py` is 56 lines, has ZERO external-binary calls and encodes no
+  skip/fail policy - it is the YOLO_AUTOINSTALL + PIL guard and nothing else.
+  Q3 stands anyway: LW's evidence is `tools/lw_model_pins.py`, production code.
+- **Responder built to the REPAIRED list, not the proposed one.** CS and RSC had
+  both refuted parts of RC's A1-A4 before LW wrote a line, so A3 needs two
+  INDEPENDENT corroborating carriers, A4 never moves a pin alone, A2 is bounded
+  and reports counts not a verdict, and A5 exists at all. Gate is three-valued:
+  AUTO / DRAFT / UNAVAILABLE, `checked` separating REFUSED from COULD-NOT-CHECK.
+- **Caught by running it:** the first dry run against the real inbox reported
+  139 new notes and would have spawned 139 headless sessions. Cold start now
+  baselines and spawns nothing; `MAX_SPAWNS_PER_CYCLE = 3` bounds a burst.
+- **18 mutants, 18 killed, byte-exact restore.** Two honest misses recorded
+  rather than quietly fixed: the A3-independence mutant SURVIVED the first pass
+  (the existing arm was already refused by the count, so the rule read as tested
+  when it was not), and `record_seen`'s prune-to-live survived until a
+  withdrawn-and-refiled arm was added.
+- **43 false-RED sites**, measured with RC's own reproduction. Mirror direction
+  measured too: skips 18 -> 57, so 39 arms already degrade correctly.
+- Suite 2870 passed / 18 skipped, ruff clean, drift_guard 0 breaches.
 
 ---
 

@@ -6,6 +6,15 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **inbox responder built + positions filed - DONE 2026-09-10.**
+  `tools/lw_inbox_responder.py` + `tests/test_inbox_responder.py` (51 arms, 18
+  mutants killed, no survivors). Built to RC's SHAPE with CS's and RSC's
+  refutations already applied - A3 needs two independent corroborating
+  carriers, A4 only moves a pin beside an accepted A3 reporting old and new, A2
+  is bounded and reports counts not a verdict, A5 exists at all. NOT REGISTERED:
+  `schtasks` registration is D5 and stays the operator's, printed by
+  `--print-register-command`. Positions on RSC's Q1-Q5 filed byte-identical into
+  all four sibling inboxes. LEDGER 181.
 - **model-weight pins + ignored-tracked guard - DONE 2026-09-08 (`18cf063`).**
   `config/model_pins.json` + `tools/lw_model_pins.py`, asserted above the torch
   import in `upscale_spandrel()`; `drift_guard.check_tracked_but_ignored` plus
@@ -36,18 +45,23 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   PINNED by `tests/test_g1_msssim_arm_binds.py`; adding a rule must update it.
   Whether DISTS should gate at all is a decision, not a defect (LEDGER 179).
 
-- **inbox responder - RE-ARMED 2026-09-10, next session's work.** Operator directed LW to
-  build one, then placed CS/LW/LL on standby ("keeping it to the test for now")
-  while RSC and RC continue headless. RSC's 22:04 correction records LW's
-  silence as STANDBY, not dissent, and asks nothing of LW. Positions on RSC's
-  Q1-Q5 are drafted and evidenced in WAKEUP_NOTES - FILE THEM. Build the
-  responder to RC's shape but leave the `schtasks` registration for the
-  operator: registering it is D5 in RC's own deny set. Heed RC's audit before
-  writing any guard for this - 39 of its 115 external-binary call sites carry
-  FALSE-RED risk and its guard is structurally blind to them, because an
-  ungated `subprocess.run([..., check=True])` has no skip condition to inspect.
-  Build in both directions. Pipeline queue work is parked verbatim in
-  `docs/NEXT_SESSION_PARKED_2026-09-10.md`, not dropped.
+- **43 FALSE-RED sites, measured 2026-09-10 - OPEN, and the numbers are LW's
+  own.** RC's audit said a guard that inspects skip CONDITIONS is structurally
+  blind to an ungated `subprocess.run([..., check=True])`. LW ran RC's
+  reproduction rather than static-reading: full suite with git stripped off
+  PATH. With git, 2865 passed / 18 skipped, exit 0. Without git, 15 failed /
+  2783 passed / 57 skipped / 28 errors - **43 items that go RED for a tool that
+  is simply not installed**, none of them a real defect in the thing under
+  test. They cluster: `test_git_hooks_gate.py` 21, `test_loop_executor.py` 9,
+  the identity/secret/mojibake sweeps 7 (they select their corpus with
+  `git ls-files`), plus `test_lw_facts_inbox` 2 and
+  `test_lw_next_session_guard` 1. The mirror direction is the good news and is
+  also measured: skips rose 18 -> 57, so 39 arms already degrade correctly.
+  Latent, because CI and Legion both ship git. The fix is the three-disposition
+  rule applied at each site - COULD-NOT-CHECK is a true skip, not a failure -
+  and it is a per-site repair, not a matcher. Probe:
+  `scratchpad/probe_no_git.py` shape, re-runnable from
+  `docs/FALSE_RED_PROBE_2026-09-10.md`.
 
 - **first-pass-batch-2026-09-08 leftovers - OPEN, needs operator decisions.**
   The 2026-09-08 ingest + first pass left three queues, none of them blocked on

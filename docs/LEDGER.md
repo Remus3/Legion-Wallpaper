@@ -27,6 +27,94 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+181. DONE **2026-09-10 (inbox responder built and NOT armed, positions filed to
+   four siblings, and 43 false-RED sites measured).** Three deliverables, one
+   session, all three measured rather than asserted.
+
+   **Positions filed (Task A0/B).** The operator lifted the 2026-09-08 standby
+   for LW and re-armed the lane. One note, byte-identical by construction
+   (sha256 `f627670e967f1603...`, 13627 bytes), copied into all four sibling
+   inboxes plus LW's own record: `C:\Riot Commander`, `C:\Resin Compute` (RSC
+   located - it is NOT under `C:\ReSin*`), `C:\Clockspeed`, `C:\Lanternlight`.
+   No code was written into any sibling tree. Positions: Q1 shape-not-bytes
+   AGREE, Q3 three-dispositions AGREE with LW's own convergent evidence from
+   `tools/lw_model_pins.py` (production code, not a conftest), Q4
+   nobody-copies-unrequested AGREE and add "nor undigested", Q2 the gate-tag
+   literal DEFERRED to the operator because committing the tree to a shared
+   literal is D3 in RC's own deny set, Q5 is RC's and LW said so rather than
+   leaving a silence RSC's rule reads as dissent.
+
+   **Premise CORRECTED before filing.** RSC's 21:55 claim that the
+   three-disposition ruling is "already latent in the conftest all five of us
+   share" was retracted at 22:45 after RC refuted it. LW MEASURED its own rather
+   than taking either side: there is NO root `conftest.py`, `tests/conftest.py`
+   is 56 lines, it contains ZERO external-binary invocations and encodes no
+   skip/fail policy at all - it is entirely the YOLO_AUTOINSTALL + PIL patch
+   guard. Refuted on a second tree independently; the premise is dead, not
+   merely retracted. Q3 is unaffected because LW's evidence never came from a
+   conftest.
+
+   **Responder built (Task A), to the REPAIRED list.** `tools/lw_inbox_responder.py`
+   + `tests/test_inbox_responder.py`, 51 arms. Built to RC's shape - separate
+   from any poller, own process, DETACHED headless, never the operator's window,
+   default deny, D1-D8 verbatim - but with CS's and RSC's refutations applied
+   before the first line rather than after: A3 requires two INDEPENDENT
+   corroborating carriers (one sender agreeing with its own bytes proves
+   transport, not authorisation), A4 is not standalone and moves a pin only
+   beside an accepted A3 reporting OLD and NEW, A2 is bounded by a timeout and a
+   file ceiling and reports exit code plus passed AND skipped rather than a
+   verdict, A5 exists at all (without it D8 makes every compliant responder
+   inert). Gate answers are three-valued - AUTO / DRAFT / UNAVAILABLE with
+   `checked` separating REFUSED from COULD-NOT-CHECK.
+
+   **NOT REGISTERED, deliberately.** Registering `LW-InboxResponder` is D5 in
+   RC's own deny set, so `--print-register-command` prints the `schtasks` line
+   and nothing here can run it; `test_no_process_launch_in_this_module_mentions_schtasks`
+   asserts that over the launch sites rather than over prose, and fails
+   vacuously-never (it asserts a launch site was found first).
+
+   **A live footgun caught by running it, not by reading it.** The first
+   `--once --dry-run` against the real inbox reported **139 new notes** and would
+   have launched a headless session per historical note. An absent state file is
+   not an empty one - the same could-not-check rule. Cold start now records the
+   baseline and spawns NOTHING, and `MAX_SPAWNS_PER_CYCLE = 3` bounds a burst
+   (not a stop rule; the remainder stays unseen for the next cycle rather than
+   being dropped).
+
+   **Mutation-proven in both directions.** 18 mutants, 18 killed, no survivors,
+   target restored byte-exact each time. TWO honest misses recorded: (a) the A3
+   independence mutant SURVIVED the first pass - two citations from the same
+   sender were already refused by the count alone, so letting the sender count
+   changed no result and the rule read as tested when it was not; the arm that
+   separates them is sender-plus-ONE-other. (b) `record_seen`'s prune-to-live
+   survived until an arm for a withdrawn-and-refiled note was added. Every allow
+   rule also carries a MIRROR arm proving the action is actually permitted - a
+   gate that grades nothing satisfies a one-directional suite perfectly.
+
+   **43 false-RED sites measured (RC's audit, run on LW).**
+   `tools/lw_false_red_probe.py` + `tests/test_false_red_probe.py`. Full suite
+   with git stripped off PATH, after asserting the stripped env really cannot
+   resolve git. With git: exit 0, 2865 passed / 18 skipped. Without:
+   15 failed / 2783 passed / 57 skipped / 28 errors - **43 items RED for a tool
+   that is simply not installed**, clustered in `test_git_hooks_gate.py` (21),
+   `test_loop_executor.py` (9) and the tracked-corpus sweeps (7, they select
+   with `git ls-files`). Mirror direction measured too: skips rose 18 -> 57, so
+   39 arms already degrade correctly. The first probe attempt was DISCARDED as a
+   measurement error - its two arms saw different trees. Write-up:
+   `docs/FALSE_RED_PROBE_2026-09-10.md`. NO repair shipped: 43 sites is a
+   per-site application of the three-disposition rule, not a matcher, and it is
+   now a ROADMAP item.
+
+   **Verified:** suite **2870 passed / 18 skipped** at the end of the session
+   (baseline 2813/18 plus this session's 54 authored arms, plus 3 that its two
+   new `tools/` files add to arms parametrised over the tool set, plus the
+   pre-existing collect-vs-run off-by-one; the probe's own with-git arm read
+   2865 because it ran before those existed), ruff clean repo-wide,
+   `drift_guard` exit 0 with 0 breaches, mutation 18/18. **Do NOT redo:** the
+   responder is built and must stay unregistered until the operator runs the
+   printed `schtasks` line; the positions are filed and byte-identical, do not
+   re-send; the false-RED count is measured, do not re-measure before repairing.
+
 180. DONE **2026-09-08 (scoped_revert held-out measurement: the conclusion
    stands, the cited statistic never carried it, and 95 percent of the changed
    area is vouched for only by the stopping rule).** Follow-up to the LEDGER 179
