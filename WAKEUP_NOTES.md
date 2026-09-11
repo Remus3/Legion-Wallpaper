@@ -14,6 +14,12 @@ guard to assert the record is byte-identical WHILE the tracer names the
 restoring test. Before filing anything that tracer reports, hash the path before
 and after.
 
+**`truth_gate.check_ci` was reading a completed green as `queued` for any
+ABBREVIATED sha (LEDGER 190, fixed at `db75ca0`).** Found by following LW's own
+wrap ritual: `done_gate bind` prints 12 chars, `gh run list --commit` matches 40.
+Any sha is resolved now. If a CI poll ever sits on `queued` forever again, check
+what was ASKED before believing the answer.
+
 **THE HEADLESS LANES ARE DISARMED as of this wrap (operator direction).** Both
 kill switches are on disk: `ops\runtime\inbox_responder\HALT` and
 `ops\runtime\ci_watchdog\HALT`. The scheduled tasks are still registered and
