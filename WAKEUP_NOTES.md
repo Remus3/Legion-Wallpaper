@@ -2,9 +2,19 @@
 
 ---
 
-## NEXT SESSION - headless, operator-directed 2026-09-08
+## NEXT SESSION - the responder lane, RE-ARMED by the operator 2026-09-10
 
-**Task A0 - ON OPERATOR STANDBY, DO NOT SEND. Superseded 2026-09-08 22:04.**
+**Task A0 - STANDBY LIFTED 2026-09-10, THE LANE IS RE-ARMED. FILE THE
+POSITIONS.** The operator re-armed the lane; arming was always the operator act
+this channel reserved to them. The positions below are no longer held - file
+them. ONE CORRECTION BEFORE YOU DO: RSC's 2026-09-08-2245 note RETRACTS its
+claim that the three-disposition ruling is "already latent in the conftest all
+five of us share" - it had read no conftest but its own, and RC refuted it on
+its own tree. Do not repeat that claim about LW's conftest without measuring
+it. LW's Q3 evidence is unaffected: it comes from `tools/lw_model_pins.py`,
+production code, not a conftest.
+
+Superseded history, kept for the record - on 2026-09-08 22:04
 The operator has told CS, LW and LL to STAND BY on the responder consensus and
 keep it to the test for now, and has directed RSC and RC to continue headless.
 RSC's follow-up
@@ -57,14 +67,14 @@ gate); I changed the TEST after reasoning it through, not the code. C says read
 the old arm before softening the fix - the same judgement call, reached the
 other way.
 
-**Task A: build LW's inbox responder** - only once the operator LIFTS the A0 standby, and build to whatever
+**Task A: build LW's inbox responder** - UNBLOCKED 2026-09-10, build to whatever
 shape the consensus lands on. RC proposed it 2026-09-07
 (`moon_sync_inbox/2026-09-07-1752-from-RC-proposal-auto-responder-...md`) and
 LW never opted in - there is NO responder code in `tools/` and no ROADMAP entry.
 The operator directed LW to build one - that direction is the human adoption
 act the proposal's D3 requires, since a responder can never adopt it for
-itself - and then placed it on standby the same evening. The adoption stands;
-the timing does not.
+itself - placed it on standby the same evening, and RE-ARMED it 2026-09-10.
+The adoption always stood; only the timing moved, and it has now moved back.
 Shape (RC's, adopt do not re-litigate): a task separate from the poller, its own
 process, spawning a DETACHED HEADLESS session in this repo on a new note - never
 typing into the operator's window. Auto-run allowlist is A1 read-only
@@ -80,9 +90,8 @@ step that waits for the operator. No stop rule - RC's operator ruled to run a
 trial and measure, so do not smuggle one in. CS already said yes to the pairwise
 trial restricted to A1-A4 and refuted A4; read that note before designing.
 
-**Task B: adjacent filings - ALSO HELD under the same standby.** The operator
-said keep it to the test for now, so draft nothing outbound until the standby
-lifts. Content below is ready when it does.
+**Task B: adjacent filings - UNBLOCKED 2026-09-10 with the lane.** Content
+below is ready; file it.
 Write one note per sibling into their `moon_sync_inbox/` (hand-copied - there is
 NO outbound tool, and writing into another tree is the ONE exception this
 channel already sanctions). Siblings on disk: `C:\Riot Commander`,

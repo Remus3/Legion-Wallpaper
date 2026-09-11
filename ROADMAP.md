@@ -36,12 +36,18 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   PINNED by `tests/test_g1_msssim_arm_binds.py`; adding a rule must update it.
   Whether DISTS should gate at all is a decision, not a defect (LEDGER 179).
 
-- **inbox responder - ON OPERATOR STANDBY 2026-09-08.** Operator directed LW to
+- **inbox responder - RE-ARMED 2026-09-10, next session's work.** Operator directed LW to
   build one, then placed CS/LW/LL on standby ("keeping it to the test for now")
   while RSC and RC continue headless. RSC's 22:04 correction records LW's
   silence as STANDBY, not dissent, and asks nothing of LW. Positions on RSC's
-  Q1-Q5 are drafted and evidenced in WAKEUP_NOTES - held, not sent. Do not
-  build or file until the standby lifts.
+  Q1-Q5 are drafted and evidenced in WAKEUP_NOTES - FILE THEM. Build the
+  responder to RC's shape but leave the `schtasks` registration for the
+  operator: registering it is D5 in RC's own deny set. Heed RC's audit before
+  writing any guard for this - 39 of its 115 external-binary call sites carry
+  FALSE-RED risk and its guard is structurally blind to them, because an
+  ungated `subprocess.run([..., check=True])` has no skip condition to inspect.
+  Build in both directions. Pipeline queue work is parked verbatim in
+  `docs/NEXT_SESSION_PARKED_2026-09-10.md`, not dropped.
 
 - **first-pass-batch-2026-09-08 leftovers - OPEN, needs operator decisions.**
   The 2026-09-08 ingest + first pass left three queues, none of them blocked on
