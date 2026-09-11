@@ -58,6 +58,8 @@ import builtins
 import io
 import json
 import os
+import shutil
+import tempfile
 from pathlib import Path
 
 LIMITS = {
@@ -178,6 +180,71 @@ def pytest_configure(config):
     io.open = _make_open(_state["real"][1])
     os.replace = _make_move(_state["real"][2])
     os.rename = _make_move(_state["real"][3])
+    _state["control"] = _run_control()
+
+
+def _run_control() -> dict:
+    """Plant a specimen through every patched route and say what came back.
+
+    ADOPTED FROM LL, 2026-09-11, and it is their point rather than LW's: an
+    instrument that prints a zero with no self-check attached reports an
+    absence of evidence dressed as evidence of absence. Their own probe printed
+    188 findings beside "positive control UNPROVEN", and that admission is the
+    only reason the 188 was worth reading.
+
+    POSITIVE specimens prove the tracer can SEE. A NEGATIVE one - a write
+    outside every watched root - proves it does not INVENT, which is LL's
+    second point: a control made only of positives still passes when the
+    classifier is mutated to promote everything.
+
+    The specimens live in a private temp root that is watched only for the
+    duration of this function, so the control never writes a real tree, and
+    every trace of it is scrubbed before the report is built.
+    """
+    broken = os.environ.get("LW_TRACE_BREAK_CONTROL", "")
+    # RESOLVED, and the control is what caught the need. On Windows
+    # `mkdtemp` hands back the 8.3 short form (`ADMINI~1`) while `_watched`
+    # resolves the file it is asked about to the long form, so an unresolved
+    # root matched nothing and all three routes reported false on a tracer that
+    # was working perfectly. An unproved control on the first run is exactly
+    # the outcome LL described, arriving immediately.
+    home = Path(tempfile.mkdtemp(prefix="lw_tracer_control_")).resolve()
+    outside = Path(tempfile.mkdtemp(prefix="lw_tracer_outside_")).resolve()
+    _state["roots"].append(home)
+    try:
+        if broken != "open":
+            with builtins.open(home / "via_open.log", "a", encoding="utf-8") as fh:
+                fh.write("x")
+        if broken != "io_open":
+            (home / "via_pathlib.json").write_text("{}", encoding="utf-8")
+        if broken != "replace":
+            src = outside / "scratch.tmp"
+            src.write_text("x", encoding="utf-8")
+            os.replace(src, home / "via_replace.json")
+
+        seen = set(_state["written_by"])
+        routes = {
+            "open": str(home / "via_open.log") in seen,
+            "io_open": str(home / "via_pathlib.json") in seen,
+            "replace": str(home / "via_replace.json") in seen,
+        }
+        # The negative specimen: written outside every watched root on purpose.
+        (outside / "must_not_appear.txt").write_text("x", encoding="utf-8")
+        negative_clean = not any(str(outside) in k for k in _state["written_by"])
+    finally:
+        _state["roots"].remove(home)
+        for path in (home, outside):
+            shutil.rmtree(path, ignore_errors=True)
+
+    # Scrub every specimen, or the control would manufacture a finding in each
+    # tree it ran against - the over-reporting failure it exists to rule out.
+    for bucket in ("bytes", "written_by", "opened"):
+        for key in [k for k in _state[bucket] if "lw_tracer_control_" in k
+                    or "lw_tracer_outside_" in k]:
+            del _state[bucket][key]
+
+    return {"proved": all(routes.values()) and negative_clean,
+            "routes": routes, "negative_clean": negative_clean}
 
 
 def pytest_runtest_logstart(nodeid, location):
@@ -198,6 +265,7 @@ def pytest_unconfigure(config):
         "written_by": {k: sorted(v) for k, v in sorted(_state["written_by"].items())},
         "opened_for_write_only": {k: sorted(v) for k, v in sorted(_state["opened"].items())
                                   if k not in _state["bytes"]},
+        "control": _state["control"],
         "limits": LIMITS,
         "restored": restored,
     }

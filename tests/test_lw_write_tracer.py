@@ -23,7 +23,8 @@ ROOT = Path(__file__).resolve().parents[1]
 TRACER = ROOT / "tools" / "lw_write_tracer.py"
 
 
-def _run(tmp_path: Path, body: str, watch: Path | None = None) -> dict:
+def _run(tmp_path: Path, body: str, watch: Path | None = None,
+         env_extra: dict | None = None) -> dict:
     """Generate a one-file suite, run it under the tracer, return the report."""
     (tmp_path / "test_generated.py").write_text(body, encoding="utf-8")
     live = watch if watch is not None else tmp_path / "live"
@@ -34,7 +35,8 @@ def _run(tmp_path: Path, body: str, watch: Path | None = None) -> dict:
          "-q", "-p", "no:cacheprovider", "-p", "lw_write_tracer",
          "--trace-roots", str(live), "--trace-out", str(out)],
         cwd=str(tmp_path), capture_output=True, text=True,
-        env={**_env(), "PYTHONPATH": str(ROOT / "tools")}, timeout=300)
+        env={**_env(), "PYTHONPATH": str(ROOT / "tools"), **(env_extra or {})},
+        timeout=300)
     assert out.exists(), f"no report written.\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
     return json.loads(out.read_text(encoding="utf-8"))
 
@@ -199,3 +201,66 @@ def test_pathlib_write():
     key = str(tmp_path / "live" / "via_pathlib.json")
     assert report["wrote_bytes"][key] == 2
     assert report["written_by"][key] == ["test_generated.py::test_pathlib_write"]
+
+
+# --------------------------------------------------------------------------
+# The self-check, adopted from LL's 2026-09-11 note
+# --------------------------------------------------------------------------
+
+def test_every_run_plants_a_control_and_reports_whether_it_was_PROVED(tmp_path):
+    """LL's point 1, and the highest-value thing they named: an instrument that
+    prints a zero with no self-check attached is reporting an absence of
+    evidence dressed as evidence of absence. Their probe printed 188 findings
+    beside "positive control UNPROVEN" and that admission is the only reason
+    the number was worth anything.
+
+    So every run plants a specimen through each patched route and says whether
+    it came back."""
+    report = _run(tmp_path, '''
+def test_nothing():
+    pass
+''')
+    control = report["control"]
+    assert control["proved"] is True
+    assert set(control["routes"]) == {"open", "io_open", "replace"}
+    assert all(control["routes"].values()), control["routes"]
+
+
+def test_the_control_specimens_are_scrubbed_from_the_findings(tmp_path):
+    """A control that leaves its own specimens in the report would manufacture
+    a finding in every tree it ran against - the over-reporting failure LL
+    warns about, introduced by the very thing meant to prevent it."""
+    report = _run(tmp_path, '''
+def test_nothing():
+    pass
+''')
+    assert report["wrote_bytes"] == {}
+    assert report["written_by"] == {}
+    for key in list(report["wrote_bytes"]) + list(report["written_by"]):
+        assert "lw_tracer_control" not in key
+
+
+def test_the_control_carries_a_NEGATIVE_specimen_too(tmp_path):
+    """LL's point 2: a control made only of positive specimens proves the
+    instrument can SEE and proves nothing about whether it INVENTS. A write
+    outside every watched root is planted on each run, and the control fails if
+    the tracer reports it."""
+    report = _run(tmp_path, '''
+def test_nothing():
+    pass
+''')
+    assert report["control"]["negative_clean"] is True
+
+
+def test_an_unproved_control_is_reported_rather_than_hidden(tmp_path):
+    """The shape that matters when it goes wrong. Forcing the control to fail
+    must produce `proved: false` in a report that still WRITES - a self-check
+    that suppressed the report would leave the operator with nothing at all."""
+    report = _run(tmp_path, '''
+def test_nothing():
+    pass
+''', env_extra={"LW_TRACE_BREAK_CONTROL": "io_open"})
+    assert report["control"]["proved"] is False
+    assert report["control"]["routes"]["io_open"] is False
+    assert report["control"]["routes"]["open"] is True, \
+        "only the named route breaks - the rest must still prove"
