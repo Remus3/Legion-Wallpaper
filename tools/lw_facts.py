@@ -75,6 +75,31 @@ _SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
 # after the report is still in the listing when the ack runs.
 _REPORTED = _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
 _INBOX_SHOWN = 10
+
+
+# DERIVED AT USE, NOT AT IMPORT. The three constants above are bound to the real
+# root the moment this module is imported, so a caller that redirects `_ROOT` -
+# which is what every test in the tree does, and the only redirection any of
+# them was written to need - kept the REAL inbox, seen and reported paths.
+# Measured 2026-09-11 by tracing the suite's own writes: `main()` under a
+# patched `_ROOT` wrote the operator's live `sync_inbox_reported.json`, which is
+# half of the report-then-acknowledge split, so the next `--mark-inbox-seen`
+# would have acknowledged mail nobody was ever shown. That is the LEDGER 162
+# defect re-entered through the suite. Patching three more names in one arm
+# would have left the next arm to rediscover it; deriving here means `_ROOT` is
+# sufficient, as it already appeared to be.
+
+
+def _inbox_path() -> Path:
+    return _ROOT / "moon_sync_inbox"
+
+
+def _seen_path() -> Path:
+    return _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
+
+
+def _reported_path() -> Path:
+    return _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
 NEWLINE = chr(10)
 
 # Shared wall-clock budget (seconds). The hook timeout is 8s; every
@@ -540,9 +565,9 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
     crash here would take the whole live-state block with it - worse than a
     missed mail line.
     """
-    inbox = _INBOX if inbox is None else inbox
-    seen_path = _SEEN if seen_path is None else seen_path
-    reported_path = _REPORTED if reported_path is None else reported_path
+    inbox = _inbox_path() if inbox is None else inbox
+    seen_path = _seen_path() if seen_path is None else seen_path
+    reported_path = _reported_path() if reported_path is None else reported_path
     try:
         if not inbox.is_dir():
             return [f"- moon_sync_inbox: absent at {inbox} - no cross-repo mail channel"]
@@ -610,9 +635,9 @@ def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
 
     Atomic write - the hook may read the record mid-run.
     """
-    inbox = _INBOX if inbox is None else inbox
-    seen_path = _SEEN if seen_path is None else seen_path
-    reported_path = _REPORTED if reported_path is None else reported_path
+    inbox = _inbox_path() if inbox is None else inbox
+    seen_path = _seen_path() if seen_path is None else seen_path
+    reported_path = _reported_path() if reported_path is None else reported_path
     listing = _inbox_names(inbox)
     reported = _reported_names(reported_path)
     if all_notes or reported is None:
@@ -681,12 +706,12 @@ def main() -> int:
         # the same false reassurance the whole change is removing.
         if every:
             how = "EVERY note - deliberate baseline"
-        elif _reported_names(_REPORTED) is None:
+        elif _reported_names(_reported_path()) is None:
             how = "EVERY note - no report record yet, baseline"
         else:
             how = "the notes the last report showed"
         sys.stdout.write(
-            f"marked {n} inbox note(s) seen ({how}) -> {_SEEN}\n")
+            f"marked {n} inbox note(s) seen ({how}) -> {_seen_path()}\n")
         return 0
 
     out: list[str] = []

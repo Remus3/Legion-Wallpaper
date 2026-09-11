@@ -481,7 +481,10 @@ def test_single_instance_second_bind_exits_zero(tmp_path, monkeypatch):
     opened = []
     monkeypatch.setattr(lw_monitor.webbrowser, "open", lambda url: opened.append(url))
     try:
-        rc = lw_monitor.main(["--port", str(port), "--open"])
+        # `--monitor-log` injected 2026-09-11: without it this arm attached a
+        # handler to the operator's real `logs/lw_monitor.log`.
+        rc = lw_monitor.main(["--port", str(port), "--open",
+                              "--monitor-log", str(tmp_path / "monitor.log")])
     finally:
         holder.server_close()
     assert rc == 0

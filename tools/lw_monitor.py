@@ -585,8 +585,14 @@ def main(argv=None):
                     help="allowed thumbnail root (repeatable); default C:\\Legion Wallpaper\\images")
     ap.add_argument("--log-file", default=None, help="PIPELINE_LOG path override")
     ap.add_argument("--state-file", default=None, help="pipeline_state.json path override")
+    # INJECTION POINT, added 2026-09-11. Without it `main()` always attached a
+    # handler to the operator's real log, so every arm driving `main()` reached
+    # it. Measured by tracing the suite's writes, alongside the same defect in
+    # `lw_facts`, where it was writing acknowledgement state rather than a log.
+    ap.add_argument("--monitor-log", default=None,
+                    help="lw_monitor.log path override (tests inject a temporary one)")
     args = ap.parse_args(argv)
-    setup_logging(MONITOR_LOG)
+    setup_logging(Path(args.monitor_log) if args.monitor_log else MONITOR_LOG)
     image_roots = [Path(r) for r in args.images_root] if args.images_root else list(DEFAULT_IMAGE_ROOTS)
     state_path = Path(args.state_file) if args.state_file else STATE_PATH
     url = f"http://{HOST}:{args.port}/"
