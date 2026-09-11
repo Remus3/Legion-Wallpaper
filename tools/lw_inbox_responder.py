@@ -79,6 +79,15 @@ INBOX = ROOT / "moon_sync_inbox"
 # defect a sibling measured and RC's poller docstring names in capitals.
 STATE_PATH = ROOT / "ops" / "runtime" / "inbox_responder_seen.json"
 
+# KILL SWITCH, same shape as `LW-CIWatchdog`'s. Added when the task was ARMED on
+# 2026-09-11: arming something that spawns unattended agents with no mid-flight
+# stop is the gap, and `Disable-ScheduledTask` is slower than dropping a file.
+# Checked FIRST and it answers everything, including the cold-start baseline - a
+# kill switch that only works on the paths you remembered is not a kill switch.
+#     Kill:    type nul > "ops\runtime\inbox_responder\HALT"
+#     Release: del "ops\runtime\inbox_responder\HALT"
+HALT_PATH = ROOT / "ops" / "runtime" / "inbox_responder" / "HALT"
+
 # 0 off Windows so the module still imports and tests on a CI runner.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 DETACHED = getattr(subprocess, "DETACHED_PROCESS", 0)
@@ -378,6 +387,23 @@ def spawn(note_path: Path, dry_run: bool = False) -> Disposition:
     return _auto("spawn", f"detached headless session pid {proc.pid}")
 
 
+def halted(halt_path: Path) -> str | None:
+    """The HALT file's contents, or a generic reason if it is empty.
+
+    An EMPTY file still halts: `type nul > HALT` is the likeliest way an operator
+    creates one under stress, and reading that as "no halt" would disarm the kill
+    switch at exactly the moment it is being used. Lifted deliberately from
+    `tools/ci_watchdog.halted`, which learned it first.
+    """
+    if not halt_path.is_file():
+        return None
+    try:
+        body = halt_path.read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        body = ""
+    return body or "HALT file present"
+
+
 def windowless_python() -> str:
     """`pythonw.exe` beside the pinned interpreter, else the plain one.
 
@@ -409,6 +435,8 @@ def main(argv: list[str] | None = None) -> int:
                     help="report what would be spawned; record no state")
     ap.add_argument("--inbox", type=Path, default=INBOX)
     ap.add_argument("--state", type=Path, default=STATE_PATH)
+    ap.add_argument("--halt", type=Path, default=HALT_PATH,
+                    help="kill switch; its presence stops the cycle before anything runs")
     ap.add_argument("--print-register-command", action="store_true",
                     help="print the scheduled-task registration for the OPERATOR to run")
     args = ap.parse_args(argv)
@@ -425,6 +453,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.once:
         ap.error("nothing to do: pass --once or --print-register-command")
+
+    # FIRST, before the inbox is even read. The baseline write below is a state
+    # change, so a switch checked after it would already have acted.
+    stop = halted(args.halt)
+    if stop is not None:
+        print(json.dumps({"halted": stop, "spawned": []}, indent=2))
+        return 0
 
     notes = new_notes(args.inbox, args.state)
 

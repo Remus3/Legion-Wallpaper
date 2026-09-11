@@ -71,9 +71,9 @@ schtasks /Run /TN "LW-Supervisor"   # NOT YET REGISTERED - see roster below
 
 ## Scheduled tasks (Legion)
 
-Naming convention: every LW scheduled task is named `LW-*`. **Three are
+Naming convention: every LW scheduled task is named `LW-*`. **Four are
 registered**: `LW-Wallpaper` (2026-07-18), `LW-WeeklyHygiene` and
-`LW-CIWatchdog` (both 2026-08-02). Only `LW-Supervisor` is unarmed, and it is
+`LW-CIWatchdog` (both 2026-08-02), and `LW-InboxResponder` (2026-09-11). Only `LW-Supervisor` is unarmed, and it is
 blocked on a MISSING SCRIPT rather than on operator approval - the roster review
 of 2026-08-02 settled the approvals. Do not register a row whose target file
 does not exist: an armed task pointing at a missing script fails on every
@@ -86,10 +86,39 @@ trigger, silently, forever.
 | `LW-GeminiAudit` | Daily | Administrator | Gemini read-only auditor pass over the repo (`tools/gemini_audit.ps1` - exists) | **DROPPED 2026-08-02 - do not register.** `gemini-removal` retired the vendor this task exists to run; the loop's auditor role now runs read-only Claude. The script stays on disk as the rollback path, so this row stays here as a record rather than being deleted. |
 | `LW-WeeklyHygiene` | Weekly Sunday 04:17 | Administrator | Unattended `/weekly-hygiene` pass via headless Claude (`tools/weekly_hygiene_run.ps1`) | **REGISTERED 2026-08-02** (operator direction). Verified `Ready`. Its `-Model` default was `claude-sonnet-4-6`, not a current model id - fixed to `claude-sonnet-5` in the same change, because arming a weekly task nobody watches with a stale id fails silently every Sunday. |
 | `LW-CIWatchdog` | Boot + PT2M repeat (XML) | Administrator / LeastPrivilege | `tools/ci_watchdog.py` - unattended headless-claude red-main CI auto-fixer, one pass per invocation. Acts ONLY on a settled `failure` (queued/pending/unavailable/not-evaluated all wait); 2 attempts per failing sha; isolated worktree; self-gates the merge on the fix branch's OWN green CI at its OWN head sha. Kill switch: create `ops\runtime\ci_watchdog\HALT` (an empty file counts) or `Disable-ScheduledTask LW-CIWatchdog` | **REGISTERED 2026-08-02** (operator direction). Verified `Ready`. |
+| `LW-InboxResponder` | Time trigger, repeat PT5M, indefinite | Administrator / Limited | `pythonw.exe tools/lw_inbox_responder.py --once` - cross-repo mail responder. One scan per invocation: a note in `moon_sync_inbox/` that is NEW by content digest spawns a DETACHED HEADLESS session in this repo, never the operator's window. Cold start baselines and spawns nothing; at most 3 spawns per cycle, the remainder deferred not dropped. Allowlist A1-A5 with CS's and RSC's refutations applied, deny set D1-D8, default deny. Kill switch: create `ops\runtime\inbox_responder\HALT` (an empty file counts, and it is checked before the inbox is read) or `Disable-ScheduledTask LW-InboxResponder` | **REGISTERED 2026-09-11** (operator direction - registering it is D5 in the responder's own deny set, so it was built, tested and left unarmed until the operator said to). Verified `Ready`; forced one run, `LastTaskResult` 0. Baseline written under supervision: 142 notes, 0 spawned. |
 
-Registration commands. The `LW-WeeklyHygiene` line is the one that was actually
-RUN (2026-08-02); the other two are held until their target script exists, and
-`LW-GeminiAudit` is retired outright.
+Registration commands. `LW-WeeklyHygiene` (2026-08-02) and
+`LW-InboxResponder` (2026-09-11) are the lines that were actually RUN; the other
+two are held until their target script exists, and `LW-GeminiAudit` is retired
+outright.
+
+`LW-InboxResponder` is registered from PowerShell, NOT with `schtasks`, and the
+reason is a measured failure rather than a preference. The first published line
+was a `schtasks` one-liner carrying cmd.exe's `\"` escape around a path with a
+space in it. Run in PowerShell - which strips the backslashes while building the
+argv - `schtasks` saw `/TR` end at the first inner quote and read the rest as
+its own options:
+
+```
+ERROR: Invalid argument/option - '--once /F'
+```
+
+`Register-ScheduledTask` takes the executable and its arguments as SEPARATE
+parameters, so the quoting question does not arise at all. Print the current
+line rather than copying one out of this file, since it resolves the interpreter
+at runtime:
+
+```
+python tools/lw_inbox_responder.py --print-register-command
+```
+
+Kill it mid-flight without touching the scheduler:
+
+```
+type nul > "ops\runtime\inbox_responder\HALT"
+del "ops\runtime\inbox_responder\HALT"
+```
 
 ```
 REM REGISTERED 2026-08-02, ARGS CORRECTED 2026-08-17.

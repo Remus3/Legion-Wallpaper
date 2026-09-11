@@ -534,6 +534,78 @@ def test_a_burst_is_capped_and_the_remainder_is_deferred_not_dropped(tmp_path, c
     assert len(responder.new_notes(inbox, state)) == 5 - responder.MAX_SPAWNS_PER_CYCLE
 
 
+# --------------------------------------------------------------------------
+# The kill switch. Added when the task was ARMED on 2026-09-11 - arming
+# something that spawns unattended agents without a mid-flight stop is the gap,
+# and disabling the scheduled task is slower than dropping a file.
+# --------------------------------------------------------------------------
+
+def test_a_halt_file_stops_a_cycle_before_anything_is_spawned(tmp_path, capsys, monkeypatch):
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 2)
+    state = tmp_path / "seen.json"
+    halt = tmp_path / "HALT"
+    halt.write_text("operator stopped the trial", encoding="utf-8")
+    monkeypatch.setattr(responder, "spawn",
+                        lambda *_a, **_k: pytest.fail("HALT did not stop the spawn"))
+
+    rc = responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+                         "--halt", str(halt)])
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["halted"] == "operator stopped the trial"
+    assert payload["spawned"] == []
+
+
+def test_an_empty_halt_file_still_halts(tmp_path, capsys):
+    """`type nul > HALT` is how an operator makes one under stress, and reading
+    that as "no halt" would disarm the switch exactly when it is being used."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    halt = tmp_path / "HALT"
+    halt.write_text("", encoding="utf-8")
+    responder.main(["--once", "--inbox", str(inbox), "--state", str(tmp_path / "s.json"),
+                    "--halt", str(halt)])
+    assert json.loads(capsys.readouterr().out)["halted"]
+
+
+def test_halt_beats_the_cold_start_baseline_too(tmp_path, capsys):
+    """HALT is checked FIRST and answers everything. A kill switch that only
+    works on the paths you remembered is not a kill switch."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 3)
+    state = tmp_path / "seen.json"
+    halt = tmp_path / "HALT"
+    halt.write_text("stop", encoding="utf-8")
+    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+                    "--halt", str(halt)])
+    assert json.loads(capsys.readouterr().out)["halted"]
+    assert not state.exists(), "a halted cycle still wrote the baseline"
+
+
+def test_without_a_halt_file_the_cycle_runs(tmp_path, capsys, monkeypatch):
+    """MIRROR. A switch stuck ON stops everything and would pass the arms above."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    state = tmp_path / "seen.json"
+    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+                    "--halt", str(tmp_path / "absent-HALT")])
+    payload = json.loads(capsys.readouterr().out)
+    assert "halted" not in payload
+    assert payload["cold_start"] is True
+
+    monkeypatch.setattr(responder, "spawn", lambda *_a, **_k: responder._auto("spawn", "fake"))
+    (inbox / "2026-09-11-0001-from-RC-new.md").write_text("new", encoding="utf-8")
+    responder.main(["--once", "--inbox", str(inbox), "--state", str(state),
+                    "--halt", str(tmp_path / "absent-HALT")])
+    assert len(json.loads(capsys.readouterr().out)["spawned"]) == 1
+
+
+def test_the_default_halt_path_is_under_runtime_state():
+    assert responder.HALT_PATH.name == "HALT"
+    assert responder.HALT_PATH.parent.parent.name == "runtime"
+
+
 def test_cli_once_dry_run_reports_json_and_changes_no_state(tmp_path):
     inbox = tmp_path / "moon_sync_inbox"
     inbox.mkdir()

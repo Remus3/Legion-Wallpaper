@@ -133,7 +133,7 @@ Enforcement (hooks in `.claude/settings.json`): PostToolUse `tools/pytest_guard.
 
 ## Scheduled tasks (Legion)
 
-Naming convention: `LW-*` (e.g. `LW-Supervisor`). Registered: `LW-Wallpaper` (desktop deck rotator, 2026-07-18), `LW-WeeklyHygiene` (Sunday 04:17, 2026-08-02) and `LW-CIWatchdog` (boot + PT2M, 2026-08-02; kill switch `ops\runtime\ci_watchdog\HALT`). `LW-GeminiAudit` is retired; `LW-Supervisor` is blocked on a missing script. Full list + registration commands live in `docs/OPERATIONS.md`.
+Naming convention: `LW-*` (e.g. `LW-Supervisor`). Registered: `LW-Wallpaper` (desktop deck rotator, 2026-07-18), `LW-WeeklyHygiene` (Sunday 04:17, 2026-08-02) and `LW-CIWatchdog` (boot + PT2M, 2026-08-02; kill switch `ops\runtime\ci_watchdog\HALT`) and `LW-InboxResponder` (PT5M, 2026-09-11; cross-repo mail responder, spawns DETACHED HEADLESS sessions, kill switch `ops\runtime\inbox_responder\HALT`). `LW-GeminiAudit` is retired; `LW-Supervisor` is blocked on a missing script. Full list + registration commands live in `docs/OPERATIONS.md`.
 
 ## Where to find current state
 

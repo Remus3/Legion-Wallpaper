@@ -6,6 +6,15 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **LW-InboxResponder ARMED - DONE 2026-09-11 (operator direction).**
+  Registered with `Register-ScheduledTask`, PT5M indefinite, Limited, pythonw.
+  Verified Ready, forced run `LastTaskResult` 0, baselined under supervision at
+  142 notes / 0 spawned. New kill switch `ops\runtime\inbox_responder\HALT`
+  (empty file counts, checked before the inbox is read), 5 arms + 2 mutants +
+  a live halt-then-release smoke test. Known and deliberate: the allowlist is
+  enforced as prompt INSTRUCTIONS to a `bypassPermissions` session, not
+  mechanically - that is RC's adopted shape and the trial's real risk surface.
+  LEDGER 183.
 - **43 false-RED sites repaired - DONE 2026-09-10, 43 -> 0.** `tests/gitdep.py`
   answers one factual question (can this machine resolve git) and each site
   decides what that means there: module-level `pytestmark` where all 21 arms

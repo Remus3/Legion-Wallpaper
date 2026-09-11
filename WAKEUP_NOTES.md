@@ -20,16 +20,37 @@ and the `dists` gating decision. RE-PROBE its counts before acting;
 over-admission (peak 8 at width 7, 50 clean re-runs, cause UNKNOWN, ROADMAP has
 it). `ops/loop/slots.py` is byte-identical by contract with RC.
 
-**Still waiting on the operator:** registering `LW-InboxResponder`. The printed
-command was BROKEN on the first attempt (cmd escaping run in PowerShell) and is
-fixed - `python tools/lw_inbox_responder.py --print-register-command` now emits
-a PowerShell form and a cmd form, and the PowerShell one is parse-checked by an
-arm. Registering is D5; it stays the operator's act.
+**LW-InboxResponder is ARMED as of 2026-09-11** (operator direction; LEDGER
+183). Registered, Ready, forced run `LastTaskResult` 0, baselined at 142 notes /
+0 spawned. It fires every 5 minutes and spawns a DETACHED HEADLESS session on a
+note that is new by content digest. Do NOT re-register and do NOT re-baseline -
+re-baselining swallows every note that arrived since. Stop it mid-flight with
+`type nul > "ops\runtime\inbox_responder\HALT"` (an empty file counts; it is
+checked before the inbox is read), release with `del`. Known and deliberate: the
+allowlist is enforced as prompt INSTRUCTIONS to a `bypassPermissions` session,
+not mechanically. That is RC's adopted shape and it is the trial's real risk
+surface - if the trial goes wrong, that is where to look first.
 
 **Acceptance, unchanged:** `python -m pytest tests/ -q` green, ruff clean,
 `python tools/drift_guard.py` exit 0, `python tools/done_gate.py bind` exit 0,
 then push the bound sha. The suite still runs one more item than it collects -
 PRE-EXISTING.
+
+---
+
+## 2026-09-11 - LW-InboxResponder armed, and the kill switch that required (LEDGER 183)
+
+- **Armed on operator direction.** PT5M indefinite, Limited, pythonw so nothing
+  flashes. Verified by reading the scheduler back, not by assuming the register
+  call meant it: State Ready, Interval PT5M, Enabled True, forced run result 0.
+- **Baselined under supervision:** 142 notes, 0 spawned. The cold-start footgun
+  caught in dry run on 2026-09-10, made real and harmless.
+- **New kill switch** `ops\runtime\inbox_responder\HALT`, checked FIRST so it
+  beats the baseline write too. An EMPTY file still halts - lifted from
+  `ci_watchdog.halted`, which learned that one first. 5 arms including the
+  mirror, 2 mutants killed, live halt-then-release smoke test on the real path.
+- **Said out loud rather than buried:** the allowlist is prompt INSTRUCTIONS to a
+  `bypassPermissions` session, not a mechanical gate. RC's shape, adopted.
 
 ---
 

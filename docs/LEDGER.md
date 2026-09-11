@@ -27,6 +27,50 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+183. DONE **2026-09-11 (LW-InboxResponder ARMED on operator direction, plus the
+   kill switch that arming it required).** The registration LEDGER 181 and 182
+   deliberately left for a human. The operator directed it; that direction is
+   the human adoption act D5 exists to reserve, and a responder still cannot
+   perform it for itself.
+
+   **Registered and verified, not assumed.** `Register-ScheduledTask`, PT5M
+   repetition with no duration (indefinite), RunLevel Limited, WorkingDirectory
+   the repo root, executed by `pythonw.exe` so a five-minute task flashes no
+   console. Read back from the scheduler: `State` Ready, `Interval` PT5M,
+   `Enabled` True, action and arguments as intended. Forced one run:
+   `LastTaskResult` **0**.
+
+   **Baselined under supervision before the scheduler could do it unwatched.**
+   `--once` cold start recorded 142 notes and spawned NOTHING, which is the
+   footgun LEDGER 181 caught in dry run made real and harmless.
+
+   **The kill switch is new, and arming is what made it necessary.** Arming
+   something that spawns unattended agents with no mid-flight stop is the gap;
+   `Disable-ScheduledTask` is slower than dropping a file and needs the
+   scheduler. `ops\runtime\inbox_responder\HALT`, same shape as
+   `LW-CIWatchdog`'s, lifted deliberately from `ci_watchdog.halted` including
+   the rule it learned first: an EMPTY file still halts, because
+   `type nul > HALT` is how an operator makes one under stress and reading that
+   as "no halt" disarms the switch exactly when it is being used. Checked FIRST,
+   before the inbox is even read, so it beats the cold-start baseline write too -
+   a kill switch that only works on the paths you remembered is not one. Five
+   arms including the MIRROR (without a HALT file the cycle runs; a switch stuck
+   ON stops everything and would pass every other arm), two mutants killed, and
+   a live smoke test on the real task path: halted, then released, then ran.
+
+   **Stated to the operator rather than buried, because arming changes who
+   carries it:** the allowlist is enforced as INSTRUCTIONS in the spawned
+   session's prompt, not mechanically. `classify()` is a library with 60 arms
+   behind it; the headless session is told the rules and is a
+   `bypassPermissions` agent. That is RC's shape as proposed and adopted, and it
+   is the trial's actual risk surface.
+
+   **Verified:** suite green, ruff clean, drift_guard 0 breaches.
+   **Do NOT redo:** the task is registered and baselined - do not re-register,
+   and do not re-baseline (that would swallow every note that arrived since).
+   `docs/OPERATIONS.md` carries the row, the PowerShell registration and the
+   kill-switch commands; `CLAUDE.md`'s task roster names it.
+
 182. DONE **2026-09-10 (43 false-RED sites repaired, 43 -> 0, and the
    registration command the operator could not run).** Same-day follow-up to
    LEDGER 181, which measured the count and shipped no repair.
