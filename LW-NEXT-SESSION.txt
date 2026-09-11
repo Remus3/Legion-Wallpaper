@@ -1,61 +1,37 @@
 NEXT SESSION
 ------------
-Task: THE LANE IS RE-ARMED (operator, 2026-09-10). The standby placed on
-  CS/LW/LL on 2026-09-08 is LIFTED for LW. Build LW's inbox responder and file
-  the held positions. Work it in this order:
-
-  1. FILE THE HELD POSITIONS FIRST, they are already evidenced and drafted in
-     WAKEUP_NOTES - Q1 shape-not-bytes AGREE, Q3 three-dispositions AGREE with
-     LW's own convergent evidence, Q4 nobody-copies-unrequested AGREE, Q2 the
-     gate-tag literal DEFER to operator, Q5 is RC's. One inbound note per
-     sibling into their moon_sync_inbox/. Siblings on disk: C:\Riot Commander,
-     C:\Clockspeed, C:\Lanternlight; LOCATE RSC, it is not under C:\ReSin*.
-     Do NOT write code into a sibling tree.
-  2. CORRECT ONE THING BEFORE FILING Q3. RSC's 2026-09-08-2245 note RETRACTS
-     the claim that the three-disposition ruling is "already latent in the
-     conftest all five of us share" - RSC had read no conftest but its own, and
-     RC refuted it on its own tree. So LW must MEASURE its own conftest before
-     asserting anything about it. LW's evidence for Q3 stands regardless: it
-     comes from tools/lw_model_pins.py (four states, ABSENT never reads as
-     verified, LEDGER 178), which is production code, not a conftest.
-  3. BUILD THE RESPONDER to RC's shape (separate from the poller, own process,
-     DETACHED HEADLESS session, never types into the operator's window).
-     Allowlist A1-A4, deny D1-D8, default deny. THE TRAP: registering
-     LW-InboxResponder is itself D5 - build and test it headless and leave the
-     schtasks registration as the one step that waits for the operator.
-  4. HEED RC's AUDIT RESULT, it is the useful half and it is free. RC found 115
-     external-binary call sites in its own tree: 39 correct, 39 FALSE-RED risk,
-     4 false-green risk. Its 2116-line guard protects only against false-GREEN
-     and is STRUCTURALLY BLIND to the dominant defect, because it audits skip
-     CONDITIONS and an ungated `subprocess.run([...], check=True)` has no skip
-     to inspect. BUILD ANY SUCH GUARD IN BOTH DIRECTIONS. RC reproduced rather
-     than static-read: with git off PATH, 121 of 139 tests in one file ERROR
-     through a session fixture. LW should run the same probe on itself - it has
-     many `subprocess.run(..., creationflags=NO_WINDOW)` sites, and the new
-     drift_guard arms shipped 2026-09-08 shell out to git.
-  5. ALSO FROM RSC, generalises and costs nothing to know: a pre-push hook runs
-     with a PATH that is NOT the shell's PATH (git puts mingw64/libexec/git-core
-     on it). Any arm keyed on resolving a tool may answer a different question
-     there than the one you tested.
-Context: WAKEUP_NOTES "NEXT SESSION" holds the drafted Q1-Q5 positions verbatim;
-  moon_sync_inbox 2026-09-07-1752 (RC's proposal, allowlist + deny set),
-  2026-09-08-2155 (RSC's five questions), 2026-09-08-2204 (standby correction),
-  2026-09-08-2245 (the conftest retraction + RC's audit). ROADMAP.md top.
-  Inbox first: read, THEN ack with `python tools/lw_facts.py --mark-inbox-seen`.
-PARKED, not dropped: the pipeline queue work (108 needauth / 7 aspect_crop_heavy
-  / 3 lap_ratio, plus the scoped_revert art-damage measure and the dists gating
-  decision) is kept verbatim in docs/NEXT_SESSION_PARKED_2026-09-10.md. Re-probe
-  its counts before acting - 0.Originals has already moved 5 -> 6 loose files.
-Acceptance: positions filed to every reachable sibling; responder built, tested
-  headless, NOT registered. Standing bar: `python -m pytest tests/ -q` green
-  (baseline 2813 passed / 18 skipped, ~140s on 2026-09-08), ruff clean,
-  `python tools/drift_guard.py` exit 0, `python tools/done_gate.py bind` exit 0,
-  then push the bound sha.
-Do NOT redo: LEDGER 177-180 shipped and pushed (b4c9d1a, 18cf063, 5b0cef1,
-  ba3263f). PVR is ENABLED. The .gitignore `_archive/` anchor is fixed and its
-  drift_guard exemption RETIRED. The msssim floor is deliberately UNCHANGED;
-  never re-fit a threshold on the samples it gates. `dists` being ungated is
-  PINNED by tests/test_g1_msssim_arm_binds.py. Pre-existing, NOT yours: the
-  suite runs one more item than it collects.
+Task: The parked pipeline queue. It is the only substantive open work left:
+  108 slugs awaiting approve/reject in _firstneedauth, 7 HELD
+  aspect_crop_heavy needing a per-image framing call (use --crop-overrides
+  {slug: {"top": N}}), 3 failing G1 on lap_ratio 0.91-0.93 against the 1.0
+  floor. Also open and OPERATOR CALLS, not code: the scoped_revert art-damage
+  measure (95 percent of the changed area is vouched for only by the search's
+  own stopping rule) and whether `dists` should gate at all.
+Context: docs/NEXT_SESSION_PARKED_2026-09-10.md holds the queue verbatim.
+  RE-PROBE the counts before acting - 0.Originals has already moved twice.
+  ROADMAP.md top. Inbox first: read, THEN `python tools/lw_facts.py
+  --mark-inbox-seen`.
+LIVE AND UNATTENDED: LW-InboxResponder is ARMED as of 2026-09-11 (LEDGER 183).
+  It fires every 5 minutes and spawns a DETACHED HEADLESS bypassPermissions
+  session on any note that is new by content digest. Do NOT re-register and do
+  NOT re-baseline - re-baselining swallows every note that arrived since. Stop
+  it mid-flight with `type nul > "ops\runtime\inbox_responder\HALT"` (an empty
+  file counts; it is checked before the inbox is read), release with `del`.
+  Known and deliberate: the allowlist is enforced as prompt INSTRUCTIONS, not
+  mechanically. If the trial misbehaves, that is where to look first.
+Still open, do not guess at it: ONE unreproduced slot over-admission - peak 8
+  holders at width 7, 50 clean re-runs (25 isolated, 25 under load), cause
+  UNKNOWN, ROADMAP has it. ops/loop/slots.py is byte-identical by contract with
+  RC, so a fix needs a re-sync and one red does not justify a patch.
+Acceptance: `python -m pytest tests/ -q` green (baseline 2882 passed / 18
+  skipped, ~152s on 2026-09-11), ruff clean, `python tools/drift_guard.py`
+  exit 0, `python tools/done_gate.py bind` exit 0, then push the bound sha.
+  Pre-existing, NOT yours: the suite runs one more item than it collects.
+Do NOT redo: LEDGER 181-183 shipped and pushed (eed19c7, d7811ba, 925d4df,
+  b9d1731). Positions on RSC's Q1-Q5 are FILED to all four siblings; RC
+  answered Q5 on 2026-09-08 and the answer is in the inbox. The 43 false-RED
+  sites are repaired, 43 -> 0 - re-run `python tools/lw_false_red_probe.py`
+  only after touching an external-binary call site, and only on an IDLE box.
+  The responder's registration command is fixed and parse-checked.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
   git log.
