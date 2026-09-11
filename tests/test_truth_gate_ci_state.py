@@ -278,3 +278,57 @@ def test_reconcile_still_refuses_on_ci_failure():
 
 def test_reconcile_reports_the_ci_status_verbatim():
     assert _reconcile_with("not-evaluated")["ci"]["status"] == "not-evaluated"
+
+
+# --- an abbreviated sha is the one an operator actually has -----------------
+
+def test_an_abbreviated_sha_is_resolved_before_gh_is_asked(monkeypatch):
+    """MEASURED 2026-09-11, and it is the failure mode this module exists to
+    prevent. `done_gate bind` prints a 12-char sha ("BOUND to ebbd0f9b852e"),
+    so that abbreviation is what gets pasted here next. `gh run list --commit`
+    matches the FULL sha only: handed 12 chars it returns an empty list, and
+    check_ci then reported `queued` for a run that had already COMPLETED
+    SUCCESSFULLY. A green read as "still waiting" is exactly the ambiguity the
+    not-evaluated/queued split was added to kill, arriving through a different
+    door - and an unattended lane polling that answer waits forever.
+
+    Only `sha == "HEAD"` was resolved before. The arm asserts the ARGUMENT gh
+    is handed rather than the returned status, because a stub can be made to
+    return anything and the defect lives in what was asked.
+    """
+    asked = []
+
+    def run(cmd, *args, **kwargs):
+        if cmd[0] == "git" and "rev-parse" in cmd:
+            return _Result(0, "ebbd0f9b852e5468029030bad5c196510512796d\n")
+        if cmd[0] == "gh":
+            asked.append(cmd[cmd.index("--commit") + 1])
+            return _Result(0, json.dumps(
+                [{"status": "completed", "conclusion": "success", "name": "ci"}]))
+        return _Result(0, "\n")
+
+    monkeypatch.setattr(truth_gate.subprocess, "run", run)
+    out = truth_gate.check_ci("ebbd0f9b852e")
+
+    assert asked == ["ebbd0f9b852e5468029030bad5c196510512796d"],         "gh was asked for an abbreviated sha, which it never matches"
+    assert out["status"] == "success"
+
+
+def test_a_sha_that_cannot_be_resolved_is_passed_through_unchanged(monkeypatch):
+    """The resolution must never become a new way to fail. A sha git does not
+    know - another repository's, or a typo - still reaches gh as written, and
+    the answer stays the ordinary empty-list one rather than an exception."""
+    asked = []
+
+    def run(cmd, *args, **kwargs):
+        if cmd[0] == "git" and "rev-parse" in cmd:
+            return _Result(128, "", "unknown revision")
+        if cmd[0] == "gh":
+            asked.append(cmd[cmd.index("--commit") + 1])
+            return _Result(0, "[]")
+        return _Result(0, "\n")
+
+    monkeypatch.setattr(truth_gate.subprocess, "run", run)
+    out = truth_gate.check_ci("deadbeef")
+    assert asked == ["deadbeef"]
+    assert out["status"] in {"queued", "not-evaluated"}

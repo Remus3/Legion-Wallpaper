@@ -239,10 +239,16 @@ def check_ci(sha="HEAD", workflow=WORKFLOW):
     both as one string let a race with the API read as a settled verdict.
     """
     try:
-        if sha == "HEAD":
-            r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(ROOT),
-                               capture_output=True, text=True,
-                               creationflags=NO_WINDOW)
+        # ANY sha is resolved, not only "HEAD". `gh run list --commit` matches
+        # the FULL sha and returns an empty list for an abbreviation, which this
+        # function would then report as `queued` for a run that had already
+        # finished - and `done_gate bind` prints a 12-char sha, so the
+        # abbreviation is what an operator has in hand. A sha git cannot resolve
+        # is passed through unchanged rather than becoming a new failure.
+        r = subprocess.run(["git", "rev-parse", sha], cwd=str(ROOT),
+                           capture_output=True, text=True,
+                           creationflags=NO_WINDOW)
+        if r.returncode == 0 and r.stdout.strip():
             sha = r.stdout.strip()
         r = subprocess.run(
             ["gh", "run", "list", "--commit", sha, "--limit", "10",

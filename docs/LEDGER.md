@@ -27,6 +27,32 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+190. DONE **2026-09-11 (truth_gate read a COMPLETED GREEN as `queued` whenever
+   the sha was abbreviated; found by using it, fixed RED-first).** Confirming
+   CI at this session's wrap, `truth_gate.check_ci('ebbd0f9b852e')` answered
+   `{"status": "queued", "runs": []}` while `gh run list` showed that exact sha
+   completed and successful. ROOT CAUSE: `gh run list --commit` matches the FULL
+   sha and returns an empty list for an abbreviation; `check_ci` resolved
+   `git rev-parse` for the literal string `"HEAD"` ONLY, so every other input
+   reached gh as written, and the empty list then fell into the
+   queued/not-evaluated branch. WHY IT MATTERS MORE THAN IT LOOKS: this is the
+   function whose entire job is to separate a genuine green from "not evaluated"
+   and from "queued", `ci_watchdog` polls it in an unattended loop where a
+   permanent `queued` never settles, and `done_gate bind` PRINTS a 12-char sha,
+   so the abbreviation is exactly what an operator has in hand to paste. The
+   defect was reachable by following LW's own documented wrap ritual. FIXED:
+   resolve ANY sha before asking gh, and pass an unresolvable one through
+   unchanged so the resolution can never become a new failure mode. TDD RED
+   FIRST: two arms in `tests/test_truth_gate_ci_state.py`, the first RED on the
+   old code, asserting the ARGUMENT gh is handed rather than the returned status
+   - a stub can be made to return anything, and the defect lived in what was
+   asked. Re-probed LIVE after the fix: the same 12-char sha now reads
+   `success`, `HEAD` unchanged. Sibling sweep: the only other `--commit` call
+   site is `slice_orchestrator`'s unrelated CLI flag, and `ci_watchdog` passes
+   full shas. 2915 passed, 18 skipped, exit 0; ruff clean.
+
+---
+
 189. DONE **2026-09-11 (both headless lanes DISARMED on operator direction, and
    the disarm immediately proved four arms were reading machine state;
    docs + tests).** The operator asked at the wrap to disarm any headless lane
