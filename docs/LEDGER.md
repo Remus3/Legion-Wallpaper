@@ -27,6 +27,69 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+192. DONE **2026-09-12 (LW's refutation-cost count for the fleet tooling-tier
+   lane: 126 events, 73.8 pct gate-reachable, and one of our own three findings
+   retracted by us within the hour; docs-only).** OPERATOR-ORIGINATED and laned
+   for fleet consensus: "we keep getting refuted a lot and that takes another
+   large chunk of time to fix, and then that fix needs a fix". RSC broadcast the
+   ask 2026-09-12-1400; RC answered first at 80.3 pct over 173 events. **N = 47
+   ledger entries, 145 through 191** (2026-09-06 to 2026-09-11, 148250 chars),
+   drawn at 145 because 146-147 are the root re-spelling and the `.git` rebuild,
+   a hard environment discontinuity across which path-keyed cross-repo guards
+   stopped comparing anything. Four read-only passes hand-opened disjoint chunks;
+   **no pass saw another's rows and every total was recounted by machine from
+   per-event rows**, never from a pass's own summary. **126 events across 45 of
+   47 entries. (a) 65, (b) 28, (c) 23, live-exercise 10; (a)+(b) = 73.8 pct**, so
+   by the ask's own criterion the lane is not theatre. Exactly ONE refutation was
+   itself wrong (the LEDGER 185/186/188 Lanternlight retract-and-un-retract), and
+   that 1 is a FLOOR. **Q3 is the contribution and it cuts against the exercise:
+   4.8 to 32.5 pct, a RANGE we refuse to collapse**, because our four passes read
+   `fix_of_a_fix` three different ways and RC's 19.1 sits between our loose (41)
+   and strict (6-8) readings - until the definition is pinned, comparing the
+   ratios compares nothing. `correct` split two ways as well, which is why our
+   seven raw NO rows are not seven wrong refutations. **Q4: a NON-VACUITY GATE**
+   (an arm does not count as coverage until it has been seen to FAIL against a
+   planted mutant) - 65 of 126 are (a) and the repeated mechanism inside (a) is a
+   check that passed while measuring nothing; we hold the RULE as a standing
+   directive and `ls tools/ | grep -i mutat` returns NOTHING, so every mutant in
+   the window was killed by hand. Controls: 12 quotes sampled at random matched
+   the ledger verbatim 12 of 12; the only zero-event entries are 157 (a
+   deliberate de-dup) and 176; **a marker-word count returns 15 against 126 hand
+   -counted, a factor of eight** (RC measured three), so anyone scraping this
+   corpus by keyword is low by most of it. **VERIFIED FINDING: the three
+   history-rewrite maps DO NOT CHAIN and `CLAUDE.md` told every session to walk
+   them "forward oldest-first".** The 09-07 map is keyed on the ORIGINAL
+   pre-09-06 shas: its OLD column is 255 of 255 identical to the 09-06 map's OLD
+   column and 0 of 255 matches that map's NEW column. `88e1ac7` walked as
+   documented gives `3a9a010` (does not resolve); looked up directly in the 09-07
+   map it gives `96b5f74` (resolves). CLAUDE.md corrected with the measurement
+   and the worked example inline. **RETRACTED IN FULL, BY US, WITHIN THE HOUR:**
+   a claimed finding that six cited test files do not exist and five never did.
+   The raw measurement was right (99 of 1176 path citations point at nothing;
+   `git log --all` really is empty for those six, controls both ways) and every
+   conclusion was wrong - one is cited as "RC's", two more are a sibling's, one
+   is cited as "not yet written - add ...", one sits under "filed not fixed", one
+   is another tree's. The instrument was a path-existence check; the question was
+   whether a citation MISLEADS A READER, and the fixture could not contain a
+   foreign path, a to-do or a sentence asserting absence. **LW reports NO
+   dead-citation finding.** It is kept in the report retracted rather than
+   deleted, and it carries the sharpest result of the session: **a pre-dispatch
+   re-grounding gate of the kind RC ranks first would have SHIPPED this claim**,
+   because the path really is absent - so that gate needs a claim-reading step or
+   it manufactures this false positive at scale. Third measurement, standing:
+   all five wired hook events fire at WRITE time or at SessionStart, none at READ
+   time, and `drift_guard.check_cited_shas` reads only staged ADDED lines, caps
+   at 40 shas, and asks only whether each resolves. Artifacts:
+   `docs/REFUTATION_COST_MEASUREMENT_2026-09-12.md` (335 lines, self-contained),
+   the 1836 note and the 1905 CORRECTION filed byte-identical into all four
+   sibling inboxes with the corrected report RE-DELIVERED over the stale payload.
+   ROADMAP carries the lane row, OPEN and deliberately not started. Suite 2921
+   passed / 18 skipped. **FUTURE / do-not-redo:** nothing is built and no shared
+   artifact is touched until four trees report; LW's standing ask to the fleet is
+   to pin `fix_of_a_fix`, `correct` and a prevention-versus-discovery split, then
+   each tree re-scores its OWN existing rows - cheap, and the only way four
+   counts become comparable.
+
 191. DONE **2026-09-11 (the THIRD headless lane had no kill switch at all; found
    while disarming the other two, fixed and proved).** `LW-WeeklyHygiene`
    (Sunday 04:17) runs `tools/weekly_hygiene_run.ps1`, which spawns

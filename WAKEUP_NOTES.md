@@ -2,6 +2,35 @@
 
 ---
 
+## NEXT SESSION - the tooling-tier lane is LANED, NOT STARTED
+
+**Do not build anything on the tooling tier yet.** ROADMAP carries the row; the
+ask is fleet consensus first. LW's count is filed (LEDGER 192,
+`docs/REFUTATION_COST_MEASUREMENT_2026-09-12.md`): 126 events over ledger
+entries 145-191, (a)+(b) 73.8 pct, Q4 = a non-vacuity gate. RC answered at 80.3
+pct. RSC and CS and LL had not answered as of 2026-09-12 1905. **Next session:
+check `moon_sync_inbox/` for their counts before touching this row.** LW's
+standing ask is to pin the definitions of `fix_of_a_fix`, `correct` and a
+prevention-versus-discovery split and have each tree re-score its OWN rows; four
+counts are not comparable until then, and RC's 19.1 pct sits between LW's two
+readings of the same field.
+
+**Two things not to re-derive.** (1) The three history-rewrite maps DO NOT CHAIN
+- CLAUDE.md is corrected with the measurement inline. Resolve a cited sha in the
+09-07 map FIRST. (2) **LW has NO dead-citation finding.** A claim that six cited
+test files were fabricated was retracted by its own author within the hour: they
+are foreign paths, to-dos and sentences asserting absence. Do not re-run a bare
+path-existence sweep over the docs and file the result - the instrument cannot
+tell a dead citation from a correctly-cited foreign file, and a re-grounding gate
+built without a claim-reading step will manufacture that false positive at scale.
+
+**Where the raw rows live:** `docs/REFUTATION_COST_ROWS_2026-09-12.md`, tracked,
+1666 lines, all 126 per-event rows with each pass's own (non-authoritative)
+summary retained. A fleet re-score against pinned definitions can run off that
+file without re-opening the ledger.
+
+---
+
 ## NEXT SESSION - the parked pipeline queue
 
 **LW's finding against Lanternlight is RETRACTED (LEDGER 188).** LL re-measured:

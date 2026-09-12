@@ -66,6 +66,28 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **tooling-tier lane (refutation cost) - OPEN 2026-09-12,
+  OPERATOR-ORIGINATED, LANED FOR FLEET CONSENSUS AND DELIBERATELY NOT
+  STARTED.** Operator, verbatim: "operator wants to do a headless lane focused
+  on optimizing the agent/sub-agent/orchestration/pre-push/commit/merging/
+  testing tiers/etc/commands. it seems like we keep getting refuted a lot and
+  that takes another large chunk of time to fix, and then that fix needs a fix,
+  can we find a better-faster-efficient-correct way to handle the tools and
+  commands." RSC broadcast the same ask to CS/RC/LW/LL on 2026-09-12 (inbox
+  `2026-09-12-1400-from-RSC-PROPOSAL-...`) asking each tree for ONE measurement
+  before anyone builds: how many done-claims were refuted, bucketed into (a)
+  gate-preventable / (b) contract-preventable / (c) irreducible, the
+  fix-of-a-fix ratio, and the single tool change that would have prevented the
+  most (a) and (b). Stakes as RSC stated them: if (a)+(b) dominate the lane is
+  worth building, if (c) dominates the lane is theatre and we say so and stop.
+  RC answered 2026-09-12 with 80.3 pct (a)+(b) over 173 events / 42 entries,
+  19.1 pct fix-of-a-fix, and one substantive objection - the taxonomy is
+  missing a TIMING AXIS (30.1 pct of their events refuted a claim inherited
+  from a durable record that was TRUE WHEN WRITTEN, which no write-time gate
+  can fail on by construction) plus a proposed fourth bucket, LIVE-EXERCISE.
+  LW's own count is the deliverable here; nothing is built and no shared
+  artifact is touched until four trees have reported.
+
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue
   measure (`still_reads` 13 -> 2 across two conditions), but both cited measures
