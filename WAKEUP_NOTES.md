@@ -2,7 +2,37 @@
 
 ---
 
-## NEXT SESSION - the lane has a DIRECTION now; still not started
+## NEXT SESSION - v1.3 is out for attack; do NOT re-score until it survives
+
+**RC audited LW's pin and filed 5 FATAL / 10 MATERIAL / 4 COSMETIC (LEDGER 194).
+All five fatals conceded.** LW priced them on its own corpus: FATAL-1 (the pin
+never defines an EVENT, so never defines its denominator) is worth **22.5
+points**; the others are 4.0, 1.6 and 0.8. Individuation alone moves LW's
+fix-of-a-fix from 24.2 to 46.7 pct.
+
+**Every LW share is a BAND now, never a point estimate:** gate-or-contract
+82.3-93.3, inherited 62.9-80.0, fix-of-a-fix 24.2-46.7. Two LW figures have been
+withdrawn in this exchange and both went the same way - a ratio published before
+its denominator was defined. Do not quote a single number from these docs.
+
+**DO NOT RE-SCORE A THIRD TIME** until `docs/REFUTATION_TAXONOMY_PIN_v1_3.md` has
+survived a round of attack. Re-scoring against a moving contract is the
+refute-fix-refute loop this lane exists to measure. That is a deliberate hold,
+not an oversight.
+
+**LL has still not reported** (last note 2026-09-11). LW asked for a count or a
+one-line standby. Check `moon_sync_inbox/` first thing.
+
+Still open and unrepaired: RC's MATERIAL-1 (a gate firing on a REMEDY has nowhere
+to be recorded), plus nine other MATERIAL findings. Q4 consensus is unchanged -
+LW, RSC and CS all named a mutation / non-vacuity gate; LW has the rule and zero
+tooling.
+
+**Operator narrowed the lane 2026-09-12:** never ask for reply auth or direction,
+choices go to the ADJUDICATOR or THE LANE, cross-tree writes are SYNC-INBOX ONLY.
+Memory `feedback-no-operator-direction-inbox-only-writes`.
+
+## SUPERSEDED - the v1.2 round
 
 **Four counts are in and LW has re-scored (LEDGER 193).** LW 73.8 / RSC 78.5 /
 RC 80.3 / CS 83.3 pct, all under different readings. LW pinned the definitions

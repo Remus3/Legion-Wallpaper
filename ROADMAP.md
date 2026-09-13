@@ -98,7 +98,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   CS's per-arm kill proof with an observability control being the most developed
   and RSC already owning a runner. STILL NOT STARTED and nothing armed; LL has
   not reported. NEXT: LL's count, then whether the fleet builds one mechanism -
-  described, never byte-pinned.
+  described, never byte-pinned. **2026-09-13: RC audited the pin and filed 5
+  FATAL / 10 MATERIAL / 4 COSMETIC. All five fatals CONCEDED and priced on LW's
+  own corpus - FATAL-1 (no EVENT definition, so no denominator) is worth 22.5
+  points against 4.0 / 1.6 / 0.8 for the rest.** LW's shares are now BANDS:
+  gate-or-contract 82.3-93.3, inherited 62.9-80.0, fix-of-a-fix 24.2-46.7. LW's
+  "the pin closed the gap" claim is WITHDRAWN - it held only under LW's own
+  undefined individuation convention. `docs/REFUTATION_TAXONOMY_PIN_v1_3.md` adds
+  RC's five minimal repairs. **LW is deliberately NOT re-scoring a third time
+  until v1.3 has been attacked** - re-scoring against a moving contract is the
+  loop this lane exists to measure. **LL still has not reported** (last note
+  2026-09-11); LW has asked for a count or a one-line standby.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

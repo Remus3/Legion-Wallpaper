@@ -27,6 +27,61 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+194. DONE **2026-09-13 (RC audited LW's pin and filed five FATALs; all five
+   conceded, PRICED on LW's own corpus, and a second LW claim withdrawn;
+   docs-only).** LW had published PIN v1.2 telling recipients not to adopt it
+   sight-unseen and to REPORT underspecifications rather than resolve them
+   silently. RC took that literally and returned **5 FATAL / 10 MATERIAL / 4
+   COSMETIC**, attacking the contract and scoring no events, with a minimal repair
+   clause per finding and an explicit refusal to author a v1.3. **All five are
+   correct and all five are conceded.** LW's contribution is that only the corpus
+   owner can PRICE them, and LW did: against its own 124 scored rows, **FATAL-1
+   (the pin uses the word `event` about thirty times and defines it nowhere, so it
+   never defines its own denominator) is worth 22.5 points, against 4.0 for
+   FATAL-2, 1.6 for FATAL-3 and 0.8 for FATAL-4** - dominant by an order of
+   magnitude, and RC's ranking was right. Re-derived under the coarsest defensible
+   individuation (one event per ledger entry, N=45 vs N=124): gate-or-contract
+   82.3 -> 93.3 pct, inherited 62.9 -> 80.0 pct, **fix-of-a-fix 24.2 -> 46.7 pct**.
+   The compounding ratio NEARLY DOUBLES on convention alone, and structurally so:
+   collapsing rows makes "did ANY link need a further fix" monotonically more
+   likely, so a coarser event unit reports a higher ratio for no other reason -
+   a property of the measure that applies to all four trees' counts.
+   **WITHDRAWN: LW's own "the pin closed the fix-of-a-fix gap and reversed its
+   sign".** It held only under LW's undefined convention; under the coarser one
+   the gap is WIDER than before the pin, in the original direction. That is the
+   SECOND LW figure withdrawn in this exchange after the strict 4.8-6.3 pct, and
+   both went the same way - a ratio published before its denominator was defined.
+   Every LW share is now quoted as a BAND (gate-or-contract 82.3-93.3, inherited
+   62.9-80.0, fix-of-a-fix 24.2-46.7) and the withdrawal is kept IN PLACE in the
+   re-score doc rather than deleted, because leaving a banner over contradicting
+   prose is the pathology RSC had already flagged one level up.
+   `docs/REFUTATION_TAXONOMY_PIN_v1_3.md` adds RC's five minimal repairs in LW's
+   wording: an EVENT is one CLAIM shown to be wrong (individuate by the claim, not
+   the artifact, root cause, fix or entry); `prevention` gets a TOTAL PRECEDENCE
+   ORDER with vacuity fixed at GATE-EXISTING and PROXY-MEASURE reserved for an
+   instrument that actually RAN; `chain_kind` becomes a PER-LINK LIST with the
+   ratio counting any non-SAME-ARTIFACT link; a link counts only if the refutation
+   OF THE REMEDY was itself correct; an in-session agent report is FRESH unless
+   written durably before being acted on. **DELIBERATELY NOT DONE: a third
+   re-score.** Re-scoring against a contract still under attack IS the
+   refute-fix-refute loop this lane exists to measure, performed by the tree that
+   proposed measuring it - v1.3 gets attacked first. Also conceded unrepaired:
+   RC's MATERIAL-1, that a gate firing on a REMEDY has nowhere to be recorded
+   since chain links carry no `prevention`, which undercuts v1.2's own stated
+   justification for adding GATE-FIRED-CAUGHT. **Recorded against LW:** two
+   consecutive versions of this contract had their defects found by someone other
+   than their author, and the author is LW - the adversarial pass is doing ALL the
+   work of making the contract correct, which is the very cost the operator asked
+   the fleet to reduce, now reproduced one level up in the meta-exercise. No
+   resolution offered and none invented. **LL STILL HAS NOT REPORTED** (last LL
+   note 2026-09-11); LW asked for a count or a one-line standby and noted that,
+   having just confirmed an LW note that reached nobody for four days, a delivery
+   check is worth one command before anyone reads silence as dissent. Suite green.
+   **FUTURE / do-not-redo:** do not quote any LW share from this exchange as a
+   point estimate - they are bands until a defined denominator exists; and do not
+   re-score under any pin version until that version has survived a round of
+   attack.
+
 193. DONE **2026-09-12 (the definitions pinned, LW's 126 rows re-scored under the
    pin, and an LW figure withdrawn because the pin closed a gap nobody could
    close by arguing; docs-only).** Operator narrowed the lane the same day: never
