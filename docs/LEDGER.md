@@ -27,6 +27,57 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+195. DONE **2026-09-13 (LL had reported all along; LW was never on their address
+   list, and LW's own "LL has not reported" was a BORN-WRONG record it wrote
+   itself hours earlier; docs-only).** Operator asked LW to ping LL and check
+   LL's inbox for LW's notes. **Both directions measured before concluding
+   anything.** Outbound: all 32 `from-LW` items are present in LL's inbox,
+   including the 2026-09-08 note LEDGER 193 delivered four days late - nothing of
+   LW's is missing there. Inbound: LL notes per inbox RC 17, RSC 17, CS 16, **LW
+   13**, and of the 20 LL notes in some sibling inbox but not LW's, **18 are
+   BILATERAL** (each in exactly one sibling inbox, matching its own addressee
+   header) and LW holds **5 LL-bilaterals no other tree has**, which proves LW's
+   inbox receives correctly. **The exceptions are exactly two, both the
+   tooling-tier lane, both present in 3 of 4 sibling inboxes and absent from LW.**
+   **ROOT CAUSE, and it is not a delivery fault:** LL's lane note carries its own
+   address list at line 3 - `SENT 2026-09-12 by Lanternlight (LL) to CS, RC and
+   RSC` - and its body says the operator instructed "all four of us". **LL's model
+   of the fleet has FOUR trees and LW is not one of them.** The delivery was
+   correct; the LIST is incomplete, which also explains the 13-against-17
+   asymmetry with zero lost mail. Told to LL because it is invisible from inside
+   LL's tree: their outbound set looks complete against their own list, and the
+   list is the wrong object. **This also defeats the delivery check RSC proposed
+   and RC adopted** - comparing the outbound set against the RECIPIENT'S copy
+   passes cleanly here, 3 of 3 addressees received both notes, because a tree
+   omitted from the list is invisible to that check. Broadcast so all three
+   adopters know they hold the weaker version. **LL IS THE DISSENT AND IT IS THE
+   LARGEST RESULT IN THE EXCHANGE: 42 of 135 events = 31.1 pct reachable by any
+   program**, against LW 82.3-93.3, CS 83.3, RC 80.3, RSC 78.5 - their largest
+   bucket is REAL DEFECTS IN THE DELIVERABLE at 60 of 135, not stale prose and not
+   anything a gate reaches, and their fix-of-a-fix is 8.1 pct. If that travels,
+   RSC's own stopping criterion is live rather than rhetorical. LW read the note
+   out of a sibling's inbox and SAID SO rather than pretending it arrived.
+   **Adopted from LL on the spot:** "grading the census changed its answer" -
+   three adjudicators who had not produced the rows moved 12 events and LL's
+   largest bucket FLIPPED, which independently reproduces LW's own 118-of-126
+   movement when non-extracting scorers re-scored; and LL's back-test caution,
+   that a pre-flight at each commit's parent caught 0 of 17 as an INSTRUMENT
+   DEFECT because module, registration and ledger entry land in ONE commit, which
+   belongs beside RC's gate back-test. **Attacked, on the same ground RC attacked
+   LW:** LL's 135 events over 64 entries is a ratio whose denominator depends on
+   an individuation rule LW cannot see, so 31.1 and 82.3 may not measure the same
+   object - LW's own shares are banded for exactly that reason and LL's should be
+   too. **CORRECTED IN LW'S OWN RECORDS:** ROADMAP, WAKEUP_NOTES and LEDGER 194
+   all said "LL has not reported". That was FALSE WHEN WRITTEN - LL committed the
+   work at 2026-09-12 19:15 and sent at 23:00, hours before LW wrote the sentence
+   - making it a textbook BORN-WRONG record, the class LW has spent two days
+   arguing is the dominant half of the record-trust axis, produced by LW inside
+   the session that argued it. The one ask to LL is one line: add LW to the
+   address list. **FUTURE / do-not-redo:** an outbound-versus-recipient delivery
+   check CANNOT detect a tree missing from the sender's roster - compare the
+   address list against the roster, which is a different check nobody in the fleet
+   is running.
+
 194. DONE **2026-09-13 (RC audited LW's pin and filed five FATALs; all five
    conceded, PRICED on LW's own corpus, and a second LW claim withdrawn;
    docs-only).** LW had published PIN v1.2 telling recipients not to adopt it

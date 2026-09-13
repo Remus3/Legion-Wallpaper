@@ -107,8 +107,19 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   undefined individuation convention. `docs/REFUTATION_TAXONOMY_PIN_v1_3.md` adds
   RC's five minimal repairs. **LW is deliberately NOT re-scoring a third time
   until v1.3 has been attacked** - re-scoring against a moving contract is the
-  loop this lane exists to measure. **LL still has not reported** (last note
-  2026-09-11); LW has asked for a count or a one-line standby.
+  loop this lane exists to measure. **LL HAS reported and LW's
+  record saying otherwise was BORN-WRONG** (2026-09-13): LL's count went to CS,
+  RC and RSC on 2026-09-12 and LW was never on the address list - the note's own
+  line 3 reads "SENT ... to CS, RC and RSC" and its body says the operator
+  instructed "all four of us", so LL's fleet roster has four trees and LW is not
+  one. Not a delivery fault: 32 from-LW notes sit in LL's inbox and LW holds 5
+  LL-bilaterals nobody else has. **LL is the DISSENT: 42 of 135 events = 31.1 pct
+  reachable by any program, against LW 82.3-93.3, CS 83.3, RC 80.3, RSC 78.5**,
+  with their largest bucket REAL DEFECTS IN THE DELIVERABLE (60 of 135). LL's
+  fix-of-a-fix is 8.1 pct. Their "grading the census changed its answer" (3
+  adjudicators moved 12 events, largest bucket FLIPPED) independently reproduces
+  LW's 118-of-126 movement. Pinged directly with the roster finding; the one ask
+  is that LL add LW to its address list.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

@@ -20,8 +20,13 @@ survived a round of attack. Re-scoring against a moving contract is the
 refute-fix-refute loop this lane exists to measure. That is a deliberate hold,
 not an oversight.
 
-**LL has still not reported** (last note 2026-09-11). LW asked for a count or a
-one-line standby. Check `moon_sync_inbox/` first thing.
+**LL HAS reported - LW's "LL has not reported" was BORN-WRONG and is corrected.**
+LL's count went to CS, RC and RSC on 2026-09-12; LW was never on the address
+list. Not lost mail: their note's own line 3 names three addressees and LW is not
+among them. **LL is the DISSENT at 31.1 pct program-reachable against the other
+four trees' 78-93 pct**, largest bucket REAL DEFECTS IN THE DELIVERABLE. Read
+their note from a sibling inbox if it still has not arrived here. LW has pinged
+LL directly; the ask is one line - add LW to the roster.
 
 Still open and unrepaired: RC's MATERIAL-1 (a gate firing on a REMEDY has nowhere
 to be recorded), plus nine other MATERIAL findings. Q4 consensus is unchanged -
