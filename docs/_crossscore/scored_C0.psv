@@ -1,0 +1,50 @@
+chunk1-01|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed citations were valid when written and the session's own edit moved them; no re-derivation check existed
+chunk1-13|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the grep was correct and counted mentions while the sentence claimed requests
+chunk1-25|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|an unconditional statement of a conditional rule; needs a reader with a lens
+chunk1-37|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|incomplete enumeration of a mechanically enumerable set with no census check
+chunk1-49|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|refusals written to the answered record were wrong at all five sites when written
+chunk2-01|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the decision was already answered in code when the row was filed; a read-the-tree precondition reaches it
+chunk2-13|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the third site existed when the row named two; an enumeration census could have been written
+chunk2-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|no sweep existed and the five escapes were already published; the record names a later forward refutation
+chunk2-37|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a predicted removal count that was mechanically measurable and was not measured first
+chunk3-01|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the parametrised behavioural test existed when the directive said no test calls the writer
+chunk3-13|SPLIT|PROXY-MEASURE,CONTRACT|FRESH|NA|0|NA|YES|KEEP|one run is a correct instrument answering stability and no run-N-times precondition was applied
+chunk3-25|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|the documented default path stopped meaning full census once a partial write landed there
+chunk3-37|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the non-raw docstring was never a pasteable source form; no source-vs-rendered check existed
+chunk4-02|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the guard could have failed at cycle 7 and was not run; wrong time not wrong scope
+chunk4-14|TRUE|GATE-FIRED-IGNORED|FRESH|NA|0|NA|YES|KEEP|the suite carried a hard red the builder did not report; an in-session builder report is FRESH
+chunk4-26|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|one-pass acceptance held for one field and was false generalised across siblings
+chunk4-38|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the jsonl cannot carry the quotes so no mechanical check reaches it; a check-before-committing precondition does
+chunk1-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the filed residual was false when filed; reading six hook bodies is mechanisable and was never graded
+chunk1-11|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a future act written in the past tense into the record; a drafting precondition prevents it
+chunk1-17|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|16 was a correct count of a different quantity than the hedge attached it to
+chunk1-23|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|a rule cited for a prohibition it does not contain; only a reader of the clause catches it
+chunk1-29|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a printed recipe asserted to print three figures was never run; trivially mechanisable
+chunk1-35|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|the 2116-line guard covers false-GREEN only and could not see false-RED without being rewritten
+chunk1-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the assemble call site reused an 80-char projection from the day it was written
+chunk1-47|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the seed marker never existed so the 106 split was never recoverable from the artifact
+chunk1-53|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the arm was a correct test of the unreadable branch and was sold as testing the unwritable one
+chunk1-59|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the generator walked the filesystem rather than the index from the start; no tracked-only check
+chunk2-05|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|true at entry 1376 and made false by the RM-394 repair; the present tense went stale
+chunk2-11|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a justification asserted over ROADMAP.md that one measurement over the file contradicts
+chunk2-17|FALSE|ADVERSARY|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|the asymmetry was real in its own domain and false as a warrant for a code remedy
+chunk2-23|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|90 was right when filed and the corpus grew; a freeze-and-count check now exists
+chunk2-29|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the sentinel-clean test is a named instrument that fired on the first draft and was acted on
+chunk2-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the headline mechanism was false when filed and 1354 paired runs measure it
+chunk2-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|zero true positives when the row was filed; the refutation writeup carried a false clause of its own
+chunk2-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|census membership was wrong in both directions and a membership check could have been written
+chunk3-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|an EXCEPTED root sat at _COLLECTION_ROOTS:101 when the every-root-WIRED claim was written
+chunk3-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a cited guard filename that never existed; one path-existence check reaches it
+chunk3-17|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|the 13-units-over-1-path figure is true and answers a different question than live-state mutation
+chunk3-23|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the guard passed while measuring nothing and a demonstrated mutation left it green
+chunk3-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the shipped fix was one layer short at ship time; no end-to-end visibility check existed
+chunk3-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|printed schtasks blocks were never parsed until this pass built the parse
+chunk3-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the id already appeared in a tracked md and the guard was green; the guard cannot grade a claim about itself
+chunk3-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an in-session operator expectation committed nowhere; arm status is directly probeable
+chunk4-06|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|NamedMutex does not exist in winmutex.py; a symbol-existence check on directives reaches it
+chunk4-12|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|block-mode viability was assertable and unmeasured until the slice back-tested it
+chunk4-18|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the README undercounted silent degraded inputs from the day it was written
+chunk4-24|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the fence inverted the real consumer risk and a census over web js settles it
+chunk4-30|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|two separately assertable halves both false at HEAD
+chunk4-36|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a proposed narrowing scored 0 precision and 0 recall on its own target class
+chunk4-42|TRUE|GATE-FIRED-IGNORED|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the named drift test was already red at that commit and the red was tolerated

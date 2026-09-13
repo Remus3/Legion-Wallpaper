@@ -1,0 +1,50 @@
+chunk1-01|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed line citations true when written and moved by this session's own edit
+chunk1-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|residual filed in the ledger was false when filed; hook bodies were always checkable
+chunk1-09|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|1|SELF|YES|KEEP|pre-commit gate is a named mechanised instrument that fired; corrected census carried a false hedge
+chunk1-13|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|mention-count instrument was correct and answered a different question than request-count
+chunk1-17|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|adversarial pass is not a standing check; no mechanised census existed
+chunk1-21|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session adjudicator description of shipped behaviour asserted without reading it
+chunk1-25|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|unconditional statement over a second archive shape no test covered
+chunk1-29|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|documented recipe never executed; a recipe-run check is writable
+chunk1-33|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|line-match count was correct as a line count and stood in for a function count
+chunk1-37|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|verifier subagent is not a standing check; enumeration was never mechanically graded
+chunk1-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped call site reused an 80-char projection; no test covered the human-facing line
+chunk1-45|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed proposal went stale the same day when answering-on-refusal was removed
+chunk1-49|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|answered-record semantics wrong at all five call sites from the start; found by live run
+chunk1-53|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|the arm passed while grading nothing because the unreadable gate catches that shape first
+chunk1-57|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|committed cap of 12 was adequate until cycles lengthened; no precondition sized it from observed max
+chunk2-01|TRUE|CONTRACT|INHERITED|BORN-WRONG|1|INTRODUCED|YES|KEEP|filed premise was already answered in code; the repair then falsified its own no-docs sentence
+chunk2-05|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|present-tense no-docs sentence true when written and falsified by the RM-394 repair
+chunk2-09|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|receiver-name heuristic measured names correctly and stood in for true root resolution
+chunk2-13|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed row undercounted exposed sites in a file nothing enumerated mechanically
+chunk2-17|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|real asymmetry generalised into a need for a code remedy that measurement refused
+chunk2-21|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|latent apostrophe-pairing defect in shipped code; no test covered possessives
+chunk2-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|post-scrub belief false at HEAD with five published escapes; row records a later forward refutation
+chunk2-29|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the build and the sentinel-config test fired on the first draft and were acted on
+chunk2-33|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|allowlist-widening assumption held until the live run produced an unreachable shape
+chunk2-37|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a removal count predicted rather than measured before being stated
+chunk2-41|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|filed premise real in the abstract and zero true positives live; census was never a precondition
+chunk2-45|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|row's own suggested discriminator measured worse in both directions when finally measured
+chunk3-01|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive headline premise contradicted by an existing parametrised test a grep would have found
+chunk3-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|every-root-WIRED claim contradicted by an EXCEPTED root in the constant itself
+chunk3-09|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-4|four published residuals are four separately assertable and separately wrong claims
+chunk3-13|TRUE|GATE-FIRED-CAUGHT,CONTRACT|FRESH|NA|0|NA|YES|KEEP|the suite itself fired RED on a repeat run; a run-N-times precondition would also have prevented it
+chunk3-17|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|the path census figure is true and says nothing about the mutation class it was applied to
+chunk3-21|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a published zero resting on uncommitted instruments nobody can re-run
+chunk3-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|controller wrote a partial report at the documented default path with nothing grading completeness
+chunk3-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped fix never made the fault visible because the layer above re-swallowed it
+chunk3-33|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|the build misdescribed the structure of the test it had just written
+chunk3-37|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|non-raw docstring was never pasteable; no check executes documented commands
+chunk3-41|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a warning about the guard's behaviour issued without running the guard
+chunk3-45|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|check-ignore exit code answered pattern-matched rather than is-ignored
+chunk4-02|TRUE|GATE-EXISTING,GATE-FIRED-CAUGHT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the suite existed but was never run tree-wide at ship time and fired red 67 cycles later
+chunk4-06|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive named a class that does not exist and a type with zero production instantiations
+chunk4-10|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|two tracked records assert the same no-consumer claim a mechanical census refutes
+chunk4-14|TRUE|GATE-FIRED-IGNORED|FRESH|NA|0|NA|YES|KEEP|a hard red existed and the builder's all-green report tolerated it
+chunk4-18|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|committed README prose contradicted the OSError branch with no doc-versus-code check
+chunk4-22|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|the shipped arm cannot fail on this host so it passes while measuring nothing
+chunk4-26|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|one-pass acceptance generalised from one field to its siblings without a per-field census
+chunk4-30|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|the fence states two separately assertable halves and both are false at HEAD
+chunk4-34|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-4|four filed rows recite four distinct corpus figures each true when written and now stale
+chunk4-38|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|UNCLEAR|KEEP|figure written into tracked source before checking and the record cannot resolve it either way
+chunk4-42|TRUE|GATE-FIRED-IGNORED|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a named registry-drift test was already red on this shape and the red was tolerated

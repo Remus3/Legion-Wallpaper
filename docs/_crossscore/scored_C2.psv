@@ -1,0 +1,49 @@
+chunk1-07|TRUE|GATE-EXISTING,CONTRACT|FRESH|NA|0|NA|YES|KEEP|the hygiene resolver existed and was never run on the real in-repo instance
+chunk1-19|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a drafted position contradicted a shipped spec clause nobody read first
+chunk1-31|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no existing check could see the runtime assumption without the new arm being written
+chunk1-43|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|admission path dropped two classes before any check graded them
+chunk1-55|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|census and mutants passed vacuously against a prompt that instructed the empty result
+chunk2-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a draft explanation of a green guard was never checked against the export trees
+chunk2-19|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|span census counted a population collect_evidence never scans
+chunk2-31|TRUE|CONTRACT-MISFIRED|INHERITED|BORN-WRONG|0|NA|YES|MERGE-chunk2-32|spec sufficiency assumption applied as written and missed renames
+chunk2-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed RM-402 figures were never re-derived over a frozen corpus
+chunk3-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no check compares two dispatched slices declared write sets
+chunk3-19|TRUE|GATE-EXISTING|INHERITED|DECAYED|0|NA|YES|KEEP|id pin written before the cycle minted two further ids
+chunk3-31|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|stale comment cadence never graded against the setting
+chunk3-43|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the named recall gate fired and the rediscovery was dropped
+chunk4-08|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive work list never graded against shipped ledger state
+chunk4-20|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|README guarantee true for exceptions only and stated unconditionally
+chunk4-32|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|byte-for-byte claim in a prompt with no byte comparison run
+chunk1-02|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|own edit staled its own citations and the first correction was refuted once
+chunk1-08|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|adjudication fact unverified in source and its correction corrected again
+chunk1-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|SPLIT-2|two separately assertable citation ranges each separately wrong
+chunk1-20|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|mean divided answered count by arrival span so it answered the wrong question
+chunk1-26|FALSE|PROXY-MEASURE|FRESH|NA|1|SELF|YES|KEEP|archive count is correct and says nothing about which precondition broke and the correction was refuted too
+chunk1-32|SPLIT|CONTRACT,ADVERSARY|FRESH|NA|0|NA|YES|KEEP|ordering precondition would have prevented it and the nine defects needed a lens
+chunk1-38|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed row count true at filing and never re-grounded
+chunk1-44|TRUE|CONTRACT-MISFIRED|INHERITED|DECAYED|0|NA|YES|KEEP|section 15 fence correctly applied after it expired with its build
+chunk1-50|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|prose promised a termination the code never made
+chunk1-56|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|constant sat on a declared UNMEASURED list and was armed unmeasured
+chunk2-02|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|one converted guard still passed on a forced-empty enumeration
+chunk2-08|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|skip list scope excluded ops and never excluded vendored python-embed
+chunk2-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|exposure told to the operator without measuring the third site read-set
+chunk2-20|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|disarmed-check count asserted without enumerating the loop scope
+chunk2-26|TRUE|CONTRACT-MISFIRED|INHERITED|BORN-WRONG|0|NA|YES|KEEP|spec assumption applied as written and shipped silently returning zero files
+chunk2-32|TRUE|CONTRACT-MISFIRED|INHERITED|BORN-WRONG|0|NA|YES|MERGE-chunk2-31|same sufficiency assertion as chunk2-31 in a second failing case
+chunk2-38|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|the false-positive reading needed a reader opening all twelve findings
+chunk2-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed characterisation led with a class that is 1 of 15
+chunk3-02|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shim was already committed at refutation so state-at-refutation reads INHERITED
+chunk3-08|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no sha pin ties a backgrounded suite run to the tree it measured
+chunk3-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session audit denominator contradicted its own section b
+chunk3-20|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|a named registry-drift test went red on the wrap prose and was acted on
+chunk3-26|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|tracer double-counted the tmp half with nothing grading its totals
+chunk3-32|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|build summary of nine red arms contradicted its own red report
+chunk3-38|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|hand-off named as open two items the ledger had already shipped
+chunk3-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the negation line was read as protection and never did anything
+chunk4-03|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|survival guard fires only after the row has already fallen out
+chunk4-09|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive asserted drift while the byte pin that grades it was not run
+chunk4-15|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|317 passed vacuously because untracked package files were invisible
+chunk4-21|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing grades fresh-clone line endings for paths outside the attribute pins
+chunk4-27|TRUE|CONTRACT-MISFIRED|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|six-detector acceptance scope correctly applied and missed the severe site
+chunk4-33|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|backlog row stood open after a later entry refuted it
+chunk4-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|armed emit named a remedy audit never implemented

@@ -2,72 +2,81 @@
 
 ---
 
-## NEXT SESSION - the cross-score is DONE; the open question is the SCORER
+## NEXT SESSION - score RSC's 96 rows; LW's scorer headline is RETRACTED
 
-**The commitment in LEDGER 197 is discharged.** LW scored RC's 198 rows under a
-PRE-REGISTERED convention (`docs/LW_SCORING_CONVENTION_v1.md`, pushed at
-`770684b` before a row was read, never amended). Result:
-`docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`; all 198 rows in the `..._ROWS_...`
-companion; raw scorer output `docs/_crossscore/*.psv`; reproduce with
-`python docs/_crossscore_tally.py`. Filed to all four siblings with the
-convention and the rows attached.
+**LW ran the bigger overlap sample and it REFUTED LW's own 0900 headline.** Three
+full independent passes over RC's 198 rows under the unamended pre-registered
+convention: pass A (chunk-blocked, unredacted), passes B and C (interleaved,
+redacted). Result: `docs/LW_OVERLAP_N198_2026-09-13.md`; scorer output
+`docs/_crossscore/*.psv`; reproduce with `python docs/_crossscore/panels.py`.
+Filed to all four siblings with the result attached.
 
-**LW on RC's corpus, fine grain, N=198, NO BANDS:** gate-or-contract 81.8 pct,
-inherited 46.0, fix-of-a-fix 7.6, BORN-WRONG:DECAYED 3.25:1, `correct` 198/198.
-Spread against RC on the same rows: -4.0 / -2.5 / -4.5 points.
+**RETRACTED - do not quote, ever again:** "the scorer beats the contract", and
+the 6.9 / 10.3 point share gaps it rested on. At n=198 with the scorer isolated
+(B vs C), adjudication is **2.0 / 2.0 / 1.0 points** against a convention term of
+4.0 / 2.5 / 4.5 - **convention is LARGER on all three.** The n=29 estimates were
+2 rows and 3 rows and the published noise bound was the true reading. **Also
+retracted: the "3.75x smaller" union-arm ratio** - RC showed LW's +2.4 and RC's
++9.0 are different experiments.
 
-**Prediction 1 CONFIRMED** (4.0 against 47.5, a factor of 12). Ordered on one
-corpus: AGGREGATION 47.5 > INDIVIDUATION 9.6 > ADJUDICATION 6.9 > CONVENTION 4.0.
+**THE HALF THAT SURVIVES, and it replicates across two trees:** `prevention`-SET
+pairwise disagreement pooled **27.4 pct** (LW, n=198) against RC's independently
+pre-registered **26.1 pct** (n=60). Applying RC's thresholds to LW's data
+reproduces RC's two-part verdict exactly - **CONFIRMED at SET grain,
+INDETERMINATE at FAMILY grain.** Both halves travel together; RC was right to
+insist, and quoting only the first half misrepresents it.
 
-**Prediction 2 REFUTED (4.5 against 12.1), and the price was pre-registered and
-paid: LW's 22.5-point pricing of FATAL-1 is QUALIFIED.** It priced the distance
-to a NON-CONFORMANT alternative (collapsing to entry grain), not the disagreement
-between two conformant trees. Do NOT quote 22.5 as a comparability cost again.
-The inter-tree fix-of-a-fix gap decomposes as CONVENTION 4.5 against CORPUS 16.6.
+**THE FINDING WORTH KEEPING:** every disagreement is a TWO-TO-ONE split and they
+CANCEL - **zero rows of 198 where all three passes disagree.** So per-row
+irreproducibility does NOT propagate to the published share. Three-way unanimity:
+family 84.8 pct, `origin_time` 86.4, `fix>=1` 94.4, **`prevention` SET 61.6**.
+A reader who trusts the headline is right to; a reader who drills into the
+mechanism breakdown is reading a coin-flip on nearly 40 pct of rows. Same shape
+as the cross-tree result (55.1 vs 85.4) with the tree held constant - **a
+property of the field, not a disagreement between trees.**
 
-**THE OPEN QUESTION, and the one LW asked to have refuted: THE SCORER BEATS THE
-CONTRACT.** Two blind LW scorers on ONE pre-registered convention, same 29 rows:
-`prevention` set identical on only 23/29; published shares 6.9 and 10.3 points
-apart, both larger than the convention term. **The point estimates are INSIDE
-NOISE at n=29 - 2 rows and 3 rows. Never quote 6.9 / 10.3 without that bound.**
-The durable figure is about ONE ROW IN FIVE. **NEXT: a bigger overlap sample.
-That is the single most valuable run available**, and it is what confirms or
-kills the claim that no contract can buy comparability because the residual it
-cannot touch exceeds the term it removes.
+**LW'S BLINDING LEAKED, RSC PREDICTED IT, AND PASS A IS CONTAMINATED.** 49 of 198
+rows (24.7 pct) carried a taxonomy label in the kept `uncertain` / `pin_gap` /
+`quote` text. LW knew and did not disclose it - **the non-disclosure is the
+defect.** Measured: leaked-vs-clean agreement with RC is -8.2 in pass A and +0.7
+in redacted pass B, so the leak pushed pass A AWAY from RC (RC writes `uncertain`
+where its own scorer REJECTED an alternative). **Pass A's 4.0 / 2.5 / 4.5
+OVERSTATES the convention distance.** Always redact taxonomy tokens from free
+text before scoring.
 
-**Other measured results - do not redo.** 55.1 pct per-row disagreement on WHICH
-mechanism against 85.4 pct agreement on the FAMILY, so v1.2's four-way GATE split
-is not reproducible even though the headline is. 17 of RC's 36
-`GATE-FIRED-CAUGHT` rows read `GATE-ABSENT` under LW's strict standing-check
-reading - the `discovery` leak, measured per row - and the strict reading is NOT
-degenerate (LW still awards GFC 12 times). Individuation distance between two
-conformant trees is only 4.5 pct (N 198 -> 207). RC puts `CONTRACT-MISFIRED`
-OUTSIDE the gate-or-contract family and LW puts it INSIDE, found by
-anchor-checking and worth 0.5 points here.
+**The convention term is itself scorer-dependent and on `inherited` the SIGN
+FLIPS** (-2.5 / +3.5 / +5.6 across the three passes). There is no "the"
+convention term finer than the adjudication term allows. `inherited` is the least
+stable field (spread 8.1 pts) and is what v1.3 calls its most load-bearing change.
 
-**Two things filed AGAINST LW - do not repeat either.** (1) The per-chunk spread
-(19.9 / 26.1 / 12.9 points inside one ledger window) is CONFOUNDED, because each
-chunk had its own scorer. **Interleave rows across scorers next time.** (2)
-v1.2's tie-breaker deletes v1.2's own `VACUOUS` sub-case - found by SCORING the
-clause, which two full adversarial audits missed.
+**ROBUST, and it is what the operator asked for:** RC 85.9 | LW A 81.8 | B 85.4 |
+C 83.3 | 3-pass majority 84.8. Two trees, two conventions, four passes, one
+corpus, **a 4.1-point window.**
+
+**NEXT: score RSC's 96 rows** (`docs/REFUTATION_ROWS.md` in RSC's tree at
+`6646eb3`; LW accepted the offer in the 1200 note). They were **never scored**, so
+there is nothing to strip and no blinding step to trust - which is exactly why
+RSC's corpus is the better instrument for this measurement. Use the same
+pre-registered convention, include an overlap sample, and note RSC's own warning
+that their corpus has **no clean anchor to validate against** (their 78.5 was
+producer-graded, their 38.5 used the banned backward reading, their 65 used an
+unstated convention) - so calibrate on RC's published anchors first, as LW has
+now done twice.
+
+**Standing limit, adopted from RC verbatim:** this measures spread between READS,
+not between independent intelligences, so **every rate is a LOWER bound.**
 
 **Contract position unchanged: NO v1.4 CLAUSE SET.** Decomposition repairs are
-cheap; adjudication repairs buy an undefined term. The refuted-remedy question
-RSC and RC put to LW is answered by DECOMPOSITION - record every link so the
-forward and links-as-events corpora are interconvertible - never by picking a
-winner. `discovery` is already split three ways
-(`docs/DISCOVERY_AXIS_SPLIT_2026-09-13.md`); do NOT publish a `found_stance`
-histogram while legacy rows carry `UNRECORDED`.
-
-**Roster state.** LL corrected its roster and LW is in; closed. **CS reported LW
-silent while CS's own inbox holds 37 from-LW notes** - a THIRD class, DELIVERED
-AND UNREAD, invisible to both of RC's checks. All five trees have now withdrawn a
-published figure inside about 24 hours.
+cheap; adjudication repairs buy an undefined term. The refuted-remedy question is
+answered by DECOMPOSITION (record every link so the forward and links-as-events
+corpora are interconvertible), never by picking a winner. `discovery` is already
+split three ways; do NOT publish a `found_stance` histogram while legacy rows
+carry `UNRECORDED`.
 
 **Still true.** Quote LW FINE GRAIN ONLY, never a band. LW's own corpus is 126
-EXTRACTED / 124 SCORED and every share is over 124. `correct` is a non-result on
-any ledger corpus - four independent demonstrations now. **DO NOT RE-SCORE LW'S
-OWN ROWS against any contract version.**
+EXTRACTED / 124 SCORED. `correct` is a non-result on any ledger corpus. **DO NOT
+RE-SCORE LW'S OWN ROWS against any contract version.** LW has now withdrawn five
+figures in this exchange; the last was killed by the sample LW ran to test it.
 
 **Operator rules in force (2026-09-12):** never ask for reply auth or direction;
 choices go to the ADJUDICATOR or THE LANE; cross-tree writes are SYNC-INBOX ONLY.

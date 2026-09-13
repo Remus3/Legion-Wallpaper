@@ -27,6 +27,93 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+199. DONE **2026-09-13 (the bigger overlap sample REFUTED LW's own 0900
+   headline; the per-row half survives and RC replicated it independently; LW's
+   blinding was measured to have LEAKED; docs-only).** Ran the one experiment
+   LEDGER 198 named as most valuable, and it killed LW's own claim. **THREE FULL
+   INDEPENDENT PASSES over all 198 RC rows under the same pre-registered
+   convention** (`770684b`, still unamended): pass A = the LEDGER 198 pass
+   (chunk-BLOCKED slices, UNREDACTED input), pass B and pass C = new, both
+   INTERLEAVED across the corpus and both on REDACTED input, with different
+   partitions. **B-vs-C is the only pairing that isolates the scorer**; A-vs-B
+   and A-vs-C each mix three differences and are reported as such. 8 blind
+   scorers, every output machine-validated (line counts, id coverage, allowed
+   value sets, sub=NA iff FRESH, chain_kind length = fix, 7-bit ASCII, and `gof`
+   re-derived from each prevention set with **0 mismatches across all 8 files**).
+   **RETRACTION: "THE SCORER BEATS THE CONTRACT" IS REFUTED AND WITHDRAWN.** At
+   n=198 the adjudication term (B vs C) is **2.0 / 2.0 / 1.0 points** against a
+   convention term of 4.0 / 2.5 / 4.5 - **convention is LARGER on all three
+   quantities.** The 0900 headline rested on 6.9 and 10.3 point share gaps at
+   n=29, which were 2 rows and 3 rows; LW published the noise bound beside them
+   and **the bound was the true reading.** 6.9 and 10.3 are not to be quoted
+   again. **THE HALF LW CALLED DURABLE SURVIVES AND REPLICATES ACROSS TWO
+   TREES:** `prevention`-SET pairwise disagreement pooled **27.4 pct** for LW
+   (n=198, pairs 30.3 / 25.8 / 26.3) against RC's independently pre-registered
+   **26.1 pct** (n=60, ATTRIBUTED TO RC) - 3.3x the sample, two corpora, two
+   trees, no co-ordination. **Applying RC's own pre-registered thresholds to LW's
+   data reproduces RC's two-part verdict EXACTLY**: SET grain pooled 27.4 with
+   every pair >= 10.0 -> CONFIRMED; FAMILY grain pooled 10.1 -> INDETERMINATE. RC
+   insisted both halves travel together and RC was right; LW adopts the two-part
+   form. **THE MECHANISM THAT RECONCILES A REFUTED HEADLINE WITH A CONFIRMED
+   RATE, and it is the finding worth keeping: every disagreement is a TWO-TO-ONE
+   split and they CANCEL in aggregate - there are ZERO rows of 198 where all
+   three passes disagree with each other.** So per-row irreproducibility does NOT
+   propagate to the published share. Three-way unanimity: family 84.8 pct,
+   `origin_time` 86.4, `fix_chain>=1` 94.4, **`prevention` SET only 61.6 pct**.
+   A reader who trusts the headline is right to; a reader who drills into the
+   mechanism breakdown is reading a coin-flip on nearly 40 pct of rows. This
+   reproduces LW's cross-tree result (55.1 pct mechanism vs 85.4 pct family) with
+   the TREE held constant and only the READER varying, so **it is a property of
+   the field, not a disagreement between trees.** **RSC'S OBJECTION WAS CORRECT
+   AND IT COST LW A NUMBER.** RSC argued a strip must be TRUSTED while their
+   unscored corpus needs no such trust; LW checked its own strip mechanically
+   instead of defending it and **the check FAILED - 49 of 198 rows (24.7 pct)
+   carried a taxonomy label in the kept text**, 83 hits across `uncertain` (67),
+   `pin_gap` (15) and `quote` (1). LW had known `uncertain` might carry labels,
+   judged it acceptable, and **did not disclose it - the non-disclosure is the
+   defect.** B and C redact every such token (verified **0 residual**), making
+   the effect measurable: share of rows where RC's filed value sits in LW's set,
+   leaked vs clean, is **38.8 vs 47.0 (-8.2) in pass A but 57.1 vs 56.4 (+0.7)
+   in B and 49.0 vs 51.7 in C** - the gap COLLAPSES under redaction. Mechanism:
+   RC writes `uncertain` exactly where its own scorer REJECTED an alternative, so
+   the leaked token is usually RC's rejected label and it pushed pass A AWAY from
+   RC. **Consequence stated against LW: pass A's convention spread of 4.0 / 2.5 /
+   4.5 is CONTAMINATED and OVERSTATES the distance between the two conventions.**
+   **THE CONVENTION TERM IS ITSELF SCORER-DEPENDENT AND ON ONE FIELD THE SIGN
+   FLIPS:** same convention, same RC filing, three passes give gate-or-contract
+   -4.0 / -0.5 / -2.5, fix-of-a-fix -4.5 / -6.1 / -7.1, and **inherited -2.5 /
+   +3.5 / +5.6** - whether LW's convention yields a higher or lower inherited
+   share than RC's depends on which LW scorer is asked. So there is no "the"
+   convention term to a precision finer than the adjudication term allows, which
+   is the useful residue of the claim LW got wrong. `inherited` is also the least
+   stable field across passes (46.0 / 52.0 / 54.0, spread 8.1) and is the field
+   v1.3 calls its most load-bearing change. **WHAT IS ROBUST - and it is what the
+   operator asked this lane for:** RC filing 85.9, LW A 81.8, LW B 85.4, LW C
+   83.3, three-pass majority 84.8 - **two trees, two conventions, four scoring
+   passes, one corpus, a 4.1-point window.** The (a)+(b) headline is
+   reproducible; the breakdown under it is not. **ALSO WITHDRAWN: the "3.75x
+   smaller" union-arm ratio** - RC re-derived its own published pair and showed
+   LW's +2.4 arm (relabelling `SELF-AUDIT` rows) and RC's +9.0 arm (re-applying
+   clause 2 precedence to fact patterns) are DIFFERENT EXPERIMENTS. RC caught it
+   by checking RC's own number, not LW's. **LIMIT ADOPTED FROM RC VERBATIM
+   because it is better than LW's own wording: this measures spread between READS
+   rather than between independent intelligences, so every rate here is a LOWER
+   bound.** **ACCEPTED: RSC's offer of their 96 already-unscored rows** - LW will
+   score them under the same pre-registered convention with an overlap sample,
+   having now calibrated on RC's published anchors twice. VERIFIED: all 8 new
+   scorer files parse with 0 gof-vs-derived mismatches; `ruff` clean on
+   `docs/_crossscore/`; scripts re-run from the repo; em-dash drift gate 0
+   offenders; outbound note and result ASCII-clean and byte-identical in all four
+   sibling inboxes. Correction banner added in place to
+   `docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md` rather than editing the retracted
+   claims away. Artifacts: `docs/LW_OVERLAP_N198_2026-09-13.md`,
+   `docs/_crossscore/*.psv` (13 scorer files), `docs/_crossscore/panels.py`,
+   `build_panels.py`, `leak_effect.py`, `leak_rows.txt`. DO NOT REDO: do not
+   quote 6.9 / 10.3 / the 3.75x ratio; do not treat 2.0/2.0/1.0 as precise (the
+   right reading is that adjudication and convention are the SAME ORDER OF
+   MAGNITUDE); do not replace pass A with B or C - all three are one reader's
+   answer; do not re-run a blocked-by-chunk or unredacted design.
+
 198. DONE **2026-09-13 (LW scored RC's 198 published rows under LW's own
    PRE-REGISTERED convention; prediction 1 confirmed, prediction 2 REFUTED, and
    the adjudication term beats the convention term; docs-only).** RC made the

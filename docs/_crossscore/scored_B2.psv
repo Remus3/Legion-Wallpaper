@@ -1,0 +1,49 @@
+chunk1-03|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|pre-commit suite fired and caught it while the grep was a correct tool answering the wrong question
+chunk1-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing in the tree grades a scoring claim made against a synthetic shape
+chunk1-11|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|adversarial gate is not a standing check; a no-future-act-as-done precondition reaches it
+chunk1-15|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|span-citation resolver is mechanisable and absent; a second adversarial pass is not a standing check
+chunk1-19|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a read-the-shipped-clause precondition would have stopped position X
+chunk1-23|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|misread clause; quote-the-rule precondition reaches it, no mechanical check does
+chunk1-27|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|filed three sites was false when filed and the corrected four was itself refuted to six
+chunk1-31|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|wrong runtime assumption; a brand-new arm going red is not a standing check firing
+chunk1-35|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|skip-hygiene guard grades false-GREEN only and could not see false-RED without rewrite
+chunk1-39|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session subagent machine-state claim; the standing re-probe precondition reaches it
+chunk1-43|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|both classes dropped before any gate could see them; filed as one claim so taken as one
+chunk1-47|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|carried seed figure no longer recoverable from the live flat list
+chunk1-51|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|scope over-reach found by a read-only verifier, which is a reader not a standing check
+chunk1-55|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|census mutants and dry cycle all present and all vacuous on actual delivery
+chunk1-59|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|generator exclusion set never graded and the export cache appeared later
+chunk2-03|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|indirect synthetic-fixture pinning could not have failed on this entry without rewrite
+chunk2-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing checks the stated reason a guard is green
+chunk2-11|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an assertion about file contents that a mechanical count settles
+chunk2-15|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|pre-commit gate is a mechanised instrument, it fired and was acted on
+chunk2-19|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the span scan was correct and answered the wrong question about assistant-role blocks
+chunk2-23|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed corpus count drifted 90 to 91 with no re-freeze check
+chunk2-27|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|ADR-015 is a declared rule against vacuity and it was not applied
+chunk2-31|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a content diff never caught renames, false when the spec was written
+chunk2-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed headline mechanism was measurable and never measured
+chunk2-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|pre-existing at HEAD, Windows spellings never graded by the gate's own tests
+chunk2-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed figures irreproducible against a freshly frozen corpus
+chunk2-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|census membership never cross-checked; the verifier supplied the composition
+chunk3-03|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the census pattern matches its own prose so it counts documentation as call sites
+chunk3-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a write-set collision is settled by comparing two file lists and was not
+chunk3-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|cited guard file never existed; a path-existence check is trivially writeable
+chunk3-15|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the enumeration ran correctly and answered what matches rather than which dirs exist
+chunk3-19|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|id pin written before the cycle minted two further ids
+chunk3-23|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the guard passed while measuring nothing for the demonstrated mutation
+chunk3-27|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the tracer excluded itself from its own count so it answered the wrong question
+chunk3-31|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|stale comment relied on where the setting is the source of truth
+chunk3-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|printed commands never parsed, and a purpose-built probe is not a standing check
+chunk3-39|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|two separately assertable dispositions, RM-250 and RM-291, each separately wrong
+chunk3-43|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the recall gate is a named mechanised instrument, it fired and was acted on
+chunk3-47|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|operator expectation adopted without the standing live-probe precondition
+chunk4-04|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|line-range citation went content-stale with no resolver gate
+chunk4-08|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive named shipped work as outstanding; a ledger cross-check is writeable
+chunk4-12|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|block-mode viability asserted before any back-test existed
+chunk4-16|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|a source-only sweep is a correct instrument answering a package-shape question
+chunk4-20|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|README guarantee true for exceptions and false for SIGKILL and power loss
+chunk4-24|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the fence inverted the real consumer risk and a census settles it
+chunk4-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|one of three freeze paths signalled nothing at all
+chunk4-32|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a byte-for-byte claim settled by a diff and never diffed
+chunk4-36|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|safe and useful asserted before the scoring that refuted it; reads as a link on a parent event
+chunk4-40|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session verifier attribution is FRESH; the verify-before-assert precondition reaches it

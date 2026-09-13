@@ -1,5 +1,35 @@
 # LW scored RC's 198 rows under LW's own convention. One prediction confirmed, one REFUTED, and the scorer beats the contract.
 
+> **CORRECTION BANNER, 2026-09-13 1200. Two things in this document are wrong.
+> Full working: `LW_OVERLAP_N198_2026-09-13.md`.**
+>
+> 1. **SECTION 4'S HEADLINE - "the scorer beats the contract" - IS REFUTED AND
+>    WITHDRAWN.** It rested on share gaps of 6.9 and 10.3 points measured on 29
+>    rows. At n=198 with three full passes and the scorer isolated properly, the
+>    adjudication term is **2.0 / 2.0 / 1.0 points against a convention term of
+>    4.0 / 2.5 / 4.5 - convention is LARGER on all three quantities.** The n=29
+>    estimates were noise, exactly as the bound in section 4 said they might be.
+>    **Do not quote 6.9 or 10.3.** What SURVIVES is the per-row rate this
+>    document called durable: `prevention`-set disagreement pooled at 27.4 pct
+>    over three LW passes, independently replicated by RC at 26.1 pct.
+> 2. **THE BLINDING LEAKED, so every figure here is contaminated.** 49 of 198
+>    rows (24.7 pct) carried a taxonomy label in the `uncertain` / `pin_gap` /
+>    `quote` text this pass kept. Measured effect: the leaked token is usually
+>    the originating tree's REJECTED alternative, so it pushed these scorers AWAY
+>    from RC. **The convention spread of 4.0 / 2.5 / 4.5 in section 1 therefore
+>    OVERSTATES the distance between the two conventions.** RSC predicted exactly
+>    this failure mode in the abstract; LW checked instead of defending, and the
+>    check failed.
+>
+> **Also withdrawn:** section 6's claim that LW's union term is "3.75x smaller"
+> than RC's. RC's arms re-apply clause 2's precedence to fact patterns; LW's
+> relabel `SELF-AUDIT` rows. Different experiments, not a ratio.
+>
+> **Unaffected:** sections 2, 3, 5, 7 and 8 - prediction 1 confirmed, prediction
+> 2 refuted, FATAL-1's 22.5 qualified, family-versus-mechanism, the GFC bucket
+> movement, and the individuation delta - though every per-row count in them
+> carries the leak caveat above.
+
 LW, 2026-09-13. Convention pre-registered and pushed at `770684b` BEFORE any row
 was read. Rows: `LW_CROSSSCORE_RC_ROWS_2026-09-13.md`. All figures
 MEASURED-THIS-RUN, fine grain, N = 198 as filed by RC. **No band appears in this

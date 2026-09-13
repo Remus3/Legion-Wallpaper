@@ -1,0 +1,50 @@
+chunk1-04|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-4|prior-session census numbers and premise never graded by any check
+chunk1-16|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no cite-span check exists and an adversarial read is not a standing check
+chunk1-28|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session inversion of a docstring fact with nothing grading it
+chunk1-40|TRUE|GATE-FIRED-CAUGHT|INHERITED|DECAYED|1|SELF|YES|KEEP|mutant suite fired twice and was acted on the second break refutes the first remedy
+chunk1-52|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose recital of a schema had no guard and a verifier is not a standing check
+chunk2-04|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|self-contradicting paragraph needs a reader nothing mechanical reaches it
+chunk2-16|TRUE|GATE-ABSENT,GATE-FIRED-CAUGHT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|cite propagated ungraded into three artifacts then a named gate caught the repeat
+chunk2-28|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the sweep structural arm fired on its own test file nine live hits
+chunk2-40|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a justifying sentence asserted corpus absence with no check behind it
+chunk3-04|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|false xdist semantics in a filed directive reachable only by a reader
+chunk3-16|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|catching a vacuous zero needs a planted control so the tracer would have to be rewritten
+chunk3-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no guard on patch install and teardown symmetry
+chunk3-40|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session parser false positive with no control corpus grading it
+chunk4-05|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a directive template demanding a cite per claimed defect would have stopped it
+chunk4-17|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no license header consistency check for a new package in a public repo
+chunk4-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed spec parenthetical never matched the field semantics and nothing graded it
+chunk4-41|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|an escape hatch in an evidence-keyed rule needs a threat-model reader
+chunk1-06|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the check=True grep answered a different question than gated versus ungated
+chunk1-12|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no check grades a prose claim about what the workflow provisions
+chunk1-18|TRUE|GATE-FIRED-CAUGHT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|standing docs-guard suite went red on 24 orphan headers and the finding was filed
+chunk1-24|FALSE|PROXY-MEASURE|FRESH|NA|1|SELF|YES|KEEP|two counts answered different questions and the first correction was itself wrong
+chunk1-30|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no cite-resolution check on a closure citing an entry that did not yet exist
+chunk1-36|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no test that the no-silent-failure handler survives a failing directory creation
+chunk1-42|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|3|SIBLING-SURFACE;SELF;SELF|YES|KEEP|by-construction spec claim never held and its remedy was refuted three times
+chunk1-48|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-3|three terminal states each separately wrong two stale one misattributed
+chunk1-54|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed cause never measured and the floor keeps the pre-ship remedy uncounted
+chunk1-60|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no rotation check here the mechanism existed only in a sibling tree
+chunk2-06|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|a named gate caught the cite and relocated the demand to the README preamble
+chunk2-12|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|empty-set safety was never graded for the laning guard
+chunk2-18|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|an only-claim over the gate's own checks needs a reader to enumerate
+chunk2-24|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|no guard enumerates cross-repo write paths and the reading ran past its domain
+chunk2-30|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|boundary carryover was false by construction and ungraded
+chunk2-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|probe measured a narrower RED-state population than the question asked
+chunk2-42|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|docs-guards run went red on the draft and the draft was changed
+chunk2-48|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|hand-off baseline was pre-RM-400 with no re-grounding check
+chunk3-06|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|digit-only grep answered a narrower question than the defect class
+chunk3-12|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|guard row read WIRED while measuring nothing vacuous inside its own scope
+chunk3-18|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a precondition that every ground-truth clause carry a probe would have stopped it
+chunk3-24|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|counted characters correctly while the question was bytes
+chunk3-30|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no cite-resolution check after insertions moved every offset below them
+chunk3-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|loose pattern answered what matches rather than what is a real command block
+chunk3-42|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|nothing pins the selector documentation to the selector behaviour
+chunk4-01|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|a serial timing generalised to the parallel configuration with nothing enforcing a run
+chunk4-07|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|two already-shipped items each separately asserted as outstanding
+chunk4-13|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|hazard claim never checked against the call path where the catch pre-existed
+chunk4-19|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no test covered the POSIX EACCES path the README claimed dead
+chunk4-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SIBLING-SURFACE|YES|KEEP|hypothetical framing ungraded and the coercion missed the arena_teams site
+chunk4-31|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the lock test that forbids it was red and the merge refused the experiment
+chunk4-37|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the real gate went RED against the first draft always-claim
+chunk4-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the gate never records content so it could not see this without a rewrite

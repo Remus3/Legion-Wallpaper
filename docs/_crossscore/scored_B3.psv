@@ -1,0 +1,49 @@
+chunk1-04|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|census numbers and the premise are separately assertable and separately wrong
+chunk1-08|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|vacuity is mutation-checkable and the correction was itself corrected
+chunk1-12|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|workflow-vs-prose agreement was never graded and only the git half was wrong
+chunk1-16|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|line-span citation drift is mechanisable and no such check existed
+chunk1-20|SPLIT|GATE-ABSENT,PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|answered count over arrival span plus a mean that misreads a bursty distribution
+chunk1-24|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|the count was never mechanised and the first correction of 35 was itself refuted at 36
+chunk1-28|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a cite-the-source precondition would have caught a docstring fact read inverted
+chunk1-32|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|verify before the irreversible act is a contract and the nine defects are unenumerated
+chunk1-36|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|unguarded directory creation was never graded here and the lens came from a sibling
+chunk1-40|TRUE|GATE-FIRED-CAUGHT|INHERITED|DECAYED|1|SELF|YES|KEEP|the mutant suite is a named instrument that fired and was acted on and the first repair broke again
+chunk1-44|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|a scope fence with no stated expiry that was true for the build it was scoped to
+chunk1-48|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|two clauses decayed and the third was misattributed from the start
+chunk1-52|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|a prose schema recital with explicitly no guard on it
+chunk1-56|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a declared UNMEASURED list means a measure-before-arming rule reaches it
+chunk1-60|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no growth bound existed in this tree and the records were never bounded
+chunk2-04|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|a paragraph contradicting itself needs a reader with a lens
+chunk2-08|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the walked-file composition was never measured and the safety was accidental
+chunk2-12|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the empty-set shape is mutation-provable and the filed assertion was false when written
+chunk2-16|TRUE|GATE-ABSENT,GATE-FIRED-CAUGHT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|no cite-exists check and the gate then fired on the rewrite that repeated the cite
+chunk2-20|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a disarmed-check count is mechanically derivable and was not derived
+chunk2-24|FALSE|ADVERSARY|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|a defensible reading of an operator sentence stretched past the domain it held in
+chunk2-28|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the sweep structural arm fired on its own test file and was acted on before the push
+chunk2-32|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|a content diff could not see a commit subject without being rewritten
+chunk2-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the probe counted what it counted and answered a different question than RED-state
+chunk2-40|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a corpus-absence claim is greppable and was asserted unchecked
+chunk2-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|exhaustive classification was available and the filed row led with 1 of 15
+chunk2-48|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|no re-grounding of an inherited hand-off baseline against the current gate
+chunk3-04|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a wrong xdist concurrency premise needs a reader who knows the process model
+chunk3-08|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing pinned the tree state at suite launch against live agent landings
+chunk3-12|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the guard row read WIRED while measuring nothing so the existing check passed vacuously
+chunk3-16|SPLIT|GATE-ABSENT,PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no planted control existed and a zero from an uncontrolled tracer answered the wrong question
+chunk3-20|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|a named registry-drift test went red and the wrap prose was corrected
+chunk3-24|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a byte-versus-character assertion on a UTF-8 fixture was never written
+chunk3-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no check on install and teardown ordering for a process-wide builtins patch
+chunk3-32|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the build's own red report was countable and the nine-arm figure went unchecked
+chunk3-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the extractor counted pattern matches while the question was real commands
+chunk3-40|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|a vocabulary hit sitting in lowercase prose was counted as a drift row
+chunk3-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no ignored-tracked probe existed and the negation line never worked
+chunk4-01|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|a serial runtime measurement was carried into a parallel config with no re-measurement
+chunk4-05|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the directive asserted a code property with no cite-the-source pass behind it
+chunk4-09|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the byte pin existed and was simply not run before the directive was written
+chunk4-13|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a call-path read before asserting a crash would have reached it
+chunk4-17|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no check pairs a license declaration against repository visibility
+chunk4-21|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|fresh-clone line-ending shape was never graded for the new package
+chunk4-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SIBLING-SURFACE|YES|KEEP|the hypothetical framing was live and the remedy left arena_teams uncoerced
+chunk4-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no test asserted stale_for_s during an actual outage
+chunk4-33|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|no row-age or status cross-check ran over the backlog file
+chunk4-37|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the real gate went red on the first draft and the draft was corrected
+chunk4-41|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|closing a rule escape hatch needs a reader with a lens

@@ -1,0 +1,50 @@
+chunk1-02|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|1|SELF|YES|KEEP|pre-commit gate is a mechanised instrument that fired; correction refuted in one pass so floor 1
+chunk1-06|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|discriminator claim was mechanically checkable but nothing graded it
+chunk1-10|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|adjudication pass two is a reader not a standing check; a stated-charter rule would have reached it
+chunk1-14|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the first gate fired on the draft citation ranges
+chunk1-18|TRUE|GATE-FIRED-CAUGHT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|docs-guard suite went red and was acted on; disk walk never equalled git enumeration
+chunk1-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|row-class census was countable but ungraded
+chunk1-26|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|1|SELF|YES|KEEP|archive count is a correct instrument on the wrong question AND a gate caught it; second gate refuted the correction
+chunk1-30|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|adversarial gate caught a citation of a not-yet-existing entry
+chunk1-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|suffix-versus-prefix relation is mechanically testable; caught by the session itself
+chunk1-38|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed figure true at filing (75) and overtaken (98); no re-grounding check exists
+chunk1-42|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|3|SIBLING-SURFACE;SELF;SELF|YES|KEEP|spec by-construction claim never held; three forward links with mixed kinds
+chunk1-46|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|earlier in-session probe measured wrong; instrument was incorrect not merely off-question
+chunk1-50|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|verifier is a reader not a standing check; prose promised what the code never did
+chunk1-54|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed cause was false when filed; remedy refuted before shipping so floor 0
+chunk1-58|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|a suspicion raised and retracted on careful reading; no mechanism reaches it
+chunk2-02|TRUE|GATE-EXISTING,GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|fifth guard passes vacuously while a pre-commit read-only gate forced the empty enumeration and caught the claim
+chunk2-06|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|a gate fired and relocated the demand to the README preamble
+chunk2-10|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the grep was correct and answered the wrong question; the registry drift test went red
+chunk2-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|exposure asserted to the operator without the read-set measurement that later settled it
+chunk2-18|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the second gate fired and named four counterexample checks
+chunk2-22|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the gate's own parser never handled space-grouped digits and no test covered it
+chunk2-26|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|combined git log call shipped silently broken; nothing graded the empty-versus-clean ambiguity
+chunk2-30|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|spec assumed boundaries survive whitespace stripping; never true
+chunk2-34|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker applies - the narrow pattern could not have caught its own narrowness unrewritten
+chunk2-38|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|relay versus independent re-run needs a reader opening all twelve; in-session probe report so FRESH
+chunk2-42|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|docs-guards run went red on a draft that was never committed at refutation
+chunk2-46|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|an idiom-shaped scan structurally cannot measure its own false negatives
+chunk3-02|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shim was already committed at refutation under state-at-refutation; module attr was never a separate object
+chunk3-06|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|digit-only grep answered a narrower question than the defect class it was standing in for
+chunk3-10|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|grep -c counts lines correctly and occurrences not at all
+chunk3-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no internal-consistency check across the audit's own sections
+chunk3-18|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|conftest reach was mechanically probeable and was handed to slices unprobed
+chunk3-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no sibling-shape sweep existed; forward reading gives no chain on this event
+chunk3-26|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|tracer had no arm for the tmp half of an atomic write
+chunk3-30|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no citation-drift check; verifier pass is a reader not a standing check
+chunk3-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|same missing offset-drift check caught by in-slice re-derivation
+chunk3-38|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|hand-off is a durable record and both ids had already shipped when it was written
+chunk3-42|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|documented selector requirement explicitly stale against live CI routing
+chunk3-46|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|named tool stop_claim_gate.py fired and the claim was corrected
+chunk4-03|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker - the survival guard cannot detect its own mistiming unrewritten
+chunk4-07|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|quote names two separately shipped ids as outstanding so two separately wrong assertions
+chunk4-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive asserted a defect nothing had graded; probe cleared it
+chunk4-15|SPLIT|GATE-EXISTING,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|guards passed vacuously over untracked files and the pass count proxied for cleanliness
+chunk4-19|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|README asserted POSIX behaviour no test ever asserted
+chunk4-23|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|novelty claim in a filed row with a precedent already in-tree
+chunk4-27|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|enumerated acceptance scope missed a site a sweep would have found
+chunk4-31|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the lock test forbidding it already existed but never fired; refusal came from merge adjudication
+chunk4-35|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|retraction-verb proximity is a correct detector of the wrong quantity
+chunk4-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|emit string promised a remedy audit never implemented and nothing binds message to behaviour
+chunk4-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker - a gate recording only file_path cannot see file-written fabrication unrewritten

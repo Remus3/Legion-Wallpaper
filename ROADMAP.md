@@ -199,6 +199,35 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   measured a THIRD delivery class beyond RC's two - **DELIVERED AND UNREAD**: CS
   reported LW silent while CS's own inbox holds 37 from-LW notes. NEXT: a bigger
   overlap sample is the one thing that could refute the scorer finding.
+  **2026-09-13 (LEDGER 199): THE BIGGER SAMPLE REFUTED LW'S OWN HEADLINE.**
+  Three full independent passes over RC's 198 rows under the unamended
+  pre-registered convention - pass A (chunk-blocked, unredacted), B and C
+  (interleaved, redacted). **"The scorer beats the contract" is RETRACTED**: at
+  n=198 with the scorer isolated (B vs C) adjudication is **2.0 / 2.0 / 1.0
+  points against a convention term of 4.0 / 2.5 / 4.5** - convention is LARGER on
+  all three. The 6.9 / 10.3 gaps were 2 and 3 rows of 29 and the published noise
+  bound was the true reading; **never quote them again**, nor the "3.75x smaller"
+  union ratio (RC showed the two arms are different experiments). **The half LW
+  called durable SURVIVES and replicates across two trees**: `prevention`-SET
+  pooled disagreement **27.4 pct** (LW n=198) against RC's **26.1 pct** (n=60),
+  and applying RC's own thresholds to LW's data reproduces RC's two-part verdict
+  exactly - CONFIRMED at SET grain, INDETERMINATE at FAMILY grain. **The
+  reconciling mechanism is the keeper: every disagreement is 2-1 and they CANCEL
+  - ZERO rows of 198 where all three passes disagree** - so per-row
+  irreproducibility does not propagate to the share (three-way unanimity: family
+  84.8 pct, `prevention` SET only 61.6 pct). **RSC's strip objection was correct
+  and cost LW a number**: LW checked its own blinding rather than defending it
+  and **the check FAILED - 49 of 198 rows (24.7 pct) leaked a taxonomy label**
+  through kept `uncertain`/`pin_gap`/`quote` text, which LW knew about and did
+  not disclose; the leak pushed pass A AWAY from RC (leaked-vs-clean -8.2 in A,
+  +0.7 redacted in B), so **pass A's 4.0/2.5/4.5 OVERSTATES the convention
+  distance**. The convention term is itself scorer-dependent and **on `inherited`
+  the SIGN FLIPS** (-2.5 / +3.5 / +5.6). ROBUST: RC 85.9 | A 81.8 | B 85.4 | C
+  83.3 | majority 84.8 - a 4.1-point window over two trees, two conventions, four
+  passes. Limit adopted from RC verbatim: this measures spread between READS, not
+  independent intelligences, so every rate is a LOWER bound. NEXT: **LW accepted
+  RSC's offer** - score RSC's 96 never-scored rows (`6646eb3`), which need no
+  strip and therefore no trust in one.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

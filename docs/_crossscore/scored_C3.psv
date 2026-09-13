@@ -1,0 +1,49 @@
+chunk1-10|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|adjudication pass is not a standing check; a stated-charter rule reaches it
+chunk1-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a 6-of-10 count is mechanically derivable and nothing graded it
+chunk1-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|prefix-vs-suffix relation was checkable and unchecked
+chunk1-46|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session probe misread the record; no check graded the probe
+chunk1-58|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|read-the-log-before-calling-it-a-defect precondition reaches it
+chunk2-10|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|named registry test went RED and was acted on; the grep was a correct instrument on the wrong question
+chunk2-22|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped parser could not see its own mis-parse without a rewrite
+chunk2-34|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker applies; the literal-token pattern needed rewriting to see the .exe spelling
+chunk2-46|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|an idiom-shaped scan cannot measure its own false negatives
+chunk3-10|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|grep -c counts lines correctly and answers the wrong question
+chunk3-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|adversarial slice is not a standing check; a same-shape sweep was never written
+chunk3-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no offset-resolution check existed over the session's own new file
+chunk3-46|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|named stop_claim_gate.py fired and was acted on
+chunk4-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive filed a hypothesis that was never a real defect; a probe could have been written
+chunk4-23|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed row asserted novelty with the precedent already in-tree
+chunk4-35|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|a retraction-verb-near-number rule is a proxy for a genuine retraction
+chunk1-03|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|pre-commit gate ran the suite and surfaced a fifth guard; the grep was a proxy for a bound
+chunk1-09|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|pre-commit gate fired on the wrong census and was acted on
+chunk1-15|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|wrong time not wrong instrument; the first gate's predicate needed no rewrite to see it
+chunk1-21|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|cite the implementing behaviour before describing it as shipped
+chunk1-27|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|filed count of three was wrong when filed and the FOUR fix was itself corrected to SIX
+chunk1-33|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|line-based count was the wrong instrument not a correct one on the wrong question
+chunk1-39|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session verifier report; the never-trust-a-subagent precondition reaches it
+chunk1-45|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|filed disposal was overtaken by the item that shipped one entry earlier
+chunk1-51|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the destination-refusal path was never pinned by any test
+chunk1-57|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|committed constant was adequate when set and the workload grew past it
+chunk2-03|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a direct pin did not exist; the indirect fixture could not fail on this without a rewrite
+chunk2-09|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|a receiver-NAME heuristic stands in for a resolved receiver
+chunk2-15|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|pre-commit gate re-derived the read-set and was acted on
+chunk2-21|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|latent defect in committed code; the apostrophe pairing was wrong when written
+chunk2-27|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|ADR-015 is a declared precondition that was not applied to the soft import
+chunk2-33|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no check reached the lookbehind gap before the live run
+chunk2-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|pre-existing at HEAD and the POSIX-only collapse needed a rewrite to see itself
+chunk2-45|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the filed alternative proposed a push-window proxy for genuine use and measured worse both ways
+chunk3-03|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|a census pattern that matches its own prose answers the wrong question
+chunk3-09|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|published residuals were false about the row itself when published
+chunk3-15|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the enumeration command ran correctly and did not answer which are test-tree directories
+chunk3-21|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a published figure whose instrument was never committed cannot be re-run
+chunk3-27|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing graded whether the instrument writes into the tree it counts
+chunk3-33|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|describe-what-the-code-does precondition; verifier read is not a standing check
+chunk3-39|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|ROADMAP rows went stale after the items shipped; no disposition consistency check exists
+chunk3-45|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|check-ignore exit 0 was read as ignored when it also signals a negation match
+chunk4-04|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|citation resolved when written and the file grew to 948 lines; no resolver check exists
+chunk4-10|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a consumer census was available when BACKLOG and LEDGER asserted none
+chunk4-16|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the source-only sweep needed a rewrite to reach pycache bytes
+chunk4-22|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped test passes while measuring nothing on this host which is the vacuous case
+chunk4-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed premise was optimistic on one of three freeze paths when filed
+chunk4-34|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-4|four separately filed and separately wrong corpus sizes 90 91 92 93
+chunk4-40|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session verifier attribution; an idle-control precondition reaches it
