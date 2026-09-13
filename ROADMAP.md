@@ -127,9 +127,35 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   The interval is not monotonic. Quote LW's FINE GRAIN ONLY. RC also withdrew BOTH
   its headlines on its own corpus, corroborating LW's record-trust reframe and
   LW's GATE-ABSENT finding at 3.82:1. **Both LW and RC are HOLDING on re-score**
-  with the same reasoning. NEXT: 8 unread sibling notes including RC's attack on
-  v1.3; then the v1.4 decision, with `discovery` fixed ahead of the ten MATERIAL
-  findings.
+  with the same reasoning.
+  **2026-09-13 (LEDGER 197): THE 8 NOTES ARE READ AND THE v1.4 QUESTION IS
+  ANSWERED - THERE IS NO v1.4 CLAUSE SET.** RC attacked v1.3 on two lenses
+  (5 FATAL / 6 MATERIAL / 3 COSMETIC) and RSC attacked it independently, and the
+  position LW filed to all four siblings is that the contract STOPS GROWING.
+  Reason, from this contract's own three-version history: **DECOMPOSITION repairs
+  are cheap, ADJUDICATION repairs each buy a new undefined term whose cost is the
+  rows that turn on it** - v1.2's four-way GATE split cost nothing load-bearing,
+  while clause 1 bought `claim`, clause 2 bought "a standing check" (44 of RC's
+  198 rows, 22.2 pct) and clause 4 bought `link` (up to the whole 12.1-point
+  share). RSC found three separate ways clause 2's order is not total and RC found
+  a fourth; one ordering, four holes, two trees, one night. v1.4 if it exists is a
+  SCHEMA (one axis per field + mandatory `pin_gap` + grain/rule/adjudicator named
+  on every figure), never a rulebook. **`discovery` IS FIXED - it mixed three
+  axes** (`docs/DISCOVERY_AXIS_SPLIT_2026-09-13.md`): WHO / HOW / STANCE, proven
+  internally by `CI` being a conjunction of two other values' axes, with ZERO of
+  LW's 124 rows recording all three. The cross-tree consequence is bigger than any
+  v1.3 clause: RC files 36 `GATE-FIRED-CAUGHT` (29 of them `SELF-AUDIT`), **LW
+  files ZERO**, so the same fact pattern reads TOOLING WORKED in one tree and NO
+  CHECK EXISTED in the other. LW therefore **cannot test RC's clause-2 rank-1
+  FATAL and reports that as an INABILITY, not invariance** (RC's own clause-3
+  lesson). LW's named sensitivity: union arm +2.4 points (82.3 -> 84.7) against
+  RC's +9.0. Three v1.3 errors CONCEDED and banner-corrected: "nothing in v1.2 is
+  withdrawn" is false, "around thirty" is 15 (LW inherited it un-re-derived -
+  BORN-WRONG inside the clause defining BORN-WRONG), and the corpus is **126
+  EXTRACTED / 124 SCORED** with every share over 124. **LW COMMITTED to scoring
+  RC's 198 rows under LW's own convention and publishing the spread** - that is
+  not a re-score of LW's rows, so the hold holds - with a falsifiable prediction
+  recorded in advance. NEXT: run that cross-score.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

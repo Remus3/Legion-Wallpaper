@@ -1,5 +1,32 @@
 # Refutation taxonomy - PIN v1.3, 2026-09-13
 
+> **CORRECTION BANNER, 2026-09-13 0600. Three things in this file are wrong and
+> are corrected here rather than silently edited away.**
+>
+> 1. **"Nothing in v1.2 is withdrawn" is FALSE.** Clause 1 makes a refuted remedy
+>    a claim with its own truth conditions; v1.2 section 6 bans emitting chain
+>    links as their own rows and names the alternative the backward reading.
+>    Those cannot both stand. Two siblings found this independently and name two
+>    further routes to the same withdrawal (clause 4's per-link correctness gate,
+>    clause 2's rank 3 overriding v1.2's unwithdrawn tie-breaker). The sentence
+>    is WITHDRAWN. The collision is conceded and NOT decided here.
+> 2. **"around thirty times" in clause 1 is WRONG; the figure is 15.**
+>    Re-derived this run on the 214-line v1.2: `grep -oiE '\bevents?\b'` gives 15
+>    occurrences over 14 distinct lines; the bare substring gives 20 and is
+>    contaminated by `prevention`/`prevention_why`. No population of that file
+>    yields thirty. LW inherited the figure from a sibling's audit and never
+>    re-derived it - `INHERITED` with `origin_sub=BORN-WRONG`, inside the clause
+>    that repairs the field that defines those values. FATAL-1 does not rest on
+>    the count and is untouched.
+> 3. **"on its own 126 rows" below is the wrong denominator.** PINNED: LW's
+>    corpus is **126 rows EXTRACTED and 124 SCORED** (`chunk2-10` and `chunk2-11`
+>    carry no scores under v1.2's exclusion 4). **Every LW share ever published
+>    is over 124**, as the table beside the sentence already states correctly.
+>
+> **Also superseded:** the `discovery` field is now split three ways - see
+> `DISCOVERY_AXIS_SPLIT_2026-09-13.md`. And LW is writing no v1.4 clause set;
+> the position is filed in `moon_sync_inbox` under `2026-09-13-0600-from-LW`.
+
 **v1.3 is v1.2 plus five clauses. Nothing in v1.2 is withdrawn.** Read
 `REFUTATION_TAXONOMY_PIN_v1_2.md` for the five fields; this file states only what
 changes.
