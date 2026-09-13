@@ -1,0 +1,47 @@
+chunk3-01|TRUE|GATE-ABSENT,CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed directive absence premise never checked against the test tree
+chunk3-02|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|module attribute patch is the stdlib singleton; shim already committed
+chunk3-03|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|census pattern matched its own documenting prose
+chunk3-04|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|false xdist rationale premise in a filed directive
+chunk3-05|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose contradicted _COLLECTION_ROOTS source
+chunk3-06|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|defect-class grep correct but under-measured its population
+chunk3-07|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|collision list self-contradictory; set intersection is mechanisable
+chunk3-08|TRUE|GATE-ABSENT,CONTRACT|FRESH|NA|0|NA|YES|KEEP|suite launched while slices were still landing edits
+chunk3-09|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-4|row text states four residuals each separately assertable and separately wrong
+chunk3-10|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|grep -c counts lines not occurrences
+chunk3-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|cited guard file path does not exist
+chunk3-12|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|guard row read _WIRED while HEAD ran bare; check needs rewrite to see it
+chunk3-13|TRUE|GATE-EXISTING,CONTRACT|FRESH|NA|0|NA|YES|KEEP|existing suite could have failed and did on run 1 of 3
+chunk3-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|internal denominator inconsistency inside one audit doc
+chunk3-15|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|enumeration matched a non-test directory
+chunk3-16|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tracer carries no planted control and needs a rewrite to see this
+chunk3-17|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|true path census applied to a class it never measured
+chunk3-18|TRUE|GATE-ABSENT,CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session ground truth handed to slices unprobed
+chunk3-19|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|filed step 7 id pin went stale mid-cycle
+chunk3-20|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|named drift guard went red and was acted on
+chunk3-21|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|figure rested on uncommitted instruments
+chunk3-22|TRUE|GATE-ABSENT,CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|narrow fix scope claim missed two sibling producers
+chunk3-23|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|sensitivity docstring survived a mutation; guard cannot self-detect
+chunk3-24|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|field named bytes while measuring characters
+chunk3-25|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|partial report written at the documented default path
+chunk3-26|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|tmp half of atomic writes double counted
+chunk3-27|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|instrument writes into the tree it polices
+chunk3-28|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|unguarded builtins.open patch on the raise path
+chunk3-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped fix one layer short of the swallowing caller
+chunk3-30|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|own edit moved every cited offset
+chunk3-31|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|stale cadence comment against the real setting
+chunk3-32|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|red report mis-summarised at merge
+chunk3-33|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|control sits in a separate with block
+chunk3-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|build's own edit invalidated its seven offsets
+chunk3-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|printed docstring commands were never pasteable
+chunk3-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|extractor counted its own repair notes
+chunk3-37|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|source form differs from the rendered help output
+chunk3-38|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|RM-387 and RM-388 dispositions are separately assertable and each wrong
+chunk3-39|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|RM-250 and RM-291 rows are separately assertable and each wrong
+chunk3-40|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|parser hit vocabulary deep in lowercase prose
+chunk3-41|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|claim about a correct guard's behaviour was never run
+chunk3-42|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|documented selector requirement stale against live routing
+chunk3-43|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|named recall gate surfaced the prior closure
+chunk3-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|gitignore negation never re-included the file
+chunk3-45|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|check-ignore exit code answered the wrong question
+chunk3-46|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|named stop gate caught a relayed sibling count
+chunk3-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|operator expectation not committed; live probe refuted it

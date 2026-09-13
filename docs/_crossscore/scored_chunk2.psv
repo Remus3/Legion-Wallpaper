@@ -1,0 +1,48 @@
+chunk2-01|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed row premise false at filing; read-the-tree precondition
+chunk2-02|TRUE|GATE-ABSENT,CONTRACT|FRESH|NA|0|NA|YES|KEEP|tie-breaker flips vacuous guard to absent; no standing empty-set arm
+chunk2-03|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no check grades direct pinning of a shared constant
+chunk2-04|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|self-contradicting prose needs a reader with a lens
+chunk2-05|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|true when filed; the RM-394 repair made it false
+chunk2-06|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|grep-checkable miscite, no cite guard
+chunk2-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|measurable claim asserted without measuring
+chunk2-08|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|skip-list scope claim never counted
+chunk2-09|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|receiver-name heuristic answered the wrong question
+chunk2-10|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|SPLIT because a named test file went RED at the docs-guard run and the grep was a proxy for the registry
+chunk2-11|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|countable pointer claim never counted
+chunk2-12|TRUE|GATE-ABSENT,CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|ADR-015 watch-for step named; no standing mutation arm
+chunk2-13|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|site census undercount; the corrected third site was itself refuted by the next row
+chunk2-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session claim to operator, not tracked at refutation
+chunk2-15|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|caller surface count used to answer the read-set question
+chunk2-16|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|cite never true, already propagated into three artifacts
+chunk2-17|FALSE|ADVERSARY|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|real asymmetry, false where applied as needing a code remedy
+chunk2-18|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|uniqueness overclaim about honest cures needs judgement
+chunk2-19|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|scanned a population the gate never sees
+chunk2-20|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|miscount of disarmed checks, mechanically checkable
+chunk2-21|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|latent committed code defect, no possessive-apostrophe test
+chunk2-22|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|committed parse defect, no space-grouped-digit test
+chunk2-23|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|corpus grew after the row was filed
+chunk2-24|FALSE|ADVERSARY|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|reading of an operator sentence, refuted by a sibling adversarial pass not a gate
+chunk2-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|scrub belief false when formed; forward link outside the window so floor 0
+chunk2-26|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped one iteration; empty result read like a clean diff
+chunk2-27|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|ADR-015 vacuity precondition named in the row
+chunk2-28|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the sweep structural arm is a mechanised instrument and it fired with nine live hits
+chunk2-29|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|self-clean test present in the slice, caught the draft before it shipped
+chunk2-30|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|spec-level reasoning about a transformed view
+chunk2-31|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|coverage hole found by reasoning against the tree
+chunk2-32|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|MERGE-chunk2-31|the claim field itself says the same sufficiency assumption, one assertion with a second failing case
+chunk2-33|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|allowlist-widening remedy never back-tested
+chunk2-34|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker - the narrow pattern could not see itself without rewriting
+chunk2-35|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|filed mechanism false; its replacement counter-headline was itself refuted
+chunk2-36|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|in-session probe output, adjudicator opened the sentences
+chunk2-37|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|the gate existed and was not run before the prediction, wrong time
+chunk2-38|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|classification of 12 findings needed a reader
+chunk2-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|pre-existing at HEAD, no Windows-spelling coverage
+chunk2-40|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|corpus-census assertion settled by a probe, corrected pre-commit
+chunk2-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|filed premise with zero true positives; a false clause inside the refutation writeup is a forward link
+chunk2-42|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|docs-guards run went red, mechanised and acted on
+chunk2-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|composition wrong at filing; second clause not independently wrong so no split
+chunk2-44|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no exhaustive classification existed
+chunk2-45|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|proposed discriminator never back-tested before filing
+chunk2-46|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|idiom-shaped scan cannot see what the idiom list lacks
+chunk2-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|membership re-derivable, no standing check
+chunk2-48|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|hand-off baseline was pre-RM-400, world moved

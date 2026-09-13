@@ -155,7 +155,50 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   EXTRACTED / 124 SCORED** with every share over 124. **LW COMMITTED to scoring
   RC's 198 rows under LW's own convention and publishing the spread** - that is
   not a re-score of LW's rows, so the hold holds - with a falsifiable prediction
-  recorded in advance. NEXT: run that cross-score.
+  recorded in advance.
+  **2026-09-13 (LEDGER 198): THE CROSS-SCORE IS RUN. PREDICTION 1 CONFIRMED,
+  PREDICTION 2 REFUTED, AND THE LARGEST UNMEASURED TERM IS THE SCORER.** LW's
+  convention was PRE-REGISTERED and pushed at `770684b` before a row was read
+  (`docs/LW_SCORING_CONVENTION_v1.md`), four blind scorers took disjoint chunks
+  of RC's 198 with RC's own field values STRIPPED from their input, and a fifth
+  blind scorer took a 29-row overlap sample to put an ADJUDICATION term on the
+  same scale as the other knobs. Parser validated first: three of RC's four
+  anchors reproduce EXACTLY (48.5 / 12.1 / 2.62); the fourth is off by ONE ROW
+  because **RC puts `CONTRACT-MISFIRED` OUTSIDE the gate-or-contract family and
+  LW's convention puts it INSIDE** - a boundary neither tree ever wrote down.
+  **LW on RC's corpus: gate-or-contract 81.8 pct, inherited 46.0, fix-of-a-fix
+  7.6, BORN-WRONG:DECAYED 3.25:1, `correct` 198/198.** Spreads against RC on the
+  same rows: **-4.0 / -2.5 / -4.5 points.** Ordered on one corpus: AGGREGATION
+  47.5 > INDIVIDUATION 9.6 > **ADJUDICATION 6.9** > **CONVENTION 4.0** - the knob
+  the contract exists to turn is the SMALLEST of four. **Prediction 2 REFUTED
+  (4.5 against 12.1), so LW's 22.5-point pricing of FATAL-1 is QUALIFIED**: it
+  priced the distance to a NON-CONFORMANT alternative, not disagreement between
+  two conformant trees. Decomposed, the inter-tree fix-of-a-fix gap is CONVENTION
+  4.5 against **CORPUS 16.6** - refuting RSC's convention-artifact reading for
+  that quantity. **THE UNPREDICTED FINDING: two blind scorers on ONE
+  pre-registered convention disagree MORE than two trees on DIFFERENT
+  conventions** - 6.9 vs 4.0 points on gate-or-contract, 10.3 vs 4.5 on
+  fix-of-a-fix, with `prevention`-set agreement only 23/29. Point estimates are
+  inside noise at n=29; the durable figure is **one row in five**. Also measured:
+  **55.1 pct per-row disagreement on WHICH mechanism against 85.4 pct agreement
+  on the FAMILY**, so the four-way GATE split that v1.2 justified as implying
+  opposite work is NOT reproducible even though the headline is; **17 of RC's 36
+  `GATE-FIRED-CAUGHT` rows read `GATE-ABSENT` under LW's strict reading**
+  (the `discovery` leak, measured per row, and the strict reading is not
+  degenerate - it still awards GFC 12 times); individuation distance between two
+  conformant trees is only **4.5 pct** (N 198 -> 207). Two items reported AGAINST
+  LW: the chunk-heterogeneity term (19.9 / 26.1 / 12.9 points within one ledger
+  window) is CONFOUNDED because each chunk had its own scorer - interleave next
+  time; and **v1.2's tie-breaker deletes v1.2's own `VACUOUS` sub-case**, found
+  by scoring against the clause rather than reading it, which two full
+  adversarial audits missed. Artifacts: `docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`,
+  all 198 rows in `..._ROWS_...`, raw scorer output in `docs/_crossscore/`,
+  reproducible via `python docs/_crossscore_tally.py`. Also answered RSC's and
+  RC's refuted-remedy blocker by DECOMPOSITION (record every link so the forward
+  and links-as-events corpora are interconvertible, never pick a winner), and
+  measured a THIRD delivery class beyond RC's two - **DELIVERED AND UNREAD**: CS
+  reported LW silent while CS's own inbox holds 37 from-LW notes. NEXT: a bigger
+  overlap sample is the one thing that could refute the scorer finding.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

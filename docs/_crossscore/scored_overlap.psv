@@ -1,0 +1,29 @@
+chunk1-01|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed citations true when written then the session's own edit moved them; no citation-drift check exists here
+chunk1-08|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|UNCLEAR|KEEP|adjudication pass is in-session so FRESH; the correction was itself corrected, so one forward link and the refutation's own correctness is not settled
+chunk1-15|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an adversarial gate is not a standing check under the strict reading, so no GATE-FIRED-CAUGHT; a span-citation check is mechanisable and absent
+chunk1-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an all-of-ten prose claim is countable mechanically and nothing counted it
+chunk1-29|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a printed recipe is an untested deliverable; running it is the missing mechanical check
+chunk1-36|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the handler never held its own no-silent-failure contract; sibling's mechanism exists in the fleet but not in this tree, so ABSENT by the scope rule
+chunk1-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|admission dropped both classes before any gate, so the gates needed rewriting to see it; not PROXY-MEASURE because the admission test itself was wrong
+chunk1-50|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|verifier subagent is not a standing check; a test asserting the terminal branch would have failed and none existed
+chunk1-57|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|committed constant sufficient when set, later insufficient at 21 turns; no headroom check existed
+chunk2-04|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|a paragraph contradicting itself needs a reader with a lens; no mechanical check or template reaches it
+chunk2-11|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a claim about ROADMAP content that a grep would have falsified
+chunk2-18|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an only-one claim over an enumerable check set, never enumerated
+chunk2-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|standing post-scrub belief false when formed since all five were already in HEAD; the row's own text names a forward refutation outside the window, so the link is established not guessed
+chunk2-32|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the scrub's sufficiency assumption never covered commit subjects; not merged because its stated assertion differs from chunk2-25's
+chunk2-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|pre-existing at HEAD and POSIX-only from the start; the gate could not have caught its own defect without a rewrite
+chunk2-46|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|an idiom-shaped scan cannot see its own false negatives, so a correct instrument answering the wrong question; in-session slice acted on by the merger is FRESH
+chunk3-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|scored BORN-WRONG not DECAYED because the record shows an EXCEPTED root at line 101 and nothing establishes the exception postdates the claim
+chunk3-12|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the vacuous guard read a hand-maintained status row and needed a rewrite to see a bare tree, so the tie-breaker sends it to ABSENT
+chunk3-19|TRUE|GATE-ABSENT,CONTRACT-MISFIRED|INHERITED|DECAYED|0|NA|YES|KEEP|the directive's step 7 was correct when authored and correctly applied, yet produced a wrong pin once two ids were minted
+chunk3-26|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the tracer double-counted from the start so the instrument was wrong, not a proxy; no unit test covered atomic-write totals
+chunk3-33|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|no mechanical check reaches whether a control sits in the same capture block, but a declared template for anti-vacuity controls would have
+chunk3-40|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|an unanchored vocabulary hit deep in prose is a correct match answering the wrong question; in-session parser output is FRESH
+chunk3-47|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an in-session operator expectation is not committed, filed or tracked, so FRESH under state-at-refutation; no standing arm-status check existed
+chunk4-07|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|the quote names two separately shipped ids each separately wrong in the directive, so two claims; no check compared directive items against ledger state
+chunk4-14|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|the suite as written produced the hard red for the verifier, so it was present and could have failed on it but did not stop the green claim
+chunk4-21|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a local green cannot see fresh-clone line endings without a clone-shaped arm that does not exist
+chunk4-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the filed premise was false on one of three freeze paths when written; no test covered all three
+chunk4-35|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|verb proximity is a correct match standing in for retraction, and 4 of 5 clears were off-target
+chunk4-42|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a named test was already red at that sha so the instrument existed and did not stop the commit; scored EXISTING not FIRED-IGNORED because nothing establishes the red was observed at the time

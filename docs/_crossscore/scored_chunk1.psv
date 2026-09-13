@@ -1,0 +1,60 @@
+chunk1-01|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|no citation-vs-HEAD check exists in tree
+chunk1-02|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|adversarial gate is not a standing check so graded on merits
+chunk1-03|SPLIT|GATE-FIRED-CAUGHT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|full tests suite is a mechanised instrument that fired and caught while the grep was a correct instrument on the wrong question
+chunk1-04|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|prior session census was tracked and never graded
+chunk1-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed as a residual in the ledger so tracked at refutation
+chunk1-06|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|correct predicate answering the wrong discriminator question
+chunk1-07|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing grades a scoring claim made against a synthetic shape
+chunk1-08|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|in-session adjudication output was not committed at refutation
+chunk1-09|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the pre-commit gate is a named mechanised instrument that fired
+chunk1-10|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a charter must be stated before a site is claimed inside it
+chunk1-11|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|declared precondition against recording an unperformed act as done
+chunk1-12|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a ci.yml provisioning claim is mechanically checkable and ungraded
+chunk1-13|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|mention count answered the request question
+chunk1-14|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no citation-range linter exists
+chunk1-15|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|strict reading refuses GATE-FIRED-CAUGHT for an adversarial pass
+chunk1-16|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|same strict-reading treatment as chunk1-15
+chunk1-17|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|figure exact for the wrong quantity
+chunk1-18|TRUE|GATE-FIRED-CAUGHT|INHERITED|DECAYED|0|NA|YES|KEEP|the local docs-guard suite is mechanised and went red
+chunk1-19|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|precondition to read the shipped clause before drafting a position
+chunk1-20|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|answered count divided by arrival span
+chunk1-21|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|prose against shipped behaviour is ungraded
+chunk1-22|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|row classification is checkable and unchecked
+chunk1-23|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|rule cited without reading its text
+chunk1-24|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|first correction was itself refuted by the second measure
+chunk1-25|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the second precondition was never covered by any check
+chunk1-26|FALSE|PROXY-MEASURE|FRESH|NA|1|SELF|YES|KEEP|archive count cannot say which precondition broke and the correction was refuted
+chunk1-27|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|filed three corrected to four then made six
+chunk1-28|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|an inverted docstring fact needs a reader with a lens
+chunk1-29|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a printed recipe is runnable and was never run
+chunk1-30|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|citation to a not-yet-existing entry is mechanically checkable
+chunk1-31|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|nothing grades a Python runtime assumption
+chunk1-32|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|precondition that verification precedes the irreversible act
+chunk1-33|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|line-derived count answered the signature question
+chunk1-34|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a prefix versus suffix relation is checkable
+chunk1-35|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|the skip guard could not see false-RED without being rewritten so the tie-breaker applies
+chunk1-36|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|the remedy enumeration was incomplete and was corrected
+chunk1-37|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|an adversarial verifier is not a standing check
+chunk1-38|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|filed figure was never re-grounded against HEAD
+chunk1-39|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|an in-session subagent report is FRESH at the moment of refutation
+chunk1-40|TRUE|GATE-FIRED-CAUGHT|INHERITED|DECAYED|1|SELF|YES|KEEP|the mutant suite is mechanised and fired twice
+chunk1-41|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the human-facing line reused the truncated projection
+chunk1-42|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|3|SIBLING-SURFACE;SELF;SELF|YES|KEEP|chain_kind recorded per link rather than aggregated
+chunk1-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|both classes were dropped before any gate could see them
+chunk1-44|TRUE|CONTRACT-MISFIRED|INHERITED|DECAYED|0|NA|YES|KEEP|an expired scope fence was applied as written and produced the wrong outcome
+chunk1-45|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|filed proposal not re-grounded against what shipped the same day
+chunk1-46|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|probe correctness is ungraded
+chunk1-47|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the carried seed split is unsupported by the live artifact
+chunk1-48|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|the row states two clauses that decayed and one that was never this class so two distinct truth conditions were separately wrong
+chunk1-49|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the invariant was never graded at any of the five call sites
+chunk1-50|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|a prose promise has no guard on it
+chunk1-51|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|the scope of the claim was never graded
+chunk1-52|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|a verbatim recital is a second source of truth with no guard
+chunk1-53|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the fixture was correct but exercised the unreadable gate instead
+chunk1-54|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|floor reading declines to count a remedy refuted before it shipped
+chunk1-55|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|census mutants and dry cycle were in scope and in time and passed vacuously
+chunk1-56|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a declared UNMEASURED constant was armed unmeasured
+chunk1-57|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|same declared UNMEASURED list as chunk1-56
+chunk1-58|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|precondition to read the record before declaring a defect
+chunk1-59|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|the generator walks disk rather than asking git and nothing graded it
+chunk1-60|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|unbounded growth was never graded in this tree

@@ -1,0 +1,43 @@
+chunk4-01|TRUE|GATE-EXISTING|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|serial 4h measurement generalised to the suite; the suite existed and was skipped
+chunk4-02|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|suite existed at ship time and was not run; no recorded firing
+chunk4-03|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker - guard cannot see its own late-firing scope unrewritten
+chunk4-04|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|no citation-resolution check; the file moved under the line range
+chunk4-05|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|directive code-fact never graded before filing
+chunk4-06|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|named class does not exist; symbol check writable and absent
+chunk4-07|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|shipped-ledger cross-check writable and absent
+chunk4-08|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|same shape as 07 on a distinct item, so not a merge
+chunk4-09|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the byte pin already existed and was simply not consulted
+chunk4-10|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|consumer census writable; BACKLOG and LEDGER both carried the claim
+chunk4-11|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|hypothesis filed in the directive, never graded before the probe
+chunk4-12|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|line-pattern detector is correct and answers a different question than write atomicity
+chunk4-13|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no test pinned the mis-typed input path; except handler is not a standing check
+chunk4-14|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|in-session builder report; verifier is not a standing check, the suite red was never surfaced
+chunk4-15|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|16 guards passed vacuously over files git never enumerated
+chunk4-16|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|tie-breaker - the source sweep cannot see pyc bytes unrewritten
+chunk4-17|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no standing license-shape check on a new package in a public repo
+chunk4-18|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|no mechanical check grades README prose against the code paths
+chunk4-19|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|same README prose contract, distinct proposition
+chunk4-20|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|same README prose contract, distinct proposition
+chunk4-21|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no fresh-clone shape check; root gitattributes could not cover it unrewritten
+chunk4-22|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|the shipped test passes while measuring nothing on this host
+chunk4-23|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|precedent grep writable and absent; precedent predated the filed row
+chunk4-24|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|census writable and absent; the filed risk was inverted not merely unproven
+chunk4-25|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|forward link is established - the remedy shipped incomplete, arena_teams stays uncoerced
+chunk4-26|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|one-pass acceptance holds for one field and fails across the siblings
+chunk4-27|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|per-detector try/except cannot reach the loop-level gameTime read
+chunk4-28|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|freeze-path signal census was never graded by anything mechanised
+chunk4-29|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed spec named the retry stamp and was false as written
+chunk4-30|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-2|the claim names two readers of source and the quote says BOTH HALVES ARE FALSE - two truth conditions separately wrong
+chunk4-31|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|a named lock test that exists to forbid it is why the experiment was refused at merge
+chunk4-32|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|byte-diff check writable and absent; a verifier subagent is not a standing check
+chunk4-33|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|the BACKLOG row was live when filed and was killed by RM-396
+chunk4-34|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|SPLIT-4|the quote recites 90 91 92 93 as four separately assertable figures each separately wrong
+chunk4-35|FALSE|PROXY-MEASURE|FRESH|NA|1|SELF|YES|KEEP|verb proximity is a proxy for retraction and its tightened remedy was itself refuted
+chunk4-36|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|the 40-char window is the same proxy; precision and recall both 0 of 1
+chunk4-37|TRUE|GATE-FIRED-CAUGHT|FRESH|NA|0|NA|YES|KEEP|the named CLAIM_COUNT gate went RED on the draft and the finding was acted on
+chunk4-38|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the history file carries no quotes so nothing mechanised could grade the figure
+chunk4-39|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|emit text was never graded against what audit implements and never did
+chunk4-40|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session verifier report acted on by the merger; no session-attribution check exists
+chunk4-41|FALSE|PROXY-MEASURE,ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the evidence key does not discriminate and only an attack construction exposes it
+chunk4-42|TRUE|GATE-FIRED-IGNORED|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a named registry drift test was already RED at the cited sha and was tolerated
+chunk4-43|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tie-breaker - the gate records file_path only and cannot see content unrewritten
