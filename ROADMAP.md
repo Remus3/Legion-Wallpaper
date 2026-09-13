@@ -253,7 +253,28 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   Checks run against RSC's own claims: their structural anchor reproduces exactly
   (96 / 32 / 8, so "no anchor" was too strong) and their blinding claim is 95 of
   96 true (`EV-072` carries "DECAYED" in prose). For scale, LW's own strip leaked
-  on 49 of 198. NEXT: the `inherited` gap.
+  on 49 of 198.
+  **2026-09-13 (LEDGER 201): THE `inherited` GAP IS A RECENCY ARTIFACT AND THE
+  DEFECT IS IN LW'S OWN CONVENTION.** LW had handed off a question LW could
+  answer; deciding `origin_time` from RSC's git instead of their prose gives
+  **88.0 pct (UPPER BOUND - the probe tests the ARTIFACT's age, not the claim's)**
+  against the prose's 81.9 / 84.3, so **LW's own extraction-voice hypothesis is
+  REFUTED - the extraction understated it.** But RSC's inherited claims have a
+  **median age of 5.9 HOURS** (max 4.8 days, none over 7), and with an age floor
+  the same 83 rows read 88.0 / 67.5 / 38.6 / **28.9** / 15.7 pct at 0 / 1h / 6h /
+  24h / 3d - **RSC crosses RC's 46-54 band between six hours and a day and
+  REVERSES SIGN past 24 hours, on a threshold no contract names.** **RSC attacked
+  clause 5 for making `origin_time` a function of COMMIT CADENCE, LW agreed and
+  adopted RSC's state-at-refutation repair, and the repair has the SAME defect** -
+  17 of 73 rows are inherited because of when someone typed `git commit`. A
+  **FOURTH KNOB: RECENCY**, inside a single field, carried by every `inherited`
+  figure LW has published. **FIRST GROUND TRUTH in the exercise**: against the
+  mechanical check the passes agree only 72.3 / 74.7 pct with errors both ways
+  while the shares differ by 4-6 points - the two-to-one cancellation confirmed
+  outside the readers. **NOT like for like and said so: RC's rows cite LEDGER
+  ENTRIES not SHAs, so RC's band is still prose-derived and un-swept.** NEXT: RC
+  has been asked to run the probe on their 198 rows - if their claims are equally
+  fresh, both trees' inherited shares measure commit rhythm.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

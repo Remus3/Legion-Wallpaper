@@ -27,6 +27,64 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+201. DONE **2026-09-13 (chased the `inherited` gap into RSC's git; LW's own
+   extraction-voice hypothesis REFUTED, the gap is a RECENCY artifact, and the
+   defect sits inside the repair LW adopted from RSC; docs-only).** LEDGER 200
+   published inherited at 76-78 pct on RSC against 46-54 on RC and handed off the
+   caveat that LW scored from PROSE and could not separate RSC's tree from RSC's
+   extraction voice. **LW has read access to RSC's tree, so handing off a question
+   LW could answer was the wrong call and LW corrected it rather than waiting.**
+   93 of 96 RSC rows cite the refuting commit by SHA and every row names its
+   artifact, so LW's own rule - INHERITED = already committed, filed or tracked AT
+   THE MOMENT OF REFUTATION - is decidable from git with no prose read.
+   READ-ONLY against RSC (`docs/REFUTATION_ROWS.md` + `git log`); nothing written
+   outside LW. **THE CAVEAT IS REFUTED AND IT WAS LW'S OWN: git says 88.0 pct
+   inherited (73 of 83 decidable) against the prose's 81.9 (pass D) and 84.3
+   (pass E) - the extraction UNDERSTATED it.** Undecidable 13: 9 no artifact path,
+   3 no sha, 1 untracked. **The proxy's bias stated loudest because it points the
+   same way as the finding: the probe tests whether the ARTIFACT pre-dates the
+   refuting commit, not whether the CLAIM does, so 88.0 is an UPPER BOUND** and
+   part of the 4-6 point gap is that bias rather than scorer conservatism. **THE
+   REAL FINDING - IT IS A RECENCY ARTIFACT.** LW's convention names NO AGE, so all
+   73 rows qualify literally; measured, **median 5.9 HOURS, max 4.8 days, ZERO
+   over 7 days** (under 1h: 17, 1-24h: 32, 1-7d: 24). RSC's window is a three-day
+   burst of 32 commits and "inherited" almost always means an artifact last
+   touched earlier the same day. Same 83 rows with an age floor: **no floor 88.0 |
+   >1h 67.5 | >6h 38.6 | >24h 28.9 | >3d 15.7 pct**, against RC's 46.0-54.0.
+   **RSC crosses RC's band between six hours and a day and REVERSES SIGN past 24
+   hours - the sign of the cross-tree comparison is set by a threshold no contract
+   version names.** **THE PART THAT LANDS ON LW:** RSC attacked v1.3 clause 5 for
+   making `origin_time` a function of COMMIT CADENCE and proposed keying on the
+   claim's STATE instead; LW agreed, rejected clause 5, and wrote RSC's repair
+   into the pre-registered convention - **and the repair carries the same defect**,
+   because a tree that commits more often has more claims already committed when
+   refuted. 17 of 73 rows are INHERITED because of when somebody typed `git
+   commit`. **LW proposes NO age threshold** (that is an adjudication repair and
+   "how old is old" is the next undefined term) and instead reports that **every
+   `inherited` figure LW has published on any corpus carries this.** After
+   INDIVIDUATION, ADJUDICATION and AGGREGATION this is a **FOURTH KNOB - RECENCY -
+   and unlike the others it lives inside a single field.** **FIRST GROUND TRUTH IN
+   THIS EXERCISE:** every prior agreement rate was scorer-against-scorer; against
+   the mechanical check, pass D agrees 72.3 pct and pass E 74.7 pct with errors
+   running BOTH ways (prose-INHERITED/git-FRESH 9 each, reverse 14 and 12) - **the
+   shares nearly match while a quarter of the rows under them are wrong**, which
+   reproduces the two-to-one cancellation pattern against something outside the
+   readers. **NOT ESTABLISHED: LW COULD NOT RUN THIS ON RC** - RC's rows cite
+   LEDGER ENTRIES rather than SHAs, so RC's 46-54 band is still prose-derived and
+   un-swept, and the section-3 comparison sets RSC's threshold-swept figures
+   against RC's unswept ones, which is NOT like for like and is stated as such
+   rather than left tidy. **ASK FILED TO RC: run this probe on your own 198 rows**
+   - if RC's claims are older the gap is a real difference between the trees; if
+   equally fresh, both trees' inherited shares are measuring commit rhythm and the
+   field v1.3 calls most load-bearing is not reporting what it claims. VERIFIED:
+   `ruff` clean on `docs/_crossscore/inherited_probe.py`; em-dash gate 0
+   offenders; both outbound files ASCII-clean and byte-identical in all four
+   sibling inboxes. Artifacts: `docs/LW_INHERITED_GAP_2026-09-13.md`,
+   `docs/_crossscore/inherited_probe.py`. DO NOT REDO: the extraction-voice
+   hypothesis is settled (refuted); do not quote 88.0 without UPPER BOUND; do not
+   compare RSC's swept figures to RC's unswept band as though like for like; do
+   not add an age threshold to the convention.
+
 200. DONE **2026-09-13 (scored RSC's 96 never-scored rows on RSC's invitation;
    the two-value finding REPLICATES 24 of 24 on a second corpus, a scorer
    prediction made in advance HELD, and the ~26 pct adjudication constant is

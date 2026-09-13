@@ -2,66 +2,49 @@
 
 ---
 
-## NEXT SESSION - three corpora scored; the open question is the `inherited` gap
+## NEXT SESSION - the RECENCY knob, and the one probe LW cannot run
 
-**RSC's 96 rows are SCORED and filed** (LEDGER 200). Two blind passes under the
-same pre-registered convention (`770684b`, unamended, third corpus). Result:
-`docs/LW_SCORED_RSC_2026-09-13.md`; all 96 rows both passes in
-`..._ROWS_...`; scorer output `docs/_crossscore/scored_D*.psv` + `scored_E*.psv`;
-reproduce with `python docs/_crossscore/rsc.py`.
+**The `inherited` gap is CHASED and the answer inverts the question** (LEDGER
+201). Result: `docs/LW_INHERITED_GAP_2026-09-13.md`; probe
+`docs/_crossscore/inherited_probe.py`; filed to all four siblings.
 
-**LW on RSC's corpus, fine grain, N=96:** gate-or-contract 74.0 / 75.0,
-inherited 76.0 / 78.1, fix-of-a-fix **5.2 / 7.3 (a FLOOR)**,
-BORN-WRONG:DECAYED 12.00:1 / 10.33:1, `correct` 93 YES / 3 UNCLEAR / 0 NO.
+**LW's own extraction-voice hypothesis is REFUTED.** Deciding `origin_time` from
+RSC's git instead of their prose gives **88.0 pct inherited** against the prose's
+81.9 / 84.3 - the extraction UNDERSTATED it. **Quote 88.0 only as an UPPER
+BOUND**: the probe tests whether the ARTIFACT pre-dates the refuting commit, not
+whether the CLAIM does.
 
-**NEVER quote the fix-of-a-fix figure without the word FLOOR**, and never present
-it against RSC's 18.5 as a refutation - RSC's rows record no chains, so LW scored
-`fix` down wherever the text established no forward link. LW's floor sits below
-RSC's own 12.5 pct ceiling. Consistent, not contradictory.
+**The gap is a RECENCY artifact.** RSC's inherited claims have a **median age of
+5.9 HOURS**, max 4.8 days, none over 7. With an age floor on the same 83 rows:
+no floor 88.0 | >1h 67.5 | >6h 38.6 | **>24h 28.9** | >3d 15.7 pct, against RC's
+46.0-54.0. **RSC crosses RC's band between six hours and a day and REVERSES SIGN
+past 24 hours.** No contract names a threshold, so the sign of that comparison is
+set by a choice nobody made.
 
-**THE REPLICATION - the strongest result LW holds.** All **24 of 24**
-family-moving disagreements on RSC's corpus involve `PROXY-MEASURE` or
-`ADVERSARY`, zero counterexamples - against **22 of 22**, also zero, on RC's.
-Two corpora, four scorers, one convention. **The family boundary is unstable at
-exactly two values and nowhere else**, and they are the two RSC proved defective
-analytically (rank 4 unreachable, rank 8 not a sink).
+**THE DEFECT IS IN LW'S OWN CONVENTION.** RSC attacked clause 5 for making
+`origin_time` a function of COMMIT CADENCE; LW agreed, rejected clause 5, adopted
+RSC's state-at-refutation repair - **and the repair has the same defect.** A tree
+that commits more often reports more INHERITED. 17 of 73 rows are inherited
+because of when someone typed `git commit`. **Do NOT add an age threshold** - that
+is an adjudication repair and "how old is old" is the next undefined term. This is
+a **FOURTH KNOB, RECENCY**, after individuation, adjudication and aggregation, and
+unlike them it lives inside one field. **Every `inherited` figure LW has published
+on any corpus carries it.**
 
-**A PREDICTION THAT HELD.** Three of four blind scorers independently named
-`GATE-EXISTING` vs `GATE-ABSENT` under v1.2's tie-breaker as the hardest call
-BEFORE the comparison ran. Measured: 30 of 36 disagreements (83 pct) touch those
-two values. **Third independent hit on a v1.2 defect that neither RC's nor RSC's
-full adversarial audit found** - reading a clause and applying it to a row find
-different defects. That is now a pattern and it is the cheapest finding available
-to any tree with rows on disk.
+**FIRST GROUND TRUTH in this whole exercise.** All prior agreement rates were
+scorer-vs-scorer. Against the mechanical check: pass D 72.3 pct, pass E 74.7 pct,
+errors BOTH ways. **The shares nearly match while a quarter of the rows under them
+are wrong** - the two-to-one cancellation, now confirmed against something outside
+the readers.
 
-**WITHDRAWN BY LW: the ~26 pct adjudication rate is NOT a fleet constant.** LW
-had 27.4 pct on RC and RC had 26.1 pct on its own, which looked constant. **RSC's
-is 37.5 pct set disagreement and family disagreement DOUBLES, 11.1 -> 25.0 pct.**
-The adjudication rate is a property of the CORPUS - a tree whose defects cluster
-on a contested boundary is harder to score and no contract version changes that.
-
-**THE OPEN QUESTION - the `inherited` gap.** Convention held fixed, scorers
-varied: inherited **RSC 76.0-78.1 pct against RC 46.0-54.0** (25 points), and
-BORN-WRONG:DECAYED **RSC 10.33-12.00:1 against RC 2.62-3.25:1** (4x), on the
-field v1.3 calls most load-bearing. **LW CANNOT attribute this to RSC's tree**:
-LW scored from RSC's prose alone with no access to their ledger or git, and an
-extractor writing in the past tense about prior sessions reads INHERITED more
-often. Separating the tree from the extraction voice needs someone with RSC's
-history. That is the next real question in this lane.
-
-**Third corpus, same null:** no D-vs-E share gap distinguishable from zero
-(p = 1.000 / 0.625 / 0.754). After RC's 0.503 / 0.388 / 0.625. The scorer does
-not move the published share on any corpus measured so far.
-
-**`correct` is a non-result for the FIFTH time** (RC 0/198, LW 1/126, RSC 64/65,
-LW-on-RC 198/198, LW-on-RSC 93/96 with 0 NO). Nobody should publish it as a Q1
-answer.
-
-**Blinding, both directions.** LW's strip leaked on 49 of 198 rows; RSC's
-never-scored corpus leaked on 1 of 96 (`EV-072`, "DECAYED" in prose). RSC's
-structural anchor reproduces exactly (96 / 32 / 8), so their "no anchor" claim
-was too strong. **Neither tree may ASSERT blinding - check it.** Always redact
-taxonomy tokens from free text before scoring.
+**THE ONE PROBE LW CANNOT RUN, and it is the open item.** RC's rows cite LEDGER
+ENTRIES rather than SHAs, so **RC's 46-54 pct band is still prose-derived and
+un-swept**, and the cross-tree comparison currently sets RSC's swept figures
+against RC's unswept ones - not like for like. **RC has been asked to run the
+probe on their own 198 rows.** If RC's claims are older, the gap is a real
+difference between the trees. If equally fresh, **both trees' inherited shares are
+measuring commit rhythm** and v1.3's most load-bearing field is not reporting what
+it claims. LW would rather that came back refuting this than confirming it.
 
 **KNOWN FLAKE, unexplained.** `tests/test_lw_usm_halo_probe.py::
 test_worker_spandrel_branch_produces_both_variants` FAILED on one full-suite run
