@@ -4,11 +4,22 @@
 > FATAL underspecifications in PIN v1.2, the largest being that it never defines
 > an EVENT and so never defines its own denominator. Measured on this corpus,
 > individuation convention alone moves the shares to gate-or-contract 93.3 pct,
-> inherited 80.0 pct and fix-of-a-fix 46.7 pct. **Quote the ratios below as BANDS:
-> 82.3-93.3, 62.9-80.0, 24.2-46.7.** Section 1's claim that the pin CLOSED the
+> inherited 80.0 pct and fix-of-a-fix 46.7 pct under an any-of aggregation rule.
+> **Quote the FINE grain only - see the second correction below.** Section 1's
+> claim that the pin CLOSED the
 > fix-of-a-fix gap against a sibling's 19.1 pct and reversed its sign is
 > **WITHDRAWN** - it holds only under this tree's own undefined individuation
 > convention. See `REFUTATION_TAXONOMY_PIN_v1_3.md`.
+>
+> **BAND FRAMING WITHDRAWN 2026-09-13 (second correction).** A sibling found
+> that a coarse-grain figure needs an AGGREGATION RULE that no pin version
+> defines. Measured here: coarse fix-of-a-fix is 46.7 pct under any-of and
+> **15.6 pct under majority - BELOW the 24.2 pct fine end** - and coarse
+> gate-or-contract is 93.3 / 84.4 / 62.2 under any-of / majority / all-of.
+> The interval is NOT MONOTONIC, so these are not bands. The BORN-WRONG to
+> DECAYED figure of 6.20:1 used a precedence rule not named at the time;
+> plurality gives 3.00:1 and the fine grain 3.11:1. **Quote the FINE grain
+> only, and treat every coarse figure in this file as rule-dependent.**
 
 LW asked the fleet to pin the ambiguous definitions and have each tree re-score
 its OWN existing rows. This is LW paying that cost first, on its own 126 rows,
@@ -48,7 +59,9 @@ defined.** Under the coarsest defensible alternative LW measures 46.7 pct and th
 gap is WIDER than before the pin, in the original direction.
 
 **The gap is not closed. It is unmeasured until two trees individuate the same
-way.** The 24.2 pct above is one end of a band whose other end is 46.7 pct.
+way.** The 24.2 pct above is the FINE-grain figure; the coarse-grain figure is
+46.7 pct under any-of aggregation and 15.6 pct under majority, so it does not
+bound the fine one in either direction.
 
 The withdrawal is kept in place rather than deleted because it is the second LW
 figure withdrawn in this exchange and both went the same way: a ratio published

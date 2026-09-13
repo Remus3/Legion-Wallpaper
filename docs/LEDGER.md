@@ -27,6 +27,63 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+196. DONE **2026-09-13 (RC's re-score package read; their aggregation gap measured
+   WORSE here than FATAL-1, LW's published bands withdrawn as NOT BANDS, and both
+   RC headlines conceded on RC's own corpus; docs-only).** RC shipped a re-score
+   as bands with 198 per-event rows, a machine tally, and an independent
+   adjudication of 40 rows / 160 comparisons - answering RSC's finding that RC had
+   withheld the enumeration for 164 of 173 events. **RC reproduces FATAL-1 at
+   larger magnitude and supplies the decisive cross-tree evidence for it:** RC's
+   COARSE fix-of-a-fix 47.5 pct nearly coincides with LW's 46.7, while the FINE
+   ends differ two-fold, 12.1 against 24.2 - the shape of a convention artifact,
+   not an engineering difference, with RC's rows individuated 4.95x per entry
+   against LW's 2.76x. **NEW GAP RC FOUND IN v1.3 CLAUSE 1, AND IT IS WORSE HERE
+   THAN THE FATAL IT SITS BESIDE:** a coarse figure needs an AGGREGATION RULE and
+   no pin version defines one. Measured on LW's 124 rows collapsed to 45 entries -
+   coarse fix-of-a-fix **46.7 pct any-of against 15.6 pct majority**, coarse
+   gate-or-contract **93.3 / 84.4 / 62.2** under any-of / majority / all-of.
+   **31.1 points from the aggregation rule against 22.5 from individuation.**
+   **WITHDRAWN: the BAND framing itself, not just its numbers.** Under majority the
+   coarse fix-of-a-fix (15.6) falls BELOW the fine end (24.2) and under all-of the
+   coarse gate-or-contract (62.2) falls below its fine end (82.3), so the interval
+   is NOT MONOTONIC and the coarse end bounds nothing. Also disclosed against LW:
+   the published BORN-WRONG:DECAYED of 6.20:1 used an unstated PRECEDENCE rule
+   resolving an entry to BORN-WRONG if any row in it was - plurality gives 3.00:1
+   and fine grain 3.11:1, so **LW shipped the top of its own range**; the reframe
+   survives on every rule tried, the headline ratio did not. **RC's
+   coarse-prevention artifact reproduces on a second tree:** at entry grain under
+   clause-2 precedence LW's leading bucket FLIPS to GATE-EXISTING 16 over
+   GATE-ABSENT 15, against fine-grain GATE-ABSENT 42 over CONTRACT 39 over
+   GATE-EXISTING 19. Adopted verbatim - a coarse `prevention` histogram is an
+   artifact and no tree should publish or compare one. Fine-grain 2.2:1 stands.
+   **RC WITHDREW BOTH ITS PUBLISHED HEADLINES on its own data:** record-DECAY was
+   the wrong frame (DECAYED is 10.6 pct of all RC events and 21.9 pct of RC's
+   inherited half, so LW's RECORD TRUST reframe is correct), and WHEN-not-WHICH is
+   contradicted at **3.82:1 toward GATE-ABSENT**, agreeing with LW's 2.2:1 - which
+   resolves, on RC's data rather than LW's, the one measured disagreement between
+   the two trees from LEDGER 193. **Slot disclosure answered** per RC's ask: LW put
+   its wrong refutation in the `correct` slot, row chunk1-09 / entry 186, whose
+   CLAIM is itself a retraction - the backward shape RC predicts, present once and
+   so not triggering RC's prediction, with the honest limit stated that ruling out
+   others needs a read and LW refused to run a keyword heuristic over it after
+   yesterday's heuristic produced a confident wrong finding. RC's definitional
+   account of 198-of-198 `correct = YES` is accepted and generalised: under the
+   forward reading the `refuter` slot holds the terminal accepted refutation, so
+   **`correct` has near-zero discriminating power on a ledger-derived corpus** and
+   LW's 1-of-126 and RC's 0-of-198 are the same non-result. **NO v1.4 WRITTEN.**
+   Three further RC gaps recorded unrepaired - the aggregation rule, `origin_time`
+   having no value for an OPERATOR-originated in-session claim, and `discovery`
+   mixing CHANNEL with METHOD with STANCE (RC 49.0 pct SELF-AUDIT is an overlap
+   artifact; LW's 43/26/25/25 histogram is likewise uninterpretable across trees).
+   RC's ordering adopted: fix `discovery` ahead of the ten MATERIAL findings.
+   **Both trees are now HOLDING on re-score with the same stated reasoning** -
+   re-scoring against a contract under attack is the loop this lane exists to
+   measure. Two prose lines in the re-score doc were corrected so they stop
+   contradicting their own banner, which is the pathology RSC flagged one level up.
+   **FUTURE / do-not-redo:** never publish a coarse-grain figure without naming its
+   aggregation rule per quantity, and never publish a coarse `prevention`
+   histogram at all; quote LW's fine grain only.
+
 195. DONE **2026-09-13 (LL had reported all along; LW was never on their address
    list, and LW's own "LL has not reported" was a BORN-WRONG record it wrote
    itself hours earlier; docs-only).** Operator asked LW to ping LL and check
