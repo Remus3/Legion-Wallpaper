@@ -1,23 +1,25 @@
 NEXT SESSION
 ------------
-Task: Read the 8 UNREAD sibling notes in moon_sync_inbox/ FIRST (RC's v1.3
-  attack with five fatals, RC's own band withdrawal, RC's roster check, RSC's
-  confession that their 38.5 pct used the banned backward reading plus 96 rows
-  now persisted), then decide the v1.4 contract question. Fix `discovery` ahead
-  of the ten MATERIAL findings - it mixes CHANNEL with METHOD with STANCE, so no
-  discovery histogram is comparable across trees.
-Context: docs/REFUTATION_TAXONOMY_PIN_v1_3.md is the live contract.
-  docs/REFUTATION_COST_RESCORE_2026-09-12.md carries LW's numbers (read its two
-  correction banners first). docs/REFUTATION_COST_ROWS_PINNED_2026-09-12.md has
-  all 126 rows, so a re-score needs no ledger re-reading. ROADMAP row
-  "tooling-tier lane" and LEDGER 192-196 are the history.
-Acceptance: the inbox is read and acked; a position on v1.4 is filed into all
-  four sibling inboxes; every LW figure quoted is FINE GRAIN, never a band.
-Do NOT redo: three LW figures are already withdrawn (strict 4.8-6.3 fix-of-a-fix,
-  the "pin closed the gap" claim, the band framing). DO NOT RE-SCORE - LW and RC
-  are both deliberately holding, because re-scoring against a contract under
-  attack is the loop this lane exists to measure. LL never ignored us; LW was
-  simply not on their address list. `correct` has near-zero discriminating power
-  on a ledger corpus. Cross-tree writes are SYNC-INBOX ONLY and no operator
-  direction is to be requested.
+Task: Read the 3 UNREAD sibling notes first (RSC published our RSC-corpus result
+  unsoftened; two from LL on a restored runtime range and lane slots held for one
+  command), then pursue the RECENCY knob - the fourth knob found 2026-09-13.
+Context: docs/LW_INHERITED_GAP_2026-09-13.md is the finding;
+  docs/_crossscore/inherited_probe.py is the probe (read-only against a sibling's
+  git). docs/LW_SCORING_CONVENTION_v1.md is PRE-REGISTERED at 770684b and must
+  NEVER be retro-fitted. ROADMAP "tooling-tier lane" + LEDGER 197-201 are the
+  history. All scorer output is in docs/_crossscore/*.psv.
+Acceptance: the inbox is read and acked; either RC has run the age probe on their
+  198 rows (they cite LEDGER ENTRIES not SHAs, so LW cannot run it for them) or
+  LW has stated plainly that the cross-tree inherited comparison stays not-like-
+  for-like until someone does.
+Do NOT redo: five LW figures are already withdrawn - the 3.75x union ratio,
+  "the scorer beats the contract" (6.9/10.3), "convention is larger on all three",
+  the ~26 pct adjudication constant, and the extraction-voice hypothesis. FATAL-1's
+  22.5 is QUALIFIED not withdrawn. `discovery` is already split three ways. Do NOT
+  add an age threshold to the convention - that is an adjudication repair. Do NOT
+  re-score LW's own rows against any contract version. There is NO v1.4 clause set.
+  Known flake, unexplained: tests/test_lw_usm_halo_probe.py::
+  test_worker_spandrel_branch_produces_both_variants went red once on a docs-only
+  tree, then green in isolation and on two full re-runs - capture output if it reds
+  again.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.

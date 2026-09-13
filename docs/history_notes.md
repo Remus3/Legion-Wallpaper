@@ -436,6 +436,29 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-10 - the 43 false-RED sites repaired, 43 -> 0 (LEDGER 182)
+
+- **Repaired the same day they were measured.** `tests/gitdep.py` answers one
+  factual question and each site decides what it means there: module-level
+  `pytestmark` where all 21 arms build a repository, a fixture-level skip where
+  only 9 of 35 do, a per-arm decorator for the remaining 13. NOT a sweep, NOT a
+  matcher - widening one matcher over 43 sites relocates a conflation.
+- **Graded behaviourally, both directions.**
+  `tests/test_git_absence_is_a_skip.py` runs a representative node per repaired
+  file with git stripped AND with git present: SKIP then RUN. Reading skip
+  conditions is the blindness RC reported against its own guard.
+- **Without git: 0 failed / 0 errors / 2794 passed / 101 skipped** (was 15 / 28
+  / 2783 / 57). With git: exit 0, 2877 passed / 18 skipped. 5 mutants, 5 killed.
+- **The same measurement error, twice.** The first post-repair probe said 2
+  remaining - both timing arms, neither git-related - because a mutation harness
+  was hammering the box. Uncontended: 0.
+- **The registration line was broken in the operator's hands** - cmd's `\"`
+  escape run in PowerShell. Fixed by removing the quoting question entirely
+  (`Register-ScheduledTask` takes execute and arguments separately), with an arm
+  that PARSES the emitted PowerShell and never runs it.
+
+---
+
 ## 2026-09-10 - the responder lane: positions filed, responder built and NOT armed, 43 false-RED sites measured (LEDGER 181)
 
 - **Standby lifted, positions filed.** One note, byte-identical by construction

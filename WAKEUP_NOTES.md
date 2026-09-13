@@ -243,6 +243,34 @@ PRE-EXISTING.
 
 ---
 
+## 2026-09-13 - the cross-score lane: three corpora, five figures withdrawn (LEDGER 197-201)
+
+Commits: `e5ecebc` no-v1.4 + discovery split, `770684b` pre-registered convention,
+`01c4bd7` cross-score of RC, `5724b3f` n=198 overlap, `f8e0e8c` B-vs-C decomposed,
+`7c13fb1` RSC's 96 rows, `63850f6` the inherited gap.
+
+Read 19 sibling notes, filed 6 outbound sets to all four trees. Answered the v1.4
+question (NO clause set - decomposition repairs are cheap, adjudication repairs buy
+an undefined term), split `discovery` into WHO/HOW/STANCE, then pre-registered a
+convention and scored two other trees' corpora against it.
+
+**Five LW figures withdrawn this session**, four of them by LW's own instruments:
+the 3.75x union ratio (RC caught it), "the scorer beats the contract" (killed by the
+bigger sample LW ran to test it), "convention is larger on all three" (killed by
+paired decomposition - no share gap survives significance), the ~26 pct adjudication
+constant (killed by RSC's 37.5 pct), and the extraction-voice hypothesis (killed by
+RSC's git). FATAL-1's 22.5-point pricing is qualified, not withdrawn.
+
+**What replicated:** all headline-moving scorer disagreements sit on `PROXY-MEASURE`
+or `ADVERSARY` - 22 of 22 on RC, 24 of 24 on RSC, zero counterexamples.
+
+**Do NOT redo:** the convention is pre-registered and must never be retro-fitted;
+`discovery` is already split; the extraction-voice question is settled (refuted).
+**3 sibling notes arrived unread at wrap and were deliberately NOT acked** - read
+them first.
+
+---
+
 ## 2026-09-11 - the inbox responder's run log, and the hermeticity bug it exposed in four trees (LEDGER 184-185)
 
 Started from "is the sync inbox lane properly set up". It was: report, ack,
@@ -289,26 +317,3 @@ answered at wrap. Nothing in any sibling tree has been edited by LW.
   mirror, 2 mutants killed, live halt-then-release smoke test on the real path.
 - **Said out loud rather than buried:** the allowlist is prompt INSTRUCTIONS to a
   `bypassPermissions` session, not a mechanical gate. RC's shape, adopted.
-
----
-
-## 2026-09-10 - the 43 false-RED sites repaired, 43 -> 0 (LEDGER 182)
-
-- **Repaired the same day they were measured.** `tests/gitdep.py` answers one
-  factual question and each site decides what it means there: module-level
-  `pytestmark` where all 21 arms build a repository, a fixture-level skip where
-  only 9 of 35 do, a per-arm decorator for the remaining 13. NOT a sweep, NOT a
-  matcher - widening one matcher over 43 sites relocates a conflation.
-- **Graded behaviourally, both directions.**
-  `tests/test_git_absence_is_a_skip.py` runs a representative node per repaired
-  file with git stripped AND with git present: SKIP then RUN. Reading skip
-  conditions is the blindness RC reported against its own guard.
-- **Without git: 0 failed / 0 errors / 2794 passed / 101 skipped** (was 15 / 28
-  / 2783 / 57). With git: exit 0, 2877 passed / 18 skipped. 5 mutants, 5 killed.
-- **The same measurement error, twice.** The first post-repair probe said 2
-  remaining - both timing arms, neither git-related - because a mutation harness
-  was hammering the box. Uncontended: 0.
-- **The registration line was broken in the operator's hands** - cmd's `\"`
-  escape run in PowerShell. Fixed by removing the quoting question entirely
-  (`Register-ScheduledTask` takes execute and arguments separately), with an arm
-  that PARSES the emitted PowerShell and never runs it.
