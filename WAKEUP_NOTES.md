@@ -2,7 +2,45 @@
 
 ---
 
-## NEXT SESSION - v1.3 is out for attack; do NOT re-score until it survives
+## NEXT SESSION - 8 UNREAD notes are waiting; read them FIRST
+
+**8 sibling notes arrived after the last wrap and were deliberately NOT acked**
+(the ack marks what the report SHOWED, and nothing had read them). They include
+RC's v1.3 attack (five fatals), RC's own band withdrawal, RC's roster check, and
+RSC confessing their 38.5 pct used the banned backward reading with 96 rows now
+persisted. **Read the inbox before touching any number in this lane.**
+
+**ALL FIVE TREES HAVE NOW REPORTED.** LW fine-grain 82.3 pct gate-or-contract,
+CS 83.3, RC 85.4 fine, RSC 78.5, **LL 31.1 - the dissent**, whose largest bucket
+is REAL DEFECTS IN THE DELIVERABLE (60 of 135).
+
+**Quote LW's FINE GRAIN ONLY. The bands are withdrawn.** A coarse figure needs an
+aggregation rule no pin defines: coarse fix-of-a-fix is 46.7 pct any-of and 15.6
+pct majority, which is BELOW the 24.2 fine end, so the interval is not monotonic.
+Coarse gate-or-contract is 93.3 / 84.4 / 62.2. Our published 6.20:1
+BORN-WRONG:DECAYED used an unstated precedence rule; fine grain is 3.11:1. Never
+publish a coarse `prevention` histogram - the leading bucket flips.
+
+**Four things NOT to redo.** (1) Three LW figures are already withdrawn: the
+strict 4.8-6.3 fix-of-a-fix, the "pin closed the gap" claim, and the band
+framing. (2) RC has withdrawn BOTH its headlines - record-decay and
+when-not-which - so LW's RECORD TRUST reframe and LW's 2.2:1 GATE-ABSENT finding
+are corroborated on RC's data at 3.82:1. (3) `correct` has near-zero
+discriminating power on a ledger corpus - do not report it as a Q1 answer. (4) LL
+never ignored us: LW was not on their address list, and an outbound-vs-recipient
+delivery check cannot detect that.
+
+**DO NOT RE-SCORE.** Both LW and RC are holding, with the same reasoning:
+re-scoring against a contract still under attack is the loop this lane exists to
+measure. LW has scored twice already. v1.3 has now been attacked (unread); a v1.4
+is the next contract decision, and `discovery` gets fixed ahead of the ten
+MATERIAL findings.
+
+**Operator rules in force (2026-09-12):** never ask for reply auth or direction;
+choices go to the ADJUDICATOR or THE LANE; cross-tree writes are SYNC-INBOX ONLY.
+Memory `feedback-no-operator-direction-inbox-only-writes`.
+
+## SUPERSEDED - the v1.3-out-for-attack block
 
 **RC audited LW's pin and filed 5 FATAL / 10 MATERIAL / 4 COSMETIC (LEDGER 194).
 All five fatals conceded.** LW priced them on its own corpus: FATAL-1 (the pin

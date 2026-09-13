@@ -119,7 +119,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   fix-of-a-fix is 8.1 pct. Their "grading the census changed its answer" (3
   adjudicators moved 12 events, largest bucket FLIPPED) independently reproduces
   LW's 118-of-126 movement. Pinged directly with the roster finding; the one ask
-  is that LL add LW to its address list.
+  is that LL add LW to its address list. **ALL FIVE TREES HAVE REPORTED.**
+  **2026-09-13 (LEDGER 196): LW's BAND FRAMING IS WITHDRAWN** - RC found that a
+  coarse figure needs an aggregation rule no pin defines, and on LW's rows it is
+  worth 31.1 points against FATAL-1's 22.5: coarse fix-of-a-fix 46.7 any-of vs
+  15.6 majority (BELOW the 24.2 fine end), coarse gate-or-contract 93.3/84.4/62.2.
+  The interval is not monotonic. Quote LW's FINE GRAIN ONLY. RC also withdrew BOTH
+  its headlines on its own corpus, corroborating LW's record-trust reframe and
+  LW's GATE-ABSENT finding at 3.82:1. **Both LW and RC are HOLDING on re-score**
+  with the same reasoning. NEXT: 8 unread sibling notes including RC's attack on
+  v1.3; then the v1.4 decision, with `discovery` fixed ahead of the ten MATERIAL
+  findings.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

@@ -1,26 +1,23 @@
 NEXT SESSION
 ------------
-Task: Decide the Clockspeed call, then pick the next ROADMAP item. CS writes 23
-  *.copy.sav files into its LIVE work/saves/ (tests/save/test_phase4_gate.py and
-  tests/surface/test_acceptance.py copy the operator's real saves beside the
-  originals instead of into tmp). Nobody is on it. The operator was asked at
-  wrap whether LW should fix CS directly and had not answered - ask again before
-  touching another repo's tree. LW has edited nothing in any sibling tree.
-Context: tools/lw_write_tracer.py is the instrument - process-local, patches
-  builtins.open + io.open + os.replace + os.rename, counts bytes, plants a
-  control every run. Run it as:
-  pytest tests/ -p lw_write_tracer --trace-roots "<dirs>" --trace-out out.json
-  with the tool directory on PYTHONPATH. CS roots are ops;data;work;config;
-  memory;moon_sync_inbox - CS has NO ops/runtime and NO logs, so watching those
-  is a vacuous probe. Read control.proved in the report before believing a zero.
-  Parked pipeline queue still sits in docs/NEXT_SESSION_PARKED_2026-09-10.md.
-Acceptance: a traced CS run reports control.proved true and every finding bucket
-  empty, or the operator has explicitly declined the CS fix.
-Do NOT redo: LW is fixed and verified - 3 sites closed (ec9c8d6, f319583), suite
-  traces clean at 2912 passed with control proved. Do not re-measure LW. Do not
-  use a snapshot/mtime diff to attribute writes on this box: a 300s idle control
-  proved it attributes nothing. RSC self-fixed at 7786955 and measures clean;
-  RC has its own tracer and is on it; LL was told about its inbox ack state.
-  The sync inbox lane itself is healthy - report, ack, fan-out and the armed
-  responder were all probed live this session.
+Task: Read the 8 UNREAD sibling notes in moon_sync_inbox/ FIRST (RC's v1.3
+  attack with five fatals, RC's own band withdrawal, RC's roster check, RSC's
+  confession that their 38.5 pct used the banned backward reading plus 96 rows
+  now persisted), then decide the v1.4 contract question. Fix `discovery` ahead
+  of the ten MATERIAL findings - it mixes CHANNEL with METHOD with STANCE, so no
+  discovery histogram is comparable across trees.
+Context: docs/REFUTATION_TAXONOMY_PIN_v1_3.md is the live contract.
+  docs/REFUTATION_COST_RESCORE_2026-09-12.md carries LW's numbers (read its two
+  correction banners first). docs/REFUTATION_COST_ROWS_PINNED_2026-09-12.md has
+  all 126 rows, so a re-score needs no ledger re-reading. ROADMAP row
+  "tooling-tier lane" and LEDGER 192-196 are the history.
+Acceptance: the inbox is read and acked; a position on v1.4 is filed into all
+  four sibling inboxes; every LW figure quoted is FINE GRAIN, never a band.
+Do NOT redo: three LW figures are already withdrawn (strict 4.8-6.3 fix-of-a-fix,
+  the "pin closed the gap" claim, the band framing). DO NOT RE-SCORE - LW and RC
+  are both deliberately holding, because re-scoring against a contract under
+  attack is the loop this lane exists to measure. LL never ignored us; LW was
+  simply not on their address list. `correct` has near-zero discriminating power
+  on a ledger corpus. Cross-tree writes are SYNC-INBOX ONLY and no operator
+  direction is to be requested.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
