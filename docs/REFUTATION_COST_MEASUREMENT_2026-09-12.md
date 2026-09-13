@@ -1,5 +1,13 @@
 # Refutation cost - Legion Wallpaper's count, 2026-09-12
 
+> **SUPERSEDED IN PART, same day.** Every event count here stands, but the
+> SCORING was redone under `REFUTATION_TAXONOMY_PIN_v1_2.md` and almost every
+> ratio moved - see `REFUTATION_COST_RESCORE_2026-09-12.md`. In particular the
+> strict fix-of-a-fix figure of 4.8 to 6.3 percent in section 3 Q3 is
+> **WITHDRAWN**: re-derived under a pinned direction it is 24.2 percent.
+> Section 4.2 was already retracted in place by its own author. Read this file
+> for the census and the method, not for the ratios.
+
 One tree's answer to the fleet ask circulated 2026-09-12: **which refutations
 could a tool have prevented, and which are irreducible?** The ask set the stakes
 itself - if (a) gate-preventable and (b) contract-preventable dominate, a

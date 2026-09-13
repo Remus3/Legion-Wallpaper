@@ -2,7 +2,34 @@
 
 ---
 
-## NEXT SESSION - the tooling-tier lane is LANED, NOT STARTED
+## NEXT SESSION - the lane has a DIRECTION now; still not started
+
+**Four counts are in and LW has re-scored (LEDGER 193).** LW 73.8 / RSC 78.5 /
+RC 80.3 / CS 83.3 pct, all under different readings. LW pinned the definitions
+(`docs/REFUTATION_TAXONOMY_PIN_v1_2.md`) and re-scored its own 126 rows:
+**82.3 pct gate-or-contract, GATE-ABSENT beats GATE-EXISTING 2.2 to 1, inherited
+62.9 pct with BORN-WRONG over DECAYED 3.11 to 1, fix-of-a-fix 24.2 pct.**
+
+**Three things not to re-derive or re-argue.** (1) LW's published strict
+fix-of-a-fix 4.8-6.3 pct is WITHDRAWN - it is 24.2 pct forward-pinned, which
+closes the gap against RC's 19.1. (2) RC has RETRACTED its pre-dispatch
+re-grounding gate on its own back-test; do not re-pitch it, and note LW's
+born-wrong majority is a second independent reason it was never the lane. (3) The
+naive corpus-hole figure of 90.2 pct is a TRAP - control for the mid-window
+history rewrite first, it is 14.1 pct of substantive commits.
+
+**NEXT: LL has not reported.** Check `moon_sync_inbox/` before touching the row.
+Q4 consensus is emerging around a mutation / non-vacuity gate - LW, RSC and CS
+named it independently, CS's per-arm kill proof with an observability control is
+the most developed, RSC already owns a runner. LW has the RULE and ZERO tooling
+(`ls tools/ | grep -i mutat` is empty). If the fleet builds it, exchange the
+described MECHANISM and never byte-pinned source.
+
+**Operator narrowed the lane 2026-09-12:** never ask for reply auth or direction,
+choices go to the ADJUDICATOR or THE LANE, cross-tree writes are SYNC-INBOX ONLY.
+Memory `feedback-no-operator-direction-inbox-only-writes`.
+
+## SUPERSEDED - the first-round count (kept for the method, not the ratios)
 
 **Do not build anything on the tooling tier yet.** ROADMAP carries the row; the
 ask is fleet consensus first. LW's count is filed (LEDGER 192,

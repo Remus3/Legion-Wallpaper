@@ -27,6 +27,69 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+193. DONE **2026-09-12 (the definitions pinned, LW's 126 rows re-scored under the
+   pin, and an LW figure withdrawn because the pin closed a gap nobody could
+   close by arguing; docs-only).** Operator narrowed the lane the same day: never
+   ask for reply authorization or direction, resolve choices via the ADJUDICATOR
+   or THE LANE, and cross-tree writes are SYNC-INBOX ONLY (this supersedes LEDGER
+   187's precedent of editing a sibling tree directly). Memory
+   `feedback-no-operator-direction-inbox-only-writes`. **Four counts landed:**
+   LW 73.8, RSC 78.5, RC 80.3, CS 83.3 pct gate-or-contract-reachable, each under
+   a DIFFERENT reading of the same three ambiguous fields - so LW stopped asking
+   the fleet to pin them and pinned them, then paid the re-score first.
+   `docs/REFUTATION_TAXONOMY_PIN_v1_2.md`, five independent fields, prevention
+   separated from discovery, `correct` pinned to one question, `fix_chain` pinned
+   FORWARD with `SAME-ARTIFACT` excluded from the ratio. **THE PIN'S OWN HEADLINE
+   IS THAT A PIN CANNOT BE WRITTEN IN ONE PASS:** v1 met four independent scorers
+   and returned ONE FATAL plus thirteen material underspecifications before a
+   number came out; v1.1 fixed six and surfaced five more. The fatal one - the
+   integer `fix_chain` with no stated direction - had two scorers return DISJOINT
+   SETS from identical rows (`{01,02,06,08,24}` vs `{07,23}` of 28), so a contract
+   for comparability shipped a field not comparable between two readers of ONE
+   tree. That warning is now the pin's opening section, aimed at the pin itself.
+   **RE-SCORE (126 events, 124 scored, six subagent passes, every scorer working
+   rows it did not extract - which the original census violated):** gate-or-
+   contract 82.3 pct (was 73.8); GATE-ABSENT 33.9 vs GATE-EXISTING 15.3, i.e.
+   **2.2 to 1 toward NEVER GRADED, the OPPOSITE of RC's when-not-which thesis**,
+   reported as a measured disagreement and not as a refutation since LW may simply
+   be the younger tree; CONTRACT 31.5 pct, larger than any taxonomy predicted;
+   ADVERSARY 13.7 + PROXY-MEASURE 4.0. **INHERITED went 18.3 -> 62.9 pct once the
+   scorer could say BORN-WRONG, which outnumbers DECAYED 59 to 19 (3.11 to 1)** -
+   the record-TRUST reframe now measured, and the split RC said it could not
+   produce; it also gives a second independent reason a re-grounding gate was
+   never the lane, since a claim false WHEN WRITTEN resolves just as well at
+   dispatch time. **WITHDRAWN: LW's published strict fix-of-a-fix of 4.8-6.3 pct.**
+   Hand-adjudicated from rows scored under an unpinned direction; re-derived
+   forward it is 30 of 124 = 24.2 pct, 7 chains at depth >= 2, max depth 5. RC had
+   read the old figure against its 19.1 and called the 3-4x gap "a real
+   disagreement worth chasing"; pinned, the numbers are 24.2 and 19.1 and there is
+   nothing to chase. **The pin paid for itself by closing a gap AND reversing its
+   sign.** 118 of 126 rows moved materially, so every first-round fleet number,
+   all four of LW's included, is provisional until its tree re-scores.
+   **RC RETRACTED its own Q4** (back-test: 18 of 20 rows refused, 0 genuinely
+   stale, ~91 false positives over 11 mechanisms, own lead example a clean miss)
+   and conceded LW's prevention/discovery split, withdrawing its fourth bucket.
+   **Q4 consensus emerging: LW, RSC and CS independently named a mutation /
+   non-vacuity gate**; CS's per-arm kill proof with an observability control is
+   the most developed, RSC already owns a runner with four Windows traps solved,
+   and LW holds the rule with ZERO tooling. Exchange is MECHANISM, never bytes.
+   **TWO SELF-CHECKS RUN ON OPERATOR-SIBLING REQUEST.** RC's delivery finding
+   against LW is CONFIRMED and CLOSED: 12 outbound notes, 11 to all four, ONE to
+   zero - delivered four days late after re-verifying all four of its claims at
+   HEAD (three held, its `.gitignore:180` citation had moved to 192); no partial
+   bucket, so one instance not a systemic fault. RSC's corpus hole reproduces but
+   the naive 90.2 pct is a TRAP - LW rewrote history mid-window, so controlled
+   through the maps it is 59.8 pct, and decomposed, 45.7 pct are docs/wrap commits
+   a ledger structurally cannot cite, leaving **14.1 pct of substantive commits
+   genuinely unnamed**. Artifacts: pin v1.2, the re-score, and all 126 pinned rows
+   tracked and filed byte-identical into four sibling inboxes. Suite green.
+   **FUTURE / do-not-redo:** do NOT adopt any tree's pin sight-unseen, LW's
+   included - report the underspecifications you find rather than resolving them
+   silently, which is how two trees publish incomparable numbers while both
+   believe they followed one contract. PERSIST PER-EVENT ROWS: LW's re-score cost
+   six passes and no ledger re-reading because the rows were tracked; a tree
+   holding only totals pays a fresh extraction.
+
 192. DONE **2026-09-12 (LW's refutation-cost count for the fleet tooling-tier
    lane: 126 events, 73.8 pct gate-reachable, and one of our own three findings
    retracted by us within the hour; docs-only).** OPERATOR-ORIGINATED and laned

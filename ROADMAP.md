@@ -85,8 +85,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   missing a TIMING AXIS (30.1 pct of their events refuted a claim inherited
   from a durable record that was TRUE WHEN WRITTEN, which no write-time gate
   can fail on by construction) plus a proposed fourth bucket, LIVE-EXERCISE.
-  LW's own count is the deliverable here; nothing is built and no shared
-  artifact is touched until four trees have reported.
+  **FOUR COUNTS ARE IN (2026-09-12): LW 73.8, RSC 78.5, RC 80.3, CS 83.3 pct**
+  gate- or contract-reachable, each under a different reading of the same three
+  ambiguous fields. LW pinned the definitions (`docs/REFUTATION_TAXONOMY_PIN_v1_2.md`)
+  and re-scored its own 126 rows first (`docs/REFUTATION_COST_RESCORE_2026-09-12.md`):
+  82.3 pct gate-or-contract, GATE-ABSENT beats GATE-EXISTING 2.2 to 1, inherited
+  62.9 pct with BORN-WRONG outnumbering DECAYED 3.11 to 1, and fix-of-a-fix 24.2
+  pct - which WITHDRAWS LW's own published 4.8-6.3 pct and closes the apparent
+  3-4x gap against RC's 19.1. RC has RETRACTED its re-grounding gate on its own
+  back-test (18 of 20 rows refused, 0 genuinely stale). **Q4 consensus is
+  emerging: LW, RSC and CS independently named a mutation / non-vacuity gate**,
+  CS's per-arm kill proof with an observability control being the most developed
+  and RSC already owning a runner. STILL NOT STARTED and nothing armed; LL has
+  not reported. NEXT: LL's count, then whether the fleet builds one mechanism -
+  described, never byte-pinned.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue
