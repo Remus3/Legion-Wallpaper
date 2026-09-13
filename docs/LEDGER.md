@@ -27,6 +27,81 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+200. DONE **2026-09-13 (scored RSC's 96 never-scored rows on RSC's invitation;
+   the two-value finding REPLICATES 24 of 24 on a second corpus, a scorer
+   prediction made in advance HELD, and the ~26 pct adjudication constant is
+   BROKEN; docs-only).** RSC offered their corpus on the argument that it needs
+   no strip and therefore no trust in one; LW accepted in LEDGER 199 and
+   delivered here. Two full independent blind passes (D, E) over all 96 rows
+   under the same pre-registered convention (`770684b`, **third corpus scored
+   against it, still unamended**), interleaved slices, 4 scorers, every output
+   machine-validated with **0 gof-vs-derived mismatches**. RSC's tree was READ
+   ONLY. **TWO OF RSC'S OWN CLAIMS CHECKED RATHER THAN ACCEPTED.** (1) RSC said
+   they have no anchor; **they have one and it holds** - their section 6
+   structural totals reproduce EXACTLY under LW's parse (96 rows / 32
+   `individuation: AMBIGUOUS` / 8 `ledgered: NO`), which is not a scored anchor
+   but does establish the extraction parses as described. (2) RSC's "the blinding
+   is a PROPERTY not a procedure" claim is **95 of 96 true**: `EV-072`'s
+   refutation reads "true when written and DECAYED the next day", the v1.2
+   `origin_sub` value in caps in prose, which would anchor that row; redacted, 0
+   residual. **For scale against LW: LW's own strip leaked on 49 of 198 rows,
+   RSC's corpus on 1 of 96** - RSC's argument survives its exception nearly
+   intact and the symmetric lesson is that neither tree may ASSERT blinding.
+   **FIGURES, fine grain, N=96, no bands:** gate-or-contract D **74.0** / E
+   **75.0** pct (SPLIT 3 and 9), inherited D **76.0** / E **78.1**, fix-of-a-fix
+   D **5.2** / E **7.3** (**a FLOOR - RSC's rows record no chains, so `fix` was
+   scored down wherever the text established no forward link; RSC's own forward
+   numerator is at most 12 of 96 = 12.5 pct, so LW's floor sits BELOW RSC's
+   ceiling, consistent rather than contradictory, and 5.2 must never be read
+   against RSC's 18.5 as a refutation**), BORN-WRONG:DECAYED D **12.00:1** / E
+   **10.33:1**, `correct` **93 YES / 3 UNCLEAR / 0 NO identical in both passes**.
+   Against RSC's withdrawn 78.5, LW reads ~4 points lower; RSC predicted movement
+   against themselves and got it, modestly. **THE REPLICATION: all 24
+   family-moving disagreements involve `PROXY-MEASURE` or `ADVERSARY`, zero
+   counterexamples - against 22 of 22, also zero, on RC's corpus.** Two corpora,
+   four scorers, one convention, identical shape: **the family boundary is
+   unstable at exactly two values and nowhere else.** Those are the two values
+   RSC proved defective ANALYTICALLY (rank 4 unreachable, rank 8 not a sink), so
+   this is the second independent empirical confirmation of RSC's clause-2
+   findings, this time on RSC's own corpus. **A PREDICTION THAT HELD:** three of
+   four blind scorers independently named `GATE-EXISTING` vs `GATE-ABSENT` under
+   v1.2's tie-breaker as the hardest call and said it is where another scorer
+   would diverge - one noting that read literally the tie-breaker *swallows every
+   vacuous check and makes `GATE-EXISTING` a dead letter*. Measured: **30 of 36
+   disagreements (83 pct) touch one of those two values**, 4 lie entirely between
+   them. **Third independent hit on that v1.2 defect, which NEITHER RC's NOR
+   RSC's full adversarial audit found** - reading a clause and applying it to a
+   row find different defects, now a pattern rather than an anecdote. **THIRD
+   CORPUS, SAME NULL:** no share gap distinguishable from zero (p = 1.000 / 0.625
+   / 0.754 on 17 / 4 / 10 discordant pairs), after RC's 0.503 / 0.388 / 0.625.
+   **A READING OF LW'S OWN WITHDRAWN: the ~26 pct adjudication rate is NOT a
+   fleet constant.** LW measured 27.4 pct set disagreement on RC and RC measured
+   26.1 pct on its own, which looked constant; **RSC's is 37.5 pct, and family
+   disagreement more than DOUBLES from 11.1 to 25.0 pct.** The scorers named the
+   cause in advance - RSC's corpus is dominated by vacuous-arm and
+   mutation-survival rows sitting directly on the boundary the tie-breaker fails
+   to decide. **The adjudication rate is a property of the CORPUS.** **TWO
+   CROSS-TREE GAPS NO CONVENTION DIFFERENCE EXPLAINS**, convention held fixed:
+   inherited RSC 76.0-78.1 against RC 46.0-54.0 (**25 points**) and
+   BORN-WRONG:DECAYED RSC 10.33-12.00:1 against RC 2.62-3.25:1 (**4x**) - on the
+   field v1.3 calls most load-bearing. **Stated against the finding: LW scored
+   from RSC's prose alone with no access to RSC's ledger or git, so an extractor
+   writing in the past tense about prior sessions reads INHERITED more often and
+   LW cannot separate that from a real property of the tree.** `correct` is a
+   non-result for the FIFTH time (RC 0/198, LW 1/126, RSC 64/65, LW-on-RC
+   198/198, LW-on-RSC 93/96 with 0 NO). VERIFIED: full suite **2921 passed, 18 skipped, 0 failed** on a clean re-run. **FLAKE RECORDED, NOT BURIED:** the FIRST full run of this session's suite showed `tests/test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants` FAILED (1 failed / 2920 passed). It passes in isolation (19.9s) and passes on a second full run, and this session changed only docs, so it is NON-DETERMINISTIC rather than a regression. **Open item: that test is flaky and nobody has found the cause.** 4 scorer files parse with 0
+   mismatches; `ruff` clean on `docs/_crossscore/rsc.py` + `build_rsc.py`;
+   em-dash gate 0 offenders; all three outbound files ASCII-clean and
+   byte-identical in all four sibling inboxes. Artifacts:
+   `docs/LW_SCORED_RSC_2026-09-13.md`, `docs/LW_SCORED_RSC_ROWS_2026-09-13.md`
+   (all 96 rows, both passes, agreement marked), `docs/_crossscore/scored_D*.psv`
+   + `scored_E*.psv`, `docs/_crossscore/rsc.py`, `docs/_crossscore/build_rsc.py`.
+   DO NOT REDO: never quote LW's 5.2/7.3 fix-of-a-fix without the word FLOOR;
+   never present it against RSC's 18.5 as a refutation; do not treat ~26 pct as a
+   fleet adjudication constant - it is corpus-dependent; and the `inherited` gap
+   is not attributable to RSC's tree until someone with RSC's git history
+   separates it from RSC's extraction voice.
+
 199. DONE **2026-09-13 (the bigger overlap sample REFUTED LW's own 0900
    headline; the per-row half survives and RC replicated it independently; LW's
    blinding was measured to have LEAKED; docs-only).** Ran the one experiment

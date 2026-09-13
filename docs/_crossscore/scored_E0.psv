@@ -1,0 +1,48 @@
+EV-001|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|hook ran and returned clean while measuring nothing, vacuous gate
+EV-007|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|four reads answered a writability question, 411ba14 remedy refuted at EV-080
+EV-013|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|cause asserted without a control, a declared precondition reaches it
+EV-019|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|empty token list made every containment question answer NO, sweep vacuous
+EV-025|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no arm graded a shell=True list head
+EV-031|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|byte gap attributed without a control rate
+EV-037|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|no arm covered Name-bound argv, replacement matcher refuted at EV-038
+EV-043|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|guard present but ran after the relabel, wrong time
+EV-049|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session report, enumeration against git own list never mechanised
+EV-055|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|widened title over-claimed coverage the census never had
+EV-061|SPLIT|GATE-EXISTING,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|suite vacuous on the fold and green read as evidence
+EV-067|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|six routes sat in neither list, partition never mechanically closed
+EV-073|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|row closure proposed without checking both clauses
+EV-079|SPLIT|GATE-EXISTING,PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|guard calls the module under test and its count rises under the defect
+EV-085|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|floors present but miscalibrated, four of five roots droppable
+EV-091|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|paths counted correctly and read as artifacts
+EV-002|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|in-adjudication argument, only a reader with a lens reaches it
+EV-005|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|baseline measured against an uncommitted intention
+EV-008|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|false unschedulable-race label in a tracked docstring
+EV-011|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no site gate under an unreachable git, found by a deliberate probe
+EV-014|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|push confirmed from a compound exit status instead of a re-query
+EV-017|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arm answers host-start health and reports census breakage
+EV-020|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|brief named three ungated modules, measurable and never measured
+EV-023|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|module stayed green on its own emptied subject
+EV-026|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|33 arms survived flipping the bucket they claim to pin
+EV-029|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|third configuration recorded in the ledger was wrong
+EV-032|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|rule missed classes inside its own declared subject
+EV-035|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|separator class too narrow and the sweep repeated the same shape
+EV-038|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|MERGE-EV-037|refuted remedy restating the same matcher assertion, a link under the forward rule
+EV-041|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|gap claim filed without checking HEAD, guard predated the row
+EV-044|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|text match counted a comment as a scrub, site count and scrub count separately wrong
+EV-047|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|probe run against one config generalised to all configs
+EV-050|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|probe population chosen by taste, not by call sites
+EV-053|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|spelling set shrunk 24 to 2 with the arms still green
+EV-056|TRUE|CONTRACT|INHERITED|DECAYED|0|NA|YES|KEEP|noun stayed launch after the population widened past launches
+EV-059|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|only-module claim never enumerated, false when written
+EV-062|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|attribute tuple read as a rival launcher list
+EV-065|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|blind tracers gave negatives read as absence, no forward link established
+EV-068|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|pre-entry file object case never armed
+EV-071|FALSE|ADVERSARY|FRESH|NA|0|NA|UNCLEAR|KEEP|seam drift needs a reader, the two drifts are not named in the record
+EV-074|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|17 of 22 names decoration, arm green in both directions
+EV-077|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose count never derived from the file it describes
+EV-080|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|1|INTRODUCED|YES|MERGE-EV-007|refuted remedy for the readable-but-unwritable class, its own probe litters per EV-086
+EV-083|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|every fixture fed a clean stderr so the strip was asserted by nothing
+EV-086|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|gitignored litter reachable by no tracked guard
+EV-089|TRUE|CONTRACT|FRESH|NA|0|NA|UNCLEAR|KEEP|pointer asserted without verification, record shows no evidence
+EV-092|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|outbound notes gitignored so no corpus-derived guard could see them
+EV-095|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|grep for a COM shape over an XML-registering tree

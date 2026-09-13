@@ -1,0 +1,48 @@
+EV-002|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|in-session candidate premise killed by a lens, no mechanism reaches it
+EV-004|TRUE|GATE-ABSENT,CONTRACT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|committed figure never tooled, runner had no such mode, corrected count then refuted
+EV-006|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|correct pytest counts against a denominator that is not an arm count
+EV-008|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tracked docstring called a deterministic class unschedulable, arm was writable
+EV-010|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|sweep held the file in its corpus and passed vacuously on OSError
+EV-012|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|filter population reused as repair population, true only in its own domain
+EV-014|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|compound exit status correctly reported the trailing echo, wrong question
+EV-016|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|non-zero rc used as proxy for scheduler refusal across all classes
+EV-018|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|name-based one-term filter as population, AST census remedy later refuted
+EV-020|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed roadmap site list never graded for whether the sites gate
+EV-022|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arms nominally covering in_scope stayed green on revert
+EV-024|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|non-body positions were never in any walk subject
+EV-026|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|33 arms present over the bucket and none pinned the fallback
+EV-028|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|linked-worktree configuration was never in the assertion's subject
+EV-030|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed corroboration claim needed a reader comparing the two patch surfaces
+EV-032|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|publish gate named those classes and let them through, rule 3 remedy refuted
+EV-034|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session candidate rule, no standing regression check over the boundary
+EV-036|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|conservation arm survived a one-edit mutant in its own subject
+EV-038|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|splatted argv shape never graded by any arm
+EV-040|FALSE|PROXY-MEASURE|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|module-level presence column cited as site-level gatedness
+EV-042|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|guard present over placeholders and blind on digits, class claim and catch claim separately wrong
+EV-044|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|text match on a comment counted as a scrub
+EV-046|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|stdout-at-rc-0 as the answer, structurally blind where rc is the answer
+EV-048|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filed risk claim contradicted by the fixture it names, cite-the-code precondition
+EV-050|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|probe population chosen by taste, rev-parse never in any subject
+EV-052|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arm present and vacuous, fixture derived from the field it grades
+EV-054|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no yield measurement ever graded whether the rule earns its place
+EV-056|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|no check graded the report noun against the population it prints
+EV-058|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|in-file count with no arm pinning it, moved to five
+EV-060|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|quoted 78 true when written, moved by the silent-callee repair, no arm pinned it
+EV-062|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|in-session finding read a name's presence in a tuple as list purpose
+EV-064|FALSE|ADVERSARY|INHERITED|BORN-WRONG|0|NA|YES|KEEP|recorded trap named the wrong mechanism, needed the unset-var lens
+EV-066|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|empty-file creation in neither list, no check graded declaration completeness
+EV-068|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|true for raw os.write and false for a pre-entry file object, case never exercised
+EV-070|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|honesty arm present over the declared list and green in the removal direction
+EV-072|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|true when sent, no tracked file asserted the premise so nothing could redden
+EV-074|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arm present and 17 of 22 names decoration, green on a real addition
+EV-076|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|dotted resolver behaviour-dead and no existing arm killed by deleting it
+EV-078|TRUE|CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|single-file count quoted as the corpus population, remedy is a stated quoting rule
+EV-080|SPLIT|PROXY-MEASURE,GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|correct probe of the wrong object, and the cold start was never probed at all
+EV-082|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|non-vacuity arm present over exactly this property and encoded the defect
+EV-084|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|agreement arm present and polarity inverted over non-ASCII identifiers
+EV-086|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|probe files gitignored so no tracked guard could ever see the leak
+EV-088|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|in-session ruling overturned by a single-lens reader, no instrument reaches it
+EV-090|TRUE|CONTRACT|FRESH|NA|0|NA|UNCLEAR|KEEP|pointer-is-not-proof precondition, record shows unproven rather than false
+EV-092|SPLIT|GATE-ABSENT,PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|delivery never graded by any guard, and filename stood proxy for sent
+EV-094|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|in-session explanation refuted by reading, nothing mechanical reaches it
+EV-096|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|suite side effects never graded, scored as filed despite the no-explicit-claim caveat

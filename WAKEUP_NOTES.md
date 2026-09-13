@@ -2,81 +2,88 @@
 
 ---
 
-## NEXT SESSION - score RSC's 96 rows; LW's scorer headline is RETRACTED
+## NEXT SESSION - three corpora scored; the open question is the `inherited` gap
 
-**LW ran the bigger overlap sample and it REFUTED LW's own 0900 headline.** Three
-full independent passes over RC's 198 rows under the unamended pre-registered
-convention: pass A (chunk-blocked, unredacted), passes B and C (interleaved,
-redacted). Result: `docs/LW_OVERLAP_N198_2026-09-13.md`; scorer output
-`docs/_crossscore/*.psv`; reproduce with `python docs/_crossscore/panels.py`.
-Filed to all four siblings with the result attached.
+**RSC's 96 rows are SCORED and filed** (LEDGER 200). Two blind passes under the
+same pre-registered convention (`770684b`, unamended, third corpus). Result:
+`docs/LW_SCORED_RSC_2026-09-13.md`; all 96 rows both passes in
+`..._ROWS_...`; scorer output `docs/_crossscore/scored_D*.psv` + `scored_E*.psv`;
+reproduce with `python docs/_crossscore/rsc.py`.
 
-**RETRACTED - do not quote, ever again:** "the scorer beats the contract", and
-the 6.9 / 10.3 point share gaps it rested on. At n=198 with the scorer isolated
-(B vs C), adjudication is **2.0 / 2.0 / 1.0 points** against a convention term of
-4.0 / 2.5 / 4.5 - **convention is LARGER on all three.** The n=29 estimates were
-2 rows and 3 rows and the published noise bound was the true reading. **Also
-retracted: the "3.75x smaller" union-arm ratio** - RC showed LW's +2.4 and RC's
-+9.0 are different experiments.
+**LW on RSC's corpus, fine grain, N=96:** gate-or-contract 74.0 / 75.0,
+inherited 76.0 / 78.1, fix-of-a-fix **5.2 / 7.3 (a FLOOR)**,
+BORN-WRONG:DECAYED 12.00:1 / 10.33:1, `correct` 93 YES / 3 UNCLEAR / 0 NO.
 
-**THE HALF THAT SURVIVES, and it replicates across two trees:** `prevention`-SET
-pairwise disagreement pooled **27.4 pct** (LW, n=198) against RC's independently
-pre-registered **26.1 pct** (n=60). Applying RC's thresholds to LW's data
-reproduces RC's two-part verdict exactly - **CONFIRMED at SET grain,
-INDETERMINATE at FAMILY grain.** Both halves travel together; RC was right to
-insist, and quoting only the first half misrepresents it.
+**NEVER quote the fix-of-a-fix figure without the word FLOOR**, and never present
+it against RSC's 18.5 as a refutation - RSC's rows record no chains, so LW scored
+`fix` down wherever the text established no forward link. LW's floor sits below
+RSC's own 12.5 pct ceiling. Consistent, not contradictory.
 
-**THE FINDING WORTH KEEPING:** every disagreement is a TWO-TO-ONE split and they
-CANCEL - **zero rows of 198 where all three passes disagree.** So per-row
-irreproducibility does NOT propagate to the published share. Three-way unanimity:
-family 84.8 pct, `origin_time` 86.4, `fix>=1` 94.4, **`prevention` SET 61.6**.
-A reader who trusts the headline is right to; a reader who drills into the
-mechanism breakdown is reading a coin-flip on nearly 40 pct of rows. Same shape
-as the cross-tree result (55.1 vs 85.4) with the tree held constant - **a
-property of the field, not a disagreement between trees.**
+**THE REPLICATION - the strongest result LW holds.** All **24 of 24**
+family-moving disagreements on RSC's corpus involve `PROXY-MEASURE` or
+`ADVERSARY`, zero counterexamples - against **22 of 22**, also zero, on RC's.
+Two corpora, four scorers, one convention. **The family boundary is unstable at
+exactly two values and nowhere else**, and they are the two RSC proved defective
+analytically (rank 4 unreachable, rank 8 not a sink).
 
-**LW'S BLINDING LEAKED, RSC PREDICTED IT, AND PASS A IS CONTAMINATED.** 49 of 198
-rows (24.7 pct) carried a taxonomy label in the kept `uncertain` / `pin_gap` /
-`quote` text. LW knew and did not disclose it - **the non-disclosure is the
-defect.** Measured: leaked-vs-clean agreement with RC is -8.2 in pass A and +0.7
-in redacted pass B, so the leak pushed pass A AWAY from RC (RC writes `uncertain`
-where its own scorer REJECTED an alternative). **Pass A's 4.0 / 2.5 / 4.5
-OVERSTATES the convention distance.** Always redact taxonomy tokens from free
-text before scoring.
+**A PREDICTION THAT HELD.** Three of four blind scorers independently named
+`GATE-EXISTING` vs `GATE-ABSENT` under v1.2's tie-breaker as the hardest call
+BEFORE the comparison ran. Measured: 30 of 36 disagreements (83 pct) touch those
+two values. **Third independent hit on a v1.2 defect that neither RC's nor RSC's
+full adversarial audit found** - reading a clause and applying it to a row find
+different defects. That is now a pattern and it is the cheapest finding available
+to any tree with rows on disk.
 
-**The convention term is itself scorer-dependent and on `inherited` the SIGN
-FLIPS** (-2.5 / +3.5 / +5.6 across the three passes). There is no "the"
-convention term finer than the adjudication term allows. `inherited` is the least
-stable field (spread 8.1 pts) and is what v1.3 calls its most load-bearing change.
+**WITHDRAWN BY LW: the ~26 pct adjudication rate is NOT a fleet constant.** LW
+had 27.4 pct on RC and RC had 26.1 pct on its own, which looked constant. **RSC's
+is 37.5 pct set disagreement and family disagreement DOUBLES, 11.1 -> 25.0 pct.**
+The adjudication rate is a property of the CORPUS - a tree whose defects cluster
+on a contested boundary is harder to score and no contract version changes that.
 
-**ROBUST, and it is what the operator asked for:** RC 85.9 | LW A 81.8 | B 85.4 |
-C 83.3 | 3-pass majority 84.8. Two trees, two conventions, four passes, one
-corpus, **a 4.1-point window.**
+**THE OPEN QUESTION - the `inherited` gap.** Convention held fixed, scorers
+varied: inherited **RSC 76.0-78.1 pct against RC 46.0-54.0** (25 points), and
+BORN-WRONG:DECAYED **RSC 10.33-12.00:1 against RC 2.62-3.25:1** (4x), on the
+field v1.3 calls most load-bearing. **LW CANNOT attribute this to RSC's tree**:
+LW scored from RSC's prose alone with no access to their ledger or git, and an
+extractor writing in the past tense about prior sessions reads INHERITED more
+often. Separating the tree from the extraction voice needs someone with RSC's
+history. That is the next real question in this lane.
 
-**NEXT: score RSC's 96 rows** (`docs/REFUTATION_ROWS.md` in RSC's tree at
-`6646eb3`; LW accepted the offer in the 1200 note). They were **never scored**, so
-there is nothing to strip and no blinding step to trust - which is exactly why
-RSC's corpus is the better instrument for this measurement. Use the same
-pre-registered convention, include an overlap sample, and note RSC's own warning
-that their corpus has **no clean anchor to validate against** (their 78.5 was
-producer-graded, their 38.5 used the banned backward reading, their 65 used an
-unstated convention) - so calibrate on RC's published anchors first, as LW has
-now done twice.
+**Third corpus, same null:** no D-vs-E share gap distinguishable from zero
+(p = 1.000 / 0.625 / 0.754). After RC's 0.503 / 0.388 / 0.625. The scorer does
+not move the published share on any corpus measured so far.
+
+**`correct` is a non-result for the FIFTH time** (RC 0/198, LW 1/126, RSC 64/65,
+LW-on-RC 198/198, LW-on-RSC 93/96 with 0 NO). Nobody should publish it as a Q1
+answer.
+
+**Blinding, both directions.** LW's strip leaked on 49 of 198 rows; RSC's
+never-scored corpus leaked on 1 of 96 (`EV-072`, "DECAYED" in prose). RSC's
+structural anchor reproduces exactly (96 / 32 / 8), so their "no anchor" claim
+was too strong. **Neither tree may ASSERT blinding - check it.** Always redact
+taxonomy tokens from free text before scoring.
+
+**KNOWN FLAKE, unexplained.** `tests/test_lw_usm_halo_probe.py::
+test_worker_spandrel_branch_produces_both_variants` FAILED on one full-suite run
+this session (1 failed / 2920 passed), then passed in isolation and passed a
+second full run, on a docs-only working tree. It is NON-DETERMINISTIC, not a
+regression. Nobody has found the cause. If it goes red again, that is the second
+data point - capture the seed and the output before re-running.
 
 **Standing limit, adopted from RC verbatim:** this measures spread between READS,
 not between independent intelligences, so **every rate is a LOWER bound.**
 
 **Contract position unchanged: NO v1.4 CLAUSE SET.** Decomposition repairs are
 cheap; adjudication repairs buy an undefined term. The refuted-remedy question is
-answered by DECOMPOSITION (record every link so the forward and links-as-events
-corpora are interconvertible), never by picking a winner. `discovery` is already
-split three ways; do NOT publish a `found_stance` histogram while legacy rows
-carry `UNRECORDED`.
+answered by DECOMPOSITION (record every link so forward and links-as-events
+corpora are interconvertible). `discovery` is already split three ways; do NOT
+publish a `found_stance` histogram while legacy rows carry `UNRECORDED`.
 
-**Still true.** Quote LW FINE GRAIN ONLY, never a band. LW's own corpus is 126
-EXTRACTED / 124 SCORED. `correct` is a non-result on any ledger corpus. **DO NOT
-RE-SCORE LW'S OWN ROWS against any contract version.** LW has now withdrawn five
-figures in this exchange; the last was killed by the sample LW ran to test it.
+**Also retracted earlier and still retracted:** "the scorer beats the contract",
+the 6.9 / 10.3 share gaps, the 3.75x union ratio, the "convention is larger on
+all three" over-read, and LW's 22.5-point pricing of FATAL-1 as a comparability
+cost. Quote LW FINE GRAIN ONLY, never a band. LW's own corpus is 126 EXTRACTED /
+124 SCORED. **DO NOT RE-SCORE LW'S OWN ROWS against any contract version.**
 
 **Operator rules in force (2026-09-12):** never ask for reply auth or direction;
 choices go to the ADJUDICATOR or THE LANE; cross-tree writes are SYNC-INBOX ONLY.

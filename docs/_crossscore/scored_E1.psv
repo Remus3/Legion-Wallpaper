@@ -1,0 +1,48 @@
+EV-004|TRUE|GATE-ABSENT,CONTRACT|INHERITED|BORN-WRONG|1|SELF|YES|KEEP|six-arm figure named no subjects and no runner mode drops a GATE comment
+EV-010|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|swallowed OSError let a never-opened tracked file read clean
+EV-016|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|refusal message true for real refusals and false for CLR init failure
+EV-022|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|in-scope fixtures passed while measuring nothing about the widening
+EV-028|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|true from the main checkout and false from a linked worktree
+EV-034|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|MERGE-EV-033|Rule 3 is the next remedy in the same leak chain so a link not an event
+EV-040|SPLIT|PROXY-MEASURE,GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|module-level walk correct in its own domain cited as site-level gating
+EV-046|SPLIT|PROXY-MEASURE,CONTRACT-MISFIRED|INHERITED|BORN-WRONG|0|NA|YES|KEEP|rc-0-only criterion correctly applied and blind to rc-as-answer
+EV-052|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filler derived from exec_index so the fixture moved with the mutant
+EV-058|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|hand-written four beside a derivable five
+EV-064|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|recorded trap named one redirect not any unset-variable expansion
+EV-070|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|honesty arm could only redden opposite to how an overstatement travels
+EV-076|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|dotted resolver behaviour-dead and no arm died when it was collapsed
+EV-082|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|non-vacuity arm encoded the record-versus-directory defect it graded
+EV-088|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-session destroy-list ruling with no mechanical is-anything-lost check
+EV-094|FALSE|ADVERSARY|FRESH|NA|0|NA|YES|KEEP|one-off failure explained by narrative and correctly left unexplained
+EV-003|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|drafted repair refuted before landing and its parent event is outside this slice
+EV-006|TRUE|GATE-ABSENT,CONTRACT|FRESH|NA|0|NA|YES|MERGE-EV-004|refutes the corrected figure from EV-004 so it is a link under forward reading
+EV-009|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|format regex stood in for digest validation with no hashlib in the module
+EV-012|SPLIT|PROXY-MEASURE,GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|filter population quoted as repair population so a skip would be false
+EV-015|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|stale shared-path output read as fresh after a short-circuited chain
+EV-018|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|name-based one-term filter stood in for an AST enumeration
+EV-021|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|71 digest arms from one decoy generator that moved index zero only
+EV-024|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|INTRODUCED|YES|KEEP|body-only walk repaired and the new decorator rows broke the exempt audit
+EV-027|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|roadmap population of three was five and mutation not reasoning found it
+EV-030|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|UNCLEAR|KEEP|their tracer correct over builtins.open and blind to Path.write_text
+EV-033|TRUE|GATE-ABSENT|FRESH|NA|1|SELF|YES|KEEP|Rule 2 opened 30 segmented shapes and its successor rule was refuted too
+EV-036|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|row-level conservation arm survived a one-edit mutant
+EV-039|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|decorator launch unattributable by construction so the audit needed rebuilding
+EV-042|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|case-class claim and digit-axis coverage separately assertable and both wrong
+EV-045|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|scrub arm 17 of 17 green while seven of git's fifteen names were uncovered
+EV-048|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|fixture-risk justification false since the fixture drops every GIT_ name
+EV-051|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|1|INTRODUCED|YES|KEEP|silent callees emitted no row so conservation had nothing to conserve
+EV-054|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|widening never back-tested and found zero over 980 candidates
+EV-057|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose five beside a derivable len of six
+EV-060|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|one 78-site assertion left stale in two files by the census repair
+EV-063|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|detector needs a users-segment prefix the bare 8.3 form never carries
+EV-066|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|covers-what-it-names and declares-what-it-misses are two assertions both wrong
+EV-069|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|stale descriptor entry emitted a positively wrong path
+EV-072|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose premise decayed overnight with no tracked file asserting it
+EV-075|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|grader weaker than the module it grades over 17 measured silences
+EV-078|SPLIT|PROXY-MEASURE,CONTRACT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|corpus-wide count quoted as the single-file production figure
+EV-081|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|mkdir exist_ok returned permission for a directory that refuses every file
+EV-084|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|ASCII identifier class inverted the agreement arm over non-ASCII receivers
+EV-087|SPLIT|PROXY-MEASURE,GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|proof correct over inbox enumerators the probe never enters
+EV-090|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|a file and line pointer offered as proof the arm is present
+EV-093|SPLIT|PROXY-MEASURE,CONTRACT|FRESH|NA|0|NA|YES|KEEP|count correct over not-present-in-RC and wrong over zero sibling inboxes
+EV-096|SPLIT|PROXY-MEASURE,GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|no filed done-claim so FRESH by state and green suite stood in for evidence

@@ -1,0 +1,48 @@
+EV-001|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|1|INTRODUCED|YES|KEEP|hook gate present and vacuous, error path returned empty string read as data
+EV-003|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|MERGE-EV-001|refuted remedy of EV-001, drafted in session, no arm exercised the live hook path
+EV-005|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|the four arms existed and were never run at the baseline ref
+EV-007|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|SPLIT-2|four reads correctly answer readable while the claim is writable, two sites assert it separately
+EV-009|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|format regex correct and answering shape not input
+EV-011|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|no arm exercised the git-absent condition, exec-time error unseeable by the guards
+EV-013|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-session causal attribution with no controlled reproduction first
+EV-015|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|shared temp path read as fresh output, a procedural precondition would have held
+EV-017|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arm faithfully reports empty values and answers census-broken instead
+EV-019|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|sweep present and vacuous, empty token list answered NO to every question
+EV-021|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arms grade the right property at one character of sixty-four
+EV-023|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|empty parametrize is one skipped and exit 0, module measured nothing
+EV-025|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|nothing graded bucketing under a shell-True list head
+EV-027|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|population never mechanically enumerated, adversary mutation is discovery not prevention
+EV-029|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a filed configuration value is mechanically decidable and was ungraded
+EV-031|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|byte gap attributed without a control measurement
+EV-033|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|in-slice rule with no back-test over known credential shapes
+EV-035|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|detector subject is the right property with most spellings outside its shape
+EV-037|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|a correct resolver already shipped in this tree and the matcher did not use it
+EV-039|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|audit silently dropped a decorator launch it claims to attribute, third rebuild is the backward reading and not scored
+EV-041|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|guard presence is mechanically decidable and the row was filed unverified four days after it landed
+EV-043|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|guard present and ran at the wrong time, relabel masked the token
+EV-045|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|1|SIBLING-SURFACE|YES|KEEP|scrub and its arm green over five of fifteen, remedy enumeration missed two more
+EV-047|TRUE|GATE-ABSENT|INHERITED|OVER-GENERALISED|0|NA|YES|KEEP|true under an empty config and false with core.excludesFile, one sentence so one claim
+EV-049|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|MERGE-EV-045|in-session report is the refuted remedy enumeration for EV-045
+EV-051|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|conservation assertion could not see silence without being rewritten
+EV-053|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|arms pin the right set and survive it shrinking from 24 to 2
+EV-055|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|in-slice title overclaim, honesty of a declared scope is not mechanically decidable
+EV-057|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|prose count never graded against the length of the site table
+EV-059|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|false when written by the row's own words, nothing graded the only-module claim
+EV-061|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|suite ran green over a fold vacuous in both states, green was silence
+EV-063|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|detector pattern requires the users prefix so it cannot see the bare 8.3 form unrewritten
+EV-065|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|tracers measured path routes and the negative reading was read as an answer about all writes
+EV-067|TRUE|CONTRACT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|declared partition was not exhaustive and the route universe is not mechanically enumerable
+EV-069|TRUE|GATE-ABSENT|INHERITED|BORN-WRONG|0|NA|YES|KEEP|nothing graded attribution correctness under dup2
+EV-071|FALSE|ADVERSARY|FRESH|NA|0|NA|UNCLEAR|KEEP|a seam between two authors is a reader with a lens and not a standing check, drifts unnamed
+EV-073|TRUE|CONTRACT|FRESH|NA|0|NA|YES|KEEP|readiness-to-close verdict, a per-row acceptance precondition would have held
+EV-075|TRUE|GATE-EXISTING|FRESH|NA|0|NA|YES|KEEP|new sweep present and silent on seventeen shapes the module it grades resolves
+EV-077|TRUE|GATE-ABSENT|INHERITED|DECAYED|0|NA|YES|KEEP|in-code count of 18 never graded against the floor of 20
+EV-079|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|threshold grades the right property and rises under a narrowing blind spot
+EV-081|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|mkdir success correctly answers exists while every caller reads it as writable
+EV-083|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|fixtures fed the chain only clean or blank stderr so the strip was ungraded
+EV-085|TRUE|GATE-EXISTING|INHERITED|BORN-WRONG|0|NA|YES|KEEP|floors present and fired green with four of five roots droppable
+EV-087|FALSE|PROXY-MEASURE|INHERITED|BORN-WRONG|0|NA|YES|KEEP|proof correct over the inbox while the question was about the runtime dirs
+EV-089|TRUE|GATE-ABSENT|FRESH|NA|0|NA|UNCLEAR|KEEP|path existence is mechanically decidable and ungraded, record names no arm
+EV-091|TRUE|GATE-ABSENT|FRESH|NA|0|NA|YES|KEEP|byte-identity check absent from the census, one artifact counted twice
+EV-093|FALSE|PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|count correct over not-present-in-RC while the question was zero sibling inboxes
+EV-095|SPLIT|CONTRACT,PROXY-MEASURE|FRESH|NA|0|NA|YES|KEEP|declared tool contract ignored and the supporting grep was structurally incapable

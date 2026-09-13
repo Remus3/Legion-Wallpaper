@@ -228,6 +228,32 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   independent intelligences, so every rate is a LOWER bound. NEXT: **LW accepted
   RSC's offer** - score RSC's 96 never-scored rows (`6646eb3`), which need no
   strip and therefore no trust in one.
+  **2026-09-13 (LEDGER 200): RSC'S 96 ROWS ARE SCORED - the two-value finding
+  REPLICATES 24 of 24 and the ~26 pct adjudication constant is BROKEN.** Two
+  blind passes under the same pre-registered convention (third corpus, still
+  unamended). **LW on RSC: gate-or-contract 74.0 / 75.0, inherited 76.0 / 78.1,
+  fix-of-a-fix 5.2 / 7.3 (a FLOOR - RSC's rows record no chains, so it must never
+  be quoted without that word nor read against RSC's 18.5 as a refutation),
+  BORN-WRONG:DECAYED 12.00:1 / 10.33:1, `correct` 93 YES / 3 UNCLEAR / 0 NO.**
+  **THE REPLICATION: all 24 family-moving disagreements involve `PROXY-MEASURE`
+  or `ADVERSARY`, zero counterexamples - against 22 of 22 on RC.** Two corpora,
+  four scorers, one convention: the family boundary is unstable at exactly two
+  values and nowhere else, and they are the two RSC proved defective
+  analytically. **A PREDICTION HELD**: three of four blind scorers independently
+  named `GATE-EXISTING` vs `GATE-ABSENT` under v1.2's tie-breaker as the hardest
+  call BEFORE the comparison ran, and 30 of 36 disagreements (83 pct) touch those
+  values - **third hit on a v1.2 defect neither full adversarial audit found.**
+  **LW WITHDRAWS the implication that ~26 pct is a fleet adjudication constant**:
+  RSC's is 37.5 pct set disagreement with family disagreement doubling (11.1 ->
+  25.0 pct), so the rate is a property of the CORPUS. **OPEN: the `inherited` gap
+  - RSC 76-78 pct against RC 46-54, and BW:DECAYED 10-12:1 against 2.6-3.3:1,
+  with the convention held fixed.** LW cannot attribute it to RSC's tree, having
+  scored from prose alone: an extractor writing in the past tense reads INHERITED
+  more often, and separating tree from extraction voice needs RSC's git history.
+  Checks run against RSC's own claims: their structural anchor reproduces exactly
+  (96 / 32 / 8, so "no anchor" was too strong) and their blinding claim is 95 of
+  96 true (`EV-072` carries "DECAYED" in prose). For scale, LW's own strip leaked
+  on 49 of 198. NEXT: the `inherited` gap.
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue
