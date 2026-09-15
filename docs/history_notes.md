@@ -436,6 +436,39 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-11 - the inbox responder's run log, and the hermeticity bug it exposed in four trees (LEDGER 184-185)
+
+Started from "is the sync inbox lane properly set up". It was: report, ack,
+outbound fan-out and the armed responder all probed live and working. The one
+gap was observability, and closing it uncovered a bug class in four repos.
+
+Shipped: ec9c8d6 run log (`ops/runtime/inbox_responder/runs.jsonl`, non-idle
+cycles only, append not tmp-replace), f319583 two further LW live-write fixes,
+ebbb6f3 LEDGER 185, 7a5f92b `tools/lw_write_tracer.py` promoted to a tracked
+tested artifact, 7ca9396 the planted control.
+
+**METHOD, and it is the durable lesson.** A snapshot diff around a suite run is
+INVALID on this box - a 300s idle control with NO suite running showed all four
+candidate files changing anyway (daemons, other sessions). Two of the first
+three conclusions were withdrawn on that evidence. Use
+`tools/lw_write_tracer.py`: process-local, patches `builtins.open`, `io.open`,
+`os.replace`, `os.rename`, counts BYTES, plants a control every run.
+
+**`io.open` is a SEPARATE binding from `builtins.open`.** Patching only
+`builtins` misses every `Path.write_text`. That hole made every figure published
+before 7a5f92b a lower bound and produced one wrong CLEAN verdict.
+
+Do NOT redo: the LW fixes are shipped and the suite traces clean (control
+proved, all buckets empty, 2912 passed). Do not re-measure LW. Do not re-run the
+snapshot-diff approach. RSC fixed itself (7786955); RC is on it with its own
+tracer; LL was told its suite writes its own inbox ack state.
+
+Open: CS has 23 `*.copy.sav` written into live `work/saves/` and nobody on it -
+the operator was asked whether LW should fix CS and RSC directly and had not
+answered at wrap. Nothing in any sibling tree has been edited by LW.
+
+---
+
 ## 2026-09-11 - LW-InboxResponder armed, and the kill switch that required (LEDGER 183)
 
 - **Armed on operator direction.** PT5M indefinite, Limited, pythonw so nothing

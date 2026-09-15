@@ -257,6 +257,50 @@ PRE-EXISTING.
 
 ---
 
+## 2026-09-14 (later) - intake of 17, and the two defects verification found (LEDGER 204)
+
+Commit: `bda44d5` recovery-provenance fix (5 files, 271 insertions).
+
+**The pipeline moved for the first time in six days.** 17 of the 23 loose files
+in `0.Originals` intaken (first scratch 118 -> 135, pending_intake now 0). The
+other 6 were refused by the perceptual dup gate: 5 near-duplicate (phash 0-8),
+1 hash-equal. Source recovery hit **Tier 1 on 17 of 17** - every DeviantArt
+token decoded, every deviation alive, all fetched quota-free, Tier 2 never
+touched, manual queue empty.
+
+**Do NOT re-run recovery on these 17.** It is done and recorded in each
+manifest. Bytes are at `data/recovery/fetched/<slug>/deviantart/<artist>/`,
+which is exactly where `lw_first_pass.find_fetched_fullview` globs.
+
+**The refetch buys BYTES, not PIXELS, on this batch.** 0 of 17 gained
+meaningful resolution (one moved 1191x671 -> 1280x721); all gained 4-7x fewer
+JPEG artifacts at identical dimensions. Consistent with the 2026-07-29
+correction, so keep running it inline - just do not expect resolution.
+
+**The campaign driver wants to run BEFORE intake.** It enumerates `-pre` /
+`-fullview` names in `0.Originals`, and intake deletes those. This run staged
+the 17 verbatim originals out of `9.Image Backup` into a scratch dir and
+pointed `--originals` at it. Works, but the ordering is the cheaper path.
+
+**Two provenance defects, both found by checking the tool's claim rather than
+reading it - fixed, backfilled, shipped.** `gallery_dl_fetch` called a fetch
+`fetched` off `returncode == 0` alone, and the tier / evidence / fetch outcome
+only reached the GITIGNORED `matches.json`. Both repaired; the 17 manifests
+already written were backfilled. Full suite 2929 passed / 18 skipped, verified
+fresh twice in this session and not carried forward from the build agent.
+
+**The scare that was not a defect:** the 6 gate-refused files vanished from
+`0.Originals` with no log line. Probed it - no tool deletes there outside
+intake, the responder lane was HALTED, sentinels survived a scan and a full
+suite - and the operator had deleted them by hand. Do not re-investigate.
+
+**NOT yet assessed on this batch: DeviantArt preview watermarks.** The
+2026-09-01 measurement dropped 8 of 23 as unsalvageable (credit line plus an
+uncorrectable centre veil). Expect some of these 17 to fail cleaning the same
+way; that is a source problem, not a cleaning bug.
+
+---
+
 ## 2026-09-14 - public presentation refresh, and image craft for a sibling (LEDGER 202-203)
 
 Commits: `3b9ebd0` README + About + topics, `11bed2d` full-authority Settled entry
@@ -317,36 +361,3 @@ or `ADVERSARY` - 22 of 22 on RC, 24 of 24 on RSC, zero counterexamples.
 `discovery` is already split; the extraction-voice question is settled (refuted).
 **3 sibling notes arrived unread at wrap and were deliberately NOT acked** - read
 them first.
-
----
-
-## 2026-09-11 - the inbox responder's run log, and the hermeticity bug it exposed in four trees (LEDGER 184-185)
-
-Started from "is the sync inbox lane properly set up". It was: report, ack,
-outbound fan-out and the armed responder all probed live and working. The one
-gap was observability, and closing it uncovered a bug class in four repos.
-
-Shipped: ec9c8d6 run log (`ops/runtime/inbox_responder/runs.jsonl`, non-idle
-cycles only, append not tmp-replace), f319583 two further LW live-write fixes,
-ebbb6f3 LEDGER 185, 7a5f92b `tools/lw_write_tracer.py` promoted to a tracked
-tested artifact, 7ca9396 the planted control.
-
-**METHOD, and it is the durable lesson.** A snapshot diff around a suite run is
-INVALID on this box - a 300s idle control with NO suite running showed all four
-candidate files changing anyway (daemons, other sessions). Two of the first
-three conclusions were withdrawn on that evidence. Use
-`tools/lw_write_tracer.py`: process-local, patches `builtins.open`, `io.open`,
-`os.replace`, `os.rename`, counts BYTES, plants a control every run.
-
-**`io.open` is a SEPARATE binding from `builtins.open`.** Patching only
-`builtins` misses every `Path.write_text`. That hole made every figure published
-before 7a5f92b a lower bound and produced one wrong CLEAN verdict.
-
-Do NOT redo: the LW fixes are shipped and the suite traces clean (control
-proved, all buckets empty, 2912 passed). Do not re-measure LW. Do not re-run the
-snapshot-diff approach. RSC fixed itself (7786955); RC is on it with its own
-tracer; LL was told its suite writes its own inbox ack state.
-
-Open: CS has 23 `*.copy.sav` written into live `work/saves/` and nobody on it -
-the operator was asked whether LW should fix CS and RSC directly and had not
-answered at wrap. Nothing in any sibling tree has been edited by LW.

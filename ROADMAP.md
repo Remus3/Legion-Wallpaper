@@ -6,6 +6,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Intake of 17, and two provenance defects the verification found - DONE
+  2026-09-14 (`bda44d5`).** 17 of 23 loose files intaken (first scratch 118 ->
+  135; 6 refused by the perceptual dup gate), source recovery Tier 1 on 17 of
+  17 with every deviation alive and zero SauceNAO quota spent. Verifying the
+  tool's own claim found two defects: `gallery_dl_fetch` called a fetch
+  "fetched" off exit code 0 alone (now proven by a recursive file count, with
+  `fetch_empty` for a zero exit that landed nothing), and the recovery tier /
+  evidence / fetch outcome never reached the TRACKED chain because
+  `data/recovery/matches.json` is gitignored (now written through
+  `annotate --metrics` into the ANNOTATE audit slot, with the 17 manifests
+  already written BACKFILLED). Measured: the quota-free refetch bought 4-7x
+  fewer JPEG artifacts at identical pixel dimensions, not resolution. LEDGER
+  204.
+
 - **The public face refreshed, and image craft for a sibling - DONE 2026-09-14
   (`3b9ebd0`, `11bed2d`).** README rebuilt for a public first read (centred header
   + badges, styled mermaid stage flow, gate table, a "Where it stands" block that

@@ -1,32 +1,29 @@
 NEXT SESSION
 ------------
-Task: Pursue the RECENCY knob - the fourth knob, found 2026-09-13. Then decide
-  whether the cross-tree inherited comparison can be stated at all, now that LL
-  has conceded the denominator and withdrawn every cross-tree comparison built
-  on their 31.1 pct (their 2026-09-14 note, already read and acked).
-Context: docs/LW_INHERITED_GAP_2026-09-13.md is the finding;
-  docs/_crossscore/inherited_probe.py is the probe (read-only against a sibling's
-  git). docs/LW_SCORING_CONVENTION_v1.md is PRE-REGISTERED at 770684b and must
-  NEVER be retro-fitted. ROADMAP "tooling-tier lane" + LEDGER 197-203 are the
-  history. All scorer output is in docs/_crossscore/*.psv.
-Acceptance: either RC has run the age probe on their 198 rows (they cite LEDGER
-  ENTRIES not SHAs, so LW cannot run it for them), or LW has stated plainly that
-  the cross-tree inherited comparison stays not-like-for-like until someone does.
-  Three trees are now on record saying a cross-tree share is not like-for-like,
-  so "stated plainly and closed" is an acceptable outcome, not a failure.
-Do NOT redo: five LW figures are already withdrawn - the 3.75x union ratio,
-  "the scorer beats the contract" (6.9/10.3), "convention is larger on all three",
-  the ~26 pct adjudication constant, and the extraction-voice hypothesis. FATAL-1's
-  22.5 is QUALIFIED not withdrawn. `discovery` is already split three ways. Do NOT
-  add an age threshold to the convention - that is an adjudication repair. Do NOT
-  re-score LW's own rows against any contract version. There is NO v1.4 clause set.
-  The README, GitHub About and topic tags were refreshed 2026-09-14 (3b9ebd0) and
-  audited - do not re-audit them. /local/ is gitignored as of 11bed2d. The
-  full-authority directive is CONFIRMED and Settled in CLAUDE.md - do not re-QA it.
-  RC's 13 dashboard frames are delivered to their inbox with a re-capture spec;
-  the ball is theirs.
-  Known flake, unexplained: tests/test_lw_usm_halo_probe.py::
-  test_worker_spandrel_branch_produces_both_variants went red once on a docs-only
-  tree, then green in isolation and on repeated full re-runs (green again
-  2026-09-14, 2921 passed) - capture output if it reds again.
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
+Task: /first-pass on the 17 slugs intaken 2026-09-14 (single AI upscale via
+  IllustrationJaNai V3 in .venv-upscale, Lanczos down to >= 2560x1440, light
+  USM, G1 gate, submit to _firstneedauth). Every one is 1024-1920 wide.
+Context: images/1.First Pass Scratch (135 slugs; the 17 new ones carry a
+  "recovery" block in their manifest ANNOTATE audit). Best source is NOT the
+  _firstinitial - the quota-free refetch at
+  data/recovery/fetched/<slug>/deviantart/<artist>/*.jpg has the same pixels
+  with 4-7x fewer JPEG artifacts, and lw_first_pass.find_fetched_fullview
+  already globs it. Probe live state first: python tools/lw_pipeline.py status
+  and scan (anomalies 0, pending_intake 0 at wrap). The parked queue in
+  docs/NEXT_SESSION_PARKED_2026-09-10.md is still open behind this (108
+  needauth, 7 aspect_crop_heavy, 3 lap_ratio) - re-probe its counts, they have
+  moved.
+Acceptance: each of the 17 has a _firstworking_## plus a G1 gate verdict
+  recorded in its manifest, PIPELINE_LOG carries SAVE_WORKING + ANNOTATE +
+  SUBMIT per slug, python -m pytest tests/ -q green (2929 passed / 18 skipped
+  at wrap), ruff clean, drift_guard exit 0, done_gate bind exit 0.
+Do NOT redo: source recovery on these 17 - Tier 1 hit 17 of 17, is recorded in
+  every manifest and the bytes are fetched. The gallery_dl_fetch zero-exit
+  defect and the gitignored-provenance defect are both fixed and backfilled in
+  bda44d5. The 6 files that vanished from 0.Originals were deleted by the
+  operator by hand, not by a tool - do not re-investigate. DeviantArt preview
+  watermarks on this batch are NOT yet assessed; the 2026-09-01 measurement
+  dropped 8 of 23 as unsalvageable, so expect cleaning-stage drops later and
+  do not read them as a cleaning bug.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
+  git log.

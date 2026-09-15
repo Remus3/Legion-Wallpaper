@@ -27,6 +27,66 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+204. DONE **2026-09-14 (intake of 17, and two provenance defects the
+   verification found; `bda44d5`).** `/intake` over the 23 loose files in
+   `0.Originals`: 17 intaken (first scratch 118 -> 135), 6 refused by the
+   perceptual gate (5 near-duplicate at phash 0-8, 1 hash-equal to
+   `spirit-blossom-irelia-by-aiaida-dmhini0-fullview`). Preflight clean:
+   anomalies 0, imagehash 4.3.2, gallery-dl 1.32.5, SauceNAO key present.
+   Source recovery hit **Tier 1 on 17 of 17** (DeviantArt token decode, every
+   deviation alive), all fetched on the quota-free intermediary path, so Tier 2
+   quota was never touched and the manual queue stayed empty.
+
+   PREMISE CORRECTED on the fetch gain: 0 of 17 gained meaningful pixels (one
+   moved 1191x671 -> 1280x721); the win is 4-7x fewer JPEG artifacts at
+   identical dimensions (caitlyn 98 KB -> 689 KB), which is upscaler input
+   quality for free. The 1280 preview ceiling held on every Stellastria slug.
+   Note for the lane: the campaign driver expects to run BEFORE intake (it
+   enumerates `-pre` / `-fullview` names in `0.Originals`), so this run staged
+   the 17 verbatim originals out of `9.Image Backup` into a scratch dir and
+   pointed `--originals` there. Recovery watermarks are NOT yet assessed on
+   this batch - the 2026-09-01 measurement dropped 8 of 23 as unsalvageable.
+
+   TWO DEFECTS, both found by verifying the tool's own claim rather than
+   reading it. (a) `lw_recover.gallery_dl_fetch` returned `status: fetched` off
+   `returncode == 0` alone; gallery-dl exits 0 having written nothing, so the
+   status was a claim about a subprocess and not about the disk. It now counts
+   regular files under `dest_dir` RECURSIVELY (measured real layout
+   `dest/deviantart/<Artist>/<file>.jpg`, never flat - a top-level-only check
+   read all 17 as empty) and reports `fetch_empty` on a zero exit that landed
+   nothing; the walk is injected so no test touches real disk. (b) the recovery
+   tier, the liveness evidence and the fetch outcome only ever reached
+   `data/recovery/matches.json`, which is gitignored (`.gitignore:169`), so the
+   shareable per-image chain kept `source_url` and lost everything justifying
+   it. The campaign now passes the whole record through
+   `lw_pipeline annotate --metrics`, landing it in the ANNOTATE transition's
+   `audit` slot. Per the Data Fixes rule the 17 manifests already written were
+   BACKFILLED, not just fixed forward: 17 of 17 re-verified carrying
+   `recovery`.
+
+   TDD RED-first: 6 new arms failed before the fix (6 failed / 74 passed on the
+   focused trio), then green. The recorded-run replay arm broke honestly - it
+   asserted `ok` on a recorded zero exit with an empty dest - and was
+   STRENGTHENED rather than weakened: it now replays the recorded stdout's
+   filesystem effect at the real nested path and asserts the file is not flat,
+   pinning the recursive walk against a genuinely recorded gallery-dl layout.
+   Verified INDEPENDENTLY of the build agent: full suite 2929 passed / 18
+   skipped fresh, twice, ruff clean, 0 non-ASCII bytes in all five files.
+
+   One scare resolved, not papered over: the 6 gate-refused files vanished from
+   `0.Originals` with no PIPELINE_LOG line. Probed it rather than assumed - no
+   tool in the tree deletes from `0.Originals` outside `intake`, the responder
+   lane was HALTED and had spawned nothing, and planted sentinels survived both
+   a `scan` and a full suite run. The operator had deleted them by hand.
+   Nothing unique was lost; all 6 matched existing corpus slugs.
+
+   FUTURE / do-not-redo: recovery for these 17 is DONE and recorded - do not
+   re-run the campaign on them. The fetched bytes sit at
+   `data/recovery/fetched/<slug>/deviantart/<artist>/` where
+   `lw_first_pass.find_fetched_fullview` already globs for best-source
+   selection. Next is `/first-pass` on the 17; every one is 1024-1920 wide,
+   well under 2560x1440.
+
 203. DONE **2026-09-14 (RC's 13 dashboard frames: wordmark swapped and delivered,
    resolution refused; the full-authority directive confirmed first-hand; `/local/`
    closed as a publication path; `11bed2d`).** Premise VERIFIED before any pixel was
