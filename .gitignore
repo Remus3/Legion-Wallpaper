@@ -197,3 +197,6 @@ moon_sync_outbox/
 # boundary as images/** and data/recovery/fetched/: the PROCESS is the deliverable,
 # the bytes are never tracked. Provenance JSON lives beside it and is also ignored.
 data/reference/
+
+# Scratch work that must never be published (cross-repo assets, probe output).
+/local/
