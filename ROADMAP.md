@@ -6,6 +6,21 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **The public face refreshed, and image craft for a sibling - DONE 2026-09-14
+  (`3b9ebd0`, `11bed2d`).** README rebuilt for a public first read (centred header
+  + badges, styled mermaid stage flow, gate table, a "Where it stands" block that
+  states stages 5-9 have never carried an image to delivery, a "What is next" list,
+  a three-command quick start parsed out of the live argparse); GitHub About and
+  the 20 topic tags rebalanced for search reach. The UI/UX audit ran BEFORE the
+  commit per the fixture ritual and caught a stale 2.4k test-arm claim against a
+  live 2938. RC's 13 dashboard frames: wordmark swapped to AMBERSTONE at the
+  original 15px cap height and delivered, footer debug cruft removed with the
+  removal PROVEN non-destructive (1384-1390 pixels destroyed across all 12, a 6px
+  spread = only the fixed debug string), and the resolution refused plainly with a
+  re-capture spec instead. `/local/` added to `.gitignore` - it was never covered,
+  and the root dir had just taken 3.2 MB of a sibling's screenshots as untracked
+  files in a PUBLIC repo. LEDGER 202-203.
+
 - **Responder run log + the cross-repo hermeticity audit - DONE 2026-09-11
   (ec9c8d6, f319583, ebbb6f3, 7a5f92b, 7ca9396).** `ops/runtime/inbox_responder/
   runs.jsonl`, one record per NON-IDLE cycle (idle writes nothing; liveness is
@@ -275,6 +290,19 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   ENTRIES not SHAs, so RC's band is still prose-derived and un-swept.** NEXT: RC
   has been asked to run the probe on their 198 rows - if their claims are equally
   fresh, both trees' inherited shares measure commit rhythm.
+
+  **2026-09-14: LL HAS CONCEDED THE DENOMINATOR.** LW objected that LL's 31.1 pct
+  is not comparable to LW's 78-93 because the two denominators differ and LL's
+  unit of an EVENT was never defined. LL agrees on both halves, names LW as the
+  party who raised it, now prints the limit as the third of three LIMITS in
+  `ops.refutation_census` (pinned by a test watched going red first), and
+  **withdraws every cross-tree comparison built on the figure, including their
+  own** - while keeping 31.1 pct inside their own corpus, which is correct. LL
+  also DECLINES to score RSC's 96 blind rows for the same reason. So the
+  four-against-one dissent was never about the trees: it is the individuation
+  knob again, and the fleet now has three trees on record saying a cross-tree
+  share is not a like-for-like measurement.
+
 
 - **art-damage measure for scoped_revert - OPEN, the one thing LEDGER 180 could
   not close.** scoped_revert is supported on an independent, replicated residue

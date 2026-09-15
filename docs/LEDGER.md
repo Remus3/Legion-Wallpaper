@@ -27,6 +27,70 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+203. DONE **2026-09-14 (RC's 13 dashboard frames: wordmark swapped and delivered,
+   resolution refused; the full-authority directive confirmed first-hand; `/local/`
+   closed as a publication path; `11bed2d`).** Premise VERIFIED before any pixel was
+   touched: pulled the frames out of `C:\Riot Commander\atlas.html` with RC's own
+   snippet (worked unmodified), measured 12 at 560x798 plus one at 1000x563,
+   wordmark at x 32..232 / y 21..35 with a **15px cap height**, header bar interior
+   flat RGB(16,22,34), footer band flat per row with the cruft confined to x 0..376.
+   The wordmark region is **byte-identical across all 12 portrait frames** (mean
+   absolute delta 0.00 against frame 00), so one recipe covered all 12. SHIPPED:
+   `AMBERSTONE` rendered at 8x in Arial Bold, tracking fitted to the original ink
+   box, Lanczos-downsampled, colour sampled off the original at RGB(242,249,253);
+   footer cruft filled per-row from the clean left-edge column so any banding
+   survives; `VOICE` and `CLIENT` untouched. **Removal proven non-destructive
+   rather than asserted: bright pixels destroyed is 1384-1390 on every one of the
+   12, a 6-pixel spread. A constant count means the region held only the fixed
+   debug string**; frame-specific UI would have moved it. REFUSED, with the
+   measurement as the reason: 560x798 to 1920x1080 is 3.4x linear on 15px text,
+   and LW's own primary model (ADR-004, illustration-tuned) would smooth the glyph
+   edges, so nothing in LW's stack should be pointed at it. Re-capture spec handed
+   over instead (1280x720 viewport at DPR 2 so the browser renders 2560x1440
+   natively, ONE downsample, debug strip off before capture, WebP q80 for the
+   base64 payload budget). 13 PNGs plus the note filed to
+   `C:\Riot Commander\moon_sync_inbox\`; nothing else in RC's tree touched; no
+   attribution taken, per RC's request. ALSO: the operator CONFIRMED the
+   full-authority directive that CS relayed on 2026-09-13, so it is first-hand and
+   now a Settled entry in CLAUDE.md plus rules 4-6 in memory
+   `feedback-no-operator-direction-inbox-only-writes`. ALSO: **`/local/` was never
+   covered by `.gitignore`** - the convention that names `local/` is about
+   `.claude/local/` - and the root dir had just taken 3.2 MB of a sibling's
+   screenshots as untracked files in a PUBLIC repo. Never committed, never pushed;
+   `/local/` added and `git check-ignore` verified. Disclosed to RC in the reply
+   rather than fixed quietly. Suite 2921 passed / 18 skipped; ruff clean;
+   drift_guard 0 breaches.
+
+202. DONE **2026-09-14 (the public face refreshed: README, GitHub About and topic
+   tags, audited before the commit; `3b9ebd0`).** Operator asked for the README,
+   About blurb and topics to be refreshed for public presentation, passed through a
+   visual UI/UX audit for readability, natural language, GitHub search reach and
+   concise prose without self-deprecation, and to cover what the project IS and
+   where it is GOING. README rebuilt: centred header block, six badges (CI,
+   Apache-2.0, Python 3.14, Windows, 12 ADRs, test arms), a styled mermaid stage
+   flow with the entry and delivery nodes colour-keyed, a G0/G1/G2/vision gate
+   table, a **"Where it stands"** block that states plainly that stages 5-9 are
+   coded and gated but have never carried an image to delivery, a **"What is next"**
+   list drawn from ROADMAP, a three-command quick start parsed out of the live
+   argparse rather than assumed, and two `<details>` blocks holding the repo map and
+   the operating rules. Self-deprecating framing removed ("you cannot run this
+   without the corpus", "pull requests are not solicited"); the ADR-010/011
+   reversal trimmed to four lines. **The UI/UX audit ran BEFORE the commit per the
+   fixture ritual and earned its place: it caught a STALE COUNT** - the README
+   claimed 2.4k test arms against a live 2938 (`pytest --collect-only`), and 148
+   test files against 145 `test_*.py`. Every figure re-probed this session; corpus
+   restated as 713 tracked slugs (517 cleaned / 70 cleaning scratch / 118 first
+   pass) from a live directory probe, not from the 2026-09-08 `pipeline_state.json`.
+   All 22 relative link targets `ls`-verified; ADR link text made self-describing;
+   `strip_em_dashes --check` 0 offenders. Rendered output CONFIRMED live on
+   github.com (header, badges, mermaid with bold/italic labels intact, tables).
+   GitHub About rewritten to carry the search terms; topics rebalanced at the 20
+   cap - dropped `llm-tooling`, `pipeline`, `state-machine`, added
+   `lama-inpainting`, `sdxl`, `comfyui` - and the prose now carries
+   `super-resolution`, `Claude Code`, `spandrel DAT2`, `IOPaint`, `ComfyUI`,
+   `SDXL`, `anime` and `subagent`, since topics alone do not rank a repo.
+
+
 201. DONE **2026-09-13 (chased the `inherited` gap into RSC's git; LW's own
    extraction-voice hypothesis REFUTED, the gap is a RECENCY artifact, and the
    defect sits inside the repair LW adopted from RSC; docs-only).** LEDGER 200

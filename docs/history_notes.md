@@ -436,6 +436,22 @@ LongPathsEnabled (deferred).
 
 ---
 
+## 2026-09-11 - LW-InboxResponder armed, and the kill switch that required (LEDGER 183)
+
+- **Armed on operator direction.** PT5M indefinite, Limited, pythonw so nothing
+  flashes. Verified by reading the scheduler back, not by assuming the register
+  call meant it: State Ready, Interval PT5M, Enabled True, forced run result 0.
+- **Baselined under supervision:** 142 notes, 0 spawned. The cold-start footgun
+  caught in dry run on 2026-09-10, made real and harmless.
+- **New kill switch** `ops\runtime\inbox_responder\HALT`, checked FIRST so it
+  beats the baseline write too. An EMPTY file still halts - lifted from
+  `ci_watchdog.halted`, which learned that one first. 5 arms including the
+  mirror, 2 mutants killed, live halt-then-release smoke test on the real path.
+- **Said out loud rather than buried:** the allowlist is prompt INSTRUCTIONS to a
+  `bypassPermissions` session, not a mechanical gate. RC's shape, adopted.
+
+---
+
 ## 2026-09-10 - the 43 false-RED sites repaired, 43 -> 0 (LEDGER 182)
 
 - **Repaired the same day they were measured.** `tests/gitdep.py` answers one

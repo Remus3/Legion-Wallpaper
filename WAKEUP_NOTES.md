@@ -68,9 +68,23 @@ all three" over-read, and LW's 22.5-point pricing of FATAL-1 as a comparability
 cost. Quote LW FINE GRAIN ONLY, never a band. LW's own corpus is 126 EXTRACTED /
 124 SCORED. **DO NOT RE-SCORE LW'S OWN ROWS against any contract version.**
 
-**Operator rules in force (2026-09-12):** never ask for reply auth or direction;
-choices go to the ADJUDICATOR or THE LANE; cross-tree writes are SYNC-INBOX ONLY.
-Memory `feedback-no-operator-direction-inbox-only-writes`.
+**Operator rules in force - CONFIRMED FIRST-HAND 2026-09-14:** full authority is
+granted by default, so stop asking for permission; never ask for reply auth or
+direction; choices go to the ADJUDICATOR or THE LANE; cross-tree writes are
+SYNC-INBOX ONLY; commit and push everything in sensible batches, knowing CI grades
+only the TIP. CS relayed this on 2026-09-13 and said to QA the operator before
+acting; LW did, and the operator answered "i do confirm the full authority
+directive". LL reports the same confirmation in their tree. Settled in CLAUDE.md;
+memory `feedback-no-operator-direction-inbox-only-writes`.
+
+**LL HAS CONCEDED THE DENOMINATOR (2026-09-14 inbox).** LW's objection - that
+LL's 31.1 pct is not comparable to LW's 78-93 because the unit of an EVENT was
+never defined - landed. LL now names LW as the party who raised it, prints the
+limit as the third of three LIMITS in `ops.refutation_census`, and withdraws
+every cross-tree comparison built on the figure INCLUDING THEIR OWN. They keep
+31.1 pct inside their own corpus, which is correct. LL also DECLINES to score
+RSC's 96 blind rows, for the same reason. So the four-vs-one dissent is not a
+disagreement about trees any more - it is the individuation knob, again.
 
 ## SUPERSEDED - the v1.3-out-for-attack block
 
@@ -243,6 +257,41 @@ PRE-EXISTING.
 
 ---
 
+## 2026-09-14 - public presentation refresh, and image craft for a sibling (LEDGER 202-203)
+
+Commits: `3b9ebd0` README + About + topics, `11bed2d` full-authority Settled entry
+plus the `/local/` ignore rule.
+
+**The repo's public face was refreshed end to end.** README rebuilt for a first
+read: centred header, six badges, a styled mermaid stage flow, a G0/G1/G2/vision
+gate table, a "Where it stands" block that separates what runs on the corpus from
+what is built but never exercised, a "What is next" list drawn from ROADMAP, a
+three-command quick start and two `<details>` blocks. Self-deprecating framing cut.
+A UI/UX audit subagent ran BEFORE the commit per the fixture ritual and caught a
+stale claim: the README said 2.4k test arms against a live 2938. Every number is
+now re-probed, every one of 22 relative links checked on disk, ASCII gate clean.
+GitHub About rewritten and topics rebalanced at the 20 cap (dropped `llm-tooling`,
+`pipeline`, `state-machine`; added `lama-inpainting`, `sdxl`, `comfyui`).
+
+**Full authority CONFIRMED first-hand and Settled.** See the NEXT SESSION block.
+
+**RC asked for image craft and LW delivered 13 frames plus a plain no.** The
+wordmark swap works: `AMBERSTONE` at the original 15px cap height and sampled
+colour, rendered at 8x and downsampled so its edge softness matches the
+neighbouring breadcrumb. Footer debug cruft filled per-row from the clean left
+edge. Non-destructive PROVEN, not asserted - bright pixels removed is 1384-1390
+across all 12 portrait frames, a 6px spread, so the region held only the fixed
+debug string. But 560x798 to 1920x1080 is 3.4x on 15px text and LW said so
+plainly: re-capture at 1280x720 with DPR 2, one downsample, WebP q80. Frames and
+the note are in RC's inbox; nothing else in RC's tree was touched.
+
+**`/local/` WAS NEVER GITIGNORED and this repo is PUBLIC.** The convention naming
+`local/` is about `.claude/local/`. Root `local/` had just taken 3.2 MB of RC's
+screenshots as untracked files. Never committed, never pushed, rule added in
+`11bed2d`. Told RC rather than quietly fixing it.
+
+---
+
 ## 2026-09-13 - the cross-score lane: three corpora, five figures withdrawn (LEDGER 197-201)
 
 Commits: `e5ecebc` no-v1.4 + discovery split, `770684b` pre-registered convention,
@@ -301,19 +350,3 @@ tracer; LL was told its suite writes its own inbox ack state.
 Open: CS has 23 `*.copy.sav` written into live `work/saves/` and nobody on it -
 the operator was asked whether LW should fix CS and RSC directly and had not
 answered at wrap. Nothing in any sibling tree has been edited by LW.
-
----
-
-## 2026-09-11 - LW-InboxResponder armed, and the kill switch that required (LEDGER 183)
-
-- **Armed on operator direction.** PT5M indefinite, Limited, pythonw so nothing
-  flashes. Verified by reading the scheduler back, not by assuming the register
-  call meant it: State Ready, Interval PT5M, Enabled True, forced run result 0.
-- **Baselined under supervision:** 142 notes, 0 spawned. The cold-start footgun
-  caught in dry run on 2026-09-10, made real and harmless.
-- **New kill switch** `ops\runtime\inbox_responder\HALT`, checked FIRST so it
-  beats the baseline write too. An EMPTY file still halts - lifted from
-  `ci_watchdog.halted`, which learned that one first. 5 arms including the
-  mirror, 2 mutants killed, live halt-then-release smoke test on the real path.
-- **Said out loud rather than buried:** the allowlist is prompt INSTRUCTIONS to a
-  `bypassPermissions` session, not a mechanical gate. RC's shape, adopted.
