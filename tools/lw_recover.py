@@ -366,12 +366,31 @@ def oembed_liveness(
     }
 
 
+def _count_files_recursive(dest_dir: str, walk: Callable) -> int:
+    """Count regular files anywhere under dest_dir (recursive, never raises).
+
+    gallery-dl nests its output (dest/deviantart/<Artist>/<file>.jpg), so a flat
+    listdir would see zero files on a perfectly good fetch. A walk failure
+    (missing dir, permission) degrades to 0 - i.e. "no proof of a download",
+    which is exactly the conservative answer the caller needs.
+    """
+    total = 0
+    try:
+        for _root, _dirs, files in walk(dest_dir):
+            total += len(files)
+    except Exception:  # noqa: BLE001 - degrade to "unproven", never surface raw
+        return 0
+    return total
+
+
 def gallery_dl_fetch(
     deviation_id: int,
     config: Dict[str, Any],
     dest_dir: str,
     runner: Optional[Callable] = None,
     original: bool = False,
+    *,
+    walk: Callable = os.walk,
 ) -> Dict[str, Any]:
     """Fetch a deviation with gallery-dl (subprocess) - GATED on DeviantArt config.
 
@@ -386,6 +405,15 @@ def gallery_dl_fetch(
     creationflags=CREATE_NO_WINDOW (no console flash on Legion). `runner` is
     injectable so unit tests never spawn a real process; if gallery-dl itself
     is missing the FileNotFoundError degrades to a friendly status.
+
+    A ZERO exit is NOT proof of a download: gallery-dl exits 0 when it skipped
+    an already-present file, found nothing extractable, or filtered everything
+    out. So after a zero exit we VERIFY at least one regular file exists
+    anywhere under dest_dir (RECURSIVE - measured live, gallery-dl writes
+    dest/deviantart/<Artist>/<file>.jpg, never dest/ flat). Zero files ->
+    {'ok': False, 'status': 'fetch_empty'}; otherwise the success dict carries
+    'files' (the count). `walk` is keyword-injectable so unit tests touch no
+    real disk.
     """
     da_cfg = config.get("deviantart") if isinstance(config, dict) else None
     if not da_cfg or not da_cfg.get("client-id"):
@@ -414,7 +442,15 @@ def gallery_dl_fetch(
                 "message": f"gallery-dl invocation failed ({type(exc).__name__})"}
 
     if getattr(proc, "returncode", 1) == 0:
-        return {"ok": True, "status": "fetched", "dest_dir": dest_dir, "url": url}
+        n_files = _count_files_recursive(dest_dir, walk)
+        if n_files == 0:
+            return {"ok": False, "status": "fetch_empty",
+                    "message": "gallery-dl exited clean but wrote no file - "
+                               "nothing was downloaded (already present, "
+                               "nothing extractable, or filtered out)",
+                    "dest_dir": dest_dir, "url": url}
+        return {"ok": True, "status": "fetched", "dest_dir": dest_dir,
+                "url": url, "files": n_files}
     return {"ok": False, "status": "fetch_failed",
             "message": "gallery-dl returned a non-zero exit - see logs",
             "returncode": getattr(proc, "returncode", None)}

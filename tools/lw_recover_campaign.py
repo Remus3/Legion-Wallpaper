@@ -244,12 +244,18 @@ def annotate_via_pipeline(
     tool: str = "lw_recover_campaign",
     runner: Callable = subprocess.run,
     dry_run: bool = False,
+    recovery: Optional[dict] = None,
 ) -> Dict[str, Any]:
     """Record source_url as manifest provenance via the REAL pipeline annotate.
 
     Shells `python tools/lw_pipeline.py annotate <slug> --source-url <url>
     --tool <tool>` with creationflags=CREATE_NO_WINDOW (no console flash on
-    Legion). Return-code mapping:
+    Legion). When `recovery` is given it is appended as
+    `--metrics <json.dumps(recovery)>`, which cmd_annotate stores in the
+    ANNOTATE transition's `audit` slot - that is the only TRACKED home for the
+    recovery tier / hash evidence / fetch outcome, since data/recovery/
+    matches.json is gitignored and therefore not a shareable provenance chain.
+    Return-code mapping:
       0            -> {"ok": True,  "status": "annotated"}
       non-zero     -> {"ok": False, "status": "no_manifest"}   (incl code 2 =
                       slug not in scratch/done/backup, or no manifest.json - the
@@ -264,6 +270,8 @@ def annotate_via_pipeline(
     import sys
     cmd = [sys.executable, os.path.join("tools", "lw_pipeline.py"), "annotate",
            slug, "--source-url", source_url, "--tool", tool]
+    if recovery is not None:
+        cmd += ["--metrics", json.dumps(recovery)]
     try:
         proc = runner(cmd, capture_output=True, text=True,
                       creationflags=_NO_WINDOW)
@@ -413,10 +421,27 @@ def _process_one(
 
     hit_network = False
 
+    # The TRACKED provenance payload. matches.json is gitignored, so the tier,
+    # the pHash/dHash evidence and the fetch outcome only survive in the
+    # shareable per-image chain if they ride into the manifest via annotate
+    # --metrics (RESTORATION_PLAN + the /intake contract). Built ONCE and read
+    # at each annotate call site, so the fetch outcome set below is included.
+    def _recovery_payload() -> Dict[str, Any]:
+        return {"recovery": {
+            "tier": tier,
+            "source": rep.get("source"),
+            "evidence": rep.get("evidence", {}),
+            "fetch_status": record["fetch_status"],
+            "fetched": record.get("fetched"),
+            "hash_status": hash_status,
+            "review": is_review,
+        }}
+
     if tier == 0:
         # local consensus match - source is a local path; annotate provenance.
         record["annotate_status"] = _do_annotate(
-            annotate, slug, rep.get("source"), dry_run)
+            annotate, slug, rep.get("source"), dry_run,
+            recovery=_recovery_payload())
 
     elif tier == 1:
         # live deviation - pull the quota-free fullview, then annotate the URL.
@@ -433,7 +458,8 @@ def _process_one(
             record["fetched"] = False
         # annotate the deviation URL regardless of whether the fetch degraded.
         record["annotate_status"] = _do_annotate(
-            annotate, slug, rep.get("source"), dry_run)
+            annotate, slug, rep.get("source"), dry_run,
+            recovery=_recovery_payload())
 
     elif tier == 2:
         # saucenao accept - annotate the source URL, cache the hit so it is
@@ -444,7 +470,8 @@ def _process_one(
                 "slug": slug, "source": rep.get("source"),
                 "evidence": rep.get("evidence", {})}
         record["annotate_status"] = _do_annotate(
-            annotate, slug, rep.get("source"), dry_run)
+            annotate, slug, rep.get("source"), dry_run,
+            recovery=_recovery_payload())
 
     elif tier == 3:
         # the waterfall already parked this in manual_queue.csv; nothing to do.
@@ -461,16 +488,19 @@ def _process_one(
     return record
 
 
-def _do_annotate(annotate, slug, source_url, dry_run) -> str:
+def _do_annotate(annotate, slug, source_url, dry_run, *, recovery=None) -> str:
     """Call annotate and normalise its result into a short status string.
 
     In dry_run we still call annotate(dry_run=True) so the injected stub records
-    the intent, but it performs no real work. Returns "annotated" |
+    the intent, but it performs no real work. `recovery` is the TRACKED
+    provenance payload (tier + evidence + fetch outcome) forwarded verbatim to
+    annotate, which shells it as --metrics. Returns "annotated" |
     "annotate_skipped" (mapped from a no_manifest / non-ok result) | "dry_run".
     """
     if source_url is None:
         return "no_source"
-    res = annotate(slug, source_url=source_url, dry_run=dry_run)
+    res = annotate(slug, source_url=source_url, dry_run=dry_run,
+                   recovery=recovery)
     if not isinstance(res, dict):
         return "annotate_skipped"
     if res.get("status") == "dry_run":

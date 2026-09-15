@@ -265,11 +265,8 @@ def test_gallery_dl_fetch_not_configured_is_friendly():
     assert res["status"] == "not_configured"
 
 
-def test_gallery_dl_fetch_uses_no_window_and_gated_runner(tmp_path):
-    # When configured, it must shell out with CREATE_NO_WINDOW (no console flash
-    # on Legion) and target the deviation URL. Inject the runner so no real
-    # subprocess spawns.
-    seen = {}
+def _zero_exit_runner(seen):
+    """An injected runner recording the cmd/kwargs and returning exit 0."""
 
     def fake_runner(cmd, **kwargs):
         seen["cmd"] = cmd
@@ -280,17 +277,80 @@ def test_gallery_dl_fetch_uses_no_window_and_gated_runner(tmp_path):
             stdout = ""
             stderr = ""
         return R()
+    return fake_runner
+
+
+def test_gallery_dl_fetch_uses_no_window_and_gated_runner(tmp_path):
+    # When configured, it must shell out with CREATE_NO_WINDOW (no console flash
+    # on Legion) and target the deviation URL. Inject the runner so no real
+    # subprocess spawns. A file is planted so the zero-exit path finds one -
+    # this test pins the cmd + creationflags, NOT the ok semantics (those are
+    # pinned by the fetch_empty / nested-walk tests below).
+    nested = tmp_path / "deviantart" / "Artist"
+    nested.mkdir(parents=True)
+    (nested / "x.jpg").write_bytes(b"jpegbytes")
+    seen = {}
 
     cfg = {"deviantart": {"client-id": "x", "client-secret": "y",
                           "refresh-token": "cache"}}
     res = lw_recover.gallery_dl_fetch(
-        1309974594, config=cfg, dest_dir=str(tmp_path), runner=fake_runner)
+        1309974594, config=cfg, dest_dir=str(tmp_path),
+        runner=_zero_exit_runner(seen))
     assert res["ok"] is True
     assert any("deviation/1309974594" in str(a) for a in seen["cmd"])
     # the CREATE_NO_WINDOW flag (0 on non-Windows) must be passed explicitly.
     import subprocess as _sp
     assert seen["kwargs"].get("creationflags") == getattr(
         _sp, "CREATE_NO_WINDOW", 0)
+
+
+def test_gallery_dl_fetch_zero_exit_with_no_file_is_fetch_empty(tmp_path):
+    # gallery-dl exits 0 having written nothing (already-skipped, no extractable
+    # file, filter miss). The wrapper must NOT assert a download it never saw.
+    seen = {}
+    cfg = {"deviantart": {"client-id": "x"}}
+    res = lw_recover.gallery_dl_fetch(
+        1309974594, config=cfg, dest_dir=str(tmp_path),
+        runner=_zero_exit_runner(seen))
+    assert res["ok"] is False
+    assert res["status"] == "fetch_empty"
+    assert res["dest_dir"] == str(tmp_path)
+    assert "deviation/1309974594" in res["url"]
+    # friendly message only - never a raw error string (Error Handling rule).
+    assert res["message"] and "Traceback" not in res["message"]
+
+
+def test_gallery_dl_fetch_zero_exit_finds_a_nested_file(tmp_path):
+    # Measured live: gallery-dl writes dest/deviantart/<Artist>/<file>.jpg, NOT
+    # dest/ flat - so the existence check MUST be recursive.
+    nested = tmp_path / "deviantart" / "Artist"
+    nested.mkdir(parents=True)
+    (nested / "x.jpg").write_bytes(b"jpegbytes")
+    seen = {}
+    cfg = {"deviantart": {"client-id": "x"}}
+    res = lw_recover.gallery_dl_fetch(
+        1309974594, config=cfg, dest_dir=str(tmp_path),
+        runner=_zero_exit_runner(seen))
+    assert res["ok"] is True
+    assert res["status"] == "fetched"
+    assert res["files"] == 1
+
+
+def test_gallery_dl_fetch_walk_is_injectable(tmp_path):
+    # The walk is keyword-injectable so a unit test touches no real disk.
+    walked = []
+
+    def fake_walk(top):
+        walked.append(top)
+        yield (top, ["deviantart"], [])
+        yield (os.path.join(top, "deviantart", "Artist"), [], ["a.jpg", "b.jpg"])
+
+    cfg = {"deviantart": {"client-id": "x"}}
+    res = lw_recover.gallery_dl_fetch(
+        1309974594, config=cfg, dest_dir=str(tmp_path),
+        runner=_zero_exit_runner({}), walk=fake_walk)
+    assert res["ok"] is True and res["files"] == 2
+    assert walked == [str(tmp_path)]
 
 
 # ===========================================================================

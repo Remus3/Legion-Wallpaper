@@ -403,6 +403,103 @@ def test_annotate_via_pipeline_maps_returncodes():
 
 
 # ===========================================================================
+# 10b. recovery provenance rides through annotate as --metrics (TRACKED chain)
+# ===========================================================================
+def test_annotate_via_pipeline_carries_recovery_metrics_json():
+    class R:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    seen = {}
+
+    def runner(cmd, **kw):
+        seen["cmd"] = cmd
+        seen["kw"] = kw
+        return R()
+
+    payload = {"recovery": {"tier": 1, "source": "http://src",
+                            "evidence": {"phash_hamming": 3},
+                            "fetch_status": "fetched", "fetched": True,
+                            "hash_status": "ok", "review": False}}
+    res = campaign.annotate_via_pipeline(
+        "slug-m", "http://src", runner=runner, recovery=payload)
+    assert res == {"ok": True, "status": "annotated"}
+    assert "--metrics" in seen["cmd"]
+    blob = seen["cmd"][seen["cmd"].index("--metrics") + 1]
+    assert json.loads(blob) == payload           # valid, parseable JSON
+    # the existing contract is untouched: source-url + tool + CREATE_NO_WINDOW
+    assert "--source-url" in seen["cmd"] and "http://src" in seen["cmd"]
+    import subprocess as _sp
+    assert seen["kw"].get("creationflags") == getattr(_sp, "CREATE_NO_WINDOW", 0)
+
+
+def test_annotate_via_pipeline_omits_metrics_when_recovery_is_none():
+    class R:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    seen = {}
+
+    def runner(cmd, **kw):
+        seen["cmd"] = cmd
+        return R()
+
+    campaign.annotate_via_pipeline("slug-n", "http://src", runner=runner)
+    assert "--metrics" not in seen["cmd"]
+
+
+def test_run_campaign_tier1_passes_recovery_payload_to_annotate(tmp_path):
+    # The recovery TIER + hash evidence + fetch outcome must reach the annotate
+    # call so they land in the manifest (matches.json is gitignored, so it is
+    # NOT a shareable provenance chain).
+    target = {"path": str(tmp_path / "xayah_by_pebano1_dm44iab-fullview.jpg"),
+              "name": "xayah_by_pebano1_dm44iab-fullview.jpg",
+              "slug": "xayah-by-pebano1-dm44iab-fullview"}
+    compute = CountingCompute(table={target["path"]: {"phash": 0, "dhash": 0}})
+    http = FakeHttp(responses={"oembed": (200, '{"title":"X"}')})
+    fetch = RecordingFetch()
+    annotate = RecordingAnnotate()
+
+    rep = campaign.run_campaign(
+        [target], corpus=[], config={"deviantart": {"client-id": "x"}},
+        http=http, compute=compute, fetch=fetch, annotate=annotate,
+        sleep=_sleep_recorder(), fetch_dir=str(tmp_path / "f"),
+        matches_path=str(tmp_path / "m.json"))
+    rec = rep["results"][0]
+    payload = annotate.calls[0]["kw"].get("recovery")
+    assert payload is not None, "annotate never received a recovery payload"
+    prov = payload["recovery"]
+    assert prov["tier"] == rec["tier"] == 1
+    assert prov["fetch_status"] == rec["fetch_status"] == "fetched"
+    assert prov["fetched"] is True
+    assert prov["source"] == rec["source"]
+    assert prov["hash_status"] == "ok"
+    assert prov["review"] == rec["review"]
+    assert isinstance(prov["evidence"], dict)
+    # the payload must be JSON-serialisable (it is shelled as --metrics)
+    json.dumps(payload)
+
+
+def test_run_campaign_tier0_passes_recovery_payload_to_annotate(tmp_path):
+    target = {"path": str(tmp_path / "007-pre.png"), "name": "007-pre.png",
+              "slug": "007-pre"}
+    corpus = [{"path": "src/007_src.jpg", "phash": 0b11, "dhash": 0b1}]
+    compute = CountingCompute(table={target["path"]: {"phash": 0, "dhash": 0}})
+    annotate = RecordingAnnotate()
+
+    rep = campaign.run_campaign(
+        [target], corpus, config={}, http=FakeHttp(), compute=compute,
+        fetch=RecordingFetch(), annotate=annotate,
+        matches_path=str(tmp_path / "m.json"))
+    prov = annotate.calls[0]["kw"]["recovery"]["recovery"]
+    assert prov["tier"] == rep["results"][0]["tier"] == 0
+    assert prov["source"] == "src/007_src.jpg"
+    assert prov["fetch_status"] is None      # no fetch on a Tier-0 stop
+
+
+# ===========================================================================
 # 11. module import safety (CI: stdlib + numpy only)
 # ===========================================================================
 def test_module_imports_without_heavy_deps():

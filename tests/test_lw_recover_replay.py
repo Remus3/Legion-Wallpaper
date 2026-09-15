@@ -217,14 +217,48 @@ def _recorded_gdl():
     return _ReplayRunner(0, out, err)
 
 
+def _plant_recorded_output(dest_dir):
+    """Replay the recorded run's FILESYSTEM effect, not just its streams.
+
+    The captured stdout is the absolute path gallery-dl wrote; its tail after
+    the "deviantart" segment is the real nested layout
+    (<dest>/deviantart/<Artist>/<file>.jpg). A runner replays streams only, so
+    a zero exit alone would now (correctly) read as fetch_empty - plant the
+    recorded file so the replay stays a faithful replay. Returns its path.
+    """
+    recorded = _recorded_gdl().stdout.strip().splitlines()[-1].strip()
+    parts = recorded.replace("\\", "/").split("/")
+    tail = parts[parts.index("deviantart"):]          # deviantart/<Artist>/<file>
+    out = os.path.join(dest_dir, *tail)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "wb") as fh:
+        fh.write(b"recorded jpeg bytes")
+    return out
+
+
 def test_gallery_dl_success_replays_a_real_recorded_run(tmp_path):
     runner = _recorded_gdl()
+    planted = _plant_recorded_output(str(tmp_path))
     cfg = {"deviantart": {"client-id": "recorded", "client-secret": "recorded"}}
     res = lw_recover.gallery_dl_fetch(
         ALIVE_ID, config=cfg, dest_dir=str(tmp_path), runner=runner, original=True)
     assert res["ok"] is True
     assert res["status"] == "fetched"
     assert res["url"] == lw_recover.deviation_url(ALIVE_ID)
+    # the recorded layout is NESTED, so the file check has to be recursive
+    assert res["files"] == 1
+    assert os.path.dirname(planted) != str(tmp_path)
+
+
+def test_gallery_dl_zero_exit_without_the_recorded_file_is_not_a_fetch(tmp_path):
+    """Same recorded zero exit, but nothing on disk - gallery-dl exits 0 when it
+    skipped an already-present file or found nothing extractable, so a bare exit
+    code is not evidence of a download."""
+    res = lw_recover.gallery_dl_fetch(
+        ALIVE_ID, config={"deviantart": {"client-id": "recorded"}},
+        dest_dir=str(tmp_path), runner=_recorded_gdl(), original=True)
+    assert res["ok"] is False
+    assert res["status"] == "fetch_empty"
 
 
 def test_the_recorded_run_carries_the_oauth_handshake_line():
