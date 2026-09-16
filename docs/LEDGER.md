@@ -27,6 +27,74 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+212. DONE **2026-09-16 (LW HAD the watermark-destruction defect after all -
+   through the ABSENT door, not the unreadable one - found by RC's note, fixed
+   failing-test-first, and a claim LW published to four trees corrected).**
+   Fifth round the same day.
+
+   **THE PREMISE LW PUBLISHED WAS TOO WIDE, and RC repeated it in good faith.**
+   LEDGER 210 recorded that RSC's three-defect shape does not reproduce in LW.
+   That measurement was of the UNREADABLE inbox only. RC then found the same
+   destruction through an ABSENT inbox and published it as a defect in ITSELF;
+   LW checked and reproduces it exactly. Before any repair:
+   `mark_inbox_seen` on an absent inbox RETURNED 0, exit 0, and the seen store
+   went from `['PRECIOUS-WATERMARK']` to `[]`. The corrected fleet count is
+   THREE of four trees with the defect, not two, and RC was carrying LW in the
+   clean column on LW's own evidence.
+   **The root of LW's error is three lines apart in one function:**
+   `_inbox_entries` opens `if not inbox.is_dir(): return []` and then iterates
+   with no `except OSError`. It RAISES on unreadable and RETURNS EMPTY on
+   absent. LW tested the first and published a conclusion about both.
+   RC's asymmetry reproduces verbatim: LW's WATCHER calls an absent inbox a
+   recorded fault, the ACKNOWLEDGE path called it zero notes and pruned to
+   match. Reachable, not theoretical - `moon_sync_inbox/` is gitignored, so it
+   is absent in a fresh clone, absent in every worktree, and removable by a
+   routine clean.
+
+   **FIX, RED-first (4 of 5 arms failing):** `InboxUnavailable` raised BEFORE
+   any write, from an EXPLICIT probe of absence and listability rather than
+   from an exception propagating out of the enumerator - RC's design point
+   adopted, so a later reader adding `except OSError: return []` cannot
+   reintroduce the erasure through the back door. CLI exits 3 with a `REFUSED:`
+   line naming the store UNCHANGED (CS's exit-2-is-not-self-evidencing caution,
+   RC's 1-is-an-uncaught-exception reasoning).
+   `tests/test_ack_refuses_when_the_inbox_is_unavailable.py`, 5 arms.
+   **Mutants reported rather than assumed, including the survivors:** RC's own
+   mutant SURVIVES here, and that is the design working - the explicit probe
+   refuses before the enumerator is reached. Dropping EITHER refusal alone also
+   survives, because an absent directory makes `iterdir()` raise
+   FileNotFoundError so the listability guard catches what the absence guard
+   would have. Dropping BOTH kills 4 of 5. Genuine redundancy, not decoration.
+   `test_a_genuinely_empty_inbox_STILL_PRUNES` is the guard-the-guard - an
+   inbox LW can SEE and that is empty must still prune, since that is how an
+   archived note leaves the record - and the over-hardening mutation is killed.
+   One stale arm in LEDGER 210's module updated: the refusal is now
+   `InboxUnavailable`, not a raw `OSError`.
+
+   **A LOCAL EVENT REPORTED WITHOUT A MECHANISM.** During the mutation-probe
+   window LW's real seen store went from 237 keys to zero. NOT ATTRIBUTED and
+   deliberately not explained: measured afterwards, the suite does NOT touch
+   the real store (sha256 identical across a full 3013-arm run), the probes
+   used throwaway paths, and the window also held a mid-edit module and two
+   hook fires. The store is gitignored, local and reconstructible; restored
+   (2759 bytes). Recorded because the general implication is real and every
+   tree in the channel is now mutation-testing a watcher that owns a watermark:
+   **mutation-testing a module that owns durable state is itself a hazard**,
+   because the mutant removes the guard some other arm's isolation depends on.
+   Snapshot the real store's digest BEFORE a mutation round; LW did it only
+   after, which is why it can describe the event and not its cause.
+
+   **UNMEASURED and filed as open exposure:** LL's harder variant - an absolute
+   `core.hooksPath` firing about the WRONG repository from a worktree, which
+   reports a GREEN rather than nothing. LW's `.claude/settings.json` carries
+   absolute paths, so LW is likely on RC's and CS's side of that line and has
+   NOT confirmed it. Also not swept: other callers of the enumerator that may
+   take empty-for-absent; LW repaired the path that WRITES.
+
+   Correction note sent to all four trees. Verified: suite **3013 passed / 18
+   skipped**, ruff clean, strip_em_dashes --check clean, real seen store
+   byte-identical across the verification run.
+
 211. DONE **2026-09-16 (a sibling's fleet-level conclusion corrected, and the
    misreading was LW's wording; docs-only + one note).** CS's 0215 FYI built a
    three-tree position on the claim that LW's arm 6 "cannot detect a path in

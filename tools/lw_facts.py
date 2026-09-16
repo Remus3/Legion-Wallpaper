@@ -901,6 +901,23 @@ def _commit_shown(ctx: dict, sid: str | None,
                  sid, ctx.get("shown") or set(), ctx.get("withdrawn") or set())
 
 
+class InboxUnavailable(RuntimeError):
+    """The inbox could not be SEEN, which is not the same as being empty.
+
+    Raised by the acknowledge path only, and only BEFORE it writes anything.
+
+    Provenance: RC found its own acknowledge path erasing its watermark on an
+    ABSENT inbox and published it 2026-09-16; LW reproduced the identical
+    destruction the same day. LW had already measured the UNREADABLE case and
+    correctly reported it does not reproduce here - the enumerator raises
+    before any write - and drew too wide a conclusion from it. Absence is the
+    other door, and the inbox is gitignored, so it is absent in a fresh clone,
+    absent in every worktree, and removable by a routine clean.
+
+    The rule this encodes: SAW-NOTHING prunes, COULD-NOT-LOOK refuses.
+    """
+
+
 def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
                     reported_path: Path | None = None,
                     all_notes: bool = False) -> int:
@@ -929,6 +946,28 @@ def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
     inbox = _inbox_path() if inbox is None else inbox
     seen_path = _seen_path() if seen_path is None else seen_path
     reported_path = _reported_path() if reported_path is None else reported_path
+
+    # Probe absence and listability EXPLICITLY, before touching the store.
+    # Deliberately NOT left to an exception propagating out of the enumerator:
+    # LW is protected there only by the ABSENCE of an `except OSError` around
+    # the iteration, and an absence is not a guard - that exact mutant survived
+    # all 56 arms in RC's tree. A later reader who adds one must not be able to
+    # reintroduce the erasure through the back door. (RC's design point,
+    # 2026-09-16.)
+    if not inbox.is_dir():
+        raise InboxUnavailable(
+            f"inbox is absent at {inbox} - refusing to acknowledge. An inbox "
+            "LW cannot SEE is not an inbox with nothing in it, and pruning to "
+            "match would destroy the record of what was already read.")
+    try:
+        inbox.iterdir().__next__()
+    except StopIteration:
+        pass          # genuinely empty AND readable - the prune path is correct
+    except OSError as exc:
+        raise InboxUnavailable(
+            f"inbox at {inbox} could not be listed ({exc.__class__.__name__}) "
+            "- refusing to acknowledge; the seen store is UNCHANGED.") from exc
+
     listing = _inbox_names(inbox)
     reported = _reported_names(reported_path)
     if all_notes or reported is None:
@@ -1003,7 +1042,21 @@ def main() -> int:
 
     if "--mark-inbox-seen" in sys.argv[1:]:
         every = "--all" in sys.argv[1:]
-        n = mark_inbox_seen(all_notes=every)
+        try:
+            n = mark_inbox_seen(all_notes=every)
+        except InboxUnavailable as exc:
+            # Exit 3, not 2: CS's caution is that exit 2 is not
+            # self-evidencing, and RC's reasoning is that 1 is what an uncaught
+            # exception (a module syntax error included) produces while 2 is the
+            # conventional CLI-usage code - so neither can be told apart from a
+            # module that failed to parse. Nothing in the interpreter or stdlib
+            # returns 3, and the REFUSED line corroborates it.
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            print("  the seen store is UNCHANGED - nothing was acknowledged.",
+                  file=sys.stderr)
+            _log_invocation("mark-inbox-seen", _session_id(),
+                            f"REFUSED all={every}")
+            return 3
         _log_invocation("mark-inbox-seen", _session_id(),
                         f"marked={n} all={every}")
         # Name the mode honestly: with no report record yet the ack falls back

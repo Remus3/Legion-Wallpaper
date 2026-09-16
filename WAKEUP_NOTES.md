@@ -2,6 +2,95 @@
 
 ---
 
+## NEXT SESSION - THE LOOP IS **HELD**. DO NOT START IT.
+
+**Operator, verbatim, 2026-09-16, and this is the LATER instruction:** "im
+actually only going to have RC amd CS do their headless looped lanes. keep the
+prompt ready if i change my mind tomorrow; operator is now away".
+
+**So LW does NOT run the headless looped lanes.** RC and CS are running theirs;
+LW is not. The prompt below is KEPT READY and nothing more - it is armed only
+by the operator saying so. A session that reads the earlier instruction and
+starts looping is acting on a superseded order.
+
+The earlier instruction, kept because it is what the prompt below implements -
+operator, verbatim, 2026-09-16, SUPERSEDED the same day: "the next session
+prompt for this repo is to continue a laned headless open items orchestrated
+parallel looping sessions until drained or interrupted by operator."
+
+### The kept prompt, if and only if the operator arms it
+
+Run the open items in `ROADMAP.md` as LANES, headless, orchestrated,
+parallel, LOOPING until the open set is DRAINED or the operator interrupts.
+Not a single pass. The orchestrator pattern is in
+`.claude/commands/orchestrated-run.md` + `headless-upgrade.md`; the loop
+executor channel is `channel: sdk` (Settled, LEDGER 40 - do not re-open the
+AHK bridge). Slots and mutex are `ops/loop/slots.py` + `ops/loop/winmutex.py`,
+BYTE-IDENTICAL-by-contract with the sibling tree.
+
+Two things adopted 2026-09-16 that this loop should actually USE rather than
+merely carry:
+- `/adversarial-review` at lane close-out, and `/blast-radius` inside a lane
+  before its commit. Both are real commands now (ADR-013), both bound to the
+  existing `verifier` agent in Skeptic mode. The gate is: a confirmed BLOCKER
+  needs a rung-4 reproduction, and only the operator waives one.
+- `docs/DEFECT_CLASSES.md` - every finder loads it; DC-01 through DC-08 are
+  each a live reproduction from LW's own record.
+
+**If the loop is ever armed, measure this exposure FIRST, because it makes
+every other green suspect:** LL's variant - an ABSOLUTE `core.hooksPath` fires about the PRIMARY
+tree from inside a worktree, so a worktree lane can report a GREEN that is
+about the wrong repository. LW's `.claude/settings.json` carries absolute
+paths and LW has NOT confirmed its exposure. A parallel worktree loop is
+exactly the shape that would be bitten. Measure it before trusting lane gates.
+
+
+### What LW should actually do next, absent an arming instruction
+
+Ordinary scoped work off `ROADMAP.md`, one item per session, the normal way -
+not a loop. The single highest-value open item is the one LW filed against
+itself and did not close: **LL's absolute-`core.hooksPath` variant**. LW's
+`.claude/settings.json` carries absolute paths, and a hook that fires about the
+WRONG repository reports a GREEN rather than nothing, which is worse than a
+hook that does not fire. LW has NOT measured its exposure. RC measured theirs
+and found their gate fires correctly in a worktree but has not tested a
+worktree whose branch carries different hook scripts.
+
+---
+
+## PREVIOUS SESSION (2026-09-16, third half) - the sync channel, five rounds
+
+LEDGER 208-212. Ended 3013 passed / 18 skipped. Six notes answered across the
+day; the two that mattered most were both other trees finding LW's defects.
+
+- **LL named the REPAIR LW had only described.** `precommit_gate.py` now
+  REFUSES an unrecognised argument at exit 3 instead of falling through to a
+  silent 0. LW had written the defect into its own ledger twice without fixing
+  it.
+- **RC found the watermark defect LW had cleared itself of.** LW measured the
+  UNREADABLE inbox, found it safe, and published a conclusion about all three
+  doors. The ABSENT door reproduces: `mark_inbox_seen` wiped the seen store and
+  exited 0. Fixed, and LW's claim to four trees corrected (LEDGER 212).
+- **CS drew a wrong conclusion from LW's own wording** and LW corrected it
+  (LEDGER 211) - a true sentence about the EXTRACTOR, left to be read as a
+  claim about the whole ARM.
+
+Three things worth carrying forward:
+
+- **A "measured" claim is bounded by the DOOR you opened, not the condition you
+  name.** LW tested unreadable and said "the condition does not reproduce".
+  Three lines apart in one function, absent returns empty and unreadable
+  raises.
+- **Mutation-testing a module that owns durable state is itself a hazard.**
+  LW's real seen store went to zero during a mutation round; not attributed,
+  and the suite is measured innocent. Snapshot the store's digest BEFORE the
+  round, not after.
+- **A survivor is not always a vacuous arm.** Two mutants survived because the
+  guards are genuinely redundant; dropping BOTH kills 4 of 5. Report survivors
+  and explain them rather than assuming coverage either way.
+
+---
+
 ## PREVIOUS SESSION (2026-09-16, second half) - four sibling notes answered, and LW's own audit refuted
 
 LEDGER 208. Suite 2993 / 18 skipped, unchanged - the repairs removed vacuity

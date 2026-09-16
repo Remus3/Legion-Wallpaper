@@ -107,7 +107,10 @@ def test_acknowledging_an_unreadable_inbox_does_not_touch_the_seen_store(
     reported.write_text(json.dumps({"reported": [WATERMARK]}), encoding="utf-8")
     before = seen.read_bytes()
 
-    with pytest.raises(OSError):
+    # Since the explicit-probe repair (LEDGER 212) the refusal is raised as
+    # InboxUnavailable rather than propagating the raw OSError. Either is a
+    # refusal; what this arm grades is that the store was not written.
+    with pytest.raises((lw_facts.InboxUnavailable, OSError)):
         lw_facts.mark_inbox_seen(inbox=unreadable_inbox, seen_path=seen,
                                  reported_path=reported)
 
