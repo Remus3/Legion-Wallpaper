@@ -2,7 +2,96 @@
 
 ---
 
-## NEXT SESSION - the RECENCY knob, and the one probe LW cannot run
+## NEXT SESSION - OPERATOR-QUEUED: three tools to implement
+
+Operator, verbatim, 2026-09-15, in this order:
+  1. "include into the next session to implement this : https://github.com/tt-a1i/archify"
+  2. "include into the next session to implement this : https://github.com/mksglu/context-mode"
+  3. "review this one for implementation in next session as well : https://github.com/timharris707/skills"
+
+Full items, with live-probed facts and the gates to settle first, are the THREE
+TOP entries under `ROADMAP.md` -> "Open items - High priority". Read those,
+not this. NOTHING IS INSTALLED AND NOTHING IS VENDORED. Spec first, then act.
+
+**If you only have budget for one, do #3.** It was REVIEWED on 2026-09-15, not
+just queued. It is the least popular of the three by three orders of magnitude
+(35 stars against 63k and 23k) and the only one that lands on a lane LW
+already has open: its `blast-radius` evidence ladder and its
+`adversarial-review` skeptic pass ARE the mutation / non-vacuity gate the
+refutation-cost lane converged on. MIT, and measured near-ASCII-clean
+(0 offenders in 6 of 7 skill files read), so it is the cheapest to adopt as
+well as the most relevant. Take `blast-radius` and `adversarial-review` ONLY -
+its `handoff` and `domain-memory` skills DUPLICATE and would fragment
+`WAKEUP_NOTES.md` / `docs/LEDGER.md` / `docs/adr/`.
+
+**archify (`tt-a1i/archify`)** - MIT, Node, an agent SKILL that compiles a
+typed JSON system description into self-contained HTML/SVG diagrams
+(architecture, workflow, sequence, data flow, lifecycle). Preflight measured:
+node v24.15.0 and npx 11.12.1 present, `~/.claude/skills/` does not exist yet.
+The open question is SCOPE - what it is actually for here. Honest candidate:
+render `docs/ARCHITECTURE.md`'s module map and the 10-stage pipeline as a
+checked diagram instead of prose. Without that answer it is a tool looking for
+a job.
+
+**context-mode (`mksglu/context-mode`)** - TypeScript, v1.0.169, node >=22.5.0
+(satisfied). Sandboxes tool output, persists session memory, enforces routing
+via MCP + hooks. TWO THINGS TO KNOW BEFORE TOUCHING IT:
+  - **It is Elastic License 2.0, not MIT.** `gh api` says `NOASSERTION`; the
+    LICENSE blob and package.json both say ELv2. Source-available, NOT OSI
+    open source. USING it is permitted. VENDORING its source into this
+    Apache-2.0 PUBLIC tree is a licensing decision needing an ADR. Default:
+    install it, track NOTHING of it, gitignore what it drops.
+  - **It installs HOOKS and an MCP SERVER and intercepts tool output.** LW
+    runs five hook classes and CLAUDE.md records two separate false-green
+    traps from hooks that looked live and were not. A tool that sits between
+    the harness and tool output can silently change what every LW gate SEES.
+    After any install, re-run `python tools/install_git_hooks.py --check` AND
+    a deliberate gate-should-FAIL probe. Presence is not proof they fire.
+    It also ships its own `CLAUDE.md` and `.claude/` - do not let an install
+    overwrite LW's, which IS the operating contract.
+
+Traps common to both, all standing LW rules rather than opinions: the
+documented archify install is `-g`, which is MACHINE-WIDE and therefore
+reaches RC / RSC / CS / LL, and a cross-tree effect is a sync-inbox matter and
+never unilateral; upstream text carries em-dashes while this tree is 7-bit
+ASCII with `*.md` now pinned to LF, so any vendoring is a byte-level copy that
+then passes `strip_em_dashes --check`; LW is PUBLIC, so vendor the minimum and
+gitignore `node_modules/` plus any artifact directory in the SAME commit that
+creates them; and a generated diagram is a build artifact, so if one is
+tracked it needs a `linguist-generated` line and a regeneration story or it
+rots the way the dated docs in `docs/_archive/` did.
+
+---
+
+## PREVIOUS SESSION (2026-09-15) - moon-sync channel adoption, LW's slice
+
+Shipped `b503cbc`, CI green. All eight steps of RC's FYI `899f6eb957cc`; full
+detail in LEDGER 205. The three things worth carrying forward:
+
+- `docs/CHANNEL.md` is vendored byte-identical and PINNED by
+  `tests/test_channel_doc_pin.py`. The committed BLOB re-hashes to
+  `899f6eb957cc...5f4c6b`. A `REVIEW-` note from any tree reopens the pin.
+  `.gitattributes` now pins `*.md text eol=lf` - that is what makes the
+  zero-CR arm a real assertion instead of a checkout quiz.
+- `tools/lw_facts.py` prints each unread note ONCE per validated session id.
+  The suppression store is a NEW gitignored file, separate from the report
+  record, because `mark_inbox_seen()` PRUNES the report record and a prune
+  that also cleared suppression would re-print everything it just
+  acknowledged. No session id FAILS OPEN. The stdin read is bounded in bytes
+  AND seconds - mutation-proven, a bare `t.join()` HANGS pytest.
+- MEASURED harness asymmetry, now logged on every fire: `UserPromptSubmit`
+  delivers a session id, `SessionStart` delivers `payload=0` and none. Cost is
+  one duplicate listing per session, not one per prompt. Do not "fix" this by
+  inventing an env-var fallback without measuring one first.
+
+`tools/lw_inbox_responder.py` stays DISARMED (HALT file, three halted run-log
+cycles). Its write path is a spawned `bypassPermissions` session - an
+arming-stage question, not an adoption one. The fleet arming verdict is NOT
+YET and LW is never armed in its current shape.
+
+---
+
+## ALSO OPEN - the RECENCY knob, and the one probe LW cannot run
 
 **The `inherited` gap is CHASED and the answer inverts the question** (LEDGER
 201). Result: `docs/LW_INHERITED_GAP_2026-09-13.md`; probe

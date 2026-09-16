@@ -597,10 +597,25 @@ def test_a_withdrawal_alone_still_reports_when_nothing_is_unread(tmp_path):
 #
 # The technique is to hold everything else constant: edit IN PLACE at constant
 # byte length, then restore the timestamp. RSC's Windows caveat is why the
-# mtime is asserted to have MOVED before it is restored - filesystem timestamp
-# resolution is coarse enough that a fast rewrite can land on the same mtime by
-# accident, and an arm that restores an mtime that never moved is unarmed and
-# passes for the wrong reason.
+# mtime must be known to have MOVED before it is restored - an arm that
+# restores an mtime that never moved is unarmed and passes for the wrong
+# reason.
+#
+# HOW THAT GUARD IS ESTABLISHED CHANGED 2026-09-16, and the reason is measured.
+# It used to ASSERT that the rewrite moved the mtime on its own. That made the
+# guard a race against filesystem timestamp granularity rather than an
+# assertion about the code: measured on this box, 1599 of 2000 back-to-back
+# writes to the same path land on the SAME mtime tick (80.0 pct). The arm
+# survived only because the calls between the seed write and the rewrite
+# usually outlast one tick - "usually" being the whole problem. It lost that
+# race in a full-suite run on 2026-09-15 and failed on its own guard line
+# while the property it defends was perfectly intact.
+#
+# So the move is now FORCED instead of hoped for: if the rewrite did not shift
+# the mtime by itself, it is set to a deliberately different value. The guard
+# still holds - the mtime provably differs from the original before it is
+# restored - but it no longer depends on the clock. A guard nobody can predict
+# the outcome of is not a guard, it is a coin flip that costs a session.
 
 
 def _edit_holding_size_and_mtime(path, new_body: str) -> None:
@@ -615,11 +630,19 @@ def _edit_holding_size_and_mtime(path, new_body: str) -> None:
     assert len(payload) == before.st_size, (
         f"the arm is not constant-length: {len(payload)} vs {before.st_size}")
     path.write_bytes(payload)
+    if path.stat().st_mtime_ns == before.st_mtime_ns:
+        # The rewrite landed inside the same filesystem timestamp tick. That is
+        # the COMMON case here, not an exotic one - see the note above. Force
+        # the move rather than failing on it: the guard is about proving the
+        # restore is meaningful, and a forced move proves exactly as much as a
+        # natural one.
+        os.utime(path, ns=(before.st_atime_ns,
+                           before.st_mtime_ns + 5_000_000_000))
     moved = path.stat().st_mtime_ns
     assert moved != before.st_mtime_ns, (
-        "the rewrite did not move the mtime, so restoring it proves nothing - "
-        "this arm would pass against an mtime key for the wrong reason")
-    import os
+        "the mtime did not move even after being set, so restoring it proves "
+        "nothing - this arm would pass against an mtime key for the wrong "
+        "reason")
     os.utime(path, ns=(before.st_atime_ns, before.st_mtime_ns))
     assert path.stat().st_mtime_ns == before.st_mtime_ns
     assert path.stat().st_size == before.st_size
