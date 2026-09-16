@@ -208,7 +208,9 @@ the dismissed bucket, the clean bill, the never-blend-axes rule and the
 defect-class admission rules are upstream's. Upstream in turn credits Matt
 Pocock's code-review skill (MIT) for the spec axis and finder isolation, and
 Lauren Tan's pstack `blast-radius` / `interrogate` (MIT) for the ladder and the
-judgment filters. Adapted, not byte-copied, per ADR-013: the lens menu, the
+judgment filters - a grant that is DIRECTORY-SCOPED to `pstack/` (see
+`/blast-radius`'s attribution for the measurement; the adapted material sits
+inside the scoped directory). Adapted, not byte-copied, per ADR-013: the lens menu, the
 always-substantial list, the proof limits and the waiver route are LW-specific,
 upstream's `team-workflow` binding machinery and its relative skill links are
 dropped, and upstream text is not 7-bit ASCII. Pinned by

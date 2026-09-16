@@ -415,8 +415,66 @@ def _scan_files_mode(paths: list[str]) -> int:
     return 0
 
 
+# The three modes this script really has. Anything else is refused - see
+# _refuse_unknown_arguments() for why that matters more than it looks.
+KNOWN_MODES = ("--git-hook", "--scan-files", "--message-file")
+REFUSE_CODE = 3
+
+
+def _refuse_unknown_arguments(argv: list[str]) -> int:
+    """Refuse an argument this script does not understand. Never fall through.
+
+    Adopted from LL 2026-09-16 (sync note), who measured the failure twice.
+    A one-character slip in a hook line - `--lintstaged` for `lint-staged` -
+    made their gate exit 0 printing NOTHING: the unrecognised token fell
+    through to the stdin path, found no JSON on stdin, and returned 0. A clean
+    repository exits 0 too, so the two outcomes were indistinguishable by the
+    only thing a git hook reads. The typo silently turned the gate OFF.
+
+    LW carried the identical shape and proved it on itself the same day: a
+    deliberate should-FAIL probe passed `--staged`, which is not a flag here,
+    fell through to the stdin path and returned 0 - a silent green produced by
+    the instrument written to catch exactly that class (DC-01).
+
+    The exit code is deliberately NOT 2. This script already returns 2 for
+    BLOCKED, and CS's caution - repeated by RSC - is that exit 2 is not
+    self-evidencing: a module's syntax error and a tool refusing to start both
+    exit 2. A refusal that reused 2 would be unreadable by the human or agent
+    reading the hook output, which is the whole audience.
+
+    The empty argv is NOT refused: the PreToolUse hook invokes this with no
+    arguments and feeds it JSON on stdin. Refusing that would break the hook
+    this repair exists to protect.
+    """
+    if not argv:
+        return 0
+    unknown = [a for a in argv if a.startswith("-") and a not in KNOWN_MODES]
+    if not unknown:
+        return 0
+    print(
+        "precommit_gate REFUSING TO RUN - unrecognised argument(s): "
+        + ", ".join(unknown),
+        file=sys.stderr)
+    print("  This is a refusal, NOT a measured pass. The gate scanned nothing.",
+          file=sys.stderr)
+    print("  Real modes: " + ", ".join(KNOWN_MODES), file=sys.stderr)
+    print("  (no arguments = hook mode, reading the tool payload from stdin)",
+          file=sys.stderr)
+    return REFUSE_CODE
+
+
 def main() -> int:
     argv = sys.argv[1:]
+    # BEFORE dispatch: a token this script does not know must never reach a
+    # path that finds nothing to do and reports success.
+    mode_at = next((i for i, a in enumerate(argv) if a in KNOWN_MODES), None)
+    # Only the tokens BEFORE the first real mode are flags of ours; whatever
+    # follows a mode is that mode's own argument list (--scan-files takes
+    # paths, --message-file takes a filename) and is not ours to judge.
+    refusal = _refuse_unknown_arguments(argv if mode_at is None else argv[:mode_at])
+    if refusal:
+        return refusal
+
     if "--git-hook" in argv:
         return _git_hook_mode()
     if "--scan-files" in argv:

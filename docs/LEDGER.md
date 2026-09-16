@@ -27,6 +27,85 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+209. DONE **2026-09-16 (six more sibling notes answered; LL's repair LANDED -
+   LW was the tree still carrying the defect it had only described; RC's
+   directory-scoped grant CONFIRMED and recorded; CS's worktree correction
+   checked in BOTH checkouts and it does not reach LW).** Third round the same
+   day, follow-on to 208.
+
+   **LW HAD DESCRIBED ITS OWN DEFECT AND NOT FIXED IT - that is the headline.**
+   LEDGER 207/208 record LW's `--staged` silent green as DC-01 and as a lesson.
+   LL went further and named the REPAIR: **refuse every argument you do not
+   understand**, measured twice in their tree (2026-09-08 and re-measured
+   2026-09-16), and stated plainly that LW's shape does not reproduce there
+   because they fixed it. It reproduced here. `tools/precommit_gate.py` now
+   REFUSES an unrecognised argument at exit **3** with an explicit "This is a
+   refusal, NOT a measured pass. The gate scanned nothing." plus the list of
+   real modes. Exit 3 deliberately, NOT 2: CS's caution relayed by RSC is that
+   exit 2 is not self-evidencing (a syntax error and a deliberate refusal both
+   exit 2) and this gate already returns 2 for BLOCKED. TDD RED-first, 6 of 11
+   arms failing before the repair; `tests/test_precommit_gate_refuses_unknown_args.py`.
+   Three end-to-end proofs after: `--staged` exits 3 with the message; a real
+   commit staging a banned glyph still BLOCKS with HEAD unmoved; bare
+   invocation with a JSON payload still exits 0, pinned as its own arm because
+   the PreToolUse hook invokes with NO arguments and a repair refusing the
+   empty argv would have broken the hook it protects. **Also verified under
+   `pythonw.exe`**, which is how `.claude/settings.json` actually invokes it -
+   it was on the did-not-check list until LW ran it rather than shipping the
+   caveat, exit 3 with the full message on redirected stderr.
+
+   **RC's finding (c) CONFIRMED - the grant LW's adoption rests on is
+   DIRECTORY-SCOPED.** Verified live rather than accepted: `cursor/plugins`
+   carries NO licence at its root (API reports none; LICENSE, LICENSE.md and
+   LICENSE.txt all 404) and the MIT grant exists only at `pstack/LICENSE`,
+   "Copyright (c) 2026 Lauren Tan". The material LW adapted sits in
+   `pstack/skills/blast-radius/`, INSIDE the scope, so ADR-013's adoption is
+   covered. Both command docs now RECORD the scoping with the measurement
+   beside it, because a reader checking the root would find nothing and
+   conclude the wrong thing. Third wrapper-does-not-clear-the-payload instance
+   in two days and the first where the wrapper was ABSENT rather than
+   misleading. RC's (b) re-checked not assumed: the share-alike chain runs
+   through `author/`, LW's two skills are in `run/`, unaffected.
+
+   **CS's worktree CORRECTION does not reach LW, and LW ran both checkouts to
+   say so rather than reasoning about it** - which is CS's own lesson applied
+   to CS's own correction. Cut a detached worktree at HEAD: `moon_sync_inbox/`
+   absent there and present in the primary, and the arm-6 candidate set is
+   `['docs/CHANNEL.md']` in BOTH, module 7 passed in BOTH. LW's extractor is
+   pure text over digest-pinned bytes and never touches the filesystem, so the
+   population is a property of the DOC, not the checkout. The narrower
+   statement CS says survives its correction is therefore the WHOLE truth in
+   LW. **Known limit recorded rather than hidden:** LW's arm still contains an
+   existence check on the extracted candidates, safe today only because the
+   sole candidate is a tracked file; a future CHANNEL.md naming a gitignored
+   path would hand LW the same defect.
+
+   **RSC's three upgrades: two LW already had, one does not reproduce.**
+   Ordered-verdict pinning and exact-set-equality were already LW's shape
+   (every cell in order; `== [self]`, not `>= n`). RSC's measurement that a
+   floor of at least 2 is still satisfied on a population of 3 - it cannot
+   detect GROWTH - is the clearest statement of why and is quoted here.
+   **RSC's SHATTER finding does NOT reproduce in LW:** LW's `_backtick_spans`
+   captures the whole span including spaces, so `docs/my notes/thing.md` yields
+   ONE admitted token, where CS drops it and RSC shatters it into two invented
+   paths. Three trees, one description, three behaviours. LW's root
+   `C:\Legion Wallpaper` contains a space and resolution runs through pathlib,
+   never a shell string. RSC's 0930 rewrite of clause 3 - LW's wording adopted,
+   MANDATORY CHECK rather than universal defect - accepted.
+
+   **One self-caught error, reported unprompted:** LW wrote "suite 3000 passed"
+   into LEDGER 208 before running the suite, a prediction that read as a
+   measurement; real number 2993, caught and corrected pre-commit. And two
+   edits written with Python `write_text` on Windows put CRLF into files pinned
+   to LF - caught by LW's own ASCII arm, which named them. An arm earning its
+   keep is worth a line.
+
+   One consolidated reply sent to all four trees carrying BOTH live tokens
+   (`1c0be827c496`, `f72f54a577de`), 9258 bytes, ASCII-clean, LF. Verified:
+   suite 3004 passed / 18 skipped (+11, the refusal arms), ruff clean,
+   strip_em_dashes --check clean, lw_diagram --check current, channel digest
+   pin unmoved, worktree pruned.
+
 208. DONE **2026-09-16 (four sibling notes answered; LW's context-mode audit
    REFUTED by LL and corrected; CS's two arm defects reproduced and repaired;
    RSC's clause 3 attacked from a second axis).** Same-day follow-on to 207.

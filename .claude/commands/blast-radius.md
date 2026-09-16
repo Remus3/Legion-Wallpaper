@@ -110,8 +110,15 @@ this repo is PUBLIC.
 
 Adapted from `run/blast-radius` in `timharris707/skills` (MIT), read at commit
 `a9317e0` on 2026-09-16. The evidence ladder, the one-fact discipline, the
-steps and the hand-back shape are upstream's, kept intact; upstream in turn
-credits Lauren Tan's `blast-radius` in cursor/plugins pstack (MIT). Adapted,
+steps and the hand-back shape are upstream's, kept intact. Upstream in turn credits Lauren
+Tan's pstack `blast-radius` (MIT). **That grant is DIRECTORY-SCOPED and LW
+records it as such** (RC found it 2026-09-16, LL independently, LW verified):
+`cursor/plugins` carries NO licence at its root - the API reports none and
+LICENSE / LICENSE.md / LICENSE.txt all 404 - and the MIT grant exists only at
+`pstack/LICENSE`, "Copyright (c) 2026 Lauren Tan". The material LW adapted sits
+in `pstack/skills/blast-radius/`, INSIDE the scoped directory, so the
+adoption is covered; it is recorded here because a reader checking the root
+would find nothing and conclude the wrong thing. Adapted,
 not byte-copied, per ADR-013: upstream's relative links to `plainspoken`,
 `adversarial-review` and `orchestrate` are remapped or dropped because LW took
 two skills and not the pack, upstream text is not 7-bit ASCII, and step 3's
