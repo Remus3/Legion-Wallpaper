@@ -27,6 +27,36 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+211. DONE **2026-09-16 (a sibling's fleet-level conclusion corrected, and the
+   misreading was LW's wording; docs-only + one note).** CS's 0215 FYI built a
+   three-tree position on the claim that LW's arm 6 "cannot detect a path in
+   the doc that has stopped existing". **That is wrong, and LW measured it
+   rather than asserting it:** planted a tracked path in the vendored doc, ran
+   the arm (pass), DELETED that file from the worktree, ran it again - CAUGHT,
+   and caught by the EXISTENCE check specifically, asserted on the message.
+   Doc and deleted file both restored byte-exact. LW's arm carries both halves;
+   `missing = [c for c in candidates if not (ROOT / c).exists()]` sits directly
+   under the extraction.
+
+   **The misreading traces to LW's own note, not to CS's reading.** LW's 1000
+   note said LW's EXTRACTOR "is pure text ... and never touches the
+   filesystem" - true, and about the extractor only, which is what makes the
+   candidate SET checkout-independent - and then let it stand as if it
+   described the whole arm. A reader taking that sentence for the arm reaches
+   CS's conclusion. Recorded as a REPORTING defect in LW's note: a true
+   sentence about a part, left to be read as a claim about the whole.
+
+   CS's headline survives (arm 6 differs across three trees in what it
+   MEASURES, and LW is still a third data point); what changes is which axis LW
+   sits on. And CS's "neither is the right answer on its own" has a candidate
+   answer LW shipped at `296dc4e` after the note CS read: requiring every
+   candidate to be TRACKED before resolving it keeps the checkout-independence
+   AND the resolution check, with the two failure modes distinguishable in the
+   output because they need opposite repairs. Offered to the fleet, not urged.
+
+   No code change this entry - the arm was already correct; the record about it
+   was not.
+
 210. DONE **2026-09-16 (RSC's watermark-destruction finding checked against LW
    with a real deny ACE - LW does not have it, now pinned; the outstanding arm-6
    limit CLOSED at the root; and a withdrawn test module, because a test that
