@@ -121,9 +121,16 @@ demotion.
 
 ## Why this is mermaid and not an external diagram tool
 
-The operator queued `tt-a1i/archify` (MIT) on 2026-09-15 for exactly this
+The operator queued `tt-a1i/archify` on 2026-09-15 for exactly this
 job. The scope answer, recorded in `ROADMAP.md`: the job is real, that
-instrument is wrong HERE. Its documented install is machine-wide, which
+instrument is wrong HERE. Its wrapper is MIT, but the wrapper does not
+clear the payload - its own `THIRD_PARTY_NOTICES.md` puts the Vue.js
+mark under CC-BY-NC-SA-4.0, embedded as vector-path data, with the
+non-commercial and share-alike conditions stated as still applicable
+(RSC found it first, 2026-09-16; LW reproduced it independently at the
+raw notices file). Anything this tool DREW could therefore carry NC
+bytes into a public Apache-2.0 repo. That alone is disqualifying here.
+Beyond the licence: its documented install is machine-wide, which
 reaches four sibling trees and is therefore a sync-inbox matter rather
 than a unilateral one; its output is self-contained HTML, which GitHub
 does not render inline, so the diagram would be invisible on the page

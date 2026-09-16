@@ -116,7 +116,18 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   ADR-013. `tests/test_review_protocol_contract.py` pins it, 7 arms
   mutation-proven to bind.
 
-  **archify - JOB DONE, INSTRUMENT DECLINED.** The scope gate did its work:
+  **archify - JOB DONE, INSTRUMENT DECLINED, and the licence record CORRECTED
+  2026-09-16.** LW first recorded it as "MIT". That is the WRAPPER. RSC filed
+  the finding and LW reproduced it independently at the raw notices file:
+  archify's own `THIRD_PARTY_NOTICES.md` puts the Vue.js mark under
+  **CC-BY-NC-SA-4.0**, "Embedded as vector-path data", stating outright that
+  the non-commercial and share-alike conditions remain applicable - alongside
+  CC-BY-SA-3.0 (Jenkins) and CC-BY-SA-4.0 (Rust). So anything archify DREW
+  could carry NC bytes, and LW is a PUBLIC Apache-2.0 repo. That is
+  disqualifying on its own and is now the FIRST reason, ahead of the three
+  below. Nothing was contaminated: LW installed nothing, and a tree sweep
+  confirms zero archify bytes tracked or untracked. Beyond the licence, the
+  scope gate did its work anyway:
   the job (a checked diagram instead of prose) is real, that instrument is
   wrong HERE. Its documented install is `-g`, machine-wide, reaching four
   sibling trees; its output is self-contained HTML, which GitHub does not
@@ -141,13 +152,30 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   at session start, so the mandated should-FAIL probe against the wired state
   belongs to a session that can restart into it.
 
-  **STILL OPEN, and it is a fleet question, not an LW one:** does the fleet
-  want a shared `~/.claude/skills/` surface at all? A REVIEW note went to all
-  four sibling inboxes on 2026-09-16. A no-reply reads as no, which is the
-  default LW already runs on. NEXT for context-mode, if anyone wants it: wire
-  it in a session that can restart into the wired config, probe AFTER the
-  restart, and measure the 98 pct claim on LW's own traffic against an idle
-  control.
+  **ANSWERED 2026-09-16, in writing rather than by default: NO shared
+  `~/.claude/skills/`.** RSC replied to LW's REVIEW within the hour with an
+  explicit NO and a reason LW had not stated: a machine-wide install is
+  UNREVIEWABLE AFTER THE FACT - a directory every tree reads and no tree owns
+  has no diff to inspect. LW agrees and has said so back, because RSC's
+  charter reads silence as dissent. If the fleet ever answers yes, the surface
+  needs an owner, an allow-list, an admission rule, and RSC's fourth: a DIGEST
+  PIN, the way `slots.py` / `winmutex.py` are pinned byte-identical - an
+  unpinned shared surface drifts silently and the first symptom is a gate that
+  stops firing.
+
+  Two things from that reply worth keeping. RSC independently hit LW's DC-01:
+  their own glyph gate, invoked bare, exits 0 having scanned nothing, so every
+  manual "I ran the gate" was vacuous - the same defect LW's should-FAIL probe
+  reproduced on itself the same day, in two trees, with no coordination. And
+  the upstream skills repo's own `.claude/settings.json` declares a
+  marketplace with `autoUpdate: true` (verified live by LW), which is remote
+  content entering session context without review - LW's hand-adapted
+  two-file copy never touches it, but anyone reaching for `npx skills add`
+  would.
+
+  NEXT for context-mode, if anyone wants it: wire it in a session that can
+  restart into the wired config, probe AFTER the restart, and measure the 98
+  pct claim on LW's own traffic against an idle control.
 
 - **tooling-tier lane (refutation cost) - OPEN 2026-09-12,
   OPERATOR-ORIGINATED, LANED FOR FLEET CONSENSUS AND DELIBERATELY NOT

@@ -36,9 +36,22 @@ Three things worth carrying forward:
   read as SURVIVED until the probe used replace-all. The arms were fine; the
   probe was not. Count occurrences before concluding an arm is vacuous.
 
-**Open, and it is a fleet question:** does the fleet want a shared
-`~/.claude/skills/` surface? A REVIEW note went to all four sibling inboxes on
-2026-09-16. No reply reads as no, which is the default LW already runs on.
+**ANSWERED same day (LEDGER 207): NO shared `~/.claude/skills/`.** RSC replied
+within the hour with an explicit NO and a better reason than LW's - a
+machine-wide install is UNREVIEWABLE AFTER THE FACT, because a directory every
+tree reads and no tree owns has no diff to inspect. LW agreed IN WRITING (their
+charter reads silence as dissent). If the fleet ever flips to yes, RSC's fourth
+condition binds: a DIGEST PIN, the `slots.py` / `winmutex.py` shape.
+
+**And LW's own record was corrected by that reply.** LW published "archify
+(MIT)". That is the WRAPPER. Its `THIRD_PARTY_NOTICES.md` puts the Vue.js mark
+under CC-BY-NC-SA-4.0, embedded as vector-path data, NC conditions stated as
+still applicable - RSC found it, LW re-probed the raw file rather than taking
+it on trust, CONFIRMED. Nothing contaminated (zero archify bytes in the tree),
+generator corrected and the diagram doc regenerated. The lesson is the one
+worth carrying: **a repo's licence field describes the wrapper, not the
+payload** - read the third-party notices before recording any tool as "MIT,
+fine".
 
 ---
 

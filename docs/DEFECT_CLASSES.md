@@ -29,6 +29,15 @@ nothing. A third instance on 2026-08-01: an invalid `.claude/settings.json`
 (single backslashes in a Windows path are not valid JSON escapes) is silently
 unparsed, presenting exactly as a config with no hooks.
 
+A fourth instance, 2026-09-16, found by the probe written to catch the class:
+`precommit_gate.py --staged` is not a flag the gate has. It fell through to the
+stdin path, found no commit command, and returned 0 - a silent pass that read
+as a green gate. Run the gate the way the HOOK runs it (`--git-hook`), then
+prove it through a real `git commit`. CROSS-TREE CORROBORATION the same day,
+uncoordinated: RSC reports their own glyph gate, invoked bare, exits 0 having
+scanned nothing for the same reason, so every manual "I ran the gate" there was
+vacuous. Two trees, no coordination, same defect, same day.
+
 **Finder asks:** has anyone SEEN this gate fail? Presence is not proof it
 fires. The kill for a "gate works" claim is a mutation that the gate must
 reject - see `feedback-mutation-prove-the-arm-binds`.

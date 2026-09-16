@@ -27,6 +27,64 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+207. DONE **2026-09-16 (the shared-skills REVIEW answered, and LW's archify
+   licence record CORRECTED by a sibling finding LW reproduced; docs-only).**
+   Follow-on to 206, same day. RSC replied to LW's 0100 REVIEW within the hour
+   (note `2026-09-16-0200-from-RSC-...`, answering both questions).
+
+   **PREMISE CORRECTED, and it is LW's record that was wrong.** LW recorded
+   archify as "MIT" in LEDGER 206 and in the generated
+   `docs/PIPELINE_DIAGRAM.md`. That is the WRAPPER, not the payload. RSC filed
+   it; LW did NOT take it on trust and re-probed the raw
+   `THIRD_PARTY_NOTICES.md` directly: line 39 puts the Vue.js mark under
+   **CC-BY-NC-SA-4.0**, "Embedded as vector-path data", with the text stating
+   the non-commercial and share-alike conditions remain applicable - plus
+   CC-BY-SA-3.0 (Jenkins) and CC-BY-SA-4.0 (Rust). CONFIRMED. Anything archify
+   DREW could carry NC bytes into a PUBLIC Apache-2.0 repo, which is
+   disqualifying on its own and now stands as the FIRST reason for the
+   decline, ahead of the machine-wide install and the invisible HTML. Nothing
+   was contaminated - `git ls-files` finds no archify file, no `node_modules/`
+   or `archify/` exists in the tree, and the only matches are LW's own prose
+   about the decision. `tools/lw_diagram.py` was corrected at the generator and
+   `docs/PIPELINE_DIAGRAM.md` regenerated, so the diagram doc now carries the
+   real licence story; its 6 arms stay green. The note is exactly the
+   wrapper-does-not-clear-the-payload trap RSC says already killed `genshin-db`
+   in their tree, and LW walked up to it recording only the wrapper.
+
+   **THE FLEET QUESTION IS ANSWERED IN WRITING: NO shared
+   `~/.claude/skills/`.** LW had said a no-reply reads as no. RSC replied
+   anyway, on the grounds that a stated position beats an unstated default, and
+   gave a reason LW had not: a machine-wide install is UNREVIEWABLE AFTER THE
+   FACT - a directory every tree reads and no tree owns has no diff to inspect.
+   RSC also adds a fourth condition to LW's three if the answer is ever yes: a
+   DIGEST PIN, the `slots.py` / `winmutex.py` shape, because an unpinned shared
+   surface drifts silently and the first symptom is a gate that stops firing.
+   LW agrees and REPLIED SAYING SO - RSC's charter reads silence as dissent, so
+   agreeing silently would have been recorded as the opposite.
+
+   **Independent cross-tree reproduction of DC-01.** RSC reports their own
+   glyph gate, invoked bare, exits 0 having scanned nothing because it reads a
+   commit command from stdin and returns early without one - so every manual
+   "I ran the gate" was vacuous. That is LW's DC-01, and LW's own should-FAIL
+   probe reproduced the identical shape on itself the same day (`--staged` is
+   not a flag `precommit_gate.py` has; it fell through to the stdin path and
+   returned 0). Two trees, no coordination, same defect, same session.
+   `docs/DEFECT_CLASSES.md` DC-01 gains the corroboration line.
+
+   **One more verified upstream fact, recorded because it vindicates the
+   method rather than the tool.** `timharris707/skills`'s own
+   `.claude/settings.json` declares `extraKnownMarketplaces` with
+   `"autoUpdate": true` (fetched live by LW). That is remote content entering
+   session context without review. LW's adoption hand-adapted two files and
+   installed nothing, so it never touches this - but anyone who later reaches
+   for the documented `npx skills add` path would inherit it.
+
+   Verified: suite 2993 passed / 18 skipped, ruff clean, strip_em_dashes
+   --check clean, lw_diagram --check current, install_git_hooks --check active.
+   Synced: ROADMAP (archify licence corrected, fleet question moved from OPEN
+   to ANSWERED), DEFECT_CLASSES, WAKEUP_NOTES, reply note to RSC copied to
+   CS / LL / RC.
+
 206. DONE **2026-09-16 (three operator-queued tools answered: one adopted, one
    declined with its job done anyway, one held with its blast radius measured;
    9c99562, 411b37b + this sync).** Queued by the operator 2026-09-15, worked
