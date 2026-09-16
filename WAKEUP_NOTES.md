@@ -2,64 +2,43 @@
 
 ---
 
-## NEXT SESSION - OPERATOR-QUEUED: three tools to implement
+## PREVIOUS SESSION (2026-09-16) - the three queued tools, all three answered
 
-Operator, verbatim, 2026-09-15, in this order:
-  1. "include into the next session to implement this : https://github.com/tt-a1i/archify"
-  2. "include into the next session to implement this : https://github.com/mksglu/context-mode"
-  3. "review this one for implementation in next session as well : https://github.com/timharris707/skills"
+Shipped `9c99562` + `411b37b` + this docs sync. Full detail in LEDGER 206.
+Suite 2987 passed / 18 skipped, ruff clean, ASCII drift gate clean.
 
-Full items, with live-probed facts and the gates to settle first, are the THREE
-TOP entries under `ROADMAP.md` -> "Open items - High priority". Read those,
-not this. NOTHING IS INSTALLED AND NOTHING IS VENDORED. Spec first, then act.
+- **Adopted** `blast-radius` + `adversarial-review` from `timharris707/skills`
+  (MIT), ADAPTED not byte-copied, as `.claude/commands/*.md` (ADR-013). The
+  skeptic is a MODE of `.claude/agents/verifier.md` - reconciled, not stacked.
+  `handoff` + `domain-memory` stay declined. 7 arms mutation-proven.
+- **Declined archify the instrument, delivered its job.** `tools/lw_diagram.py`
+  generates `docs/PIPELINE_DIAGRAM.md` as mermaid from `lw_pipeline.py`'s own
+  constants, so it cannot drift. Nothing installed.
+- **context-mode: licence settled, blast radius MEASURED, wiring HELD.**
+  `docs/CONTEXT_MODE_DECISION_2026-09-16.md`. A local install changed 0 of 5
+  watched machine-wide config files (rung 4); a GLOBAL one would rewrite three
+  of them, one being the file behind the 2026-08-01 false-green trap.
 
-**If you only have budget for one, do #3.** It was REVIEWED on 2026-09-15, not
-just queued. It is the least popular of the three by three orders of magnitude
-(35 stars against 63k and 23k) and the only one that lands on a lane LW
-already has open: its `blast-radius` evidence ladder and its
-`adversarial-review` skeptic pass ARE the mutation / non-vacuity gate the
-refutation-cost lane converged on. MIT, and measured near-ASCII-clean
-(0 offenders in 6 of 7 skill files read), so it is the cheapest to adopt as
-well as the most relevant. Take `blast-radius` and `adversarial-review` ONLY -
-its `handoff` and `domain-memory` skills DUPLICATE and would fragment
-`WAKEUP_NOTES.md` / `docs/LEDGER.md` / `docs/adr/`.
+Three things worth carrying forward:
 
-**archify (`tt-a1i/archify`)** - MIT, Node, an agent SKILL that compiles a
-typed JSON system description into self-contained HTML/SVG diagrams
-(architecture, workflow, sequence, data flow, lifecycle). Preflight measured:
-node v24.15.0 and npx 11.12.1 present, `~/.claude/skills/` does not exist yet.
-The open question is SCOPE - what it is actually for here. Honest candidate:
-render `docs/ARCHITECTURE.md`'s module map and the 10-stage pipeline as a
-checked diagram instead of prose. Without that answer it is a tool looking for
-a job.
+- **The should-FAIL probe caught itself.** The first attempt passed
+  `--staged`, a flag `precommit_gate.py` does not have; it fell through to the
+  stdin path and returned 0. A silent green. That is DC-01 in the new
+  `docs/DEFECT_CLASSES.md` reproducing inside the probe written to catch it.
+  Always run the gate the way the HOOK runs it (`--git-hook`), and then prove
+  it through a real `git commit`.
+- **A `&&` chain does not carry across a following heredoc.** It bit twice in
+  one session: ruff reported B905 and the commit landed anyway, and
+  `git commit -F` silently read a STALE message file from an earlier session,
+  so a commit wore the wrong subject. Both caught pre-push and re-made as one
+  commit. Write the message file with a tool, not a chained heredoc.
+- **A mutation probe that replaces only the FIRST occurrence lies.** Two arms
+  read as SURVIVED until the probe used replace-all. The arms were fine; the
+  probe was not. Count occurrences before concluding an arm is vacuous.
 
-**context-mode (`mksglu/context-mode`)** - TypeScript, v1.0.169, node >=22.5.0
-(satisfied). Sandboxes tool output, persists session memory, enforces routing
-via MCP + hooks. TWO THINGS TO KNOW BEFORE TOUCHING IT:
-  - **It is Elastic License 2.0, not MIT.** `gh api` says `NOASSERTION`; the
-    LICENSE blob and package.json both say ELv2. Source-available, NOT OSI
-    open source. USING it is permitted. VENDORING its source into this
-    Apache-2.0 PUBLIC tree is a licensing decision needing an ADR. Default:
-    install it, track NOTHING of it, gitignore what it drops.
-  - **It installs HOOKS and an MCP SERVER and intercepts tool output.** LW
-    runs five hook classes and CLAUDE.md records two separate false-green
-    traps from hooks that looked live and were not. A tool that sits between
-    the harness and tool output can silently change what every LW gate SEES.
-    After any install, re-run `python tools/install_git_hooks.py --check` AND
-    a deliberate gate-should-FAIL probe. Presence is not proof they fire.
-    It also ships its own `CLAUDE.md` and `.claude/` - do not let an install
-    overwrite LW's, which IS the operating contract.
-
-Traps common to both, all standing LW rules rather than opinions: the
-documented archify install is `-g`, which is MACHINE-WIDE and therefore
-reaches RC / RSC / CS / LL, and a cross-tree effect is a sync-inbox matter and
-never unilateral; upstream text carries em-dashes while this tree is 7-bit
-ASCII with `*.md` now pinned to LF, so any vendoring is a byte-level copy that
-then passes `strip_em_dashes --check`; LW is PUBLIC, so vendor the minimum and
-gitignore `node_modules/` plus any artifact directory in the SAME commit that
-creates them; and a generated diagram is a build artifact, so if one is
-tracked it needs a `linguist-generated` line and a regeneration story or it
-rots the way the dated docs in `docs/_archive/` did.
+**Open, and it is a fleet question:** does the fleet want a shared
+`~/.claude/skills/` surface? A REVIEW note went to all four sibling inboxes on
+2026-09-16. No reply reads as no, which is the default LW already runs on.
 
 ---
 

@@ -27,6 +27,95 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+206. DONE **2026-09-16 (three operator-queued tools answered: one adopted, one
+   declined with its job done anyway, one held with its blast radius measured;
+   9c99562, 411b37b + this sync).** Queued by the operator 2026-09-15, worked
+   in the reviewed-first order the handoff asked for.
+
+   **timharris707/skills - ADOPTED (ADR-013).** Took `run/blast-radius` and
+   `run/adversarial-review` ONLY. ADAPTED, not byte-copied, and the reason is
+   measured rather than stylistic: upstream cross-links four skills LW
+   declined so a verbatim copy imports dangling links; `adversarial-review`
+   carries 4 non-ASCII bytes (section signs) that `strip_em_dashes --check`
+   does NOT cover, so a byte-copy would have passed the gate and still broken
+   the CLAUDE.md hard rule; and a verbatim drop would have stood a second
+   protocol beside the SUBAGENT-FIRST block 20 command docs carry. Reconciled
+   by making the skeptic a MODE of `.claude/agents/verifier.md` rather than a
+   second agent. `run/handoff` and `orient/domain-memory` DECLINED on the
+   record - both default to an UNTRACKED durable record and LW's are tracked on
+   purpose. `docs/DEFECT_CLASSES.md` seeds 8 classes, each with a live
+   reproduction already on LW's record. RED-first: the contract test was
+   written and run before any doc existed (18 failed), then green. All 7 arms
+   MUTATION-PROVEN to bind - each mutation killed the suite, each restore
+   verified byte-exact by sha256. Two arms initially SURVIVED and that was the
+   probe's fault, not the gate's: `str.replace(..., 1)` mutated only the first
+   of two occurrences. Re-run with replace-all, both killed.
+
+   **archify - INSTRUMENT DECLINED, JOB DELIVERED.** The ROADMAP's scope gate
+   is what caught it. Documented install is `-g` = machine-wide = reaches RC /
+   RSC / CS / LL = sync-inbox matter, never unilateral; output is
+   self-contained HTML, which GitHub does NOT render inline, so the diagram
+   would be invisible on exactly the page where ARCHITECTURE.md is read; and
+   repo-local means vendoring about 157 MB into a PUBLIC tree. NOTHING
+   INSTALLED. `tools/lw_diagram.py` generates `docs/PIPELINE_DIAGRAM.md` as
+   mermaid FROM `lw_pipeline.py`'s own constants - 10 states, 26 edges, every
+   one mirroring a real `ctx.log` call site. 4 arms, all mutation-proven: a
+   renamed stage folder makes the doc stale, a new transition verb goes red
+   unless drawn or declared in-place WITH its reason, a stale IN_PLACE_OPS
+   entry is caught, a dropped edge diverges.
+
+   **context-mode - LICENCE SETTLED, BLAST RADIUS MEASURED, WIRING HELD**
+   (`docs/CONTEXT_MODE_DECISION_2026-09-16.md`). Licence re-probed live:
+   `gh api` still says NOASSERTION, published package.json says
+   `"license": "Elastic-2.0"`. Install-only, track nothing; `node_modules/`
+   was ALREADY ignored at `.gitignore:139`, so the handoff's "gitignore it in
+   the same commit" was already satisfied and no rule was added. Blast radius
+   taken from rung 3 to rung 4: its `postinstall` writes
+   `~/.claude/settings.json`, `~/.claude.json` and
+   `~/.claude/plugins/installed_plugins.json` - user-level, shared by five
+   trees, and `~/.claude.json` is the file behind the 2026-08-01 false-green
+   trap - but ONLY when `npm_config_global === "true"`. Proven by running it:
+   sha256 snapshot of 5 config files, isolated `npm install` into the session
+   scratchpad OUTSIDE the repo (140 packages, 14s, exit 0), re-snapshot -
+   **5 of 5 UNCHANGED**. No idle control needed; the result is negative and a
+   daemon can only add a difference, never hide one. WIRING HELD for three
+   reasons: hooks load at session start so the mandated should-FAIL probe
+   cannot run against the wired state in the session that wires it; the hook
+   config is named in `/adversarial-review`'s never-overridable
+   always-substantial list, adopted the same day; and the 98 pct figure is a
+   vendor claim that gets measured on LW traffic with an idle control or not
+   at all.
+
+   **The gate probes the handoff demanded, run anyway - and the probe caught
+   itself.** `install_git_hooks.py --check` -> active, exit 0. The deliberate
+   should-FAIL first used `--staged`, a flag `precommit_gate.py` does not have;
+   it fell through to the stdin path, found no commit command and returned 0.
+   A SILENT PASS THAT LOOKED GREEN - DC-01 reproducing live inside the probe
+   written to catch it. Re-run via `--git-hook` and then through a real
+   `git commit`: both BLOCKED, exit 2, `git log` confirms no probe commit
+   exists.
+
+   **Cross-tree, not decided here.** A REVIEW note went to all four sibling
+   inboxes (RC / RSC / CS / LL, 3419 bytes, ASCII-clean, LF): does the fleet
+   want a shared `~/.claude/skills/` surface at all? A no-reply reads as no,
+   which is the default LW already runs on.
+
+   **Two process misses worth recording.** A `&&` chain did not carry across
+   the heredoc that followed it, so (a) ruff reported B905 and the commit
+   landed anyway, and (b) the same break left `git commit -F` reading a STALE
+   message file from an earlier session, so the archify commit wore the wrong
+   subject. Both caught before the push; the two commits were re-made as one
+   with the correct message (411b37b). The lesson is the one already in
+   `feedback-printed-commands-are-untested-deliverables`: a gate whose exit
+   code nothing waits on is not a gate.
+
+   Verified: full suite 2987 passed / 18 skipped (was 2969 at 1514aa4; +18 is
+   the new contract test, +6 more with the diagram test), ruff clean,
+   `strip_em_dashes --check` clean, `install_git_hooks --check` exit 0.
+   Synced: ROADMAP (three entries collapsed to one outcome, prior text
+   relocated VERBATIM to `docs/history_notes.md` so the claim that it lives
+   there is true), ADR-013, WAKEUP_NOTES.
+
 205. DONE **2026-09-15 (moon-sync channel adoption: the doc vendored, the
    per-prompt watcher bounded and quieted; see commit).** RC's 2026-09-15 FYI
    (`899f6eb957cc`) described the adoption work for all four siblings; this is

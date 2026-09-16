@@ -95,180 +95,59 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
-- **archify (`tt-a1i/archify`) - OPEN 2026-09-15, OPERATOR-ORIGINATED, QUEUED
-  FOR THE NEXT SESSION TO IMPLEMENT.** Operator, verbatim: "include into the
-  next session to implement this : https://github.com/tt-a1i/archify".
+- **the three operator-queued tools - ALL THREE ANSWERED 2026-09-16
+  (LEDGER 206).** Queued 2026-09-15, worked in the reviewed-first order the
+  handoff asked for. The full prior entries, with the live-probed facts each
+  decision rests on, are in `docs/history_notes.md`; what remains open is
+  below, and it is one question, not three.
 
-  LIVE FACTS, probed 2026-09-15 via `gh api repos/tt-a1i/archify` and the
-  README, not carried from a summary: MIT, language JavaScript, Node runtime,
-  version 2.17.0-dev.1, 63843 stars / 4234 forks, created 2026-04-15, last
-  push 2026-09-15 (same day), NOT archived, repo size about 157 MB. Its own
-  one-line description, with the em-dash normalised to " - " because this repo
-  is 7-bit ASCII and the upstream string is not: "Agent skill for beautiful,
-  verifiable architecture, workflow, sequence, data-flow, and lifecycle
-  diagrams - self-contained HTML with motion and crisp export."
+  **timharris707/skills - ADOPTED, adapted, repo-local (ADR-013).** Took
+  `run/blast-radius` and `run/adversarial-review` and nothing else - not the
+  pack, not `team-workflow`, not `setup`. They live at
+  `.claude/commands/blast-radius.md` and `.claude/commands/adversarial-review.md`
+  with the MIT attribution chain intact. Adapted rather than byte-copied for
+  three measured reasons: upstream cross-links four skills LW declined, so a
+  verbatim copy imports dangling links; `adversarial-review` carries 4
+  non-ASCII bytes that `strip_em_dashes --check` does not cover, so it would
+  have passed the gate and still broken the hard rule; and a verbatim drop
+  would have stood a second protocol beside the SUBAGENT-FIRST block. The
+  skeptic is a MODE of `.claude/agents/verifier.md`, not a second agent.
+  `run/handoff` and `orient/domain-memory` stay DECLINED with the reason in
+  ADR-013. `tests/test_review_protocol_contract.py` pins it, 7 arms
+  mutation-proven to bind.
 
-  WHAT IT IS: an agent SKILL (Claude Code / Cursor / Codex / OpenCode) that
-  turns a system description into typed JSON and compiles it deterministically
-  into self-contained HTML/SVG diagrams. Five diagram types (architecture,
-  workflow, sequence, data flow, lifecycle), schema validation with repair
-  guidance, before/after architecture delta, PNG/SVG/WebM export, a desktop
-  preview loop. Documented install `npx skills add tt-a1i/archify -g`;
-  documented CLI `node archify/bin/archify.mjs validate|preview|deliver|compare`.
+  **archify - JOB DONE, INSTRUMENT DECLINED.** The scope gate did its work:
+  the job (a checked diagram instead of prose) is real, that instrument is
+  wrong HERE. Its documented install is `-g`, machine-wide, reaching four
+  sibling trees; its output is self-contained HTML, which GitHub does not
+  render inline, so the diagram would be invisible on the page where it would
+  be read; and repo-local means vendoring about 157 MB into a PUBLIC tree.
+  Nothing installed. `tools/lw_diagram.py` generates
+  `docs/PIPELINE_DIAGRAM.md` as mermaid FROM `lw_pipeline.py`'s own constants,
+  so the diagram cannot drift; 4 arms, all mutation-proven.
 
-  PREFLIGHT ALREADY MEASURED ON LEGION so the next session does not re-probe:
-  node v24.15.0 and npx 11.12.1 are both present; `~/.claude/skills/` does NOT
-  exist yet, so a `-g` install creates it.
+  **context-mode - LICENCE SETTLED, BLAST RADIUS MEASURED, WIRING HELD.** Full
+  reasoning in `docs/CONTEXT_MODE_DECISION_2026-09-16.md`. Licence confirmed
+  live as Elastic-2.0 in the published package.json: install-only, track
+  nothing, and `node_modules/` was already ignored so no new rule was needed.
+  Measured rather than inferred: its `postinstall` rewrites
+  `~/.claude/settings.json`, `~/.claude.json` and
+  `~/.claude/plugins/installed_plugins.json` - all user-level, all shared by
+  five trees, and `~/.claude.json` is the file behind the 2026-08-01
+  false-green trap - but ONLY on a GLOBAL install. An isolated local install
+  in a scratch directory outside the repo changed 0 of 5 watched config files
+  (rung 4, no control needed for a negative). The wiring is held because its
+  effect cannot be observed in the session that makes the change: hooks load
+  at session start, so the mandated should-FAIL probe against the wired state
+  belongs to a session that can restart into it.
 
-  SPEC FIRST, THEN ACT - five things to settle BEFORE any install, because
-  each one is a standing LW rule this tool can collide with:
-    1. SCOPE. What is it FOR here? The honest candidate is rendering
-       `docs/ARCHITECTURE.md`'s module map and the 10-stage pipeline as a
-       checked diagram instead of prose. Decide that before installing, or
-       this becomes a tool looking for a job.
-    2. GLOBAL vs REPO. `-g` is a MACHINE-WIDE install affecting RC, RSC, CS and
-       LL too. LW tracks `.claude/`, so a repo-local install is a tracked
-       change to four siblings' shared conventions if it lands globally.
-       Prefer repo-local unless the fleet has agreed; a cross-tree effect is a
-       sync-inbox matter, not a unilateral one.
-    3. ASCII. Upstream authored text carries em-dashes (its own description
-       does). Anything vendored into this tree goes through
-       `tools/strip_em_dashes.py --check`, and `.gitattributes` now pins `*.md`
-       to LF, so a vendored doc needs a byte-level copy, never `write_text`.
-    4. PUBLIC REPO / SIZE. The repo is about 157 MB. LW is PUBLIC and never
-       tracks vendored binaries or generated bytes without a release decision.
-       If anything is vendored, vendor the minimum and gitignore the rest;
-       `node_modules/` and any generated artifact directory must be ignored
-       in the SAME commit that creates them.
-    5. GENERATED-vs-AUTHORED. A generated diagram is a build artifact. If one
-       is tracked, it needs a `linguist-generated` line in `.gitattributes`
-       and a story for how it is regenerated, or it rots exactly the way the
-       dated docs in `docs/_archive/` did.
-
-  NEXT: read the upstream README and schema at the pinned commit, write the
-  scope answer for (1), then decide (2). Nothing installed and nothing
-  vendored yet - this entry is the handoff, not a start.
-
-- **context-mode (`mksglu/context-mode`) - OPEN 2026-09-15,
-  OPERATOR-ORIGINATED, QUEUED FOR THE NEXT SESSION TO IMPLEMENT.** Operator,
-  verbatim: "include into the next session to implement this :
-  https://github.com/mksglu/context-mode".
-
-  LIVE FACTS, probed 2026-09-15 via `gh api repos/mksglu/context-mode` plus the
-  LICENSE and package.json blobs, not carried from a summary: TypeScript,
-  npm name `context-mode` v1.0.169, bin `context-mode` -> `cli.bundle.mjs`,
-  engines `node >=22.5.0` (Legion has v24.15.0, SATISFIED), 23116 stars /
-  1670 forks, created 2026-02-23, last push 2026-09-15, NOT archived, repo
-  about 32 MB. Its own description, em-dash-free as published: "Context window
-  optimization for AI coding agents. Sandboxes tool output (98% reduction),
-  persists session memory, and enforces routing across 17 platforms via MCP +
-  hooks." Ships `.claude/`, `.claude-plugin/`, `hooks/`, `skills/`, `configs/`,
-  an MCP server bundle and `.mcp.json.example`.
-
-  **THE LICENSE IS THE FIRST GATE AND IT IS NOT MIT.** `gh api` reports
-  `NOASSERTION`; the LICENSE blob and package.json both resolve it to
-  **Elastic License 2.0 (ELv2)**, source-available and NOT an OSI open-source
-  licence. Read before doing anything else:
-    - USING it on Legion is squarely permitted - ELv2 grants use, copy,
-      distribute and derivative works.
-    - Three limitations bind: no providing it to third parties as a hosted or
-      managed service; no circumventing licence-key functionality; no removing
-      or obscuring notices. A modified copy must carry prominent
-      modification notices, and anyone you hand a copy to must get the terms.
-    - VENDORING ITS SOURCE INTO THIS TREE IS A LICENSING DECISION, NOT A
-      ROUTINE ACT. LW is PUBLIC under Apache-2.0 (Settled; LEDGER 88/145).
-      Putting ELv2 bytes inside an Apache-2.0-labelled public repo muddies
-      LW's own licence story even though ELv2 permits the redistribution.
-      DEFAULT: install it as a dependency / plugin, track NOTHING of it, and
-      gitignore whatever it drops. Deviating from that default needs an ADR.
-
-  SPEC FIRST, THEN ACT - what to settle BEFORE installing, beyond the licence:
-    1. BLAST RADIUS. This one is materially riskier than archify: it installs
-       HOOKS and an MCP SERVER and "enforces routing". LW already runs five
-       hook classes (`PreToolUse` gate, `PostToolUse` pytest/lint,
-       `UserPromptSubmit` mail watcher, `Stop` claimed-green gate,
-       `SessionStart` facts) and CLAUDE.md records two separate false-green
-       traps from hooks that looked live and were not. A tool that intercepts
-       tool output can silently change what every one of those gates SEES.
-       Install it where its effect is observable, and re-run
-       `python tools/install_git_hooks.py --check` plus a deliberate
-       gate-should-FAIL probe afterwards - presence is not proof they fire.
-    2. THE 98 PCT CLAIM IS A VENDOR CLAIM, NOT A MEASUREMENT. `BENCHMARK.md`
-       is theirs. If the reduction matters here, measure it on LW's own
-       traffic with an idle control first - a before/after diff on a box with
-       daemons attributes nothing.
-    3. SESSION MEMORY OVERLAP. It "persists session memory"; LW already has a
-       memory convention plus `WAKEUP_NOTES.md` / `docs/LEDGER.md` on disk.
-       Decide which is authoritative BEFORE both are writing, or the next
-       session bootstraps from two disagreeing records.
-    4. MACHINE-WIDE vs REPO. Same trap as archify: anything global reaches RC /
-       RSC / CS / LL. A cross-tree effect is a sync-inbox matter, never
-       unilateral. Note it ALSO ships its own `CLAUDE.md` and `.claude/` - do
-       not let an install overwrite LW's, which is the operating contract.
-    5. ASCII / SIZE / GENERATED. Same standing rules as the archify item
-       above: 7-bit ASCII, `*.md` pinned to LF so any vendoring is a
-       byte-level copy, `node_modules/` and artifact directories gitignored in
-       the SAME commit that creates them.
-
-  NEXT: resolve the licence default (install-only, track nothing) explicitly,
-  then (1). Nothing installed and nothing vendored yet - this entry is the
-  handoff, not a start.
-
-- **timharris707/skills - OPEN 2026-09-15, OPERATOR-ORIGINATED, REVIEWED
-  2026-09-15, QUEUED FOR THE NEXT SESSION.** Operator, verbatim: "review this
-  one for implementation in next session as well :
-  https://github.com/timharris707/skills". Reviewed rather than only queued,
-  because that is what was asked.
-
-  LIVE FACTS, probed 2026-09-15 via `gh api repos/timharris707/skills` and the
-  content blobs: MIT, language Python, 35 stars / 4 forks, created 2026-06-25,
-  last push 2026-09-06, NOT archived, about 4.7 MB. 23 agent skills in six
-  buckets - `author` (huh, plainspoken, writing-for-agents, writing-for-humans),
-  `decide` (advisory-board, decision-map, grilling), `investigate`
-  (codebase-review, ingest, prototype, research), `orient` (domain-memory,
-  router, setup), `run` (adversarial-review, blast-radius, diagnose, handoff,
-  implement, orchestrate, show-me-your-work, to-tickets, wizard), plus two
-  packs (team-workflow, clickai-codex).
-
-  **REVIEW VERDICT: of the three tools queued on 2026-09-15 this is the LEAST
-  popular by three orders of magnitude and the MOST relevant to a lane LW
-  already has open.** Read four SKILL.md files in full rather than judging by
-  name. `run/blast-radius` carries an explicit EVIDENCE LADDER - you said so /
-  you pointed at the line / you walked the failure / you ran it - and states
-  outright that "a blast-radius writeup that sounds right is worth nothing on
-  its own". `run/adversarial-review` is isolated finders plus a SKEPTIC PASS
-  that kills unproven findings and a gate that only skeptic-confirmed blockers
-  may hold. That is, almost verbatim, the mechanism the refutation-cost lane
-  above converged on: "LW, RSC and CS independently named a mutation /
-  non-vacuity gate". It also correctly handles a real harness constraint most
-  such docs get wrong - nested subagents do not re-invoke a parent subagent, so
-  a review running AS a subagent must run its finder passes sequentially in one
-  context rather than spawn-and-wait.
-
-  **The two that are NOT a fit, and why, so nobody re-opens them:**
-  `run/handoff` defaults to `.claude/handoff.md` as an UNTRACKED file loaded by
-  a session-start hook. LW's equivalent is `WAKEUP_NOTES.md` plus
-  `docs/LEDGER.md`, both TRACKED, and the tracking is the point - a public
-  append-only record is what makes a claim auditable later. Adopting an
-  untracked handoff would split the hand-off record in two, which is the
-  documented failure mode of having two disagreeing durable records.
-  `orient/domain-memory` overlaps CLAUDE.md's Settled section and `docs/adr/`
-  the same way.
-
-  **ASCII COST MEASURED, NOT ASSUMED** (this is the differentiator against the
-  other two queued tools): em-dash / en-dash / smart-quote counts over seven
-  SKILL.md files are 0,0,0,0,0,0 and 3 - only `run/orchestrate` carries any, 3
-  occurrences in 17350 chars. So this repo is very close to vendorable into a
-  7-bit-ASCII tree as-is, where the other two are not. MIT also means vendoring
-  is a routine act here, unlike `context-mode`'s ELv2.
-
-  NEXT, in this order: (1) take `blast-radius` and `adversarial-review` ONLY -
-  adopt the two skills, not the pack, not the `team-workflow` binding
-  machinery, and not `setup`; (2) check them against LW's existing
-  `.claude/agents/verifier.md` and the SUBAGENT-FIRST block that 20 command
-  docs already carry, and reconcile rather than stack a second protocol on top;
-  (3) sweep the 3 offenders in `orchestrate` if it is taken at all. Nothing
-  installed and nothing vendored yet - this entry is the handoff, not a start.
+  **STILL OPEN, and it is a fleet question, not an LW one:** does the fleet
+  want a shared `~/.claude/skills/` surface at all? A REVIEW note went to all
+  four sibling inboxes on 2026-09-16. A no-reply reads as no, which is the
+  default LW already runs on. NEXT for context-mode, if anyone wants it: wire
+  it in a session that can restart into the wired config, probe AFTER the
+  restart, and measure the 98 pct claim on LW's own traffic against an idle
+  control.
 
 - **tooling-tier lane (refutation cost) - OPEN 2026-09-12,
   OPERATOR-ORIGINATED, LANED FOR FLEET CONSENSUS AND DELIBERATELY NOT
