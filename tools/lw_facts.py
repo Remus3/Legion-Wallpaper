@@ -34,8 +34,10 @@ import io
 import json
 import os
 import stat
+import re
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -74,7 +76,38 @@ _SEEN = _ROOT / "ops" / "runtime" / "sync_inbox_seen.json"
 # ritual fix ("ack at session start") cannot close it - a note arriving a minute
 # after the report is still in the listing when the ack runs.
 _REPORTED = _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
+# PER-SESSION SUPPRESSION, and deliberately NOT the reported record above.
+# The two answer different questions and one file cannot hold both: the
+# reported record is the ACKNOWLEDGEMENT SCOPE, so `mark_inbox_seen()` PRUNES
+# it, and a prune that also cleared the suppression state would make an
+# acknowledgement un-suppress every note it just acknowledged - each one
+# printing again on the next prompt of the same session. Charter clause 5:
+# showing never acknowledges, so the record that governs showing is separate
+# from the record that governs acknowledging. Gitignored: `ops/runtime/` is.
+_SHOWN = _ROOT / "ops" / "runtime" / "sync_inbox_shown.json"
+# One line per invocation. LW had no invocation log at all, so "did the hook
+# even fire" was unanswerable after the fact - the silence of a watcher that
+# never ran is identical to the silence of one that ran and found nothing.
+_INVOCATIONS = _ROOT / "ops" / "runtime" / "lw_facts_invocations.log"
+_INVOCATIONS_KEEP = 2000
 _INBOX_SHOWN = 10
+
+# Bounds on the stdin payload read. BOTH are load-bearing and neither alone is
+# enough. A byte cap without a clock cap still blocks forever on a parent that
+# writes less than the cap and does not close the pipe; a clock cap without a
+# byte cap still buffers an unbounded write into memory. This runs on the
+# UserPromptSubmit hook - on EVERY operator message - so a read that blocks
+# takes the mail announcement with it, silently, which is the exact failure
+# class this watcher exists to prevent.
+_STDIN_CAP_BYTES = 64 * 1024
+_STDIN_CAP_S = 0.5
+
+# A session id is a machine-supplied token that ends up in a log line and in a
+# JSON record. Anchored and charset-bounded so a tab or a newline cannot forge
+# a second record, and length-bounded so a pathological value cannot bloat the
+# store. Anything that does not match is treated as NO session id, which fails
+# OPEN (print, suppress nothing) rather than closed.
+_SID_RE = re.compile(r"[A-Za-z0-9_-]{8,128}\Z")
 
 
 # DERIVED AT USE, NOT AT IMPORT. The three constants above are bound to the real
@@ -100,6 +133,14 @@ def _seen_path() -> Path:
 
 def _reported_path() -> Path:
     return _ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
+
+
+def _shown_path() -> Path:
+    return _ROOT / "ops" / "runtime" / "sync_inbox_shown.json"
+
+
+def _invocations_path() -> Path:
+    return _ROOT / "ops" / "runtime" / "lw_facts_invocations.log"
 NEWLINE = chr(10)
 
 # Shared wall-clock budget (seconds). The hook timeout is 8s; every
@@ -477,18 +518,203 @@ def _reported_names(reported_path: Path) -> set[str] | None:
     return {n for n in names if isinstance(n, str)}
 
 
-def _write_reported(reported_path: Path, names: list[str]) -> None:
-    """Record what was shown. Best effort by contract: this runs inside the
-    SessionStart hook and must never be the reason the hook fails."""
+def _reported_sid(reported_path: Path) -> str | None:
+    """The session id the current report record belongs to, if any."""
     try:
+        doc = json.loads(reported_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(doc, dict):
+        return None
+    sid = doc.get("sid")
+    return sid if isinstance(sid, str) and sid else None
+
+
+def _write_reported(reported_path: Path, names: list[str],
+                    sid: str | None = None,
+                    cumulative: bool = False) -> None:
+    """Record what was shown. Best effort by contract: this runs inside the
+    SessionStart hook and must never be the reason the hook fails.
+
+    CUMULATIVE WITHIN A SESSION ID, never the per-fire delta. This record is
+    the acknowledgement scope of `mark_inbox_seen()`, and once the watcher
+    suppresses an already-shown note the per-fire delta for the second prompt
+    of a session is EMPTY - so a delta record would hand the ack an empty set
+    and the operator would acknowledge nothing after reading three notes. The
+    union is taken only against a record carrying the SAME session id; a new
+    session starts the scope over at that session's own SessionStart, because
+    cumulating across sessions would acknowledge mail shown to a session the
+    operator never read. With no session id the scope is this fire alone, which
+    is correct rather than a fallback: no session id means no suppression
+    either, so this fire's shown set is already the complete one.
+
+    `cumulative=False` is the PRUNE path (`mark_inbox_seen()`), which must
+    replace rather than union or a withdrawn name could never be cleared.
+    """
+    try:
+        stored_sid = _reported_sid(reported_path)
+        out = list(names)
+        if cumulative and sid is not None and stored_sid == sid:
+            prior = _reported_names(reported_path) or set()
+            out = sorted(prior | set(names))
+        keep_sid = sid if sid is not None else stored_sid
         reported_path.parent.mkdir(parents=True, exist_ok=True)
         tmp = reported_path.with_name(reported_path.name + ".tmp")
         tmp.write_text(
-            json.dumps({"reported": names,
+            json.dumps({"reported": out,
+                        "sid": keep_sid,
                         "at": time.strftime("%Y-%m-%dT%H:%M:%S")}, indent=2)
             + "\n",
             encoding="utf-8", newline="\n")
         tmp.replace(reported_path)
+    except OSError:
+        pass
+
+
+def _read_stdin_bounded(cap_bytes: int = _STDIN_CAP_BYTES,
+                        cap_s: float = _STDIN_CAP_S) -> bytes:
+    """Read at most `cap_bytes` from stdin, waiting at most `cap_s` seconds.
+
+    Bounded in BOTH dimensions on purpose - see the constants. The read runs on
+    a daemon thread because there is no portable way to put a timeout on a
+    blocking pipe read on Windows: if the parent never writes and never closes,
+    the thread stays parked and the process exits out from under it, which is
+    exactly the outcome wanted. Returns b"" for every failure and for a tty, so
+    a manual `python tools/lw_facts.py` at a console never blocks.
+    """
+    stream = getattr(sys.stdin, "buffer", None)
+    if stream is None:
+        return b""
+    try:
+        if sys.stdin.closed or sys.stdin.isatty():
+            return b""
+    except (OSError, ValueError):
+        return b""
+    box: dict[str, bytes] = {}
+
+    def _worker() -> None:
+        try:
+            box["b"] = stream.read(cap_bytes)
+        except Exception:  # noqa: BLE001 - a payload read must never raise out
+            box["b"] = b""
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(max(0.05, min(cap_s, _remaining())))
+    return box.get("b", b"")
+
+
+def _session_id_from(payload: bytes) -> str | None:
+    """The validated session id in a hook payload, else None (= fail OPEN)."""
+    if not payload:
+        return None
+    try:
+        doc = json.loads(payload.decode("utf-8", errors="replace"))
+    except ValueError:
+        return None
+    if not isinstance(doc, dict):
+        return None
+    sid = doc.get("session_id")
+    if not isinstance(sid, str) or not _SID_RE.match(sid):
+        return None
+    return sid
+
+
+_SID_CACHE: list[str | None] = []
+# How many payload bytes the harness actually handed this process. Logged, not
+# guessed at: MEASURED 2026-09-15 on Legion, the UserPromptSubmit hook delivers
+# a payload carrying a real session_id while the SessionStart hook delivers
+# NOTHING. That asymmetry is a harness fact, not a defect here, and its only
+# consequence is one duplicate listing per session (SessionStart prints and
+# records no suppression, so the session's first prompt prints once more, then
+# the rest go quiet). Recording the byte count is what makes the claim
+# falsifiable later instead of a sentence someone has to trust.
+_PAYLOAD_LEN: list[int] = []
+
+
+def _session_id() -> str | None:
+    """Resolve this process's session id once - stdin only drains once."""
+    if not _SID_CACHE:
+        payload = _read_stdin_bounded()
+        _PAYLOAD_LEN.append(len(payload))
+        _SID_CACHE.append(_session_id_from(payload))
+    return _SID_CACHE[0]
+
+
+def _payload_len() -> int:
+    """Bytes read from stdin this process, or -1 if stdin was never consulted."""
+    return _PAYLOAD_LEN[0] if _PAYLOAD_LEN else -1
+
+
+def _shown_record(shown_path: Path) -> tuple[str | None, set[str], set[str]]:
+    """(session id, keys already shown, withdrawal names already shown)."""
+    try:
+        doc = json.loads(shown_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return (None, set(), set())
+    if not isinstance(doc, dict):
+        return (None, set(), set())
+    sid = doc.get("sid")
+    sid = sid if isinstance(sid, str) and sid else None
+
+    def _strs(key: str) -> set[str]:
+        v = doc.get(key)
+        return {x for x in v if isinstance(x, str)} if isinstance(v, list) else set()
+
+    return (sid, _strs("shown"), _strs("withdrawn"))
+
+
+def _write_shown(shown_path: Path, sid: str, shown: set[str],
+                 withdrawn: set[str]) -> None:
+    """Persist per-session suppression state. Atomic; never raises.
+
+    Called only AFTER stdout has been flushed, per charter clause 4: a hook
+    killed between the write and the print would otherwise have suppressed a
+    note nobody ever saw. Written late, the failure mode is a harmless
+    re-print instead of a permanent silence.
+    """
+    try:
+        shown_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = shown_path.with_name(shown_path.name + ".tmp")
+        tmp.write_text(
+            json.dumps({"sid": sid,
+                        "shown": sorted(shown),
+                        "withdrawn": sorted(withdrawn),
+                        "at": time.strftime("%Y-%m-%dT%H:%M:%S")}, indent=2)
+            + "\n",
+            encoding="utf-8", newline="\n")
+        tmp.replace(shown_path)
+    except OSError:
+        pass
+
+
+def _scrub(value: str, limit: int = 160) -> str:
+    """One field of one log line. A tab or a newline here forges a record."""
+    out = "".join(c for c in value if c.isprintable() and c != "\t")
+    return out[:limit] if out else "-"
+
+
+def _log_invocation(mode: str, sid: str | None, note: str = "",
+                    log_path: Path | None = None) -> None:
+    """Append one tab-separated line. Best effort; never raises and never
+    blocks the report. Trimmed in place so an every-prompt hook cannot grow it
+    without bound."""
+    log_path = _invocations_path() if log_path is None else log_path
+    line = "\t".join((time.strftime("%Y-%m-%dT%H:%M:%S"),
+                       _scrub(mode, 32),
+                       _scrub(sid or "-", 128),
+                       _scrub(note, 200))) + "\n"
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8", newline="\n") as fh:
+            fh.write(line)
+        if log_path.stat().st_size > _INVOCATIONS_KEEP * 200:
+            kept = log_path.read_text(
+                encoding="utf-8",
+                errors="replace").splitlines()[-_INVOCATIONS_KEEP:]
+            tmp = log_path.with_name(log_path.name + ".tmp")
+            tmp.write_text("\n".join(kept) + "\n", encoding="utf-8", newline="\n")
+            tmp.replace(log_path)
     except OSError:
         pass
 
@@ -553,13 +779,28 @@ def _withdrawn_lines(gone: list[str], anomalies: list[str]) -> list[str]:
 
 def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
                  seen_path: Path | None = None,
-                 reported_path: Path | None = None) -> list[str]:
+                 reported_path: Path | None = None,
+                 sid: str | None = None,
+                 shown_path: Path | None = None,
+                 ctx: dict | None = None) -> list[str]:
     """Unread cross-repo notes. REPORTS ONLY - never acknowledges.
 
     Acknowledging here would make "unread" a property of whether this hook ran
     rather than of whether anyone read the note, which is the watermark defect
     in a different costume. `mark_inbox_seen()` is the separate action, so an
     unacknowledged note re-reports next session instead of being lost.
+
+    SUPPRESSION is per validated session id and applies to the LISTING only.
+    The counts line always states the true unread total, because a count is
+    state and not an entry: a session that has already been shown a note still
+    needs to know the note is sitting there unacknowledged. With no session id
+    nothing is suppressed - fail OPEN, print - which is why the no-sid path
+    needs no separate "complete set" bookkeeping.
+
+    `ctx`, when passed, is filled with what the caller must commit AFTER it has
+    flushed stdout: `new` (was anything actually shown), `shown` and
+    `withdrawn` (the full per-session sets). Committing late means a killed
+    hook re-prints instead of suppressing something nobody saw.
 
     Exception-proof by contract: this runs inside the SessionStart hook, and a
     crash here would take the whole live-state block with it - worse than a
@@ -568,8 +809,16 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
     inbox = _inbox_path() if inbox is None else inbox
     seen_path = _seen_path() if seen_path is None else seen_path
     reported_path = _reported_path() if reported_path is None else reported_path
+    shown_path = _shown_path() if shown_path is None else shown_path
+    if ctx is not None:
+        ctx.update({"new": False, "commit": True,
+                    "shown": set(), "withdrawn": set()})
     try:
         if not inbox.is_dir():
+            # An absent inbox may be shown once per session id (clause 4); it
+            # is not a clean line, so nothing is suppressed into silence here.
+            if ctx is not None:
+                ctx["new"] = True
             return [f"- moon_sync_inbox: absent at {inbox} - no cross-repo mail channel"]
         entries = _inbox_entries(inbox)
         seen = _seen_names(seen_path)
@@ -581,21 +830,39 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
         withdrawn_keys = _withdrawn_keys(names, seen,
                                          _reported_names(reported_path))
         gone = sorted({_stable_name(k) for k in withdrawn_keys})
+
+        rec_sid, done_keys, done_gone = _shown_record(shown_path)
+        if sid is None or rec_sid != sid:
+            done_keys, done_gone = set(), set()
+        new_gone = [g for g in gone if g not in done_gone]
+
         if not unread:
-            _write_reported(reported_path, withdrawn_keys)
+            _write_reported(reported_path, withdrawn_keys,
+                            sid=sid, cumulative=True)
+            if ctx is not None:
+                ctx["new"] = bool(new_gone)
+                ctx["shown"] = done_keys
+                ctx["withdrawn"] = done_gone | set(gone)
             return ([f"- moon_sync_inbox: 0 unread of {len(names)} notes"]
-                    + _withdrawn_lines(gone, anomalies))
+                    + _withdrawn_lines(new_gone, anomalies))
+
         lines = [f"- moon_sync_inbox: {len(unread)} UNREAD of {len(names)} notes"]
-        shown_pairs = unread_pairs[-_INBOX_SHOWN:]
+        new_pairs = [(k, d) for k, d in unread_pairs if k not in done_keys]
+        shown_pairs = new_pairs[-_INBOX_SHOWN:]
         shown = [k for k, _ in shown_pairs]
-        _write_reported(reported_path, shown + withdrawn_keys)
+        _write_reported(reported_path, shown + withdrawn_keys,
+                        sid=sid, cumulative=True)
         for _, display in shown_pairs:
             lines.append(f"  - {display}")
-        if len(unread) > _INBOX_SHOWN:
-            lines.append(f"  - ... and {len(unread) - _INBOX_SHOWN} more, oldest first")
+        if len(new_pairs) > _INBOX_SHOWN:
+            lines.append(
+                f"  - ... and {len(new_pairs) - _INBOX_SHOWN} more, oldest first")
+        if not new_pairs:
+            lines.append(f"  - (all {len(unread)} already listed earlier this "
+                         f"session - nothing new since)")
         lines.append("- acknowledge (only after reading): "
                      "python tools/lw_facts.py --mark-inbox-seen")
-        lines.extend(_withdrawn_lines(gone, anomalies))
+        lines.extend(_withdrawn_lines(new_gone, anomalies))
         # CHARTER v2 section 1 classifies in the title: REVIEW- wants a reply
         # from all five before the sender proceeds and ACTION- is blocking, so
         # an unread one of those is a real anomaly. FYI- is not.
@@ -604,10 +871,34 @@ def _inbox_lines(anomalies: list[str], inbox: Path | None = None,
             anomalies.append(
                 f"{len(wanted)} unread REVIEW-/ACTION- inbox note(s) awaiting a "
                 f"response: {', '.join(wanted[-3:])}")
+        if ctx is not None:
+            ctx["new"] = bool(shown_pairs or new_gone)
+            ctx["shown"] = done_keys | set(shown)
+            ctx["withdrawn"] = done_gone | set(gone)
         return lines
     except Exception:  # noqa: BLE001 - a probe must never break the hook
         anomalies.append("moon_sync_inbox probe crashed")
+        if ctx is not None:
+            # A crash measured nothing, so it may not narrow what the next fire
+            # prints. Committing the half-built sets here would suppress notes
+            # this run never actually showed - a probe failure turning into
+            # silence is the one outcome this watcher must never produce.
+            ctx["new"] = True
+            ctx["commit"] = False
         return ["- moon_sync_inbox: probe failed"]
+
+
+def _commit_shown(ctx: dict, sid: str | None,
+                  shown_path: Path | None = None) -> None:
+    """Persist the per-session suppression state a report just produced.
+
+    Call ONLY after stdout is flushed, and only with a validated session id -
+    without one nothing was suppressed, so there is nothing to record.
+    """
+    if sid is None or not ctx or not ctx.get("commit", True):
+        return
+    _write_shown(_shown_path() if shown_path is None else shown_path,
+                 sid, ctx.get("shown") or set(), ctx.get("withdrawn") or set())
 
 
 def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
@@ -662,7 +953,8 @@ def mark_inbox_seen(inbox: Path | None = None, seen_path: Path | None = None,
     if reported is not None:
         still_here = set(listing)
         _write_reported(reported_path,
-                        sorted(k for k in reported if k in still_here))
+                        sorted(k for k in reported if k in still_here),
+                        cumulative=False)
     return len(names)
 
 
@@ -693,14 +985,27 @@ def main() -> int:
     # cannot mark the operator queue read.
     if "--inbox-only" in sys.argv[1:]:
         anomalies: list[str] = []
-        lines = _inbox_lines(anomalies)
-        if any("UNREAD" in ln for ln in lines):
+        sid = _session_id()
+        ctx: dict = {}
+        lines = _inbox_lines(anomalies, sid=sid, ctx=ctx)
+        # Print only what this session has NOT already been shown. The old
+        # test was `any("UNREAD" in ln)`, which re-printed the identical block
+        # on every operator message for as long as the mail sat unread.
+        if ctx.get("new"):
             sys.stdout.write(NEWLINE.join(lines) + NEWLINE)
+        sys.stdout.flush()
+        _commit_shown(ctx, sid)
+        _log_invocation("inbox-only", sid,
+                        f"printed={bool(ctx.get('new'))} "
+                        f"shown={len(ctx.get('shown') or ())} "
+                        f"payload={_payload_len()}")
         return 0
 
     if "--mark-inbox-seen" in sys.argv[1:]:
         every = "--all" in sys.argv[1:]
         n = mark_inbox_seen(all_notes=every)
+        _log_invocation("mark-inbox-seen", _session_id(),
+                        f"marked={n} all={every}")
         # Name the mode honestly: with no report record yet the ack falls back
         # to the listing, and calling that "what the report showed" would be
         # the same false reassurance the whole change is removing.
@@ -733,7 +1038,9 @@ def main() -> int:
     out.extend(_pipeline_lines(anomalies))
 
     out.append("\n## Sync inbox\n")
-    out.extend(_inbox_lines(anomalies))
+    sid = _session_id()
+    ctx: dict = {}
+    out.extend(_inbox_lines(anomalies, sid=sid, ctx=ctx))
 
     out.append("\n## Session notes\n")
     out.extend(_wakeup_lines(anomalies))
@@ -743,6 +1050,10 @@ def main() -> int:
         head = "## ! Anomalies\n\n" + "\n".join(f"- {a}" for a in anomalies) + "\n\n"
         sys.stdout.write(head)
     sys.stdout.write("\n".join(out) + "\n")
+    sys.stdout.flush()
+    _commit_shown(ctx, sid)
+    _log_invocation("session-start", sid,
+                    f"anomalies={len(anomalies)} payload={_payload_len()}")
     return 0
 
 

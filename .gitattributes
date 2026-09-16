@@ -19,3 +19,11 @@ data/**                           linguist-generated=true
 # keeps .py LF in the repo AND the working tree, overriding autocrlf
 # so the corruption cannot recur fleet-wide.
 *.py text eol=lf
+
+# Markdown pinned to LF for the same reason .py is, plus one more: the
+# cross-repo channel doc vendored at docs/CHANNEL.md is pinned by a BYTE
+# digest (see tests/test_channel_doc_pin.py). Under core.autocrlf=true a
+# checkout would hand that file CRLF and the pin would fail for a reason
+# that has nothing to do with the doc's content. Pinning *.md to LF makes
+# the zero-CR arm of that test a valid assertion instead of a checkout quiz.
+*.md text eol=lf

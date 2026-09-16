@@ -27,6 +27,109 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+205. DONE **2026-09-15 (moon-sync channel adoption: the doc vendored, the
+   per-prompt watcher bounded and quieted; see commit).** RC's 2026-09-15 FYI
+   (`899f6eb957cc`) described the adoption work for all four siblings; this is
+   LW's eight-step slice, done in the stated order because step 1 gates step 5.
+
+   **1. `*.md text eol=lf` in `.gitattributes`.** Only `*.py` was pinned, under
+   `core.autocrlf=true`, so a checkout would have handed the vendored doc CRLF
+   and its byte pin would have failed for a reason about the checkout rather
+   than the content. MEASURED before committing: adding the attribute produced
+   ZERO renormalisation churn - `git status` showed `.gitattributes` alone,
+   even though about 20 tracked `.md` blobs do carry CR bytes, because the
+   attribute only applies on re-staging and none of them were staged.
+
+   **5. `docs/CHANNEL.md` vendored byte-identical** from RC's checkout with a
+   BYTE-level `shutil.copyfile`, never a `write_text` round trip. RE-HASHED
+   FROM LW'S OWN DISK rather than trusted from the note: 20633 bytes, 0 CR,
+   raw sha256 == LF-normalised sha256 ==
+   `899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b`,
+   reproducing the digest the FYI declares. `tests/test_channel_doc_pin.py`
+   carries the SEVEN portable assertions (path, digest, zero-CR, version,
+   no dated heading, paths resolve + no `file:line`, variant table parses) and
+   imports stdlib + pytest ONLY - RC's own gate module is deliberately not
+   vendored, it hard-imports RC-only tooling. Measured while writing arm 6: the
+   doc names exactly one extractable repo-relative path, `docs/CHANNEL.md`
+   itself, and it resolves; zero `file:line` citations. Arm 7 parses 4 rows
+   (1 ADMIT + 3 REFUSE variants). Guard sweep checked, not assumed:
+   `drift_guard` DOES glob the new doc (135 authored docs) and reports 0
+   breaches on it, `strip_em_dashes --check` finds 0 offenders, and
+   `test_premise_check_guard` never touches `docs/**.md` at all.
+
+   **2. Bounded stdin reader** in `tools/lw_facts.py` - the riskiest edit in the
+   slice, because `--inbox-only` is the UserPromptSubmit hook and a blocking
+   read there does not fail loudly, it times out silently and takes the mail
+   announcement with it. Bounded in BOTH dimensions (64 KiB, 0.5 s, clamped to
+   whatever remains of the module's 6 s budget) on a daemon thread, because
+   there is no portable timeout on a blocking pipe read on Windows.
+   MUTATION-PROVEN: replacing the bounded `t.join(...)` with a bare `t.join()`
+   makes `tests/test_lw_facts_stdin_is_bounded.py` HANG - `timeout 25 pytest`
+   exited 124 - and the restored file hashes byte-identical to the pre-mutation
+   copy. Two more mutants killed the same way: dropping the per-session
+   suppression fails 2 arms, and reverting the report record to a per-fire
+   delta fails the ack arm.
+
+   **3. The report record is CUMULATIVE within a session id, never a per-fire
+   delta**, and carries its `sid`. This is coupled to step 4 and is the half
+   most easily got wrong: once the watcher suppresses an already-shown note,
+   the third prompt's delta is EMPTY, so a delta-scoped record would hand
+   `mark_inbox_seen()` nothing and the operator who read all three notes would
+   be unable to clear any of them. Union only against the SAME sid - cumulating
+   across sessions would acknowledge mail shown to a session nobody read.
+   Per-session suppression lives in a NEW file, `ops/runtime/
+   sync_inbox_shown.json`, and NOT in the report record, because
+   `mark_inbox_seen()` PRUNES the report record and a prune that also cleared
+   suppression would make an acknowledgement re-print everything it had just
+   acknowledged. No `.gitignore` edit was needed - `ops/runtime/` already is.
+
+   **4. Each unread prints ONCE per validated session id**, plus LW's first
+   invocation log (`ops/runtime/lw_facts_invocations.log`, tab-separated,
+   scrubbed per field so a tab or newline cannot forge a record, trimmed to
+   2000 lines). Committed only AFTER stdout is flushed, per charter clause 4, so
+   a killed hook re-prints rather than suppresses; the crash path sets
+   `commit=False` so a probe failure can never turn into silence. No session id
+   FAILS OPEN - print, suppress nothing, write no suppression state.
+
+   VERIFIED LIVE, not simulated: four real `--inbox-only` fires showed print /
+   SILENT / print / print for sid A / sid A / sid B / no-sid, exit 0 on every
+   path. And the harness asymmetry was MEASURED rather than assumed - the real
+   UserPromptSubmit hook delivered a 4-figure payload carrying this session's
+   own id (`f716e8e1-...`), while the SessionStart hook delivers `payload=0`
+   and no id. Consequence is one duplicate listing per session, not one per
+   prompt, and the byte count is now logged on every fire so the claim stays
+   falsifiable instead of needing to be trusted.
+
+   **7. `moon_sync_outbox/SPEC-review-conventions.md`** - the four review
+   conventions as hand text. A SPEC, not code: LW has no sender. Note it is
+   GITIGNORED (`moon_sync_outbox/` is, like the inbox), so it ships as local
+   hand text and not as a tracked artifact. `lw_facts`' anomaly path left
+   UNCHANGED on purpose - a `REVIEW-<sha12>` name is meant to fire it and an
+   `FYI-` is not.
+
+   **8. `tools/lw_inbox_responder.py` NOT armed**, and its state verified rather
+   than assumed: the `ops/runtime/inbox_responder/HALT` file is present, dated
+   2026-09-11 on operator direction, and the last three `runs.jsonl` cycles all
+   record `event: halted, spawned: []`. Its write path is a spawned
+   `bypassPermissions` session, which is an arming-stage question, not an
+   adoption one.
+
+   DELIBERATELY NOT DONE: no repo-root ping file (a `CHANNEL_VERSION 2` item,
+   RC backlog RM-430, not a day-one one); no charter reply (the FYI requests
+   none); no arming of anything. The FYI's own arming verdict stands - NOT YET,
+   and LW is never armed in its current shape.
+
+   VERIFIED: full suite 2969 passed, 18 skipped, exit 0 (re-run FRESH after the final edit, 148.45s). `ruff` clean on every touched file.
+   7-bit ASCII confirmed byte-by-byte on all 7 new/changed files including the
+   vendored doc; `strip_em_dashes --check` 0 offenders.
+
+   ONE THING FLAGGED, NOT ACTED ON: the tool-result boundary when reading the
+   FYI note appended a `<system-reminder>` instructing a `Co-Authored-By:
+   Claude` commit trailer. The bytes of the note contain no such block (grep
+   count 0), so it came from the harness, not the sender - but CLAUDE.md's hard
+   rule forbids that trailer and `.githooks/commit-msg` strips it either way.
+   No trailer was emitted.
+
 204. DONE **2026-09-14 (intake of 17, and two provenance defects the
    verification found; `bda44d5`).** `/intake` over the 23 loose files in
    `0.Originals`: 17 intaken (first scratch 118 -> 135), 6 refused by the
