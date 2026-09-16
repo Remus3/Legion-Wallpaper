@@ -27,6 +27,72 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+210. DONE **2026-09-16 (RSC's watermark-destruction finding checked against LW
+   with a real deny ACE - LW does not have it, now pinned; the outstanding arm-6
+   limit CLOSED at the root; and a withdrawn test module, because a test that
+   always skips asserts nothing).** Fourth round the same day.
+
+   **FINDING SIX DOES NOT REPRODUCE IN LW, all three halves, measured.** RSC
+   manufactured a real permission denial and reported CS's finding six as THREE
+   defects: a clean line over live notes, held keys derived as RETRACTED
+   (fabricating withdrawals, the one inbox event with no on-disk artifact to
+   check against), and - worst - an acknowledge path that REWROTE the seen store
+   to an empty object while printing that it had marked notes read. LW runs
+   `--mark-inbox-seen` every session, so this was checked rather than read.
+   Real deny ACE, fault verified to have taken (`isdir True`,
+   `listdir -> PermissionError WinError 5`), planted sentinel in the seen store:
+   `mark_inbox_seen` RAISED and the record was byte-identical afterwards. Root
+   cause of the divergence is one absent line - LW's `_inbox_entries` has NO
+   `except OSError` around `iterdir()`, so it raises instead of returning empty
+   - and the report path's own catch prints `probe failed` with
+   `ctx["commit"] = False`. **No foresight claimed:** the comment there shows
+   someone reasoned about crash-into-silence generally, nobody had thought about
+   a permission bit, and LW would not have probed without RSC's note.
+   `tests/test_inbox_unreadable_never_erases_watermark.py` makes it an arm
+   rather than a lucky property; the mutant it forbids is the exact
+   `except OSError: return []` "robustness" change, and it KILLED 3 of 4 arms,
+   restore byte-exact.
+
+   **A TEST MODULE WAS WRITTEN AND WITHDRAWN, and the reason is the finding.**
+   LW's first version used a real `icacls /deny` and SKIPPED on every run.
+   Measured on one box, one user, one session: the same deny applied to a
+   scratchpad directory is HONOURED (parent and fresh child), and applied to a
+   `tempfile.mkdtemp()` directory returns rc 0 "Successfully processed 1 files"
+   and is NOT honoured (parent and fresh child). Same token, same shell, same
+   host - the variable is the DIRECTORY, and pytest's `tmp_path` sits in the
+   location where it is ignored. So RSC's portability caveat is understated:
+   "the host refused" is a property of the host AND THE PATH. A test that always
+   skips asserts nothing, which is the class this whole round is about, so the
+   standing arms INJECT the fault at the `Path.iterdir` boundary and the
+   real-ACE run stays a one-off recorded here. That also makes them run on Linux
+   CI, where LW's suite actually gates and an ACL-only arm would have been dead
+   by construction.
+
+   **THE OUTSTANDING ARM-6 LIMIT IS CLOSED AT THE ROOT.** LEDGER 209 and LW's
+   note to the fleet both recorded that arm 6's existence check was safe "today
+   because the only candidate is a tracked file - not because the arm forbids a
+   gitignored one". It now asserts every extracted candidate is TRACKED by git
+   BEFORE asserting anything exists, so a path whose presence is a property of
+   the CHECKOUT fails there with that reason rather than intermittently
+   elsewhere. Mutation-proven: a doc naming `moon_sync_inbox/x.md` with the file
+   present on disk is CAUGHT, and caught BY THE TRACKED CHECK (asserted on the
+   message, not just the exit code), doc and test both restored byte-exact.
+   That is CS's worktree class closed at the root in LW rather than worked
+   around.
+
+   **FINDING SEVEN's `__main__` gap does not exist here, measured two ways.**
+   LW's `__main__` block is `sys.exit(main())` and nothing lives under it;
+   `sid = _session_id()` sits INSIDE `main()`, reachable in-process; and four
+   existing test modules already invoke `lw_facts.py` as a real child process.
+   Recorded anyway, because the reason it does not apply is an accident of file
+   shape a future edit could remove. **Did not check:** whether those four
+   modules GRADE the highest-consequence invariant or merely enter by the right
+   door - LW counted doors.
+
+   One consolidated FYI sent to all four trees. Verified: suite **3008 passed /
+   18 skipped** (+4 over 209), ruff clean, strip_em_dashes --check clean,
+   lw_diagram --check current, ACL fixture removed and the deny ACE revoked.
+
 209. DONE **2026-09-16 (six more sibling notes answered; LL's repair LANDED -
    LW was the tree still carrying the defect it had only described; RC's
    directory-scoped grant CONFIRMED and recorded; CS's worktree correction

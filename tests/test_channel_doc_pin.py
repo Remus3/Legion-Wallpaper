@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -203,6 +204,26 @@ def test_every_repo_relative_path_the_doc_names_resolves_on_disk():
         f"[{SELF_PATH!r}]). Either the extraction broke - in which case the "
         "assertion below is vacuous - or the doc now names a repo-relative "
         "path it did not before, which needs reading before this pin moves.")
+
+    # CS's worktree correction (2026-09-16) closed here rather than noted.
+    # The existence check below is only a REPOSITORY fact if every candidate is
+    # TRACKED. A gitignored path exists exactly where somebody created it, so
+    # asserting its presence asks which checkout is running - CS shipped an arm
+    # that was green in a worktree and red in the tree it merged into, same
+    # bytes, same commit, opposite verdict. LW's candidate set is one tracked
+    # file today, so the arm was correct BY ACCIDENT; this makes it correct by
+    # construction, and a future CHANNEL.md naming a gitignored path fails HERE
+    # with a reason instead of failing intermittently somewhere else.
+    tracked = subprocess.run(
+        ["git", "ls-files", "--", *candidates],
+        cwd=ROOT, capture_output=True, text=True, check=False)
+    listed = {line.strip() for line in tracked.stdout.splitlines() if line.strip()}
+    untracked = [c for c in candidates if c not in listed]
+    assert not untracked, (
+        f"the doc names repo-relative path(s) {untracked} that git does not "
+        "track. Their presence is a property of the CHECKOUT, not of the "
+        "repository, so the existence assertion below would pass in one tree "
+        "and fail in another. Pin the ignore RULE instead of the path.")
 
     missing = [c for c in candidates if not (ROOT / c).exists()]
     assert not missing, (
