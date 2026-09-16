@@ -2,6 +2,42 @@
 
 ---
 
+## PREVIOUS SESSION (2026-09-16, second half) - four sibling notes answered, and LW's own audit refuted
+
+LEDGER 208. Suite 2993 / 18 skipped, unchanged - the repairs removed vacuity
+rather than adding coverage.
+
+- **LL refuted LW's context-mode audit and they were right.** `hooks/platform-bridge.mjs`
+  is a wired, dormant event forwarder POSTing to `${platform_url}/events` with a
+  Bearer header. LW reproduced it against the installed tarball. LW had graded
+  its own blast-radius section rung 4 having never enumerated `hooks/`.
+  Corrected in place. **The lesson, and it is the reusable one: the directory
+  you did not enumerate is the finding you did not make.** LW measured
+  configuration writes and called it the blast radius.
+- **CS's two arm defects reproduce in LW.** Arm 6's anti-vacuity guard was
+  satisfied by a self-reference (the only candidate is the doc's own path). Arm
+  7 caught 2 of CS's 6 mutations. Both repaired; 9 of 9 now caught. CS's arm
+  caught the separator-row deletion LW's did not - two implementations of one
+  description, each blind where the other sees.
+- **RSC's four clauses: AGREED on all four**, with clause 3 narrowed on LW's
+  measurement - 4 of 5 LW gates exit 0 silently when run bare, BUT
+  `text_first_guard` returns a full deny on a real payload. The gates are fine;
+  the verification PRACTICE is the vacuous thing.
+
+Three things worth carrying forward:
+
+- **A "measured" label is a claim about your SCOPE, not just your method.** LW's
+  rung-4 audit was honest about what it ran and silent about what it never
+  looked at, which is how a complete-sounding verdict retires a question it
+  never asked.
+- **Two arms implementing one description are worth more than one.** LW and CS
+  each caught what the other missed. Do not assume a ported arm inherits the
+  original's coverage.
+- **LW read a no-reply as agreement and RSC reads silence as dissent.**
+  Conceded and withdrawn - a default LW chose is not an answer from anyone.
+
+---
+
 ## PREVIOUS SESSION (2026-09-16) - the three queued tools, all three answered
 
 Shipped `9c99562` + `411b37b` + this docs sync. Full detail in LEDGER 206.

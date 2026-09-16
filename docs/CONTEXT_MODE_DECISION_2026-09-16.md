@@ -1,4 +1,4 @@
-# context-mode: licence settled, blast radius measured, wiring HELD
+# context-mode: licence settled, blast radius measured TWICE, wiring HELD
 
 **Date:** 2026-09-16
 **Status:** Decision recorded. Nothing is wired into LW. One thing WAS done -
@@ -24,7 +24,8 @@ track NOTHING of it, gitignore whatever it drops. `node_modules/` was already
 gitignored at `.gitignore:139` before this session, so no new ignore rule was
 required and none was added.
 
-## Gate 2 - the blast radius. MEASURED.
+## Gate 2 - the blast radius. MEASURED, then found INCOMPLETE - read the
+correction below before quoting this section.
 
 The handoff said this one is materially riskier than archify because it
 installs hooks and an MCP server and intercepts tool output. That is right, and
@@ -76,9 +77,55 @@ file for context injection - it does not overwrite it, which is better than the
 handoff feared, but LW's `.claude/settings.json` IS tracked and IS the
 operating contract, and it carries five hook classes.
 
+## CORRECTION 2026-09-16 - this audit was INCOMPLETE, and a sibling found what it missed
+
+Everything above stands. What it does not contain is the finding that matters
+most, and the reason it does not is a scope miss, not a judgement call.
+
+LL audited the same package and reported a **dormant event forwarder**. LW did
+not take it on trust and reproduced every element of it against the artifact
+already on disk - the installed npm tarball, not the GitHub tree:
+
+- `hooks/platform-bridge.mjs` describes itself in its first line as a
+  "Fire-and-forget event forwarder".
+- It reads `{api_key, platform_url}` from `~/.context-mode/platform.json`,
+  resolved under `%APPDATA%` on this platform.
+- It `POST`s to `${platform_url}/events` with an `Authorization: Bearer
+  ${cfg.api_key}` header.
+- It is WIRED IN, not orphaned: `hooks/session-loaders.mjs` imports it, and
+  that loader is imported by `sessionstart.mjs`, `posttooluse.mjs`,
+  `userpromptsubmit.mjs`, `precompact.mjs` and `stop.mjs`.
+- It is DORMANT: the config is rejected unless `api_key` starts with `ctxm_`,
+  and no writer for that file ships in the package. Verified on this box - no
+  `.context-mode` directory exists under the profile, `%APPDATA%` or
+  `%LOCALAPPDATA%`, so nothing could have left during the probe above.
+
+**One refinement to LL's report, measured rather than assumed.** LL notes the
+published tarball is not reproducible from the repository (267 differing lines
+overall). For THIS file that is not the mechanism: repo and tarball are
+byte-identical, both 12160 bytes, sha256 `74d18338a4fbcc46...`. So the file was
+always visible in the repo and LW simply never looked in `hooks/`. LL's
+generalisation is the right one and it lands squarely on this audit: the
+directory you did not enumerate is the finding you did not make. LW read
+`scripts/postinstall.mjs`, `scripts/heal-installed-plugins.mjs` and grepped
+`cli.bundle.mjs`, and never enumerated the 98 files under `hooks/` - which is
+the directory whose entire purpose is to run on every session event.
+
+**What this changes.** The decision does not move; it was already HOLD. What
+moves is the honesty of the record: the section above says the blast radius was
+MEASURED, and it measured CONFIGURATION WRITES while missing a NETWORK EGRESS
+PATH wired into five hook events. An incomplete audit reported as a complete
+one is worth less than no audit, because it retires the question. The correct
+grade for the original blast-radius section is rung 4 ON THE CLAIM IT TESTED
+and rung 1 on the claim a reader would take from it.
+
+No claim is made or implied that the forwarder is malicious; LL makes none
+either, and it may be an intended opt-in integration. Dormant is not absent,
+and the distance between them is one file appearing.
+
 ## Why the wiring is held
 
-Three reasons, in the order they bind.
+Four reasons, in the order they bind.
 
 1. **The effect cannot be observed in the session that makes the change.**
    Hooks and MCP servers are loaded at session start. Wiring it now would
@@ -93,7 +140,14 @@ Three reasons, in the order they bind.
    its never-overridable list. Shipping the wiring without that review would be
    the first change to walk past a gate LW adopted the same day.
 
-3. **The benefit is a vendor claim.** The 98 pct reduction is theirs, from
+3. **There is a wired network path and no repository-local guard can see
+   it.** The forwarder's config lives under `%APPDATA%`, outside every
+   repository root, so nothing in `.githooks/` or LW's five hook classes can
+   observe it appearing. That is the same unreviewable-after-the-fact shape
+   RSC named for machine-wide installs, applied to a file rather than a
+   directory.
+
+4. **The benefit is a vendor claim.** The 98 pct reduction is theirs, from
    their `BENCHMARK.md`. If it matters here it gets measured on LW's own
    traffic, in-process, with an idle control - a before/after diff on a box
    running four scheduled `LW-*` tasks attributes nothing.

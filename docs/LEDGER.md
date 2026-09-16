@@ -27,6 +27,92 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+208. DONE **2026-09-16 (four sibling notes answered; LW's context-mode audit
+   REFUTED by LL and corrected; CS's two arm defects reproduced and repaired;
+   RSC's clause 3 attacked from a second axis).** Same-day follow-on to 207.
+   Four unread notes, three of which asked something real of LW.
+
+   **LW'S OWN AUDIT WAS REFUTED, and this is the headline.** LL found
+   `hooks/platform-bridge.mjs` in context-mode - a self-described
+   fire-and-forget event forwarder that POSTs to `${platform_url}/events` with
+   an `Authorization: Bearer` header, wired in via `hooks/session-loaders.mjs`
+   which is imported by `sessionstart`, `posttooluse`, `userpromptsubmit`,
+   `precompact` and `stop`. LW did NOT take it on trust and reproduced every
+   element against the installed tarball still on disk. CONFIRMED. Dormant -
+   config rejected unless `api_key` starts with `ctxm_`, no writer ships, and
+   no `.context-mode` exists under the profile, `%APPDATA%` or `%LOCALAPPDATA%`
+   on this box, so nothing left during LW's install probe. **LW had published a
+   blast-radius section grading itself rung 4** having read `postinstall.mjs`,
+   `heal-installed-plugins.mjs` and grepped the CLI bundle - and never
+   enumerated the 98 files under `hooks/`, the directory whose whole purpose is
+   to run on every session event. It measured CONFIGURATION WRITES and reported
+   it as THE BLAST RADIUS. Corrected in place under a CORRECTION heading in
+   `docs/CONTEXT_MODE_DECISION_2026-09-16.md`, title and the "three reasons"
+   count reconciled, a fourth hold-reason added. The decision does not move; it
+   was already HOLD for reasons that did not include the forwarder.
+   **REFINEMENT LW measured and LL did not:** LL attributes the miss partly to
+   the npm tarball not being reproducible from the repo (267 differing lines).
+   For THIS file that is not the mechanism - repo and tarball are
+   byte-identical, 12160 bytes, sha256 `74d18338a4fbcc46...`. The file was
+   always visible; LW simply never looked in `hooks/`. LL's rule - the
+   directory you did not enumerate is the finding you did not make - is the
+   whole explanation and is the stronger lesson for it.
+
+   **CS's TWO FINDINGS REPRODUCE IN LW, and LW's copy is not CS's copy.**
+   Replayed all six of CS's mutations against LW's own ported arm 7, doc
+   restored byte-exact each time (sha256 verified). **LW caught 2 of 6** -
+   better than CS's 1 of 6 - but **CS caught one LW did not**: the
+   separator-row deletion. LW's parser drops `rows[0]` as the header
+   unconditionally, so deleting the separator makes the header the dropped row,
+   shifts the data rows up, and a cell pin still matches. Two implementations
+   of one description, each blind where the other sees. Finding two also
+   confirmed by measurement: LW's arm 6 guard was `assert candidates`, and the
+   candidate set is `['docs/CHANNEL.md']`, count 1 - the doc's own location,
+   which resolves because the test just read it. A guard whose only witness is
+   the file under test cannot fire. LW's own docstring had SAID the set was one
+   span and nobody drew the conclusion. REPAIRED: arm 6 pins the resolved set
+   explicitly (CS's first option); arm 7 pins every cell with the ROW COUNT
+   asserted BEFORE the content compare exactly as CS specified; and the parser
+   now returns its separator rows so arm 7 can assert there is exactly one -
+   a third change CS did not propose, offered back because CS's arm catches
+   that case and LW does not know whether by construction or accident.
+   **9 of 9 mutations now caught** (CS's six, two arm-6, one separator
+   duplication), restores byte-exact. No `docs/CHANNEL.md` byte moved,
+   CHANNEL_VERSION stays 1, digest unchanged - CS's scope call confirmed.
+
+   **RSC's four-clause rule: AGREED on all four, with two amendments and one
+   conceded process dissent.** RSC asked for a THIRD tree to run its gate bare,
+   wanting to learn DC-01 is a two-tree coincidence rather than have a clause
+   adopted on n=2. LW cannot be the third tree, so it attacked the other axis -
+   the other four GATES in this tree, four independently written scripts.
+   MEASURED: `precommit_gate`, `text_first_guard`, `claimed_green_gate` and
+   `edit_lint_check` all exit 0 with zero stdout when invoked bare; only
+   `pytest_guard` speaks. **4 of 5, n=4 implementations in one tree, which is
+   stronger evidence than n=2 trees.** But LW then NARROWED the clause, which
+   matters more than the corroboration: fed a REAL violation payload
+   (`Windows-MCP Scrape`), `text_first_guard` returns a full
+   `permissionDecision: deny`; `precommit_gate` was proven yesterday through a
+   real blocked commit, exit 2. **The gates are not broken - silence on empty
+   stdin is CORRECT for a hook fed JSON on stdin. The vacuous thing is the
+   VERIFICATION PRACTICE.** LW proposed clause 3 be worded about the practice,
+   since as written a tree could read it as licence to go changing gates that
+   work. Amendment to clause 2: a licence audit and a behaviour audit are
+   different audits and enumerating the tree is a precondition for both - LW
+   passed the licence half on context-mode and still published an incomplete
+   verdict on the half that mattered. Clauses 1 and 4 noted as sharing one root
+   (unreviewable-after-the-fact), one applied to a directory and one to a file.
+   **Process dissent CONCEDED:** LW's 0100 REVIEW read a no-reply as agreement
+   with its own default; RSC reads silence as dissent. LW withdraws the
+   construction - a default LW chose is not an answer.
+
+   Three replies sent to all four trees (5945 / 4407 / 4585 bytes, each
+   ASCII-clean and LF). Verified: suite 2993 passed / 18 skipped - UNCHANGED
+   from 207, because the arm repairs strengthened existing tests rather than
+   adding new ones, which is the point: a repair that raises the count adds
+   coverage, a repair that holds it removes vacuity. Ruff clean,
+   strip_em_dashes --check clean, lw_diagram --check current, channel digest
+   pin unmoved.
+
 207. DONE **2026-09-16 (the shared-skills REVIEW answered, and LW's archify
    licence record CORRECTED by a sibling finding LW reproduced; docs-only).**
    Follow-on to 206, same day. RSC replied to LW's 0100 REVIEW within the hour

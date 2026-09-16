@@ -187,10 +187,22 @@ def test_every_repo_relative_path_the_doc_names_resolves_on_disk():
     spans = _backtick_spans(text)
     candidates = sorted({s for s in spans if _looks_like_repo_path(s)})
 
-    # Guard the guard: an empty candidate set would pass vacuously.
-    assert candidates, (
-        "no repo-relative path spans extracted from the doc - the extraction "
-        "broke, so the assertion below would be vacuous")
+    # Guard the guard, REPAIRED 2026-09-16 on CS's finding (note
+    # 1c0be827c496). The old guard was `assert candidates` - non-empty. It was
+    # satisfied by a SELF-REFERENCE: the only span the extraction yields is
+    # `docs/CHANNEL.md`, the doc's own agreed location, which resolves because
+    # the test just read it. A guard whose only witness is the file under test
+    # cannot fire, so it asserted nothing. Measured before the repair:
+    # candidates == ["docs/CHANNEL.md"], count 1.
+    #
+    # Pinning the resolved set - CS's first option - says out loud what this
+    # arm actually covers, and turns a silent broadening or breakage of the
+    # extraction into a red test instead of a guard that keeps passing.
+    assert candidates == [SELF_PATH], (
+        f"the extracted candidate set moved: {candidates} (pinned: "
+        f"[{SELF_PATH!r}]). Either the extraction broke - in which case the "
+        "assertion below is vacuous - or the doc now names a repo-relative "
+        "path it did not before, which needs reading before this pin moves.")
 
     missing = [c for c in candidates if not (ROOT / c).exists()]
     assert not missing, (
@@ -205,16 +217,33 @@ def test_every_repo_relative_path_the_doc_names_resolves_on_disk():
         "next edit of the file it names")
 
 
+# The doc's own agreed location - the single repo-relative path it names.
+# Arm 6 pins its extracted candidate set to exactly this (see that arm).
+SELF_PATH = "docs/CHANNEL.md"
+
+# The grammar table, pinned cell by cell. This is the vector source every
+# porting tree reads its grammar cases out of, so a moved cell changes what
+# four other trees test. Generated from the doc and then frozen; re-pin only
+# together with the digest, never to make a red test go green.
+EXPECTED_TABLE = [
+    ['`2026-09-15-0930-from-RC-FYI-example-topic.md`', 'ADMIT', 'routes', 'any entry', 'no responder', 'no responder', 'PRIMARY'],
+    ['`2026-09-15-from-RC-FYI-example-topic.md`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'Variant A'],
+    ['`from-RC-2026-09-15-0930-FYI-example-topic.md`', 'REFUSE', 'zero destinations', 'any entry', 'no responder', 'no responder', 'Variant B'],
+    ['`2026-09-15-0930-from-RC-FYI-example-topic.txt`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'Variant C'],
+]
+
+
 # ---- 7. the filename-variant table, the grammar's test-vector source --------
 
-def _variant_table_rows() -> list[list[str]]:
-    """Rows of the `### Filename grammar table` section, header dropped."""
+def _variant_table_rows() -> tuple[list[list[str]], list[list[str]]]:
+    """(data rows with the header dropped, separator rows seen)."""
     text = _text()
     start = text.find("### Filename grammar table")
     if start < 0:
-        return []
+        return [], []
     body = text[start:]
     rows: list[list[str]] = []
+    separators: list[list[str]] = []
     seen_pipe = False
     for line in body.split("\n"):
         stripped = line.strip()
@@ -225,9 +254,16 @@ def _variant_table_rows() -> list[list[str]]:
         seen_pipe = True
         cells = [c.strip() for c in stripped.strip("|").split("|")]
         if all(set(c) <= set("-: ") for c in cells):
+            separators.append(cells)
             continue  # the separator row
         rows.append(cells)
-    return rows[1:] if rows else []  # drop the header row
+    # Dropping rows[0] as "the header" is only correct if a separator was
+    # actually seen. Delete the separator and the header silently becomes the
+    # dropped row, the four data rows shift up, and a cell-for-cell pin still
+    # matches - which is exactly how this parser passed CS's separator-deletion
+    # mutation while CS's own arm caught it (measured 2026-09-16). Returning
+    # the separators lets the arm assert the table is still a table.
+    return (rows[1:] if rows else []), separators
 
 
 def test_the_filename_variant_table_is_present_and_parses():
@@ -237,32 +273,46 @@ def test_the_filename_variant_table_is_present_and_parses():
     so a tree building a grammar arm reads its cases out of here rather than
     inventing them. If the table stops parsing, that source is gone silently.
     """
-    rows = _variant_table_rows()
+    rows, separators = _variant_table_rows()
+    assert len(separators) == 1, (
+        f"the grammar table has {len(separators)} separator rows, expected 1 - "
+        "without exactly one, dropping rows[0] as the header is not sound and "
+        "the cell pin below can match a table that shifted up")
     assert rows, (
         "the `### Filename grammar table` section is missing or its rows no "
         "longer parse")
 
-    examples = []
-    shapes = []
-    for cells in rows:
-        assert len(cells) >= 2, f"under-wide table row: {cells}"
-        example = cells[0].strip("`")
-        shape = cells[-1]
+    # REPAIRED 2026-09-16 on CS's finding (note 1c0be827c496). The old arm
+    # graded the example prefix and the distinctness of shapes, and nothing
+    # else. Measured by replaying CS's six mutations against it: it caught 2 of
+    # 6. It passed a SWAP of two variant rows' example names, a flip of the
+    # PRIMARY row's verdict from ADMIT to REFUSE, a blanking of all four
+    # responder columns, and - unlike CS's own arm, which caught this one - the
+    # deletion of the separator row. An arm whose stated job is to pin the
+    # grammar's test-vector source has to grade the vectors.
+    #
+    # The row COUNT is asserted BEFORE the content compare, so a table that
+    # lost a row fails on the count rather than on a confusing per-cell diff.
+    assert len(rows) == len(EXPECTED_TABLE), (
+        f"the grammar table has {len(rows)} rows, pinned at "
+        f"{len(EXPECTED_TABLE)}: {rows}")
+    assert rows == EXPECTED_TABLE, (
+        "the grammar table's cells moved. This table is the vector source a "
+        "grammar arm reads its cases out of, so a changed cell changes what "
+        "every porting tree tests. Diff it against the pin and move the pin "
+        "deliberately, together with the digest, or not at all.")
+
+    # The shape claims the pin implies, kept as named assertions so the reason
+    # the table earns its keep survives a future re-pin: it has to carry the
+    # accepted shape AND at least one shape a responder refuses - the two
+    # answers any grammar arm must be able to produce.
+    shapes = [cells[-1] for cells in rows]
+    examples = [cells[0].strip("`") for cells in rows]
+    assert len(set(examples)) == len(examples), (
+        f"the table records a duplicate example: {examples}")
+    for example in examples:
         assert example.startswith("2026-") or example.startswith("from-"), (
-            f"table row 0 is not a filename example: {cells}")
-        assert shape, f"table row carries no shape: {cells}"
-        examples.append(example)
-        shapes.append(shape)
-
-    assert len(set(examples)) >= 2, (
-        f"the table records fewer than two distinct examples: {examples}")
-    assert len(set(shapes)) >= 2, (
-        f"the table records fewer than two distinct shapes: {shapes}")
-
-    # Guard the guard: two rows that were both PRIMARY would be two rows and no
-    # vectors. The table earns its keep only by carrying the accepted shape AND
-    # at least one shape a responder refuses - the two answers any grammar arm
-    # has to be able to produce.
+            f"table row 0 is not a filename example: {example}")
     distinct = set(shapes)
     assert "PRIMARY" in distinct, f"no PRIMARY row: {sorted(distinct)}"
     variants = {s for s in distinct if s.startswith("Variant ")}
