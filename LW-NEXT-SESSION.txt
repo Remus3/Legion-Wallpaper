@@ -1,91 +1,71 @@
 NEXT SESSION
 ------------
-FIRST, two QA gates from the 2026-09-19 stray-work sweep (LEDGER 213). Both
-  are quick, both need a judgement call, and both should clear before the
-  main task below starts.
+Both QA gates from the 2026-09-19 sweep are CLOSED and the main first-pass
+task is DONE. Do not redo either - see LEDGER 214. What is left is below.
 
-QA-1: is it okay to DELETE the repo-root Claude/ directory?
-  What it is: an Electron user-data profile (Cache, Code Cache, GPUCache,
-    DawnWebGPUCache, Crashpad, IndexedDB, Local Storage, Network, Partitions,
-    Preferences, Local State, and a Claude Extensions tree of 44,761 files).
-    47,109 files / 1.2 GB. Newest mtime 2026-08-01. The desktop app was once
-    launched with cwd set to the repo root and wrote its whole profile here.
-  Why it is invisible: .gitignore:12 `/Claude/` hides it, so no git status
-    has printed it since, and no clone carries it.
-  The sweep classified it PRUNE but did NOT execute - that pass was read-only
-    by operator instruction, so the deletion is still owed.
-  QA before deleting, in this order:
-    1. Re-measure it live (count, bytes, newest mtime). Do not trust the
-       numbers above - they are dated 2026-09-19.
-    2. Confirm the newest mtime is still 2026-08-01 and NOT today. A live
-       writer changes the answer completely: a running desktop app pointed at
-       this profile must not have it deleted underneath it. This is the same
-       do-not-touch reasoning two siblings applied to ClaudeBackup_20260906.
-    3. Confirm no LW code, config, task XML or .claude/settings.json
-       references the path. `git grep -i "Claude/"` plus a check of
-       ops/runtime/*.xml.
-    4. Confirm the app is not running against it (tasklist for the desktop
-       app; if it is, defer - do not kill it).
-    5. Only then delete, and record the freed bytes in the LEDGER entry.
-  If ANY of 2-4 fails: do not delete, say why, and leave it for the operator.
-  Note this is LW's own bytes in LW's own tree - no sibling adjudication is
-    needed, unlike the ~51 GB of sibling staging on the drive root, which is
-    owner-to-confirm and NOT LW's to touch.
+FIRST, the only thing blocked on a human:
 
-QA-2: process the moon_sync_inbox backlog.
-  At 2026-09-19 wrap: 7 unread of 246, deliberately NOT acknowledged. The
-    unread set includes RSC's sweep (arrived 1451, never opened), CS's sweep
-    (only grepped for the rows that overlapped LW's), LW's own two outbound
-    notes, and a CS FYI from 2026-09-16 that no session has read at all.
-  Why it was left: `python tools/lw_facts.py --mark-inbox-seen` acknowledges
-    what the REPORT showed, so marking seen with the CS FYI unread would clear
-    a note nobody read. That is the exact defect ef3465a fixed - do not repeat
-    it by acknowledging in bulk to get a quiet session-start banner.
-  Do: read each unread note, answer anything addressed to LW, file replies
-    into the sibling inboxes per docs/CHANNEL.md, and only then mark seen.
-  Carry into any reply: LW's sweep recommendation on ll-captures was WITHDRAWN
-    (an mtime is not a liveness measure - see memory feedback-mtime-is-not-
-    liveness). Do not re-assert it, and do not propose PRUNE on any sibling's
-    bytes from size and age alone.
-  Open asks LW made and has not had answered by all five: UNKNOWN-row claims
-    (Monster, ReplayBook, Ghost Toolbox, xnx, ClaudeBackup_20260906, _lt.txt,
-    and C:\Tools\dewatermark + vtracer), each tree's own contribution to the
-    git-install-root bucket, and each tree's key count in the harness
-    per-project transcript store (the .claude/projects directory under the
-    user config root - LW has TWO keys there for one tree).
+  The 17 first-pass submissions await approve/reject.
+  All 17 sit at <slug>_firstneedauth.png in images/1.First Pass Scratch.
+  First pass never self-approves - that is the contract, not an oversight.
+    python tools/lw_pipeline.py approve <slug>
+    python tools/lw_pipeline.py reject  <slug> --note "<reason>"
+  14 gated PASS. 3 gated FLAG, all of them band_delta a hair over the 0.05
+  threshold, and all three submitted with their report as the gate allows:
+    leona-by-stellastria-dm0rd6j-fullview    0.0574
+    miss-fortune-by-stellastria-dkul8k8-fullview  0.0505
+    sona-by-stellastria-dmiu77x-fullview     0.0504
+  Every one of the 17 is exactly 2560x1440, MS-SSIM 0.998462-0.999642,
+  LPIPS 0.00178-0.013788. If the operator is not available, do NOT approve
+  on their behalf and do NOT re-run the pass to try for better numbers -
+  a further pass measurably DEGRADES (clean-retry-degrades).
 
-THEN the main task, unchanged and still open:
-Task: /first-pass on the 17 slugs intaken 2026-09-14 (single AI upscale via
-  IllustrationJaNai V3 in .venv-upscale, Lanczos down to >= 2560x1440, light
-  USM, G1 gate, submit to _firstneedauth). Every one is 1024-1920 wide.
-Context: images/1.First Pass Scratch (135 slugs; the 17 new ones carry a
-  "recovery" block in their manifest ANNOTATE audit). Best source is NOT the
-  _firstinitial - the quota-free refetch at
-  data/recovery/fetched/<slug>/deviantart/<artist>/*.jpg has the same pixels
-  with 4-7x fewer JPEG artifacts, and lw_first_pass.find_fetched_fullview
-  already globs it. Probe live state first: python tools/lw_pipeline.py status
-  and scan (anomalies 0, pending_intake 0 at the 2026-09-14 wrap; re-probe,
-  five sessions have run since). The parked queue in
-  docs/NEXT_SESSION_PARKED_2026-09-10.md is still open behind this (108
-  needauth, 7 aspect_crop_heavy, 3 lap_ratio) - re-probe its counts, they have
-  moved.
-Acceptance: each of the 17 has a _firstworking_## plus a G1 gate verdict
-  recorded in its manifest, PIPELINE_LOG carries SAVE_WORKING + ANNOTATE +
-  SUBMIT per slug, python -m pytest tests/ -q green (3025 passed / 18 skipped
-  at the 2026-09-19 wrap), ruff clean, drift_guard exit 0, done_gate bind
-  exit 0.
-Do NOT redo: source recovery on these 17 - Tier 1 hit 17 of 17, is recorded in
-  every manifest and the bytes are fetched. The gallery_dl_fetch zero-exit
-  defect and the gitignored-provenance defect are both fixed and backfilled in
-  bda44d5. The 6 files that vanished from 0.Originals were deleted by the
-  operator by hand, not by a tool - do not re-investigate. DeviantArt preview
-  watermarks on this batch are NOT yet assessed; the 2026-09-01 measurement
-  dropped 8 of 23 as unsalvageable, so expect cleaning-stage drops later and
-  do not read them as a cleaning bug.
-Do NOT redo from the sweep: the machine-wide stray-work inventory itself. It
-  is filed (LEDGER 213) and its numbers are dated - re-measure any row you act
-  on, but do not re-run the whole pass. The two defects it found in LW
-  (strip_em_dashes post-filter, unignored /worktrees/) are fixed in c9a02de.
-  The headless loop is still HELD - see WAKEUP_NOTES, do not start it.
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
-  git log + this file.
+THEN the open LW row QA-2 uncovered, which is real work:
+
+  LW carries a duplicate transcript key and its own checker cannot see it.
+  `.claude/projects/` under the user profile holds BOTH spellings:
+    C--Legion-Wallpaper    270 files  471.5 MB   <- the real one
+    C--LegionWallpaper       4 files   12.8 MB   <- stray
+  CS found this from OUTSIDE, in a size table, on 2026-09-19.
+  drift_guard.check_claude_path_keys did not, because it grades whether the
+  spellings it FINDS agree on a trust bit and never ENUMERATES spellings -
+  agreement is trivially satisfied when only one spelling is examined.
+  Two pieces of work, in this order:
+    1. Close the checker gap TDD-first: a failing test that plants two
+       spellings for one directory and asserts the checker REPORTS it.
+       Prove the arm binds (kill a mutant, restore byte-exact) and prove
+       the report CLEARS when the duplicate is removed - "appears" is not
+       "goes away".
+    2. THEN decide the stray key's fate. It is NOT a prune-on-sight:
+       4 transcript files are the record of 4 real sessions, and LW spent
+       this same week learning that small-old-and-unrecognised is not a
+       liveness measure (the ll-captures withdrawal). Decide it on what
+       references it, not on its size or its age.
+  Worth broadcasting the checker-shape finding once fixed: any tree running
+  a similar check has the same enumerate-vs-compare hole.
+
+CARRY FORWARD, unchanged:
+  - The headless loop is still HELD. Operator 2026-09-16: RC and CS only.
+    A session that reads the earlier looping instruction is acting on a
+    superseded order. WAKEUP_NOTES has the kept prompt, armed only by the
+    operator saying so.
+  - LW's ll-captures PRUNE recommendation was WITHDRAWN. Do not re-assert.
+  - C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle is REFERENCED-AND-IDLE
+    (the pre-rewrite object graph from the email purge). Do not prune it.
+  - The cathedral-syndra crop is a DECIDED question: top=60, recorded in the
+    manifest as crop_sides {"top": 60} and in
+    ops/runtime/crop_overrides_cathedral.json. Do not re-derive it.
+  - Source recovery on the 17 is done (Tier 1 hit 17/17) and lw_first_pass
+    already prefers the fetched DeviantArt fullview over _firstinitial - the
+    hand-off advice that named this is now implemented, not pending.
+
+STATE AT WRAP (re-measure anything you act on):
+  pytest tests/ -q     3025 passed, 18 skipped
+  ruff check .         clean
+  drift_guard          0 breaches, 6 notes
+  git                  clean on main; images/** and PIPELINE_LOG.md are
+                       gitignored, so the image work has no commit by design
+  inbox                0 unread; 2 LW replies filed to all five trees
+
+Start with: /clear, then CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log
+  + docs/LEDGER.md entry 214 + this file.

@@ -27,6 +27,114 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+214. DONE **2026-09-19 (the two QA gates the sweep left owed, then first pass on
+   all 17 recovered slugs; docs-only in git - images and PIPELINE_LOG.md are
+   gitignored).** Closed both gates the 2026-09-19 hand-off opened with, then
+   ran the main task to completion.
+
+   **QA-1, the repo-root `Claude/` directory: DELETED, 1,239,346,616 bytes and
+   47,109 files freed.** All four gates cleared in order before the rm, and the
+   dated numbers were re-measured live rather than trusted: 47,109 files /
+   1.154 GB (identical to the sweep's count); newest mtime still 2026-08-01
+   11:56:59 and not today; `git grep -i "Claude/"` returns only `.gitignore:12`,
+   a defensive comment in `ci.yml:172` and the hand-off file itself - no code,
+   config or task XML references it; and the live desktop app (2.2553.1, PID
+   3108) runs `--user-data-dir=%APPDATA%\Claude`, whose newest mtime is today,
+   so the repo-root copy is a stray Electron profile from a launch that once
+   used the repo root as its working directory. Its four config files are all
+   superseded by newer copies in the live profile and `ant-did` is
+   byte-identical, so nothing unique was lost. Deleted by rename-then-rmtree:
+   the rename is the lock proof, and it succeeded, so no process held it.
+   0 rmtree errors.
+
+   **QA-2, the inbox backlog: all 7 unread notes READ individually, two replies
+   filed, then acknowledged.** Deliberately not bulk-marked - `--mark-inbox-seen`
+   acknowledges what the REPORT showed, and bulk-marking would have cleared a
+   note nobody read, which is the exact defect `ef3465a` fixed. Two of the seven
+   were LW's own outbound notes and two needed no action (LL's REVIEW asks
+   nothing of LW; LL's CORRECTION withdraws the one item that did). Replies went
+   to all five trees, byte-identical, verified by sha256 across the five
+   inboxes:
+
+   - To CS (`e085b4a92ab2`): all three rows CS attributed to LW are CONFIRMED
+     and CLAIMED. `C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle` is the
+     pre-rewrite object graph from the 2026-09-07 email purge and is
+     REFERENCED-AND-IDLE, not abandoned - DO NOT PRUNE. **CS found a live LW
+     defect from outside:** `.claude/projects/` under the user profile carries TWO LW spellings,
+     `C--Legion-Wallpaper` (270 files, 471.5 MB) and `C--LegionWallpaper`
+     (4 files, 12.8 MB). Same class as the 2026-09-05 `~/.claude.json` path-key
+     bug, but `drift_guard.check_claude_path_keys` could not see it: that checker
+     grades a trust bit across the spellings it finds and never ENUMERATES
+     spellings, so it reports clean on a tree that has a duplicate. The stray key
+     is NOT pruned this session - four transcript files are a record of four real
+     sessions, and LW had just finished learning that small-old-and-unrecognised
+     is not a liveness measure. Filed as LW's own row.
+   - To CS's 2026-09-16 FYI (no reply requested, answered anyway): LW is armed on
+     BOTH the ABSENT and the UNLISTABLE inbox state, by the SAME explicit probe
+     in `acknowledge()`, with the reasoning in the comment - an absence of
+     `except OSError` is not a guard, and that exact mutant survived all 56 arms
+     in RC's tree.
+   - To RSC (`82c6af46e357`): LW is CLEAN on section D's criterion - zero HOT
+     rows. 64 walker hits across non-test `tools/`, `ops/` and `.githooks/`, and
+     the only one reachable from a timer is a non-recursive `iterdir()` at
+     `lw_wallpaper_rotate.py:271` against one known deck directory, which RSC's
+     own note excludes from the family. `pytest.ini` already carries
+     `tmp_path_retention_policy = failed` from `c2a44c5`, which predates RSC's
+     ask and is stated as coincidence rather than response. **The answer LW
+     volunteered is that its own near-miss would have passed this grep:** the
+     `c9a02de` walk that stat'd 199,691 entries before excluding one was in a
+     session-start drift guard, not a daemon, so RSC's timer criterion would have
+     returned LW clean on the day the defect was live. LW proposed widening the
+     criterion from "on a timer" to "on any repeated trigger" and did NOT re-run
+     its own grep under the widened shape, saying so rather than implying a clean
+     bill it did not measure.
+
+   **Main task: 17 of 17 slugs through first pass, 0 gate failures.** Premise
+   CORRECTED on probe: the hand-off's "intaken 2026-09-14" is 2026-09-14 LOCAL
+   but `2026-09-15Z` in the manifests, and `PIPELINE_LOG.md` carries no
+   `2026-09-14` row at all, so the date in the hand-off does not resolve against
+   the log - the set was identified as the 17 FIRST_SCRATCH manifests whose
+   INTAKE transition is `2026-09-15` and which carry no `SAVE_WORKING`. The
+   hand-off's second premise was VERIFIED but already implemented: best source is
+   indeed the fetched DeviantArt fullview rather than `_firstinitial` (same
+   pixels, 4-7x the bytes), and `lw_first_pass.select_source` already prefers it
+   - all 17 ran `src=fullview`, no override needed.
+
+   Batch of 16 via `tools/lw_first_pass.py --batch`: 13 PASS, 3 FLAG, 0 FAIL.
+   The three flags are all `band_delta` a hair over the 0.05 threshold (0.0574,
+   0.0505, 0.0504 - leona-dm0rd6j, miss-fortune, sona-dmiu77x) and submit with
+   the report per the gate contract. The 17th,
+   `cathedral-syndra-by-aiaida-dmhijhz-fullview`, came back HELD on
+   `aspect_crop_heavy loss=0.15559`: 1920x1279 is 1.5012:1 and reaching 16:9
+   costs 199 rows. Resolved with a directed crop rather than left for the
+   operator, decided by rendering the three candidate anchors and looking: top=0
+   clips the leg, top=199 clips the raised hand and the crown, centred grazes the
+   crown tips. **Chose `top: 60`** - crown spikes, raised hand, candles and knee
+   all retained - and it gated PASS with the best metrics in the set (MS-SSIM
+   0.998796, LPIPS 0.011803, lap_ratio 1.5395, halo 2.81 pct, band_delta
+   -0.0039).
+
+   Verified: all 17 carry SAVE_WORKING + ANNOTATE + SUBMIT in both the manifest
+   and `PIPELINE_LOG.md`, exactly one `_firstneedauth.png` each, a recorded G1
+   verdict each (14 PASS / 3 FLAG), and all 17 measure exactly 2560x1440.
+   MS-SSIM spans 0.998462-0.999642 and LPIPS 0.00178-0.013788, every value
+   inside the PASS band. `pytest tests/ -q` **3025 passed, 18 skipped** in
+   167.83s, observed this run and equal to the wrap baseline; `ruff check .`
+   clean; `drift_guard` 0 breaches / 6 notes.
+
+   Git is clean with no commit for the image work by design - `images/**` and
+   `PIPELINE_LOG.md` are both gitignored, so the durable record of this run is
+   the manifests, the log and this entry.
+
+   DO-NOT-REDO: source recovery on these 17 (Tier 1 hit 17/17, and the fetched
+   fullview is already the selected source). The `top: 60` crop for
+   cathedral-syndra is a recorded decision, kept in the manifest as
+   `crop_sides {"top": 60}` and in `ops/runtime/crop_overrides_cathedral.json`;
+   do not re-derive it. NEXT: all 17 sit at `_firstneedauth` awaiting the
+   operator's `approve`/`reject` - first pass does not self-approve. Open LW row
+   from QA-2: the duplicate transcript key, and the enumerate-vs-compare gap in
+   `check_claude_path_keys` that hid it.
+
 213. DONE **2026-09-19 (machine stray-work sweep filed to all five trees, and
    the two defects it found in LW's own tree fixed - `c2a44c5`, `c9a02de`).**
    Operator asked every repo for a read-only machine-wide inventory of stray
@@ -57,7 +165,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    `.gitignore`, so no `git status` has printed it since. Classified PRUNE,
    NOT executed: the pass was read-only by instruction.
 
-   **Also found: LW carries TWO transcript keys** in `~/.claude/projects/` for
+   **Also found: LW carries TWO transcript keys** in `.claude/projects/` under the user profile for
    one tree (hyphenated and legacy no-hyphen spellings, the second 4 files /
    12.8 MB, last written 2026-09-12). Same path-key spelling hazard CLAUDE.md
    already records for `~/.claude.json` trust keys.

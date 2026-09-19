@@ -6,6 +6,40 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Both sweep QA gates closed, and first pass on all 17 recovered slugs - DONE
+  2026-09-19.** QA-1: the repo-root `Claude/` Electron profile is DELETED -
+  1,239,346,616 bytes / 47,109 files freed, after re-measuring live and clearing
+  all four gates (mtime still 2026-08-01; no code, config or task XML reference;
+  the live app runs `--user-data-dir=%APPDATA%\Claude`, newest mtime today).
+  Rename-then-rmtree, 0 errors. QA-2: all 7 unread inbox notes read INDIVIDUALLY
+  (never bulk-marked) and two replies filed byte-identically to all five trees.
+  CS found a live LW defect from outside - `.claude/projects/` under the user profile carries TWO LW
+  spellings, and `drift_guard.check_claude_path_keys` grades a trust bit across
+  the spellings it finds instead of ENUMERATING them, so it reports clean on a
+  tree that has a duplicate. Main task: 17/17 through first pass, 0 gate fails -
+  14 PASS, 3 band_delta FLAG, all at exactly 2560x1440, all sourced from the
+  recovered DeviantArt fullview. The one HELD slug (cathedral-syndra, 1.5012:1,
+  199 rows to reach 16:9) was resolved with a looked-at directed crop `top: 60`
+  and gated PASS. 3025 passed / 18 skipped, ruff clean, drift_guard 0.
+
+## Now
+
+- **The 17 first-pass submissions await the operator - OPEN, blocked on the
+  operator only.** All 17 sit at `_firstneedauth.png` in
+  `images/1.First Pass Scratch`; first pass never self-approves. Approve with
+  `python tools/lw_pipeline.py approve <slug>` or reject with `--note`. The 3
+  FLAG rows (leona-dm0rd6j 0.0574, miss-fortune 0.0505, sona-dmiu77x 0.0504) are
+  all `band_delta` marginally over the 0.05 threshold and carry their report.
+
+- **LW carries a duplicate transcript key, and the checker that should have
+  caught it cannot - OPEN.** `.claude/projects/` under the user profile holds both
+  `C--Legion-Wallpaper` (270 files, 471.5 MB) and `C--LegionWallpaper`
+  (4 files, 12.8 MB). Deliberately NOT pruned: four transcript files are a
+  record of four real sessions, and age plus unfamiliarity is not a liveness
+  measure. Two pieces of work: decide the stray key's fate, and close the
+  enumerate-vs-compare gap in `drift_guard.check_claude_path_keys` so a
+  duplicate spelling is reported rather than silently satisfying agreement.
+
 - **Machine stray-work sweep, and the two defects it found in LW - DONE
   2026-09-19 (`c2a44c5`, `c9a02de`).** Read-only machine-wide inventory filed
   byte-identically to all five trees. Headline is a re-measurement: RSC's
