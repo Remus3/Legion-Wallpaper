@@ -26,8 +26,11 @@ standing don't-rewrite-history rule + CLAUDE.md carve-out):
 
 File enumeration: git ls-files when the repo has git history (tracked
 files only - everything gitignored is excluded automatically); falls
-back to a filesystem walk with the same exclusions while the repo is
-young / unborn.
+back to a filesystem walk while the repo is young / unborn, or whenever
+git is unusable (half-written clone, held index lock, corrupt tree).
+That fallback PRUNES at the walk - it never descends an excluded
+directory - and carries its own `.venv-*` / node_modules exclusions,
+which the git path gets from gitignore for free.
 
 Usage:
   python tools/strip_em_dashes.py            # dry-run (default): report only
@@ -37,6 +40,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import os
 import re
 import subprocess
@@ -73,6 +77,11 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # relies on them entirely.
 _SKIP_DIR_PARTS = {".git", "__pycache__", "_archive", "logs"}
 _SKIP_ROOT_DIRS = {"Claude"}  # Claude Desktop app data at repo root
+# Directory-NAME globs the walk fallback must prune. Under git these are
+# gitignored and never reach the enumeration at all, which is exactly why the
+# set was incomplete: the exclusions were only ever exercised in the mode that
+# did not need them. Without git, `.venv-*` alone is 116,423 files here.
+_SKIP_DIR_GLOBS = (".venv-*", "node_modules")
 _SKIP_EXT = {
     ".pyc", ".pyd", ".db", ".png", ".jpg", ".jpeg", ".gif", ".ico",
     ".zip", ".exe", ".dll", ".lnk", ".woff", ".woff2", ".ttf", ".bin",
@@ -107,6 +116,43 @@ def _skip(path: Path) -> bool:
     return False
 
 
+def _prune_dir(name: str, depth: int) -> bool:
+    """True when os.walk must not DESCEND into this directory at all.
+
+    Pruning, not post-filtering. `rglob("*")` cannot be told to stay out of a
+    tree, so the old fallback stat'd every excluded file before discarding it:
+    199,691 entries and 1.40 s warm on this repo, most of it the four
+    virtualenvs and the Claude Desktop app-data tree. Pinned by
+    tests/test_strip_em_dashes_prunes.py, whose binding arm records which
+    directories the walk actually entered - a returned-file-list assertion
+    alone passes against the defect too.
+
+    `depth` is the number of path parts between the walk root and this
+    directory's parent, so 0 means a direct child of the root. _SKIP_ROOT_DIRS
+    stays root-anchored: a nested `docs/Claude/` is project content.
+    """
+    if name in _SKIP_DIR_PARTS:
+        return True
+    if depth == 0 and name in _SKIP_ROOT_DIRS:
+        return True
+    return any(fnmatch.fnmatch(name, g) for g in _SKIP_DIR_GLOBS)
+
+
+def _walk_files(root: Path) -> list[Path]:
+    """Filesystem enumeration for the fallback, pruned at the walk."""
+    root = Path(root)
+    out: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        here = Path(dirpath)
+        depth = len(here.relative_to(root).parts)
+        dirnames[:] = [d for d in dirnames if not _prune_dir(d, depth)]
+        for f in filenames:
+            p = here / f
+            if not _skip(p):
+                out.append(p)
+    return out
+
+
 def _tracked_files() -> list[Path]:
     """git ls-files if usable; else a filesystem walk (same exclusions)."""
     try:
@@ -119,7 +165,7 @@ def _tracked_files() -> list[Path]:
             return files
     except (OSError, subprocess.CalledProcessError):
         pass
-    return [p for p in ROOT.rglob("*") if p.is_file()]
+    return _walk_files(ROOT)
 
 
 def main() -> int:

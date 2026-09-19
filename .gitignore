@@ -18,6 +18,13 @@ API-Key-*.txt
 .claude/settings.local.json
 .claude/local/
 .claude/worktrees/
+# Root worktree parent. ANCHORED: an unanchored `worktrees/` matches at every
+# depth, the same way `_archive/` silently swallowed docs/_archive/. This
+# directory was UNIGNORED until 2026-09-19 and nobody could tell, because it
+# was empty and git does not track empty directories - the first checkout into
+# it would have landed a whole second copy of the tree as untracked content in
+# a PUBLIC repo. Pinned by tests/test_gitignore_covers_worktree_roots.py.
+/worktrees/
 .mcp.json
 .playwright-mcp/
 
