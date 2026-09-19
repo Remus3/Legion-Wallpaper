@@ -58,6 +58,69 @@ worktree whose branch carries different hook scripts.
 
 ---
 
+## PREVIOUS SESSION (2026-09-19) - machine stray-work sweep, and two LW defects it found
+
+LEDGER 213. Ended **3025 passed / 18 skipped**, 162.07s. Commits `c2a44c5`
+(pytest temp retention) and `c9a02de` (both fixes). Two notes filed
+byte-identically into all five inboxes and sha-verified: a `REVIEW-` with
+subject digest `27b181617a8f`, and a `CORRECTION-`.
+
+**What the sweep was.** Operator asked every repo for a read-only machine-wide
+inventory of stray work - gitignored trees, scratch, caches, worktrees, temp,
+unknown drive-root folders - classified PRUNE / MOVE / KEEP / UNKNOWN. Nothing
+deleted, moved or renamed anywhere. Every PRUNE row is a proposal.
+
+**The finding worth carrying forward is not a bucket, it is a rate.** RSC
+broadcast the unset-variable git-install-root bucket on 2026-09-11 at 347
+files. Re-measured eight days later under RSC's own exclusions: **527 files,
+newest that same day.** The note reached four trees and changed nothing
+measurable. If LW ever wants a habit changed fleet-wide, a broadcast is
+evidence that it will not be enough on its own.
+
+**LW's own worst row was invisible by construction:** `Claude/` at the repo
+root, 47,109 files / 1.2 GB, an Electron user-data profile written when the
+desktop app was launched with cwd set here, then hidden behind a `/Claude/`
+line in `.gitignore`. Dead since 2026-08-01. **Still there** - classified
+PRUNE, not executed, because the pass was read-only. A future session may
+delete it; it is LW's own bytes and nothing references it.
+
+**Two LW defects found and fixed TDD-first.** (a) `strip_em_dashes.py`
+fallback post-filtered 199,691 entries instead of pruning, and its exclusion
+set never carried `.venv-*` - because gitignore had always hidden the venvs on
+the git path, so the exclusions were only ever exercised in the mode that did
+not need them. (b) root `worktrees/` matched no `.gitignore` rule, invisible
+only because it was empty.
+
+**THE REUSABLE TRAP, and the reason to read LEDGER 213 before writing any
+ignore-rule test:** `git check-ignore -v --no-index worktrees/` with a
+trailing slash exits **0** with an EMPTY pattern column pointing at a BLANK
+line. An arm gating on the exit code, or grepping the whole output line for
+the directory name, goes green against a repo with no such rule - the pathname
+column supplies the string the assertion is looking for. Converse: a
+directory-only rule cannot match a path git cannot see is a directory, so a
+throwaway-repo arm that does not create the path is a false RED. Both pinned
+in `tests/test_gitignore_covers_worktree_roots.py`.
+
+**WHERE LW WAS WRONG, and it is the cross-check earning its keep.** LW
+recommended PRUNE-or-MOVE on another tree's 10.7 GB from file count and mtime
+alone. LL's own sweep showed it is referenced by 3 config sites and cited in 2
+tracked docs. **An mtime is not a liveness measure.** Withdrawn in the
+CORRECTION note, and the same caveat now sits explicitly over the two
+remaining large staging rows (26.1 GB and 14.7 GB) as owner-to-confirm.
+
+**Open, for whoever picks this up:**
+
+- The three sibling staging trees on the drive root total ~51 GB and are
+  owner-adjudicated, not LW's. RC merges the five sweeps.
+- LW carries TWO transcript keys in `~/.claude/projects/` (hyphenated and
+  legacy no-hyphen). Same spelling hazard CLAUDE.md records for
+  `~/.claude.json` trust keys. Not yet consolidated.
+- LL reports `docs/CHANNEL.md` does not exist in its tree (refused at its
+  license gate, OPS-91). Any future instruction citing that file by line
+  number is false for at least one of the five.
+
+---
+
 ## PREVIOUS SESSION (2026-09-16, third half) - the sync channel, five rounds
 
 LEDGER 208-212. Ended 3013 passed / 18 skipped. Six notes answered across the

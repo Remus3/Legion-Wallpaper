@@ -6,6 +6,25 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Machine stray-work sweep, and the two defects it found in LW - DONE
+  2026-09-19 (`c2a44c5`, `c9a02de`).** Read-only machine-wide inventory filed
+  byte-identically to all five trees. Headline is a re-measurement: RSC's
+  git-install-root scratch bucket went 347 -> **527 files** in the eight days
+  since it was broadcast, newest today - the note landed, the rate did not
+  move. Named a SECOND shared bucket nobody had (the root of
+  `%LOCALAPPDATA%\Temp\claude\`, 574 loose files plus 15 directories outside
+  any scratchpad). LW's own worst row: `Claude/` is a 47,109-file Electron
+  profile at the repo root, dead since 2026-08-01, invisible behind its own
+  `.gitignore` line - PRUNE proposed, not executed. Zero orphan worktrees; no
+  hot un-pruned walker (PT2M watchdog, PT5M responder and the pre-commit hook
+  have zero walk calls). Fixed TDD-first: the `strip_em_dashes` fallback
+  post-filtered 199,691 entries instead of pruning, and its exclusion set
+  never carried `.venv-*` because gitignore had always hidden them; root
+  `worktrees/` matched no ignore rule at all. **Withdrawn on LL's evidence:**
+  LW recommended PRUNE on `ll-captures` from size and mtime alone and it is
+  referenced - an mtime is not a liveness measure. 3025 passed, 18 skipped.
+  LEDGER 213.
+
 - **Intake of 17, and two provenance defects the verification found - DONE
   2026-09-14 (`bda44d5`).** 17 of 23 loose files intaken (first scratch 118 ->
   135; 6 refused by the perceptual dup gate), source recovery Tier 1 on 17 of

@@ -27,6 +27,114 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+213. DONE **2026-09-19 (machine stray-work sweep filed to all five trees, and
+   the two defects it found in LW's own tree fixed - `c2a44c5`, `c9a02de`).**
+   Operator asked every repo for a read-only machine-wide inventory of stray
+   work, classified PRUNE / MOVE / KEEP / UNKNOWN. LW measured, filed, then
+   fixed what it found in itself.
+
+   **THE HEADLINE IS A RE-MEASUREMENT, NOT A NEW FINDING.** RSC broadcast the
+   unset-variable scratch bucket in the git install root on 2026-09-11 at 347
+   files / 6,000,070 bytes. Re-measured this pass under RSC's own exclusions:
+   **527 files / 9,045,095 bytes, newest TODAY.** +180 files and +3.0 MB in
+   eight days, oldest still 2026-04-19. A note landed in four trees and the
+   rate did not move. That is the reportable fact - not the bucket, which was
+   already known, but that broadcasting it changed nothing.
+
+   **A SECOND shared bucket, not previously named by anyone:** the ROOT of
+   `%LOCALAPPDATA%\Temp\claude\` carries 574 loose files (5.7 MB) and 15
+   non-project directories outside any session scratchpad - 451 of the files
+   are harness-written `cache-break-state-*.json`, never reaped, one per
+   session since 2026-07-01; the largest directory is `bash-edit-diff` at
+   2,565 files / 65.7 MB, written today. Per-project scratchpads are 49,499
+   files / 2.9 GB, of which LW's own share is 27 files / 9.5 MB.
+
+   **LW's own worst row was invisible by construction:** `Claude/` at the repo
+   root is an Electron user-data profile - `Cache`, `Code Cache`, `GPUCache`,
+   `Crashpad`, `IndexedDB`, and a `Claude Extensions` tree of 44,761 files -
+   **47,109 files / 1.2 GB**, dead since 2026-08-01. The desktop app was once
+   launched with cwd set to the repo root; a `/Claude/` line was then added to
+   `.gitignore`, so no `git status` has printed it since. Classified PRUNE,
+   NOT executed: the pass was read-only by instruction.
+
+   **Also found: LW carries TWO transcript keys** in `~/.claude/projects/` for
+   one tree (hyphenated and legacy no-hyphen spellings, the second 4 files /
+   12.8 MB, last written 2026-09-12). Same path-key spelling hazard CLAUDE.md
+   already records for `~/.claude.json` trust keys.
+
+   **Worktrees: zero orphans.** `git worktree list --porcelain` returns one
+   entry. Both worktree parents (`.claude/worktrees/`, `worktrees/`) exist and
+   are EMPTY.
+
+   **Walker self-check (RC's defect family): LW has NO hot un-pruned walker.**
+   Measured by driver: `ci_watchdog.py` (PT2M), `lw_inbox_responder.py` (PT5M)
+   and `precommit_gate.py` (every commit) contain ZERO walk calls;
+   `lw_facts.py:407` is explicitly iterative, pruned, junction-refusing and
+   budgeted; `lw_window_guard.py:183` post-filters but costs 4,561 entries /
+   0.03 s at SessionStart only.
+
+   **TWO DEFECTS FOUND IN LW AND FIXED, TDD RED-first (`c9a02de`).**
+   (a) `strip_em_dashes.py:122` fallback was `ROOT.rglob("*")` with the skip
+   predicate applied AFTER: **199,691 entries, 1.40 s warm** - a post-filter is
+   not a prune. Now `os.walk` with `dirnames[:]` assigned in place.
+   **Second half of the same defect, found while fixing it:** the fallback's
+   exclusion set never carried `.venv-*`, because gitignore always hid the
+   venvs on the git path - the exclusions were only ever exercised in the mode
+   that did not need them; without git it would have decoded 116,423
+   virtualenv files. Added `_SKIP_DIR_GLOBS`.
+   (b) `worktrees/` at the repo root matched NO `.gitignore` rule, while
+   `.claude/worktrees/` did. Invisible because it was empty and git does not
+   track empty directories, which makes an unignored empty directory
+   indistinguishable from an ignored one. The first checkout into it would
+   have landed a second copy of the tree as untracked content in a PUBLIC
+   repo. Added anchored `/worktrees/`.
+
+   **A FALSE GREEN caught while writing the ignore test, and it is the most
+   reusable thing in this item.** `git check-ignore -v --no-index worktrees/`
+   (trailing slash) exits **0** and prints `.gitignore:194:<TAB>worktrees/`.
+   `-v` prints `source:line:pattern<TAB>path`; that pattern column is EMPTY
+   and line 194 is BLANK. The first arm went green against a repo with no such
+   rule, because the pathname column hands back the very string the assertion
+   greps for. The helper now parses the pattern column and drops the trailing
+   slash. Converse trap, also pinned: a directory-only rule (`foo/`) cannot
+   match a path git cannot see is a directory, so a throwaway-repo arm that
+   does not create the path is a false RED.
+
+   **Mutation-proved, per `feedback-mutation-prove-the-arm-binds`:** the old
+   code returned the RIGHT file list, so a returned-list assertion passes
+   against the defect too. The binding arm records which directories `os.walk`
+   actually entered; reverting the `dirnames[:]` line to a no-op turns 3 arms
+   RED, and the restore is byte-exact.
+
+   **CHANNEL.** One `REVIEW-` note (subject digest `27b181617a8f`) and one
+   `CORRECTION-` filed byte-identically into all five inboxes, verified by
+   sha256 across the five copies.
+   **The correction is the cross-check earning its keep:** LW recommended
+   PRUNE-or-MOVE on `ll-captures` (19,241 files / 10.7 GB) from size and mtime
+   alone; LL's own sweep showed it is referenced by 3 config sites and cited in
+   2 tracked docs. **An mtime is not a liveness measure, and LW should not have
+   proposed an action on another tree's bytes from one.** Withdrawn. The same
+   caveat is now stated explicitly over `rc-purge-staging` (26.1 GB) and
+   `rsc-first-run` (14.7 GB), which remain owner-to-confirm, never LW-says-
+   delete. Also recorded: LL reports `docs/CHANNEL.md` does NOT exist in its
+   tree (refused at its license gate 2026-09-15, OPS-91), so the sweep
+   request's premise that the file is byte-identical across repos is FALSE for
+   at least one of the five.
+
+   **Also shipped (`c2a44c5`):** `pytest.ini` gained
+   `tmp_path_retention_policy = failed` + `tmp_path_retention_count = 1`.
+   LW's `%TEMP%\pytest-of-*` is 1,327 files / 0.9 MB against RC's measured
+   68,630.
+
+   **Verified:** `pytest tests/ -q` -> **3025 passed, 18 skipped, 162.07s**;
+   ruff clean; `strip_em_dashes.py --check` 0 offenders; all five inbox copies
+   hash-equal.
+
+   **DO NOT REDO:** the machine-wide numbers above are dated 2026-09-19 and
+   the buckets are live and growing - re-measure, never cite these forward.
+   Nothing was deleted, moved or renamed anywhere; every PRUNE row is a
+   PROPOSAL awaiting the operator.
+
 212. DONE **2026-09-16 (LW HAD the watermark-destruction defect after all -
    through the ABSENT door, not the unreadable one - found by RC's note, fixed
    failing-test-first, and a claim LW published to four trees corrected).**
