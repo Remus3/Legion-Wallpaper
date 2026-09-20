@@ -395,8 +395,19 @@ SHARED_SHA256 = {
     # this disk, handed to RC and RSC verbatim. PROVISIONAL until both copy
     # them; drift_guard reporting divergence until then is the expected
     # transient, exactly as in the 2026-09-06 re-pin.
+    # ROUND B landed 2026-09-21: the comment on line 118 named a carrier CODE ("by
+    # RC"), which slots.py:7 forbids outright ("Nothing here may reference ANY of
+    # them"). Six bytes removed, "by RC ", keeping the provenance that is
+    # load-bearing - caught ON REVIEW, and the DATE, which dates the defect to the
+    # original sync. ast.dump of both parses is IDENTICAL at 9,795 chars, so no
+    # behaviour moved; two-process mutual exclusion was proven in both directions
+    # before the bytes were copied. Authored here, confirmed from their own disks by
+    # RC and RSC. SS had not answered; the operator directed the landing rather than
+    # waiting, so SS may still be carrying the old bytes - a divergence report from
+    # SS is EXPECTED and is not a fault on either side.
+    # previous 0b112a4f6bfa88cf5f537f8869225c1821ebfe97428b1e899979797ddd71a61e
     # previous f1b4b011112685efb88616c52752657cf896fbb0993b2d2d264e7b3edde8b4f4
-    "winmutex.py": "0b112a4f6bfa88cf5f537f8869225c1821ebfe97428b1e899979797ddd71a61e",
+    "winmutex.py": "df0a7a40c28818130dfde25144c971c06060b4645e5eb5f679fbdaf55e2e08d7",
 }
 
 
@@ -484,9 +495,11 @@ def test_shared_module_names_no_carrier(name: str):
 # next joint re-pin and trains readers to bump it instead of reading it.
 CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS")
 
-KNOWN_CODE_HITS = [
-    ("winmutex.py", "RC"),
-]
+# EMPTIED by round B, 2026-09-21, in the same commit as the bytes - which is exactly
+# what the arm below exists to force. An empty pin is STRICTER than the one it
+# replaces: any carrier code entering either shared file now reddens immediately,
+# with no grandfathered entry to hide behind.
+KNOWN_CODE_HITS = []
 
 
 def test_shared_modules_carry_only_the_pinned_carrier_codes():
