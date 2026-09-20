@@ -63,6 +63,32 @@ VENDOR_TOKEN = re.compile(
     r"|xox[bapsr]-[A-Za-z0-9\-]{20,})"
 )
 
+# Four families the vendor-prefix sweep above CANNOT see, added 2026-09-21 after
+# the shared git-install-root bucket turned out to hold credential-class content
+# (CS's ACTION note of 2026-09-20) and a probe of this guard measured the gaps:
+# an AWS key id, a private key block, a JWT and a URL with inline credentials
+# all passed the sweep untouched. None of them carries a vendor prefix, so none
+# could ever have been caught by the alternation above - this is a shape gap, not
+# a tuning gap.
+#
+# Each shape is DIAGNOSTIC, chosen so a sha256 pin stays legal (see the module
+# docstring - a guard that flags the shared-governor digests gets deleted):
+#   AWS      - AKIA/ASIA plus exactly 16 upper-alnum. A digest is lower hex.
+#   PRIVATE  - the PEM armour line. A digest has no armour.
+#   JWT      - three base64url segments where the FIRST decodes from `eyJ`, i.e.
+#              the literal `{"` of a JSON header. A digest has no dots.
+#   CONN     - scheme://user:secret@host. A digest has no `@`.
+SECRET_SHAPE = (
+    ("aws access key id", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
+    ("private key block", re.compile(
+        r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY")),
+    ("jwt", re.compile(
+        r"\beyJ[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}\.[A-Za-z0-9_\-]{8,}")),
+    ("connection string with an inline password", re.compile(
+        r"(?i)\b(?:postgres|postgresql|mysql|mongodb|redis|amqp|ftp|https?)"
+        r"(?:\+[a-z]+)?://[A-Za-z0-9._%+\-]+:[^\s:/@\"]+@[A-Za-z0-9.\-]+")),
+)
+
 # The secret-bearing names in use on this machine, plus LW's own two vendors.
 # Held as a literal set rather than read from the live environment: a guard that
 # asked the environment would go SILENT on a machine where the variables are not
@@ -107,6 +133,19 @@ SELF_EXEMPT = {
     # Plants a fake `sk-` literal as the fixture that proves the hand-off
     # write gate refuses secret-shaped content. Same category as this file.
     "tests/test_handoff_write_gate.py",
+    # Byte-exact recorded DeviantArt oEmbed responses, whose JOB is to replay
+    # what that host actually returned. Both carry the per-asset URL signing
+    # token DeviantArt mints, which is JWT-shaped and trips the `jwt` arm.
+    # MEASURED 2026-09-21 before exempting, so this is a finding and not an
+    # assumption: one distinct token, HS256, claims `aud`/`iss`/`obj`/`sub`/
+    # `wmk` and nothing else - no `exp`, no `iat`, no subject naming the
+    # operator, and it does not contain the Windows account name, the machine
+    # name or any `@`. It authorises fetching one public third-party image and
+    # authenticates LW to nothing, so it is not a credential of this tree's to
+    # rotate. Exempted rather than de-tuning the `jwt` arm, because a real
+    # bearer JWT in a tracked file is exactly what that arm is FOR.
+    "tests/fixtures/deviantart/mockd.yaml",
+    "tests/fixtures/deviantart/oembed_alive.body",
 }
 
 
@@ -125,6 +164,12 @@ def scan_text(text: str) -> list[str]:
     hits: list[str] = []
     for match in VENDOR_TOKEN.finditer(text):
         hits.append(f"vendor-prefixed token: {match.group(0)[:12]}...")
+    for label, pattern in SECRET_SHAPE:
+        for match in pattern.finditer(text):
+            # The LABEL is the report. Only enough of the value to name the
+            # class ever reaches a log, per the standing rule that documenting
+            # a leak republishes it.
+            hits.append(f"{label}: {match.group(0)[:10]}...")
     for match in SECRET_BINDING.finditer(text):
         # Strip the markup a DOC wraps a code sample in before deciding. The
         # guard is about the VALUE, not the punctuation around it: LEDGER prose
@@ -176,6 +221,12 @@ def test_no_tracked_file_carries_a_secret_literal():
     '"GEMINI_API_KEY": "AIzaSyFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE"',
     "GITHUB_PERSONAL_ACCESS_TOKEN=ghp_000111222333444555666777888999aaabbb",
     'SAUCENAO_API_KEY = "0123456789abcdef"',
+    # The four shape families. Every value here is invented and says so.
+    "aws_key = AKIAFAKEFAKEFAKEFAKE",
+    "-----BEGIN RSA PRIVATE KEY-----",
+    "-----BEGIN OPENSSH PRIVATE KEY-----",
+    "eyJmYWtlaGVhZGVy.ZmFrZXBheWxvYWQ.ZmFrZXNpZ25hdHVyZQ",
+    "DATABASE_URL=postgres://fakeuser:fakepassword@db.invalid:5432/fakedb",
 ])
 def test_a_planted_secret_is_caught(planted):
     """Each detector arm proven to FIRE before the clean result above is trusted.
@@ -195,6 +246,13 @@ def test_a_planted_secret_is_caught(planted):
     # A doc quoting the correct pattern inside a markdown code span. This is
     # the CI-red case, kept as an arm so the normalisation cannot regress.
     "prose: `$env:GEMINI_API_KEY = $key` is the correct destination",
+    # Neighbours of the four NEW families. Each one is a literal this tree
+    # actually carries, so a false positive here would get the guard deleted.
+    "docs: see https://wiki.gg/api.php?action=query&format=json for the source",
+    "pin = 'akiafakefakefakefake'  # lowercase: the AKIA prefix is case-sensitive, so not a key id",
+    "sha = 'eyJ0eXAiOiJKV1QifQ'  # one base64 segment, no dots, not a JWT",
+    "url = 'postgres://localhost:5432/lw'  # no credentials in the authority",
+    "ver = '0b112a4f.9e1c0d3b.7a4f2e11'  # dotted digest triple, no eyJ header",
 ])
 def test_a_legitimate_neighbour_survives(innocent):
     """The digests and the env lookups must stay legal or the guard gets deleted."""
@@ -203,7 +261,9 @@ def test_a_legitimate_neighbour_survives(innocent):
 
 def test_the_self_exemption_is_narrow_and_real():
     assert SELF_EXEMPT == {"tests/test_no_secret_literals.py",
-                           "tests/test_handoff_write_gate.py"}, (
+                           "tests/test_handoff_write_gate.py",
+                           "tests/fixtures/deviantart/mockd.yaml",
+                           "tests/fixtures/deviantart/oembed_alive.body"}, (
         "the exemption list grew. Every entry has to be a file whose JOB is to "
         "carry these patterns, and each one weakens the sweep by a whole file.")
 
