@@ -148,6 +148,28 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **LW's transcript store is SPLIT across two keys, and the small one is the
+  LONGER record - do NOT tidy either copy (opened 2026-09-20, LEDGER 215).**
+  `~/.claude/projects/` holds `C--Legion-Wallpaper` (273 files, 497,010,131 B,
+  written today) and `C--LegionWallpaper` (4 files, 13,409,469 B, last written
+  2026-09-12). All three session UUIDs exist under BOTH keys, and for two of them
+  the STRAY copy is longer: `a89cfc16` by 108 bytes / 1 line, `d3d7c8f7` by
+  263,873 bytes, plus a `.desktop-released.json` sidecar that exists only in the
+  stray. So a `mv` into the canonical key overwrites history and a prune of the
+  small old key deletes it - both were one command away on 2026-09-20 and both
+  were refused.
+
+  Provenance is settled: every `cwd` inside the stray is `C:\LegionWallpaper`
+  (no space), which returns ENOENT, so it is a phantom cwd and NOT a second
+  checkout. `~/.claude.json` is clean (three LW spellings, all trusted True).
+
+  What remains is a **line-level union of two jsonl transcripts**, newest-wins
+  per record id, written to the canonical key with the stray kept until the union
+  is verified. That is a job, not a cleanup. `drift_guard` reports this as a
+  standing BREACH by design until it is done - the severity is deliberate, and
+  softening it to a note to keep a gate green is the exact failure the guard
+  exists to catch.
+
 - **the three operator-queued tools - ALL THREE ANSWERED 2026-09-16
   (LEDGER 206).** Queued 2026-09-15, worked in the reviewed-first order the
   handoff asked for. The full prior entries, with the live-probed facts each

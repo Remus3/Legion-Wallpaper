@@ -507,6 +507,58 @@ def collide_path_keys(projects: dict) -> list[tuple]:
     return out
 
 
+def collide_store_keys(names) -> list[tuple]:
+    """Transcript-store directory names that encode ONE tree but differ.
+
+    A SECOND key surface, separate from ~/.claude.json: `~/.claude/projects/`
+    names a directory per project, encoding the colon, the backslash and a
+    space all as `-`. So `C:/Legion Wallpaper` and `C:/LegionWallpaper` land
+    one hyphen
+    apart, and nothing in this store carries a trust bit for
+    `collide_path_keys` to grade - which is why that checker reported clean
+    while LW carried two keys for one tree (found from OUTSIDE, by CS, in a
+    size table, 2026-09-19).
+
+    ENUMERATES spellings rather than comparing the ones it happened to find:
+    agreement is trivially satisfied when only one spelling is examined, and
+    that is exactly how the defect stayed invisible to a purpose-built scanner.
+
+    Unlike collide_path_keys, EVERY duplicate is returned. There is no trust
+    bit here to make one of them harmless - a second key is a split session
+    history, and a split history is wrong however the halves agree.
+    """
+    norm: dict[str, list[str]] = {}
+    for n in names:
+        norm.setdefault(re.sub(r"[^a-z0-9]", "", str(n).lower()), []).append(str(n))
+    return [(k, v) for k, v in sorted(norm.items()) if len(v) > 1]
+
+
+TRANSCRIPT_STORE = pathlib.Path.home() / ".claude" / "projects"
+
+
+def check_transcript_store_keys(names=None) -> None:
+    """`names` is injectable so this runs offline with no store on disk."""
+    if names is None:
+        if not TRANSCRIPT_STORE.is_dir():
+            return
+        try:
+            names = [e.name for e in TRANSCRIPT_STORE.iterdir() if e.is_dir()]
+        except OSError:
+            warn("~/.claude/projects: unlistable")
+            return
+    mine = re.sub(r"[^a-z0-9]", "", str(ROOT).lower())
+    for norm, keys in collide_store_keys(names):
+        msg = (f"~/.claude/projects: {len(keys)} transcript keys encode one "
+               f"tree {keys} - the session history for it is SPLIT")
+        # Same breach/note split as check_claude_path_keys, same reason: a
+        # sibling's duplicate must not wedge LW's /done behind someone else's
+        # fix. LW's own is LW's to adjudicate.
+        if norm == mine:
+            warn(msg)
+        else:
+            notes.append(msg)
+
+
 def check_agent_config() -> None:
     p = ROOT / SETTINGS_REL
     if p.is_file():
@@ -578,6 +630,7 @@ def main() -> int:
     check_shared_loop_files()
     check_agent_config()
     check_claude_path_keys()
+    check_transcript_store_keys()
 
     for n in notes:
         print(f"  note   : {n}")

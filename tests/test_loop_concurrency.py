@@ -411,6 +411,53 @@ def test_shared_module_matches_the_pinned_cross_repo_digest(name: str):
         f"sides in the same round - do not just update this constant.")
 
 
+# ---- what a DIGEST cannot pin, because the digest moves legitimately -------
+#
+# Offered by SS (Substrate) on 2026-09-20 when it joined the bucket as a fourth
+# carrier at the unchanged width of 3. Adopted here because both arms cover a
+# hole LW already fell into, and a digest pin is blind to both by construction:
+# on a re-pin round the digest CHANGES legitimately, in the same commit, so it
+# certifies nothing about WHAT changed.
+#
+#   * CRLF / non-ASCII: this file is copied between trees with
+#     shutil.copyfile precisely because a text-mode write turns LF into CRLF on
+#     Windows. When that happens the digest arm reports "no longer matches the
+#     digest agreed with Riot Commander" - true, useless, and it sends the
+#     reader hunting a protocol change that did not happen. This arm names the
+#     real cause.
+#   * NAMES A CARRIER: the 2026-09-07 re-pin exists because the opening
+#     paragraph named three sibling repos one sentence before forbidding
+#     exactly that, and it was caught BY EYE when a tree went public. Eye is
+#     not a guard. This is that guard.
+CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper", "Riot Commander",
+                 "RiotCommander", "Resin Compute", "ResinCompute",
+                 "Clockspeed", "Lanternlight", "Substrate")
+
+
+@pytest.mark.parametrize("name", sorted(SHARED_SHA256))
+def test_shared_module_is_lf_only_and_ascii(name: str):
+    raw = (ROOT / "ops" / "loop" / name).read_bytes()
+    assert bytes((13, 10)) not in raw, (
+        f"{name} carries CRLF: it was copied in TEXT mode, not with "
+        f"shutil.copyfile. The digest arm will fail too and will blame the "
+        f"protocol - the cause is the copy.")
+    bad = sorted({b for b in raw if b > 127})
+    assert not bad, f"{name} carries non-ASCII bytes {bad} - repo-wide hard rule"
+
+
+@pytest.mark.parametrize("name", sorted(SHARED_SHA256))
+def test_shared_module_names_no_carrier(name: str):
+    """A digest cannot catch a name re-entering during a re-pin, because the
+    digest is expected to move in that same commit."""
+    text = (ROOT / "ops" / "loop" / name).read_text(encoding="utf-8")
+    low = text.lower()
+    found = [n for n in CARRIER_NAMES if n.lower() in low]
+    assert not found, (
+        f"{name} names {found}. This file is shared verbatim by every carrier "
+        f"in the bucket and may reference none of them - the rule is stated in "
+        f"the file's own docstring, and it was broken there once already.")
+
+
 # ---- the shared surface no digest can pin: a VALUE, not a file --------------
 #
 # One slot root (C:\ProgramData\lw-loop\slots) serves both repos, but each repo

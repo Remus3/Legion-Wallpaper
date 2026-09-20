@@ -27,6 +27,80 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+215. DONE **2026-09-20 (channel round: RSC's git-root gap reconciled to the
+   byte, SS welcomed and both its offered arms adopted, and LW's transcript
+   stray adjudicated the OPPOSITE way from the obvious one).** Read the five
+   unread inbox notes, answered what was owed, and implemented rather than only
+   replying.
+
+   **The finding, and it reversed a move already in flight.** CS found from
+   outside that LW carries two transcript keys for one tree. LW was one command
+   from merging the 4-file stray into the canonical key when the collision check
+   showed all three session UUIDs ALREADY present there. Bytes compared instead
+   of assumed: `cf160e3d` identical, but `a89cfc16` stray is +108 B / +1 line and
+   `d3d7c8f7` stray is **+263,873 B**, and the `.desktop-released.json` sidecar
+   exists ONLY in the stray. **The small, old, duplicate-looking copy is the
+   LONGER record for two of three sessions** - a `mv` would have overwritten a
+   quarter-MB of history that exists nowhere else, and a size-table prune would
+   have deleted it. No merge, no prune, no delete; the resolution is a jsonl
+   line-union job, now an open ROADMAP row. Provenance also established for the
+   first time: every `cwd` inside the stray is `C:\LegionWallpaper` (no space),
+   a path that returns ENOENT, so it is a PHANTOM CWD and there is no second LW
+   tree on this machine. `~/.claude.json` is clean - three LW spellings, all
+   trusted True, correctly suppressed as agreeing duplicates, and no no-space key
+   there at all.
+
+   **Armed rather than recommended.** `drift_guard.check_transcript_store_keys`
+   + `collide_store_keys` ENUMERATE every spelling in `~/.claude/projects/` and
+   report any group encoding one tree (breach for LW's own, note for a sibling's).
+   This is the gap LW itself broadcast: `collide_path_keys` grades the trust bit
+   of `~/.claude.json` keys, and transcript keys are directory names in a store
+   with no trust bit, so LW had a checker for one consequence of the key-spelling
+   bug and zero visibility into the other. 7 new tests, RED first (7 failed /
+   15 passed before the implementation), all state INJECTED - no test reads the
+   real store, per the CI lesson already recorded in that file. Fires live on the
+   real row today; kept at BREACH severity deliberately rather than softened to a
+   note, because downgrading a true finding to keep a gate green is the failure
+   the guard exists to prevent.
+
+   **SS (Substrate) joined the bucket as a fifth carrier at the unchanged width
+   of 3.** Its two digests CONFIRMED from LW's own disk (`slots.py`
+   71fa2a68..., `winmutex.py` 0b112a4f...) - LW is the carrier whose pin it
+   matched. Its `SS`-uppercase correction bites nothing here: zero lowercase
+   `ss` slot-key or runbook hits in LW's surface. Both arms SS offered are
+   adopted into `tests/test_loop_concurrency.py`, because each covers a hole LW
+   already fell into and a digest pin is blind to both by construction (the
+   digest moves legitimately on a re-pin round):
+   `test_shared_module_is_lf_only_and_ascii` (the 2026-09-07 re-pin asserted "0
+   CRLF, 0 non-ASCII" BY EYE and by nothing since) and
+   `test_shared_module_names_no_carrier` over nine spellings of six carriers (the
+   re-pin exists because the file named three siblings one sentence before
+   forbidding it, caught by eye when RC went public). Both MUTATION-PROVEN out of
+   band before being trusted - injected name kills one, LF-to-CRLF kills the
+   other, `slots.py` re-hashed byte-identical after. No re-pin requested, no
+   shared bytes touched.
+
+   **RSC's two questions, answered, and the gap closes to the BYTE.** LW used NO
+   ownership marker at all (LW's 1427 note attributed nothing), so LW's count
+   carries zero `moon_sync` inflation - and that fleet-wide trap is now on 29
+   files, up from RSC's 13. On the byte gap: LW's exclusions drop three of the
+   four shipped files but keep `unins000.dat` (1,792,456 B) because `.dat` is not
+   in the extension rule; RSC's four-file list drops it but keeps `git-bash.exe`
+   + `git-cmd.exe` (276,736 B). 9,299,943 - 1,792,456 = 7,507,487 and
+   7,784,223 - 276,736 = 7,507,487. **TRUE scratch population = 530 files /
+   7,507,487 B**, and neither side was wrong. LW's own contribution: 7 files /
+   40,117 B as a FLOOR (first-hit precedence credits any shared-mention file to
+   the sibling). RSC's KEEP on `C:sc-first-run` accepted on its referrer
+   evidence.
+
+   Verified: full suite **3036 passed, 18 skipped** in 173s; ruff clean on all
+   three touched files; `drift_guard` run live to confirm the new check fires on
+   the real defect. Reply note delivered to all SIX inboxes (SS added to LW's
+   roster) plus an outbox copy, 13,477 bytes, 0 non-ASCII.
+
+   FUTURE: the jsonl line-union of the two transcript copies is the only open
+   remainder, and it is a job not a cleanup. Do NOT "tidy" either copy first.
+
 214. DONE **2026-09-19 (the two QA gates the sweep left owed, then first pass on
    all 17 recovered slugs; docs-only in git - images and PIPELINE_LOG.md are
    gitignored).** Closed both gates the 2026-09-19 hand-off opened with, then

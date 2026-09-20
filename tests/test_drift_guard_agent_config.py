@@ -170,3 +170,80 @@ def test_this_projects_key_collision_is_a_breach():
     DG.notes.clear()
     DG.check_claude_path_keys(projects)
     assert len(DG.problems) == 1 and "DISAGREEING" in DG.problems[0]
+
+
+# ---------------------------------------------------------------------------
+# ~/.claude/projects/ - the TRANSCRIPT store, a second key surface
+# ---------------------------------------------------------------------------
+# CS found this from outside, in a size table, on 2026-09-19: LW carries TWO
+# transcript keys for one tree, `C--Legion-Wallpaper` (273 files) and
+# `C--LegionWallpaper` (4 files, 13.4 MB, last written 2026-09-12). The
+# second spelling records sessions whose cwd was `C:\LegionWallpaper`, a path
+# that does not exist on this disk - measured 2026-09-20, `ls` returns ENOENT,
+# so the stray key is a phantom cwd and not a stray checkout.
+#
+# collide_path_keys did NOT and COULD NOT report it. It grades the trust bit
+# of ~/.claude.json keys, and the two transcript keys are directory NAMES in a
+# different store with no trust bit at all. LW therefore had an armed checker
+# for one consequence of the key-spelling bug and zero visibility into the
+# other - which is the carryable lesson LW broadcast to four trees and is now
+# arming in its own tree rather than only recommending.
+#
+# The normalisation is deliberately AGGRESSIVE (strip every non-alphanumeric)
+# because the store encodes `:`, `\` and a space all as `-`: `C:\Legion
+# Wallpaper` and `C:\LegionWallpaper` differ by one hyphen after encoding and
+# by nothing at all after stripping. Two genuinely distinct projects named
+# `foo-bar` and `foobar` would collide here; that ambiguity is worth a report.
+def test_collide_store_keys_finds_the_hyphen_only_difference():
+    """The live LW defect, as data. One tree, two transcript keys."""
+    out = DG.collide_store_keys(["C--Legion-Wallpaper", "C--LegionWallpaper",
+                                 "C--Riot-Commander"])
+    assert len(out) == 1
+    norm, keys = out[0]
+    assert keys == ["C--Legion-Wallpaper", "C--LegionWallpaper"]
+
+
+def test_collide_store_keys_is_clean_on_distinct_projects():
+    assert DG.collide_store_keys(
+        ["C--Legion-Wallpaper", "C--Riot-Commander", "C--Substrate"]) == []
+
+
+def test_collide_store_keys_enumerates_rather_than_comparing_a_found_pair():
+    """The defect class this guard exists for: a checker that only GRADES the
+    spellings it happens to find reports clean when it examined one. Three
+    spellings of one tree must come back as one row carrying all three, not as
+    a pair plus a silent third."""
+    out = DG.collide_store_keys(
+        ["C--Legion-Wallpaper", "C--LegionWallpaper", "c--legionwallpaper"])
+    assert len(out) == 1 and len(out[0][1]) == 3
+
+
+def test_collide_store_keys_empty_input_is_clean():
+    assert DG.collide_store_keys([]) == []
+
+
+def test_this_projects_store_collision_is_a_breach():
+    """LW's own duplicate is LW's to fix, so it breaches. A sibling's is a note
+    - same split as check_claude_path_keys, for the same reason."""
+    DG.problems.clear()
+    DG.notes.clear()
+    DG.check_transcript_store_keys(["C--Legion-Wallpaper", "C--LegionWallpaper"])
+    assert len(DG.problems) == 1 and "transcript" in DG.problems[0].lower()
+    assert DG.notes == []
+
+
+def test_another_projects_store_collision_is_a_note():
+    DG.problems.clear()
+    DG.notes.clear()
+    DG.check_transcript_store_keys(["C--Resin-Compute", "C--ResinCompute"])
+    assert DG.problems == []
+    assert any("resin" in n.lower() for n in DG.notes)
+
+
+def test_check_transcript_store_keys_takes_names_not_a_path():
+    """Injected, offline, no store on disk - the CI lesson from the
+    ~/.claude.json arm above, applied before it could be re-learned here."""
+    DG.problems.clear()
+    DG.notes.clear()
+    DG.check_transcript_store_keys([])
+    assert DG.problems == [] and DG.notes == []
