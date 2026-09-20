@@ -437,10 +437,12 @@ CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper", "Riot Commander",
 @pytest.mark.parametrize("name", sorted(SHARED_SHA256))
 def test_shared_module_is_lf_only_and_ascii(name: str):
     raw = (ROOT / "ops" / "loop" / name).read_bytes()
-    assert bytes((13, 10)) not in raw, (
-        f"{name} carries CRLF: it was copied in TEXT mode, not with "
+    assert 13 not in raw, (
+        f"{name} carries a CR byte: it was copied in TEXT mode, not with "
         f"shutil.copyfile. The digest arm will fail too and will blame the "
-        f"protocol - the cause is the copy.")
+        f"protocol - the cause is the copy. Matched on ANY CR, not the "
+        f"CRLF pair: RSC 1520 measured that a pair-only arm is blind to a "
+        f"lone CR, and read_text would strip both under universal newlines.")
     bad = sorted({b for b in raw if b > 127})
     assert not bad, f"{name} carries non-ASCII bytes {bad} - repo-wide hard rule"
 
@@ -456,6 +458,52 @@ def test_shared_module_names_no_carrier(name: str):
         f"{name} names {found}. This file is shared verbatim by every carrier "
         f"in the bucket and may reference none of them - the rule is stated in "
         f"the file's own docstring, and it was broken there once already.")
+
+
+# RSC 1520 found the hole in the arm above BEFORE four carriers copied it, and
+# it reproduces here exactly: the name arm matches full PROJECT NAMES, and the
+# violation actually present in the agreed bytes is a channel CODE.
+#
+#     ops/loop/winmutex.py:118
+#       # call would then pass green. Found by RC on review, 2026-07-26.
+#
+# `RC` is a carrier and slots.py:7 says "Nothing here may reference ANY of
+# them", so the shared bytes DO reference a carrier and the name arm is green
+# over it. Measured on this disk: 1 hit, 0 false positives, word-boundary,
+# case-SENSITIVE, over both files.
+#
+# The obvious repair does not work and RSC measured why before landing theirs:
+# a corpus-wide code matcher returns 1635 case-sensitive hits over 240 files in
+# their tree, so it needs an exemption list on day one. The defect's population
+# is the TWO shared files, so the arm is scoped to them.
+#
+# The violation is PINNED as a sorted (file, code) list rather than fixed. It is
+# inert - no value, no behaviour, no byte-identity break, carried since
+# 2026-07-26 - and editing a pinned shared file is a joint round, not one
+# carrier's unilateral edit. Not pinned by LINE: a line number decays on the
+# next joint re-pin and trains readers to bump it instead of reading it.
+CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS")
+
+KNOWN_CODE_HITS = [
+    ("winmutex.py", "RC"),
+]
+
+
+def test_shared_modules_carry_only_the_pinned_carrier_codes():
+    """Red if a new code enters either file. Red if the RC hit is repaired
+    without this pin being updated in the SAME round - which is the half a
+    digest cannot give you, because the digest moves legitimately either way."""
+    found = []
+    for name in sorted(SHARED_SHA256):
+        text = (ROOT / "ops" / "loop" / name).read_text(encoding="utf-8")
+        for code in CARRIER_CODES:
+            if re.search(r"\b" + code + r"\b", text):
+                found.append((name, code))
+    assert sorted(found) == sorted(KNOWN_CODE_HITS), (
+        f"carrier codes in the shared files changed: {sorted(found)} vs pinned "
+        f"{sorted(KNOWN_CODE_HITS)}. A NEW code is a violation to remove in a "
+        f"joint round. A code that DISAPPEARED means the round happened - drop "
+        f"it from KNOWN_CODE_HITS in that same commit.")
 
 
 # ---- the shared surface no digest can pin: a VALUE, not a file --------------

@@ -148,6 +148,37 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **TWO joint six-tree re-pin rounds are SANCTIONED and OWED, operator-directed
+  2026-09-20 (LEDGER 215).** The operator ruled yes to the six-sibling re-pin and
+  directed LW to carry it to every carrier; LW did, in its 1545 note. LW is a
+  pin-holder on both file sets and must not move either byte unilaterally - LW's
+  own guards are red-by-construction on exactly that, which is the point.
+
+  **Round A, `docs/CHANNEL.md` -> CHANNEL_VERSION 2.** LW holds
+  `899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b` (20,633 B),
+  pinned in `tests/test_channel_doc_pin.py` by `PINNED_SHA256` +
+  `PINNED_CHANNEL_VERSION`. The doc's section 0 says "Five participating
+  repositories" and the machine now has six (SS/Substrate joined the slot bucket
+  2026-09-20). v2 must carry: the roster at six with a standing SS row; the
+  section 6 rule 6 ADDRESS LIST extended to six, because an address-list omission
+  is invisible to the omitted tree; and LL's Variant A question, which LL has
+  closed as "not needed". LW's commitment on channel: move BOTH constants in ONE
+  commit, re-hash from LW's own disk rather than trusting the note that carries
+  the bytes, report the digest back - or AUTHOR v2 and circulate it if no tree has
+  started. RC and RSC have both declared pin-holder status.
+
+  **Round B, `ops/loop/winmutex.py:118` names a carrier.** `# Found by RC on
+  review, 2026-07-26` violates `slots.py:7` ("Nothing here may reference ANY of
+  them"). Found by RSC, confirmed by RC, reproduced independently on LW's disk:
+  1 word-boundary case-sensitive hit over the two shared files, 0 false positives.
+  INERT - no value, no behaviour, no byte-identity break - so it needs the
+  sanctioned round, not one of its own. Kept as a SEPARATE round from A on purpose:
+  a round moving a doc and a concurrency primitive together cannot be rolled back
+  by halves. Pinned meanwhile in `KNOWN_CODE_HITS`
+  (`test_shared_modules_carry_only_the_pinned_carrier_codes`), which goes RED if
+  the hit is repaired without the pin moving in the same commit - that is what
+  makes the repair safe to do across six trees.
+
 - **LW's transcript store is SPLIT across two keys, and the small one is the
   LONGER record - do NOT tidy either copy (opened 2026-09-20, LEDGER 215).**
   `~/.claude/projects/` holds `C--Legion-Wallpaper` (273 files, 497,010,131 B,
