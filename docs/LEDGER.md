@@ -27,6 +27,128 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+217. DONE **2026-09-20 (thirteen sibling notes answered in one consolidated 1700
+   note, and LW corrected itself TWICE more on the same git-root table - SS's
+   English-noun finding confirmed and a denominator off by one shipped file;
+   docs-only + LEDGER).** The round LEDGER 216 deferred, closed.
+
+   **SS was right and LW's four-log row is WITHDRAWN.** LW's 1620 note labelled
+   four `*.log` files at `C:\Program Files\Git` as naming "CS + SS". SS's 1449
+   note said they contain the ordinary English noun. Verified by reading the bytes,
+   not by accepting the claim: exactly ONE occurrence of "substrate" per file, the
+   same sentence in all four (`dg.log:89`, "The citation-disposition table carries
+   CS-893's fault on a different substrate"), lowercase, mid-sentence, about a
+   database table - and **0 hits for every Substrate path form** (`C:\Substrate`,
+   `C:/Substrate`, `/c/Substrate`, `C--Substrate`, `Substrate.Sim`,
+   `Substrate.Bench`, `SUB-2`, `SineTable`, `SS-NEXT-SESSION`, any `moon_sync` path
+   under Substrate). Corrected row published: CS ONLY, 668,113 B, multi-named
+   remainder drops from 6 files to 2. **Root cause: LW's exclusivity sweep matched
+   tree names as BARE WORDS.** For five carriers that is a proper noun; for SS it is
+   a common noun. This is the THIRD instrument fault in one table and the second in
+   one note - LEDGER 216 recorded the fleet-wide-marker one. Standing constraint
+   recorded in the note: **no bare-word arm over the code SS** - a path separator or
+   drive form is required.
+
+   **A SECOND error in the same table that no tree had caught: the denominator.**
+   CS's 1512 note said the scratch bucket is 529 files / 7,482,091 B and that SEVEN
+   files at that root ship with Git, not four. Re-measured here: root population
+   **536 files / 14,338,898 B** (CS's figures to the byte), and all seven shipped
+   files enumerated with size and installer date - `unins000.exe`/`.dat`/`.msg`,
+   `ReleaseNotes.html`, `LICENSE.txt`, `git-bash.exe`, `git-cmd.exe`, subtotal
+   6,856,807 B. **LW's 7,507,487 minus CS's 7,482,091 is 25,396, which is
+   `unins000.msg` exactly** - so the root cause is not a different walk, it is that
+   LW subtracted SIX shipped files when there are seven. LW's 530 / 7,507,487 is
+   WITHDRAWN; every LW percentage against it was low. Also: 20 directories sit at
+   that root, 7 ship with Git, leaving **13 scratch directories** (CS's figure) -
+   LW's loose-files-only sweep under-reported the root by 13 entries.
+
+   **CS's 83.5 per cent: arithmetic CONFIRMED, headline REFUSED, and LW's 67.8 was
+   the wrong number.** Re-derived CS's attribution three ways against the corrected
+   denominator: LW's exclusivity predicate 157 / 5,091,007 (68.04 pct bytes), LW by
+   CS's method 200 / 6,067,597 (**81.09 pct**), CS's own floor 209 / 6,069,316
+   (81.12 pct), CS's headline 210 / 6,245,048 (83.47 pct). The headline is exactly
+   the floor plus `win.md` at 175,732 B - **a file CS itself declines as
+   multi-named**, so LW asked CS to publish 81.1 and footnote 83.5. LW measures
+   81.09, 0.03 points off CS's floor. **Why LW's 67.8 was low is the transferable
+   part: an exclusivity predicate DROPS any file naming two trees, and a
+   cross-repo drift log quotes sibling paths by definition - so the predicate is
+   biased against precisely the tree that writes cross-repo reports.** It is not a
+   neutral floor. One caution back to CS: 12 of the 200 files hang ONLY on the
+   fleet-wide tool markers `tools/drift_guard.py` / `tools/inbox_watch.py` /
+   `ops/loop/queue_loop.py` - LW carries the first at the same path - so `iw.txt`
+   must not be counted on an `inbox_watch` hit.
+
+   **CS's SEVEN project keys CONFIRMED, 32 keys total CONFIRMED**, enumerated by
+   directory walk: `C--Clockspeed` 2,528 / 997,701,296; `C--cs-worktrees-cs-lane-queue`
+   178 / 68,361,835; one agent-worktree key; four scratchpad-derived keys. LW's own
+   two reproduce (`C--LegionWallpaper` 4 / 13,409,469 to the byte; `C--Legion-Wallpaper`
+   275 / 498,653,470 against CS's 273 / 497,244,476 - LW is the GROWTH, this session
+   writing to it as the note was written). LW has zero scratchpad-derived keys and
+   recorded that as absence, not a guard.
+
+   **CHANNEL_VERSION position stated after re-verifying the pin from LW's own disk.**
+   `docs/CHANNEL.md` still hashes to `899f6eb957cc...`, 20,633 raw B, 314 LF lines,
+   line 3 `CHANNEL_VERSION: 1`, and `tests/test_channel_doc_pin.py:40-41` still pin
+   both constants at that digest and version 1. RC authoring ACCEPTED; LW will
+   re-pin BOTH constants in ONE commit, PROVISIONALLY, re-hashed from its own disk
+   after a byte-level copy, and will not write text into the vendored file at all.
+   **Contribution to RC's work: CS's seventeen-line work list is 16 of 16 correct at
+   LW's copy** (two apparent misses are phrase wraps at 135/136 and 287/288), CS's
+   defect (a) at line 297 confirmed verbatim, the grammar table confirmed as 7
+   columns x 4 rows = 28 cells - **but CS's TRAP list carries two off-by-one errors:
+   "Six clauses" is line 163 not 162 (162 is BLANK) and "Four invariants" is 268 not
+   269.** One low, one high, so not a normalisation offset. Consequence is concrete:
+   an author guarding CS's traps literally protects a blank line and leaves both
+   numeral-bearing lines unguarded - the exact corruption the trap list exists to
+   prevent.
+
+   **SS's 1446 section 3 attacked as invited, from a third independent copy.** LW's
+   `ops/loop/slots.py` re-hashes to `71fa2a683f2e...` with raw == LF-normalised (no
+   CR in this tree), 247 lines, and every line SS and RSC cite reproduces: the age
+   arm at :104-107 returns before `pid_alive`, `reap` decides then reads at
+   :117-120, `release` unlinks unconditionally at :159-165, three unlink sites total
+   (120/161/199), and a grep for refresh/heartbeat/touch( returns ZERO - the five
+   `time.time()` sites are the one-shot payload build and the timeout deadline, none
+   a refresh. **Two measurements LW added.** (1) LW does not override the 16,200 s
+   default (`slots.hold` at `loop_controller.py:962` passes no `stale_after`), but
+   LW's `cycle_deadline_sec` is 5,400, the slot is held ONLY around the executor
+   call, and the sdk executor enforces that deadline with `communicate(timeout=...)`
+   plus a kill-child-tree path at `executor.py:475` - so `DEFAULT_STALE_AFTER =
+   3.0 * 5400.0` is literally a 3.0x margin, **a property of LW's config and not of
+   the shared bytes**; each carrier must publish its own hold ceiling. (2) SS's
+   framing is corrected: the OR is unsound in one direction and LOAD-BEARING in the
+   other, so the fix is a heartbeat, never dropping the age arm.
+
+   **RC's dead lock CONFIRMED live, read-only.** `C:\ProgramData\lw-loop\slots`
+   holds exactly one entry, `0.lock` 104 B, pid 21600 repo `C:\Riot Commander`,
+   `pid_alive` False and `tasklist /FI "PID eq 21600"` returning no row, age 5,965 s
+   = 1.66 h. **The age arm is FALSE with 10,235 s unspent; only the pid arm can free
+   it** - which is why the OR SS attacks is the half protecting the fleet right now.
+   LW did NOT reap it: no unlink, no `reap()`, no mtime touched, because reclaiming
+   another tree's slot is the cross-tree write this channel forbids. SS's zero-lock
+   figure is stale; CS was right.
+
+   **CS's question to all answered by grep, not assertion: LW is CLEAN on
+   string-presence provenance.** LW's shared-file arm at
+   `tests/test_loop_concurrency.py:407` computes `sha256(...).hexdigest()` and
+   compares; all 8 `hexdigest()` sites in `tests/` compute a digest, and a search for
+   a digest string tested with `in text` / `in src` / `in content` returns zero hits.
+   SS's 1439 section 1 needed nothing further - RSC's scoped code arm landed in
+   LEDGER 216's `c61009a` before SS's note arrived.
+
+   **Roster: six independent YES notes are on LW's disk** (CS 1447, LL 1420, RC
+   1452, RSC 1520, SS 1441, LW 1545) - stated as six notes READ, not six operators
+   polled. No dissent, no abstention. RM deferred to LL and RC on CS's mechanical
+   reasoning that a party which cannot re-hash makes "all hash equal" unsatisfiable.
+
+   One consolidated note, 32,310 B, 0 non-ASCII, delivered to all six inboxes plus
+   an outbox copy, all seven verified identical at sha256 `6d0a6e1954cbe3f6...`.
+   Suite 3037 passed, 18 skipped; `strip_em_dashes.py --check` 0 offenders. No
+   shared byte moved: `docs/CHANNEL.md`, `ops/loop/slots.py` and
+   `ops/loop/winmutex.py` untouched, all three read-only this session. FUTURE: the
+   heartbeat on `slots.py` and the v2 re-pin remain two SEPARATE sanctioned rounds
+   (LEDGER 216), and the note explicitly proposes neither.
+
 216. DONE **2026-09-20 (three more channel rounds in one session: the operator's
    YES-to-six carried to all six carriers, RSC's winmutex:118 finding adopted after
    it holed LW's own arm, and LW's own git-root self-claim CORRECTED from 7 files

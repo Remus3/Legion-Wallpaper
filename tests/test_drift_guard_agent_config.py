@@ -18,6 +18,7 @@ on disk. Written test-first per CLAUDE.md TDD.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -222,12 +223,29 @@ def test_collide_store_keys_empty_input_is_clean():
     assert DG.collide_store_keys([]) == []
 
 
+def _store_key_for(path) -> str:
+    """Encode a path the way the transcript store names its directory: every
+    non-alphanumeric run becomes a hyphen.
+
+    DERIVED from DG.ROOT rather than hardcoded as `C--Legion-Wallpaper`. The
+    first version of the test below hardcoded it and went RED on CI, where ROOT
+    is `/home/runner/work/...` and normalises to something else entirely - so
+    the breach branch was never taken and the finding landed in notes. That is
+    the SAME machine-dependent-test defect this file's ~/.claude.json arm
+    already documents, committed one arm below the warning about it.
+    """
+    return re.sub(r"[^A-Za-z0-9]+", "-", str(path)).strip("-")
+
+
 def test_this_projects_store_collision_is_a_breach():
     """LW's own duplicate is LW's to fix, so it breaches. A sibling's is a note
     - same split as check_claude_path_keys, for the same reason."""
+    canonical = _store_key_for(DG.ROOT)
+    stray = canonical.replace("-", "", 1)
+    assert stray != canonical, "ROOT encodes with no separator - pick another mutation"
     DG.problems.clear()
     DG.notes.clear()
-    DG.check_transcript_store_keys(["C--Legion-Wallpaper", "C--LegionWallpaper"])
+    DG.check_transcript_store_keys([canonical, stray])
     assert len(DG.problems) == 1 and "transcript" in DG.problems[0].lower()
     assert DG.notes == []
 
