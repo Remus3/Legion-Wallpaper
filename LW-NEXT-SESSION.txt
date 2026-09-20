@@ -1,71 +1,76 @@
-NEXT SESSION
-------------
-Both QA gates from the 2026-09-19 sweep are CLOSED and the main first-pass
-task is DONE. Do not redo either - see LEDGER 214. What is left is below.
+LW NEXT SESSION - written 2026-09-20, supersedes every earlier copy of this file.
 
-FIRST, the only thing blocked on a human:
+FIRST ACTION, and it CANNOT be done from inside Claude Code. Run this from a plain
+terminal - PowerShell or Git Bash, not a Claude Code session - because a session
+whose own transcript lives in the canonical transcript key can never satisfy the
+tool's live-writer guard:
 
-  The 17 first-pass submissions await approve/reject.
-  All 17 sit at <slug>_firstneedauth.png in images/1.First Pass Scratch.
-  First pass never self-approves - that is the contract, not an oversight.
-    python tools/lw_pipeline.py approve <slug>
-    python tools/lw_pipeline.py reject  <slug> --note "<reason>"
-  14 gated PASS. 3 gated FLAG, all of them band_delta a hair over the 0.05
-  threshold, and all three submitted with their report as the gate allows:
-    leona-by-stellastria-dm0rd6j-fullview    0.0574
-    miss-fortune-by-stellastria-dkul8k8-fullview  0.0505
-    sona-by-stellastria-dmiu77x-fullview     0.0504
-  Every one of the 17 is exactly 2560x1440, MS-SSIM 0.998462-0.999642,
-  LPIPS 0.00178-0.013788. If the operator is not available, do NOT approve
-  on their behalf and do NOT re-run the pass to try for better numbers -
-  a further pass measurably DEGRADES (clean-retry-degrades).
+    cd "C:\Legion Wallpaper"
+    python tools\lw_transcript_union.py --dry-run
+    python tools\lw_transcript_union.py --apply
 
-THEN the open LW row QA-2 uncovered, which is real work:
+WHY: LW's transcript store is split across two keys under the per-account Claude
+projects directory (resolve it with tools/lw_paths.py; never write an account home
+path into a tracked file - this repo is PUBLIC) -
+C--Legion-Wallpaper (canonical) and C--LegionWallpaper (stray). The tool performs a
+lossless MULTISET union, backs the canonical file up to ops\runtime\transcript_union\
+before an atomic replace, and never touches the stray directory. 28 tests, 6 mutants
+killed, losslessness rehearsed on copies of the real bytes: 0 lines and 0 uuids lost.
+--apply exits 3 inside Claude Code and that refusal is CORRECT, not a bug. Do not
+weaken the guard to force it through.
 
-  LW carries a duplicate transcript key and its own checker cannot see it.
-  `.claude/projects/` under the user profile holds BOTH spellings:
-    C--Legion-Wallpaper    270 files  471.5 MB   <- the real one
-    C--LegionWallpaper       4 files   12.8 MB   <- stray
-  CS found this from OUTSIDE, in a size table, on 2026-09-19.
-  drift_guard.check_claude_path_keys did not, because it grades whether the
-  spellings it FINDS agree on a trust bit and never ENUMERATES spellings -
-  agreement is trivially satisfied when only one spelling is examined.
-  Two pieces of work, in this order:
-    1. Close the checker gap TDD-first: a failing test that plants two
-       spellings for one directory and asserts the checker REPORTS it.
-       Prove the arm binds (kill a mutant, restore byte-exact) and prove
-       the report CLEARS when the duplicate is removed - "appears" is not
-       "goes away".
-    2. THEN decide the stray key's fate. It is NOT a prune-on-sight:
-       4 transcript files are the record of 4 real sessions, and LW spent
-       this same week learning that small-old-and-unrecognised is not a
-       liveness measure (the ll-captures withdrawal). Decide it on what
-       references it, not on its size or its age.
-  Worth broadcasting the checker-shape finding once fixed: any tree running
-  a similar check has the same enumerate-vs-compare hole.
+Detail: docs\TRANSCRIPT_UNION_2026-09-20.md.
 
-CARRY FORWARD, unchanged:
-  - The headless loop is still HELD. Operator 2026-09-16: RC and CS only.
-    A session that reads the earlier looping instruction is acting on a
-    superseded order. WAKEUP_NOTES has the kept prompt, armed only by the
-    operator saying so.
-  - LW's ll-captures PRUNE recommendation was WITHDRAWN. Do not re-assert.
-  - C:\LW-backups\lw-pre-email-scrub-2026-09-07.bundle is REFERENCED-AND-IDLE
-    (the pre-rewrite object graph from the email purge). Do not prune it.
-  - The cathedral-syndra crop is a DECIDED question: top=60, recorded in the
-    manifest as crop_sides {"top": 60} and in
-    ops/runtime/crop_overrides_cathedral.json. Do not re-derive it.
-  - Source recovery on the 17 is done (Tier 1 hit 17/17) and lw_first_pass
-    already prefers the fetched DeviantArt fullview over _firstinitial - the
-    hand-off advice that named this is now implemented, not pending.
+WHAT THE UNION IS AND IS NOT. It closes the DATA split only. The stray key stays,
+so drift_guard keeps reporting a BREACH on it until the operator removes it, and the
+ROOT CAUSE - whatever flipped the transcript key mid-session - is unfixed and unknown.
+Corrected framing, because the earlier one was wrong: d3d7c8f7 is a CONTINUATION TAIL,
+not a superset (uuid sets disjoint 172/346, timestamps contiguous, the stray's first
+parentUuid is the canonical copy's last uuid). Only a89cfc16 is a superset, by exactly
+one record. cf160e3d is byte-identical. The phantom cwd C:\LegionWallpaper appears in
+the CANONICAL copies too, so it never distinguished the keys.
 
-STATE AT WRAP (re-measure anything you act on):
-  pytest tests/ -q     3025 passed, 18 skipped
-  ruff check .         clean
-  drift_guard          0 breaches, 6 notes
-  git                  clean on main; images/** and PIPELINE_LOG.md are
-                       gitignored, so the image work has no commit by design
-  inbox                0 unread; 2 LW replies filed to all five trees
+SECOND: ROUND B is authored and out for agreement, not landed. LW proposed the repair
+for ops\loop\winmutex.py, whose line 118 names a carrier code in violation of
+slots.py:7 ("Nothing here may reference ANY of them"). The proposed bytes sit at
+ops\runtime\round_b\winmutex.proposed.py and the proposal note is in
+moon_sync_outbox\2026-09-21-0030-from-LW-ROUND-B-proposed-bytes-winmutex-carrier-code-repair.md.
+LW has NOT moved its own bytes and must not until the other slots.py carriers agree.
+The slots.py carrier set is FOUR - LW, RC, RSC, SS. CS and LL do not carry it. When the
+round lands, KNOWN_CODE_HITS loses its ("winmutex.py", "RC") entry and
+SHARED_SHA256["winmutex.py"] moves to the new digest IN THE SAME COMMIT; LW's own arm
+reddens if one moves without the other, which is the whole point of it.
 
-Start with: /clear, then CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log
-  + docs/LEDGER.md entry 214 + this file.
+THIRD: the channel is outpacing replies. 46 notes unread at hand-off across six
+sibling trees. Read them with a subagent, never inline - the main session stays free
+for the operator.
+
+STATE AT HAND-OFF
+  branch main, clean, CI green on 41efc7c
+  suite LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q = 3082 passed, 18 skipped
+  docs\CHANNEL.md is v2, 25,425 B, digest fc22e86e (full value lives ONLY in the pin,
+    tests/test_channel_doc_pin.py - a digest repeated in prose is an uncovered second
+    copy of the pin, which is a defect LW found three times today)
+    all THREE pins moved - PINNED_SHA256, PINNED_CHANNEL_VERSION, EXPECTED_TABLE
+  LW-InboxResponder scheduled task is DISABLED (reversible: Enable-ScheduledTask),
+    HALT untouched, 2,566 halted rows, 0 spawns ever
+  drift_guard: 1 standing BREACH, the split transcript key. Expected until the union
+    applies AND the stray key is removed.
+
+WHAT THIS SESSION GOT WRONG, because the pattern repeated and is worth carrying
+  Seven self-corrections in one day, every one the same shape: a CHEAP PROXY used as
+  the predicate instead of the predicate itself.
+    file size and line count read as "superset", without comparing record identity
+    an mtime window read as a liveness test - Claude Code BATCHES transcript flushes,
+      so a live file measured 353.8 s and 150.5 s stale, both outside a 120 s window
+    a bare word read as a tree name, so the English noun "substrate" matched SS
+    a fleet-wide marker (moon_sync_inbox) read as an ownership marker - the exact trap
+      LW had warned another tree about seven lines earlier in the same note
+    "carrier" used as a one-place predicate, when slots.py has FOUR carriers and
+      CHANNEL.md has FIVE and the exceptions are DISJOINT
+    a chained shell command's exit code read as a CI conclusion - it reported green on
+      two runs that were RED. Read conclusion from `gh run list --json conclusion`.
+    a line-scoped source scan read as proof a module cannot spawn - a line break
+      defeated it, no adversary needed
+  Two guards shipped this session asserted more than they enforced and were fixed only
+  after a measurement pass, not after a test went red. Mutation-prove every new arm.

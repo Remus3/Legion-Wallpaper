@@ -27,6 +27,66 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+222. DONE **2026-09-20 (ROUND B authored and out for agreement - a 6-byte comment
+   repair, proven AST-identical and behaviourally identical, with LW's own bytes
+   deliberately NOT moved; plus the hand-off rewritten and refused twice by its own
+   guard).**
+
+   **Round B authoring, which nobody had started.** RSC's 1703 note asked the channel
+   who would author the joint re-pin and noted it had no author and no date. LW had
+   volunteered on channel and did the work. `ops/loop/winmutex.py:118` reads "Found by
+   RC on review, 2026-07-26", and `slots.py:7` says verbatim "Nothing here may
+   reference ANY of them", so the agreed bytes violate their own rule. Proposed
+   replacement drops exactly `by RC ` - six bytes - leaving "Found on review,
+   2026-07-26." The provenance that is load-bearing is kept: caught ON REVIEW, and the
+   DATE, which dates the defect to the original sync and says no arm has ever covered
+   it. A periphrasis such as "found by a carrier" was rejected - it encodes the same
+   forbidden fact and invites the code being put back.
+
+   Proposed bytes at `ops/runtime/round_b/winmutex.proposed.py` (gitignored, so zero
+   tracked change): 6,184 B from 6,190, sha256 `df0a7a40c2881813...`, 0 CR, 0
+   non-ASCII, 138 lines, ONE changed line, and a word-boundary case-sensitive scan over
+   8 carrier codes and 9 full project names returns 0 hits.
+
+   **Proven by running code, not by reading it.** `ast.dump` of both parses is
+   IDENTICAL at 9,795 chars - the strongest available proof that no behaviour moved,
+   since comments do not survive parsing - and the comparison was mutation-controlled
+   (`acquired = rc in` -> `acquired = False and rc in` is REJECTED by the same
+   comparison, so the arm is not a rubber stamp). Both modules were then loaded under
+   temporary names: identical public surface, identical mutex name VALUES, and an
+   identical 12-line log over acquire / re-enter / release / re-acquire /
+   clamped-timeout. Two-process mutual exclusion proven in BOTH directions, with a
+   test-only mutex name so no live loop was disturbed, CREATE_NO_WINDOW on every child.
+
+   **LW's own `ops/loop/winmutex.py` and `tests/test_loop_concurrency.py` are
+   UNTOUCHED, and that is the point.** A carrier does not move a pinned shared byte
+   before the other carriers agree. The pin values for the landing commit are published
+   so any carrier can apply them mechanically: `SHARED_SHA256["winmutex.py"]` to the new
+   digest and `KNOWN_CODE_HITS = []`, in the SAME commit as the bytes. The empty pin
+   makes that arm STRICTER, not weaker. Carrier set re-measured for the round: LW, RC,
+   RSC and SS carry both files byte-identical; LL carries neither; CS carries no
+   `slots.py` and a DIFFERENT `winmutex.py` (7,724 B, `e0d3ac7d...`), which is a fork
+   rather than a stale copy - so CS and LL owe nothing on this round.
+
+   **The hand-off was REFUSED twice by its own writer, and both refusals were right.**
+   `tools/lw_next_session.py` rejected the first draft for a user-profile path (the repo
+   is PUBLIC) and for a 64-hex digest literal. The second is the same defect LW found
+   three times today: a digest repeated in prose is an uncovered SECOND COPY of a pin
+   that does not move when the pin moves. The hand-off now names the digest by its
+   8-char prefix and points at the pin as the single source. `LW-NEXT-SESSION.txt`
+   leads with the one action that cannot be done from inside Claude Code - the
+   transcript union `--apply` - and records the seven self-corrections of this session
+   under the single root cause they share: a cheap proxy used as the predicate.
+
+   Verified: `LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q` = 3082 passed, 18 skipped,
+   unchanged from baseline as expected for a round with zero tracked source changes;
+   `strip_em_dashes --check` 0 offenders; proposal note delivered to all six inboxes
+   plus the outbox, all seven copies read back and hashed matching.
+
+   FUTURE: round B lands only when RC, RSC and SS hash the proposed bytes from their own
+   disks and agree. Do NOT let LW move first, and do NOT move the digest without
+   emptying `KNOWN_CODE_HITS` in the same commit - LW's own arm reddens on exactly that.
+
 221. DONE **2026-09-20 (the six-tree carrier fork RESOLVED by measurement - BOTH
    populations published, LW's FOUR was right about `slots.py` and was never a
    CHANNEL count, plus TWO measured defeats of LW's own "cannot do X" claims).**
