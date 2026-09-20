@@ -44,6 +44,21 @@ _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # be resolved from the command or the hook's CWD.
 _LW_ROOT = r"C:\Legion Wallpaper"
 
+
+def fallback_root() -> str:
+    """The last two rungs of the root chain, in order.
+
+    `CLAUDE_PROJECT_DIR` is what the harness exports into every hook process
+    (measured on CLI 2.1.251), so it names the tree actually being edited. It is
+    tried BEFORE the literal, which stays as the genuine final resort: this gate
+    also runs from `.githooks/pre-commit`, from a test fixture and by hand, and
+    the arms above it (`-C <path>` in the command, then `git rev-parse
+    --show-toplevel` in the hook's CWD) already answer correctly whenever there
+    is a repository at all. Removing the literal would leave the no-git-at-all
+    case with nothing, which is why it is kept rather than replaced.
+    """
+    return os.environ.get("CLAUDE_PROJECT_DIR") or _LW_ROOT
+
 _BANNED = {
     chr(0x2014): "em-dash",
     chr(0x2013): "en-dash",
@@ -498,7 +513,7 @@ def main() -> int:
     root = (
         _root_from_command(command)
         or _git(["rev-parse", "--show-toplevel"], os.getcwd()).strip()
-        or _LW_ROOT
+        or fallback_root()
     )
     violations = _staged_violations(root)
 

@@ -5,7 +5,12 @@
 # prompt is piped via STDIN to dodge the Windows command-line length limit.
 param(
   [string]$Model = $(if ($env:LW_GEMINI_MODEL) { $env:LW_GEMINI_MODEL } elseif ([Environment]::GetEnvironmentVariable("LW_GEMINI_MODEL", "User")) { [Environment]::GetEnvironmentVariable("LW_GEMINI_MODEL", "User") } else { "gemini-2.5-flash" }),
-  [string]$RepoRoot = "C:\Legion Wallpaper",
+  # Defaults to the checkout this script lives in (tools/ sits directly under
+  # the repo root), exactly as tools/weekly_hygiene_run.ps1 does. An explicit
+  # -RepoRoot still overrides. It used to be a literal, so a clone or a linked
+  # worktree audited the ORIGINAL tree (fixed 2026-09-20, pinned by
+  # tests/test_guard_scripts_resolve_this_checkout.py).
+  [string]$RepoRoot = $(Split-Path -Parent $PSScriptRoot),
   [string]$Since = "",
   [int]$MaxWaitSec = 180
 )

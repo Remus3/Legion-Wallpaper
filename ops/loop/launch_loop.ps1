@@ -7,7 +7,12 @@ param(
 $ErrorActionPreference = "Stop"
 $pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
 $py = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
-$root = "C:\Legion Wallpaper"
+# The checkout this script lives in, never a literal: ops/loop/ is two levels
+# below the repo root, and tools/headless_run.ps1 + tools/weekly_hygiene_run.ps1
+# already derive theirs the same way. A pinned root made a clone or a linked
+# worktree launch the ORIGINAL tree's controller (fixed 2026-09-20, pinned by
+# tests/test_guard_scripts_resolve_this_checkout.py).
+$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $ctl = "$root\ops\loop\control"
 $ahk = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
 $bridge = "$root\ops\loop\claude_gui_bridge.ahk"
