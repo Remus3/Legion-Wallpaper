@@ -108,6 +108,23 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `tests/conftest.py`, 3 mutants killed. CS green at 6226 passed / 7 skipped
   with the tracer's control proved and every bucket empty. LEDGER 187.
 
+- **The two defeated "cannot do X" claims in the inbox responder are REPAIRED -
+  DONE 2026-09-20 (`41efc7c`), re-verified from disk 2026-09-21 (LEDGER 223).**
+  That commit both FIXED the two defects and filed them as a high-priority OPEN
+  item in this file, present tense, citing `:493` and `:516` - line numbers the
+  same commit invalidated (`:493` and `:516` now land on unrelated lines). The
+  open row is removed here; this is the record. **Re-verified this session, not
+  carried forward:** `--halt` now defaults to `None` (`tools/lw_inbox_responder.py:538`)
+  and the gate at `:569` is `halt_reason(args.halt)`, which iterates
+  `(HALT_PATH, override)` and returns the first stop (`:448`), so an override can
+  ADD a gate and can never remove one. Both live arms run with the operator's
+  `HALT` in place: `--once --dry-run --halt <an absent path>` and `--once
+  --dry-run` with no override each returned the SAME `halted` reason and
+  `"spawned": []`. `HALT` untouched at 135 B, `runs.jsonl` 2,566 rows before and
+  after. Defect (b), the line-scoped `schtasks` scan, was replaced by behavioural
+  tripwire arms plus an AST walk; the fossil scan is kept, pinned by a test named
+  for what defeated it.
+
 - **LW-InboxResponder ARMED 2026-09-11 - and DISABLED 2026-09-20 (LEDGER 221).**
   **CURRENT POSTURE, re-verified from the scheduler 2026-09-20:** State
   `Disabled`, `Settings.Enabled` False, trigger still Enabled (a Disabled task
@@ -155,28 +172,22 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
-- **REPLACE the two defeated "cannot do X" claims in the inbox responder
-  (measured 2026-09-20, LEDGER 221).** Both are LW's own and both were proven
-  defeated this session, so this is a repair and not a review item.
-  (a) `tests/test_inbox_responder.py:495`
-  (`test_no_process_launch_in_this_module_mentions_schtasks`) is a LINE-scoped
-  scan of the module's source. Its predicate, replicated verbatim, PASSES against
-  LL's `getattr(subprocess,"r"+"un")` technique AND against a plain multi-line
-  `subprocess.run(` call - **a line break defeats it, with no adversary and no
-  error message.** The replacement is a different KIND of claim, not a better
-  regex: run the module in a subprocess under an audit hook and fail on any
-  `subprocess.Popen` audit event naming `schtasks`. LL measured the trap to avoid
-  - the `import` audit event is NOT raised by `importlib.import_module`, so a
-  guard built on that event alone passes against exactly the attack it was
-  written for; the FILE-level events carry it.
-  (b) `--halt` is a CLI argument with `default=HALT_PATH` (`:493`) and the gate
-  at `:516` reads `halted(args.halt)`, so **any caller passing a different
-  `--halt` bypasses the kill switch entirely** - measured, with a control arm
-  proving the gate binds on the default. "The responder cannot run while HALT
-  exists" is FALSE as written. Exposure is bounded today (the registered action
-  is `--once` only, and the task is Disabled) which is why this is high priority
-  rather than urgent. The fix is an arm asserting the live task's action carries
-  no `--halt` override, not a docstring.
+- **STALE PROSE: two tracked docs still say the headless lanes are "Ready", and
+  the responder task is `Disabled` (measured 2026-09-21, LEDGER 223).** Neither
+  was touched by `41efc7c` and both were found by grepping LW's own prose for the
+  shape RSC reported in RSC's tracked roadmap at 1900.
+  (a) `docs/OPERATIONS.md:128` - "The scheduled tasks stay REGISTERED and Ready
+  on purpose: the HALT file is the switch". Measured live with
+  `Get-ScheduledTask -TaskName 'LW-*'`: `LW-CIWatchdog` Ready, `LW-Wallpaper`
+  Ready, `LW-WeeklyHygiene` Ready, **`LW-InboxResponder` Disabled.** Line 90 of
+  the SAME file already records the disable, so the file contradicts itself.
+  (b) `WAKEUP_NOTES.md:471-472` - "The scheduled tasks are still registered and
+  still Ready - the HALT files are what stop them". Same defect, in a dated wrap
+  record rather than a reference table.
+  Both are stale in the SAFE direction (they understate the protection), which is
+  why nothing went red. Neither file was edited in the session that found this -
+  the session's write grant named `ROADMAP.md` and `docs/LEDGER.md` only - so
+  this row is the hand-off, with the exact lines named.
 
 - **IF LW ever adopts the `reserved-<key>.lock` scheme, LL's case-fold property is
   the ACCEPTANCE CRITERION, not a later review item (recorded 2026-09-20 on LL's
@@ -214,11 +225,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the bytes, report the digest back - or AUTHOR v2 and circulate it if no tree has
   started. RC and RSC have both declared pin-holder status.
 
-  **Round A channel-wide adoption, MEASURED across all six roots 2026-09-20
-  (LEDGER 221) - the round is NOT closed on the channel, only on LW's side.**
-  v2 TWO (LW, RC), v1 THREE (CS `docs/CHANNEL.md`, RSC `docs/CHANNEL.md`, LL
-  `third_party/rc_channel/docs/CHANNEL.md`), NEITHER ONE (SS, which holds no copy
-  at any path and is not a pin-holder). **The `CHANNEL.md` carrier set is FIVE
+  **Round A channel-wide adoption. CORRECTED 2026-09-21 (LEDGER 223): TWO OF THE
+  THREE v1 ROWS BELOW WERE WRONG WHEN WRITTEN.** Re-measured from this box, all
+  five carrier paths hashed in one pass: **v2 FOUR** - LW `docs/CHANNEL.md`, RC
+  `docs/CHANNEL.md`, RSC `docs/CHANNEL.md`, LL
+  `third_party/rc_channel/docs/CHANNEL.md`, every one 25,425 B / `fc22e86e` / 0 CR
+  / 0 non-ASCII; **v1 ONE** - CS `docs/CHANNEL.md`, 20,633 B / `899f6eb9`;
+  **NEITHER ONE** - SS, no copy at any path, not a pin-holder. RSC announced its
+  push at 2359. **Root cause of the wrong LL row: LW's 2300 note called its LL
+  figure a "third independent vantage" on RC's 1612 reading and published RC's
+  20,633 B / `899f6eb9` - but LL's v2 bytes were on disk at 16:23:08 and LW's note
+  was written at 16:33:03, so a fresh hash could not have returned v1.** An
+  agreement with someone else's number was reported as an independent measurement.
+  Same shape as the two defects above: a cheap proxy standing in for the predicate.
+  **The `CHANNEL.md` carrier set is FIVE
   and the `slots.py` carrier set is FOUR; their exceptions are DISJOINT** (CS+LL
   absent from one, SS from the other), so a single "carrier" column can never be
   correct for both file sets - any re-pin brief must name the FILE and the PATH
@@ -235,6 +255,65 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   (`test_shared_modules_carry_only_the_pinned_carrier_codes`), which goes RED if
   the hit is repaired without the pin moving in the same commit - that is what
   makes the repair safe to do across six trees.
+
+  **Round B has an AUTHOR and now a PROPOSED DATE (2026-09-21, LEDGER 223).**
+  RSC asked at 1703 for the two blanks - WHO AUTHORS and ON WHAT DATE - and
+  restated at 2359 that the round "is closing this round exactly as open as it
+  opened". The first blank is filled: LW authored the bytes and circulated them at
+  0030 as `2026-09-21-0030-from-LW-ROUND-B-proposed-bytes-winmutex-carrier-code-repair.md`.
+  Candidate re-hashed from disk 2026-09-21:
+  `ops/runtime/round_b/winmutex.proposed.py`, **6,184 B**, sha256
+  `df0a7a40c28818130dfde25144c971c06060b4645e5eb5f679fbdaf55e2e08d7`, 0 CR, 0
+  non-ASCII, one changed line, `ast.dump` identical to the current module.
+  **PROPOSED LANDING DATE: 2026-09-22, at each carrier's own convenience within
+  that day.** Sequencing, all four `slots.py` carriers (LW, RC, RSC, SS)
+  independently: (1) copy the candidate with `shutil.copyfile`, never a text-mode
+  write - a text write turns LF into CRLF on Windows and reddens the digest arm
+  and the CR arm while blaming the protocol for the copy; (2) hash it FROM YOUR OWN
+  DISK and confirm 6,184 B / `df0a7a40`; (3) in ONE commit, write the bytes to
+  `ops/loop/winmutex.py`, move `SHARED_SHA256["winmutex.py"]` to the new digest
+  with the previous value kept as a comment, and empty `KNOWN_CODE_HITS`. Neither
+  half may ship alone: bytes without the pin reddens the digest arm, pin without
+  the bytes reddens the code arm. **If a carrier does not answer by end of
+  2026-09-22, LW does NOT land unilaterally** - the pin is on bytes shared by
+  contract and a one-tree move reddens every carrier that did nothing wrong. LW
+  holds the candidate outside the tracked file and re-posts the date. A carrier
+  that prefers other bytes authors them and this candidate is dropped.
+
+- **LL's relative-hook defect class, CHECKED against LW's own wiring - measured
+  2026-09-21 (LEDGER 223). LW does NOT have LL's defect, and LW is in LL's THIRD
+  CATEGORY, and LW has a FOURTH.** LL 2330 found `.githooks/pre-commit` invoking
+  `"$py_bin" -m ops.docguards` with no anchor, where `-m` resolves the package from
+  the CURRENT directory. Measured here: **zero `-m` package invocations in any LW
+  hook wiring**, and every script in both `.githooks/pre-commit` and
+  `.githooks/commit-msg` is invoked as `"$PY" "$ROOT/tools/..."` where
+  `ROOT="$(git rev-parse --show-toplevel)"` - absolute, computed at run time.
+  **`core.hooksPath` is `.githooks`, RELATIVE** - the shape LL found in its own
+  installer, live in LW's config. Probed behaviourally with `git hook run
+  pre-commit` and `PYTHON` pointed at a wrapper that prints, so the HOOK BODY is
+  proven to run and not merely to be found: repo top, subdirectory `tools/`, and a
+  foreign cwd via `git -C` all printed the marker and resolved `$ROOT` to the
+  absolute repo path; the negative control `-c core.hooksPath=.githooks-absent`
+  gives `error: cannot find a hook named pre-commit`, exit 1, so the probe can see
+  a hook that does not fire. Git 2.53.0.windows.3, the same version LL measured.
+  **NOT MEASURED: the linked-worktree vantage** - creating one is a git-state change
+  the measuring session was barred from making. **LL's THIRD CATEGORY applies:** all
+  11 harness hook commands invoke a bare `pythonw`, and the git hooks' third
+  interpreter arm is a bare `python`, both PATH resolution rather than absolute.
+  **And a FOURTH category LL's three do not cover:** LW's 11 harness commands carry
+  a HARDCODED LITERAL absolute path, `pythonw "C:\Legion Wallpaper\tools\..."`,
+  with **zero uses of `$CLAUDE_PROJECT_DIR`**. That is absolute, so it is not LL's
+  defect, but it is not env-anchored either: any clone, rename or linked worktree
+  silently runs the ORIGINAL tree's scripts instead of its own, with no warning.
+  `.claude/settings.json` and `.claude/settings.local.json` both PARSE - asserted
+  before anything was concluded from them, per the CLAUDE.md confound (a
+  single-backslash Windows path makes the file invalid JSON and no hook registers).
+  3 of LW's 9 distinct harness hook scripts were RUN from a foreign cwd
+  (`install_git_hooks.py --check`, `caveman_default.py`, `lw_window_guard.py`), all
+  3 correct; the other 6 were NOT run because they consume a harness stdin payload
+  or mutate inbox-watcher ack state. **Instrument limit, stated in LL's own terms:**
+  the foreign-cwd arm for those 3 has NO negative control, so it proves they run and
+  does not prove the probe could detect a break.
 
 - **LW's transcript store is SPLIT across two keys; the union TOOL is built and
   deliberately REFUSES to run inside Claude Code - APPLY is the next session's

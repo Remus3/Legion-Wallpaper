@@ -468,9 +468,13 @@ what was ASKED before believing the answer.
 LEDGER 189 + 191 - the weekly-hygiene lane had NO switch at all and one was
 added, arms in tests/test_headless_lane_kill_switches.py).** The kill switches
 are on disk: `ops\runtime\inbox_responder\HALT`, `ops\runtime\ci_watchdog\HALT`
-and `ops\runtime\weekly_hygiene\HALT`. The scheduled tasks are still registered
-and still Ready - the HALT files are what stop them, checked before any work is
-done, and all three were PROVED halted by running them. RE-ARM is deleting the
+and `ops\runtime\weekly_hygiene\HALT`. The HALT files are what stop them, checked
+before any work is done, and all three were PROVED halted by running them.
+**Superseded in part 2026-09-20:** "still registered and still Ready" now holds
+for the CI watchdog and weekly hygiene only - `LW-InboxResponder` was DISABLED
+that day (measured State `Disabled`) after two sibling trees refused to pair with
+it and all 2,566 of its runlog rows turned out to be `halted` with zero spawns
+ever. Its HALT file is untouched and one `Enable-ScheduledTask` reverses it. RE-ARM is deleting the
 three files, and it is the OPERATOR'S call, not a next session's housekeeping.
 Do not delete them to "fix" a task that looks idle.
 

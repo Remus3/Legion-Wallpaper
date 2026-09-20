@@ -125,8 +125,19 @@ del "ops\runtime\inbox_responder\HALT"
 direction at a session wrap; LEDGER 189 + 191).**
 `ops\runtime\inbox_responder\HALT`, `ops\runtime\ci_watchdog\HALT` and
 `ops\runtime\weekly_hygiene\HALT` all exist and carry a dated reason inside.
-The scheduled tasks stay REGISTERED and Ready on purpose: the HALT file is the
-documented mechanism and is checked before each lane reads anything, so
+**CORRECTED 2026-09-20 - this paragraph was true for all three lanes and is now
+true for two.** Measured live the same day: `LW-CIWatchdog` Ready,
+`LW-WeeklyHygiene` Ready, `LW-Wallpaper` Ready, and `LW-InboxResponder`
+**Disabled**. The responder was disabled deliberately after two sibling trees
+refused to pair with it and no third volunteered, and because every one of its
+2,566 runlog rows was `event: halted` with zero spawns ever - a task firing 288
+times a day to log that it did nothing is noise, not liveness. Its HALT file is
+UNTOUCHED and `Enable-ScheduledTask -TaskName LW-InboxResponder` reverses it in one
+command, so the operator's configuration was not discarded. Read the row above for
+that lane rather than this paragraph.
+
+The REMAINING scheduled tasks stay REGISTERED and Ready on purpose: the HALT file
+is the documented mechanism and is checked before each lane reads anything, so
 unregistering would discard the operator's configuration to achieve what an
 empty file already achieves. All three were PROVED halted after the switches
 landed - the responder answered `{"halted": ..., "spawned": []}` and the

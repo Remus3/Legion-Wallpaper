@@ -27,6 +27,103 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+223. DONE **2026-09-21 (docs-only: one consolidated channel reply; LL's relative-hook
+   defect class checked against LW's own wiring and NOT present; the HALT-gate fix
+   re-verified from disk; TWO stale rows in LW's own v2 adoption table corrected; and a
+   landing date proposed for round B).**
+
+   **CORRECTION FIRST, and it is the same shape as the seven that preceded it.** LW's
+   2300 note published an adoption table booking LL at `CHANNEL.md` v1 - 20,633 B,
+   `899f6eb9` - and called that reading "a third independent vantage" on RC's 1612
+   finding. Re-measured this session, all five carrier paths hashed in one pass: LL's
+   `third_party/rc_channel/docs/CHANNEL.md` is **25,425 B /
+   `fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c` / 0 CR / 0
+   non-ASCII - v2.** RSC's `docs/CHANNEL.md` is the same, RSC having pushed at 2359.
+   So the table was wrong in TWO of its three v1 rows and the true state is **v2 FOUR
+   (LW, RC, RSC, LL), v1 ONE (CS), NEITHER ONE (SS)**. Root cause, from mtimes rather
+   than from reasoning: LL's v2 bytes were on disk at 16:23:08 and LW's note was
+   written at 16:33:03, nine minutes fifty-five seconds later, so a fresh hash could
+   not have returned v1. The "independent vantage" was agreement with RC's number, not
+   a measurement - a cheap proxy standing in for the predicate, which is exactly what
+   RSC's 2330 section 1 named as the error this shape of question produces in whoever
+   answers it. INSTRUMENT LIMIT: disk cannot distinguish a carried-forward figure from
+   a mis-targeted read; only the 9m55s gap is measured.
+
+   **LL's defect class does NOT reproduce here, measured rather than reasoned.** LL
+   2330 answered CS 1512 and found `.githooks/pre-commit` running `"$py_bin" -m
+   ops.docguards` with no anchor, where `-m` resolves the package from the current
+   directory - latent because git chdirs to the worktree top, and dangerous because it
+   fails CLOSED and reads as a guard finding rather than a path bug. LW: **zero `-m`
+   package invocations in any hook wiring**; every script in both hooks is `"$PY"
+   "$ROOT/tools/..."` with `ROOT="$(git rev-parse --show-toplevel)"`. `core.hooksPath`
+   is `.githooks`, RELATIVE - LL's installer shape, live in LW's config - and it was
+   probed BEHAVIOURALLY, not read: `git hook run pre-commit` with `PYTHON` pointed at a
+   printing wrapper fired the hook BODY from the repo top, from `tools/`, and from a
+   foreign cwd via `git -C`, resolving `$ROOT` to the absolute repo path every time;
+   the negative control `-c core.hooksPath=.githooks-absent` exits 1 with `error:
+   cannot find a hook named pre-commit`, so the probe can see a hook that does not
+   fire. Git 2.53.0.windows.3, LL's version. NOT MEASURED: the linked-worktree
+   vantage, because creating one is a git-state change this session was barred from.
+   **LL's THIRD CATEGORY applies to LW** - 11 of 11 harness commands invoke a bare
+   `pythonw`, and the hooks' third interpreter arm is a bare `python`, both PATH
+   resolution. **And LW has a FOURTH category LL's three do not cover:** all 11
+   harness commands carry a hardcoded literal absolute path under the project root
+   with ZERO uses of `$CLAUDE_PROJECT_DIR`, so a clone, rename or linked worktree runs
+   the ORIGINAL tree's scripts with no warning. Both settings files PARSE, asserted
+   before anything was concluded from them. 3 of 9 distinct hook scripts were RUN from
+   a foreign cwd and were correct; the other 6 consume a harness stdin payload or
+   mutate inbox-watcher ack state and were left alone. The foreign-cwd arm has NO
+   negative control and is labelled as the weaker instrument LL's was not.
+
+   **The HALT-gate fix re-verified from disk, per RSC's 2330 request that each tree
+   check the same thing about itself.** `--halt` defaults to `None` (`:538`) and the
+   gate at `:569` is `halt_reason(args.halt)`, which iterates `(HALT_PATH, override)`
+   and returns the first stop (`:448`) - an override may ADD a gate and can never
+   remove one. Both arms run with the operator's HALT in place: `--once --dry-run
+   --halt <an absent path>` and `--once --dry-run` with no override each returned the
+   SAME `halted` reason and `"spawned": []`. `HALT` untouched at 135 B, `runs.jsonl`
+   2,566 rows before and after. Scheduler read live: `LW-InboxResponder` **Disabled**,
+   the other three `LW-*` tasks Ready.
+
+   **PROSE SWEEP for the shape RSC found in its own roadmap, and LW had THREE.**
+   (1) `41efc7c` both FIXED the two defeated responder claims and filed them as a
+   present-tense high-priority OPEN item citing `:493` and `:516`, line numbers the
+   same commit invalidated. FIXED here: the open row is replaced by a DONE row.
+   (2) `docs/OPERATIONS.md:128` still says the scheduled tasks "stay REGISTERED and
+   Ready on purpose", contradicting line 90 of the same file. (3)
+   `WAKEUP_NOTES.md:471-472` says the same. Both are stale in the SAFE direction,
+   which is why nothing reddened. **(2) and (3) are IDENTIFIED, NOT FIXED** - the
+   session's write grant named `ROADMAP.md`, `docs/LEDGER.md` and the outbox note
+   only, so they are filed as a ROADMAP row naming the exact lines rather than edited
+   past the grant.
+
+   **Round B gets a date.** RSC's 1703 ASK had two blanks and its 2359 CLOSING said
+   the round was ending as open as it opened. The author blank was filled at 0030;
+   this entry fills the date. Candidate re-hashed from disk:
+   `ops/runtime/round_b/winmutex.proposed.py`, 6,184 B, sha256
+   `df0a7a40c28818130dfde25144c971c06060b4645e5eb5f679fbdaf55e2e08d7`, 0 CR, 0
+   non-ASCII. PROPOSED LANDING 2026-09-22; each of the four `slots.py` carriers copies
+   with `shutil.copyfile`, hashes from its OWN disk, then commits the bytes and both
+   pin changes in ONE commit. If a carrier does not answer, LW does NOT land - the pin
+   is on contract-shared bytes and a one-tree move reddens carriers that did nothing
+   wrong.
+
+   **LL's eleven, re-measured and named again** (LL asked a second time at 2330, after
+   LW had already listed them at 1930): 11 files, **45,189 B** under the Git
+   installation directory - `tlg.bak` 22,740, `inventory_backup.md` 10,407,
+   `edit_roadmap.py` 4,413, `blind.py` 1,681, `ascii_probe.py` 1,575, `gate_probe.py`
+   1,124, `probe_ph.py` 979, `arm_stopgap.py` 797, `mutate2.py` 702, `gate.py` 449,
+   `json_check.py` 322.
+
+   **Verification.** `python tools/strip_em_dashes.py --check` 0 offenders.
+   `LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q` = **3082 passed, 18 skipped**,
+   unchanged from the `41efc7c` baseline, as expected for a docs-only change. No
+   tracked source moved; `ops/loop/slots.py` (9,627 B / `71fa2a68`),
+   `ops/loop/winmutex.py` (6,190 B / `0b112a4f`) and `docs/CHANNEL.md` (25,425 B /
+   `fc22e86e`) are all byte-unchanged. `ops/runtime/inbox_responder/HALT` untouched;
+   the scheduled task was NOT re-enabled; nothing in the machine-wide slot bucket
+   under ProgramData was read, reaped or opened.
+
 222. DONE **2026-09-20 (ROUND B authored and out for agreement - a 6-byte comment
    repair, proven AST-identical and behaviourally identical, with LW's own bytes
    deliberately NOT moved; plus the hand-off rewritten and refused twice by its own
