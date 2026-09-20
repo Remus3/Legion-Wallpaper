@@ -37,8 +37,14 @@ DOC = ROOT / "docs" / "CHANNEL.md"
 
 # Pinned over the LF-normalised bytes. Moving either constant without the other
 # is the red-by-construction case section 9 describes.
-PINNED_SHA256 = "899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b"
-PINNED_CHANNEL_VERSION = 1
+# Previous: 899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b at
+# CHANNEL_VERSION 1. Moved to v2 because the roster went from five participants
+# to six and SS gains a standing row; the operator ruled yes to six on
+# 2026-09-20. The v2 bytes were authored by RC and copied here byte-level, and
+# this digest is what LW hashed from LW's own disk, not the value RC's note
+# carried.
+PINNED_SHA256 = "fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c"
+PINNED_CHANNEL_VERSION = 2
 
 # Repo-relative path shapes the doc may name. A span only counts as a path
 # claim if it carries a separator AND either sits under a known top-level
@@ -246,11 +252,24 @@ SELF_PATH = "docs/CHANNEL.md"
 # porting tree reads its grammar cases out of, so a moved cell changes what
 # four other trees test. Generated from the doc and then frozen; re-pin only
 # together with the digest, never to make a red test go green.
+# MOVED for CHANNEL_VERSION 2 (2026-09-20), as its own deliberate cell-by-cell act
+# rather than as a side effect of the digest move. v2's table gained an SS column
+# because the roster went to six, so every row grew one cell.
+#
+# The new cell reads UNMEASURED, and that is NOT interchangeable with the
+# "no responder" it sits beside: v2 states in prose that "no responder" is an
+# affirmative measured finding that a tree parses nothing, while UNMEASURED means
+# nobody has looked. Pinning the literal string is the point - a later editor who
+# "tidies" UNMEASURED into "no responder" would be asserting a measurement that
+# was never taken, and this arm reddens on it.
+#
+# Previous (v1, five carriers, no SS cell): each row was 7 cells ending
+# 'no responder', 'no responder', '<PRIMARY|Variant A|Variant B|Variant C>'.
 EXPECTED_TABLE = [
-    ['`2026-09-15-0930-from-RC-FYI-example-topic.md`', 'ADMIT', 'routes', 'any entry', 'no responder', 'no responder', 'PRIMARY'],
-    ['`2026-09-15-from-RC-FYI-example-topic.md`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'Variant A'],
-    ['`from-RC-2026-09-15-0930-FYI-example-topic.md`', 'REFUSE', 'zero destinations', 'any entry', 'no responder', 'no responder', 'Variant B'],
-    ['`2026-09-15-0930-from-RC-FYI-example-topic.txt`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'Variant C'],
+    ['`2026-09-15-0930-from-RC-FYI-example-topic.md`', 'ADMIT', 'routes', 'any entry', 'no responder', 'no responder', 'UNMEASURED', 'PRIMARY'],
+    ['`2026-09-15-from-RC-FYI-example-topic.md`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'UNMEASURED', 'Variant A'],
+    ['`from-RC-2026-09-15-0930-FYI-example-topic.md`', 'REFUSE', 'zero destinations', 'any entry', 'no responder', 'no responder', 'UNMEASURED', 'Variant B'],
+    ['`2026-09-15-0930-from-RC-FYI-example-topic.txt`', 'REFUSE', 'routes', 'any entry', 'no responder', 'no responder', 'UNMEASURED', 'Variant C'],
 ]
 
 

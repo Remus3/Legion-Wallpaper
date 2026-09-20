@@ -165,7 +165,13 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   pin-holder on both file sets and must not move either byte unilaterally - LW's
   own guards are red-by-construction on exactly that, which is the point.
 
-  **Round A, `docs/CHANNEL.md` -> CHANNEL_VERSION 2.** LW holds
+  **Round A, `docs/CHANNEL.md` -> CHANNEL_VERSION 2: CLOSED on LW's side
+  2026-09-20 (LEDGER 220).** RC cut the bytes and LW vendored them, re-hashed from
+  LW's own disk to `fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c`
+  (25,425 B, 0 CR, version 2, roster six), moved `PINNED_SHA256` and
+  `PINNED_CHANNEL_VERSION` in one edit, and moved the `EXPECTED_TABLE` grammar pin
+  cell-by-cell as its own act after leaving it deliberately RED. Historical record
+  of what the round was for: LW holds
   `899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b` (20,633 B),
   pinned in `tests/test_channel_doc_pin.py` by `PINNED_SHA256` +
   `PINNED_CHANNEL_VERSION`. The doc's section 0 says "Five participating
@@ -190,7 +196,21 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the hit is repaired without the pin moving in the same commit - that is what
   makes the repair safe to do across six trees.
 
-- **LW's transcript store is SPLIT across two keys, and the small one is the
+- **LW's transcript store is SPLIT across two keys; the union TOOL is built and
+  deliberately REFUSES to run inside Claude Code - APPLY is the next session's
+  first action, from OUTSIDE Claude Code (LEDGER 220).** `tools/lw_transcript_union.py
+  --dry-run` previews; `--apply` exits 3 while a session is writing into the
+  canonical key, which is every session run through Claude Code, because its own
+  transcript lives there. 28 tests, 6 mutants killed, losslessness rehearsed on
+  copies of the real bytes (0 lines, 0 uuids lost). CORRECTED from the original
+  framing below: `d3d7c8f7` is a CONTINUATION TAIL, not a superset - uuid sets
+  disjoint 172/346, timestamps contiguous, stray's first parentUuid is canon's last
+  uuid; only `a89cfc16` is a superset and by exactly one record. The union must be a
+  MULTISET: 290 of 1036 lines carry no uuid and repeat byte-identically, so a set
+  union destroys 333 records. Original framing, kept because the reasoning still
+  holds on why nothing was deleted:
+
+  **LW's transcript store is SPLIT across two keys, and the small one is the
   LONGER record - do NOT tidy either copy (opened 2026-09-20, LEDGER 215).**
   `~/.claude/projects/` holds `C--Legion-Wallpaper` (273 files, 497,010,131 B,
   written today) and `C--LegionWallpaper` (4 files, 13,409,469 B, last written

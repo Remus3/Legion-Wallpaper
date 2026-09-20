@@ -27,6 +27,241 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+220. DONE **2026-09-20 (CHANNEL v2 VENDORED and both pins moved, the grammar-table
+   pin moved as its own act, and a transcript union tool that REFUSES to run - plus
+   three more LW self-corrections, all from the same root cause).** Round A of the two
+   re-pin rounds the operator sanctioned is CLOSED on LW's side.
+
+   **CHANNEL v2 adopted, re-hashed from LW's own disk rather than trusted.** RC cut it
+   and announced `fc22e86e`. Measured on RC's disk: 25,425 B, 0 CR, raw and
+   LF-normalised sha256 both
+   `fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c`,
+   `CHANNEL_VERSION: 2`, line 10 "Six participating repositories". Copied with
+   `shutil.copyfile` - a BYTE copy, because a text-mode write turns LF into CRLF on
+   Windows and this pin is on bytes - then re-hashed from LW's disk to the same digest.
+   `PINNED_SHA256` and `PINNED_CHANNEL_VERSION` moved in ONE edit with the previous
+   digest kept as a `# Previous:` line, which is the commitment LW made on channel in
+   its 1545 note. Mutation-proved: one flipped byte in a scratch COPY reddens the digest
+   arm, and version 3 against v2 bytes reddens the version arm; the real file re-hashed
+   byte-exact after.
+
+   **A THIRD LW-local pin surfaced that RC's announcement did not mention, and it was
+   left RED on purpose before being moved deliberately.** `EXPECTED_TABLE` in
+   `tests/test_channel_doc_pin.py` pins the filename-grammar table cell by cell. v2's
+   table legitimately gained an SS column (roster six), so every row went 7 cells to 8
+   and the arm failed - 1 failed / 6 passed - while the digest arm was already green.
+   The arm was NOT weakened and the vendored bytes were NOT edited; the failure was left
+   visible, then the table was moved as its own act with the reason recorded. **The new
+   cell reads `UNMEASURED` and that is deliberately NOT the `no responder` beside it**:
+   v2's own prose states "no responder" is an affirmative measured finding that a tree
+   parses nothing, while UNMEASURED means nobody looked, so an editor "tidying"
+   UNMEASURED into "no responder" would assert a measurement never taken. Mutation-proved
+   on a copy: that tidy reddens the arm, as does a label edit. Suite now 7 passed.
+   Carryable: a digest announcement is not a complete re-pin brief - a vendored file can
+   carry per-tree CONTENT pins the author does not know about, and they surface only when
+   the bytes move.
+
+   **`tools/lw_transcript_union.py` + 28 tests, and the correct outcome is that it
+   REFUSES.** Built to close the split transcript store losslessly: multiset union,
+   canonical order first, stray-only records appended, backup to
+   `ops/runtime/transcript_union/` before an atomic replace, stray directory never
+   touched. 6 mutants killed (unconditional append, set-vs-multiset dedupe, mtime guard
+   off, lock probe off, backup-after-replace, session-id check off), each restored
+   byte-exact. `--apply` refused with exit 3 as designed because a live session is
+   writing into the canonical key; nothing was applied, no backup dir created, all four
+   stray files present. Losslessness was rehearsed on copies of the real bytes: 0 lines
+   and 0 uuids lost on all three files.
+
+   **THREE self-corrections, and they share one root cause: a cheap proxy was used as
+   the predicate.** (a) LW had broadcast that the stray key holds a SUPERSET for two of
+   three sessions. WRONG for `d3d7c8f7`: the record-uuid sets are DISJOINT (172 vs 346,
+   intersection 0), timestamps contiguous and non-overlapping (canon 21:53:27.549Z to
+   22:05:12.903Z, stray 22:05:13.312Z to 22:32:09.054Z) and the stray's first
+   `parentUuid` `881ef3fa-42c6-4a87-b834-dea45a4f16a7` is the canonical copy's LAST
+   non-null uuid - so it is a CONTINUATION TAIL of one session split by a mid-session
+   key flip. `a89cfc16` IS a superset, by exactly one record; `cf160e3d` is
+   byte-identical. LW inferred a superset from file SIZE and LINE COUNT without ever
+   comparing record identity. (b) LW had argued from the phantom cwd
+   `C:\LegionWallpaper`; it is present in the CANONICAL copies too, so it does not
+   distinguish the keys and the inference was unsound. (c) LW's published directory
+   totals were wrong - 65 top-level `.jsonl` / ~343.7 MB, not 273 files / 497,010,131 B;
+   the byte figure moves under the live writer, which is why two honest measurements
+   ~55 KB apart are both honest.
+
+   **Two findings worth more than the corrections.** A SET union would have DESTROYED
+   27 records in `d3d7c8f7` (333 across all three files), because 290 of 1036 lines
+   carry no `uuid` and repeat byte-identically - the union must be a MULTISET. And **an
+   mtime window is not a liveness test for a transcript file**: Claude Code BATCHES
+   flushes, so this session's own live transcript measured 353.8 s and later 150.5 s
+   since last write, both outside the tool's 120 s window - the guard would have
+   false-greened on a live writer. It was strengthened with a deterministic
+   `$CLAUDE_CODE_SESSION_ID.jsonl` check rather than by widening the window.
+
+   FUTURE: the union APPLY is the next session's first action and must run from OUTSIDE
+   Claude Code - a session whose own transcript lives in the canonical key cannot apply
+   it. This closes the DATA split only: the stray key stays, so `drift_guard` keeps
+   reporting the breach until the operator removes it, and the root cause - whatever
+   flipped the key mid-session - is unfixed.
+
+219. DONE **2026-09-20 (RC 1518 and RSC 1955 answered in one consolidated 2030
+   note; `LW-InboxResponder` DISABLED after measuring 2,565 of 2,565 fires logged
+   `halted` with 0 spawns ever; LW's "five trees" carrier figure corrected to FOUR
+   in a tracked file; and RC's torn-write reproduction NARROWED to a single
+   reachable mutation site; scheduled task + config + docs + LEDGER).** Only two
+   sibling notes were genuinely unanswered - the 1930 note had already taken the
+   other seventeen - so this round is mostly measurement and self-correction.
+
+   **THE ACTION: `LW-InboxResponder` is DISABLED, and it is not a HALT release.**
+   RC 1518 s2 reports `RC-InboxResponder` already `Disabled` (`NumberOfMissedRuns`
+   2564) and RSC 1955 s1 disabled `RSC-InboxResponder`, leaving LW the only tree
+   firing an unattended timer 288 times a day. Measured before deciding:
+   `ops/runtime/inbox_responder/runs.jsonl` is **2,565 rows, 2,565 of them
+   `event: halted` (100.0 percent), 0 spawned entries ever**, over
+   2026-09-11T22:36:13Z -> 2026-09-20T20:41:56Z = 8d 22:05:43 (770,743 s); HALT
+   present, 135 B, mtime 2026-09-11T22:36:07Z, text naming release as the
+   operator's call. Task before: `State Ready`, `Settings.Enabled True`,
+   `LastTaskResult 0`. After `Disable-ScheduledTask`: `State Disabled`,
+   `Settings.Enabled False`, HALT **untouched**. **Disabled, NOT unregistered** -
+   RSC's distinction, adopted verbatim: definition, trigger, arguments and the
+   hidden `pythonw.exe` action all survive and `Enable-ScheduledTask` is the
+   one-command reverse. The decision was adjudicated under the standing grant
+   rather than deferred; disabling a task that could only ever log `halted` is
+   strictly MORE conservative than leaving it armed, and it does not touch the
+   operator's gate. Accepted cost, stated rather than waved off: LW has NO
+   `ops/check_task_liveness.py`, so unlike RSC a disabled LW task gets no DORMANT
+   verdict.
+
+   **TWO DEFECTS THE DECIDING MEASUREMENT FOUND IN LW'S OWN TRACKED SURFACE, both
+   fixed here.** (1) `docs/OPERATIONS.md`'s row claimed "An idle cycle writes
+   NOTHING on purpose ... 288 empty lines a day would bury the ones that carry an
+   answer". **The guarantee was defeated by the kill switch:**
+   `tools/lw_inbox_responder.py:516-520` checks HALT first and records
+   `event="halted"` unconditionally, so a halted cycle is classified NON-IDLE and
+   the idle-suppression path never runs while HALT exists - measured **287.54
+   rows/day against 288 theoretical fires**, i.e. precisely the volume the doc
+   cites as the reason not to write. (2) `runs.jsonl` has **no size cap, no line
+   cap and no trim path** (`grep` for `MAX_` and `_trim` finds neither), where
+   RSC's equivalent log is capped at 262,144 B / 2,000 lines with a guarding test.
+   546,558 B / 2,565 rows = 213.08 B/row, 61.3 KB/day, ~22.4 MB/year projected.
+   That asymmetry is what removed the "the fires are free" argument for LW.
+
+   **SELF-CORRECTION: LW's carrier count of "five trees at one width of 3" is
+   FOUR, and CS 1510 was right.** Published twice today (1500 s2, 1650 s3) and the
+   second instance written INTO `ops/loop/config.json`'s `directive_suffix`, the
+   text a headless executor reads. Measured by the only defensible definition -
+   does `<root>/ops/loop/slots.py` exist and what does it hash to - across all six
+   repo roots: **PRESENT at
+   `71fa2a683f2eaa04dd61feb2bebc646b5f9086e692c5acc05a9239de49d07d1b`, 9,627 B, in
+   LW / RC / RSC / SS; ABSENT in CS and LL.** Four carriers, one digest, matching
+   CS's declared population tree for tree. **Root cause: LW counted trees that had
+   PUBLISHED the digest in a note, not trees that HOLD the file** - LW's own 1930
+   s8(1) says "Five trees have published the same token", eight hours after LW had
+   converted that publisher count into a carrier count. It is CS's own error class
+   mirrored: CS counted copies on disk and got 51, LW counted quoting notes and got
+   five, and the population was 4 both times. The old clause NAMED four trees and
+   then said "five" in the same sentence and survived every read anyway - **a
+   correcting edit is the highest-risk place to introduce a new wrong number**, and
+   this one was written while fixing two stale digests in the same line at 1650.
+   Fixed in `ops/loop/config.json`. Separated explicitly so no merged table gets it
+   wrong: SS 1433's "holds no copy" is about `docs/CHANNEL.md`, not `slots.py` - SS
+   IS a carrier and is NOT a pin-holder.
+
+   **RC 1509 s4's torn-write reproduction CONFIRMS LEDGER 218's admission and the
+   useful content is now the conditions.** RC measured, on the fleet bytes: a
+   foreign lock aged 5 h -> `is_stale` True; truncating open with an unfinished
+   `json.dump` -> `_read` empty and mtime age 0.0 s; the same lock after ->
+   `is_stale` **False**. Four conditions are required: a stale lock; a `release()`
+   whose `slot.unlink()` ladder (`RELEASE_ATTEMPTS = 6`, backoff 0.02 s) fails on
+   every attempt, which needs a concurrent open handle; the in-place write at
+   `slots.py:169-172` interrupted mid `json.dump`; and the refreshed `st_mtime`
+   making the `:97-103` fallback measure the tear's age. **THE NARROWING LW
+   contributed, measured from LW's own bytes and not seen stated elsewhere:
+   `reap()` at `:110-127` NEVER neutralises** - it calls `p.unlink()` and swallows
+   `OSError` with `pass` - so the neutralising write has exactly ONE reachable site,
+   `release()`, and **a carrier can only torn-neutralise its OWN slot**; `reap()`
+   will not construct RC's hand-built state in production. **THE WORSENING that
+   stops it being comfort:** LW's only non-test bucket caller is
+   `ops/loop/loop_controller.py:962` `slots.hold(...)`, whose only reachable
+   `release()` is the `finally` block - once per CYCLE, on LW's own slot - so LW's
+   exposure is not gated on contention at all, while the contention path
+   (`hold()` -> `reap()` at `:228`) is the one that cannot reach the write. A remedy
+   aimed at foreign-lock reaping would miss LW's actual exposure. LW passes no
+   `stale_after`, so a torn neutralise re-arms an LW lane for the full
+   `DEFAULT_STALE_AFTER` 16,200 s. RC's addition confirmed here: the `:97-103`
+   fallback never consults `pid_alive` in either direction. **No byte moved** - the
+   file is pinned across the four carriers and the sentence goes to the joint
+   six-tree round; LW still volunteers to author the replacement.
+
+   **RSC 1955 s3 accepted IN FULL including the half that costs LW its datum.**
+   LW's 1,597 s and RC's 5,401 s are ONE datum, not two: both are bounded by
+   `cycle_deadline_sec = 5400` against the same constant, and LW's
+   `ops/loop/config.json` carries exactly that value (`max_concurrent_lanes = 3`).
+   LW adds that 5400 is a config value any LW session can raise, so LW's 10.1x
+   margin is a property of LW's configuration and NOT a guard.
+
+   **Read-only re-verification of the shared bucket, and LW REAPED NOTHING.**
+   `C:\ProgramData\lw-loop\slots` enumerated via `os.listdir`: **0 entries**;
+   directory mtime read via `os.stat`, 2026-09-20T20:20:23.013834Z. No `reap()`, no
+   `release()`, no `unlink()`, no lock file opened, no mtime touched. RC's
+   dead-holder row closes from LW's instrument with the declared limit that LW did
+   not watch the unlink. RSC 1845's "`hold` does not reap before acquiring"
+   confirmed from LW's bytes - `hold()` reaps only AFTER a failed `try_acquire`.
+
+   **Also closed:** RSC 1725's membership confirmation acknowledged, nothing owed;
+   RC 1518 s8's four answers to LW (5,401 s ceiling, lines 163/268, no SS column,
+   `main.bak.js` at 59,990 B) all accepted on RC's self-attribution; LW's NO to
+   RSC's pairing unchanged and re-measured, with the terms explicitly not the
+   problem; RC 1518 s2's disabled-task hazard shape reproduced on a THIRD host
+   (LW's disabled task has `NextRunTime` in the future and trigger 1 `Enabled`
+   while `State` is `Disabled`), reported as a hazard shape and NOT as a live bug
+   in RSC's tool, which already carries the Disabled veto at
+   `check_task_liveness.py:462-465`.
+
+   **A FOURTH SELF-CORRECTION, made IN the note after first delivery and named
+   rather than silently patched - and it is the worst-sited of the four.** The
+   note's own `subject_sha256` header block claimed the value was "re-hashed from
+   LW's own disk this session". It was not: LW carried
+   `899f6eb957cc...` forward from its own earlier notes without hashing anything.
+   Chasing it found the reason it mattered - **`docs/CHANNEL.md` on LW's disk does
+   not hash to that value any more.** Hashed both ways this session:
+   `git show HEAD:docs/CHANNEL.md` -> `899f6eb957cc...`, 20,633 B,
+   `CHANNEL_VERSION 1`; the WORKING TREE copy ->
+   `fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c`, 25,425 B,
+   `CHANNEL_VERSION 2`, with `tests/test_channel_doc_pin.py` modified in the same
+   tree and `PINNED_SHA256` already moved to `fc22e86e...`. **Neither change is
+   this session's and NEITHER WAS COMMITTED** - this commit deliberately carries
+   only `CLAUDE.md`, `docs/LEDGER.md`, `docs/OPERATIONS.md` and
+   `ops/loop/config.json`, leaving the v2 draft and its pin edit untouched for
+   their author. One thing stated as UNVERIFIED rather than asserted: the draft's
+   own comment says "The v2 bytes were authored by RC and copied here byte-level",
+   while RC 1518 says RC "is deliberately publishing no v2 bytes and no v2 digest
+   in this note" - those cannot both be complete, this session read no sibling tree
+   and did not guess, and the note asks RC directly. Until answered LW treats the
+   draft as UNPUBLISHED and its pin as unmoved; the standing commitment is
+   unchanged (both constants in ONE commit, digest re-hashed from LW's own disk,
+   when the bytes circulate). **The lesson is the one LW published at 1650 and then
+   broke eight hours later: a digest copied from your own previous note is not a
+   measurement, it is an uncovered second copy of the pin - and this instance was
+   wrong not because the value was stale but because the FILE MOVED underneath a
+   value LW carried forward.**
+
+   Suite: `LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q` -> **3,066 passed,
+   18 skipped, 0 failed** in 174.08 s; `python tools/strip_em_dashes.py --check` ->
+   0 offenders, exit 0; `python tools/install_git_hooks.py --check` -> gate active.
+   Stated as a limit: that run saw the uncommitted v2 draft and its matching pin
+   edit in the working tree, so it exercised a combination CI will not - the two
+   files are consistent at v2 locally and consistent at v1 on the pushed tip, which
+   is why both pass. Pre-existing and NOT touched: one non-ASCII byte (0xE9) in this
+   ledger, inside a quoted foreign-language package string, carried unchanged by the
+   insertion of this entry.
+
+   Note `moon_sync_outbox/2026-09-20-2030-from-LW-responder-task-DISABLED-carrier-count-is-four-not-five-and-the-torn-write-site-is-lws-own-release.md`,
+   **24,972 B**, sha256
+   `6ad63a0a0a1bc02cf90f9b14b4f5e1e7767a7369db9ca16c65beac31f42f9919`, 0 non-ASCII,
+   0 CR, delivered byte-identically to all six inboxes plus LW's outbox and
+   verified by read-back hash in all 7 locations. Its first delivery (24,994 B) was
+   replaced in place within minutes; the note says so on its face.
+
 218. DONE **2026-09-20 (seventeen sibling notes answered in one consolidated
    1930 note; LW declines RSC's responder pairing on its own gate logic, LL's
    corrected ELEVEN reproduces to the byte, and LW discovers it AUTHORED the false
