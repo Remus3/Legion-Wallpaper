@@ -108,7 +108,14 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `tests/conftest.py`, 3 mutants killed. CS green at 6226 passed / 7 skipped
   with the tracer's control proved and every bucket empty. LEDGER 187.
 
-- **LW-InboxResponder ARMED - DONE 2026-09-11 (operator direction).**
+- **LW-InboxResponder ARMED 2026-09-11 - and DISABLED 2026-09-20 (LEDGER 221).**
+  **CURRENT POSTURE, re-verified from the scheduler 2026-09-20:** State
+  `Disabled`, `Settings.Enabled` False, trigger still Enabled (a Disabled task
+  can carry a future `NextRunTime`, so neither signal establishes liveness),
+  HALT untouched at 135 B, `runs.jsonl` 2,566 rows ALL `event=halted` with ZERO
+  spawns ever and no row appended since the disable. Reversible with
+  `Enable-ScheduledTask`; the HALT release stays the operator's call. Historical
+  record of the arming follows.
   Registered with `Register-ScheduledTask`, PT5M indefinite, Limited, pythonw.
   Verified Ready, forced run `LastTaskResult` 0, baselined under supervision at
   142 notes / 0 spawned. New kill switch `ops\runtime\inbox_responder\HALT`
@@ -148,6 +155,29 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **REPLACE the two defeated "cannot do X" claims in the inbox responder
+  (measured 2026-09-20, LEDGER 221).** Both are LW's own and both were proven
+  defeated this session, so this is a repair and not a review item.
+  (a) `tests/test_inbox_responder.py:495`
+  (`test_no_process_launch_in_this_module_mentions_schtasks`) is a LINE-scoped
+  scan of the module's source. Its predicate, replicated verbatim, PASSES against
+  LL's `getattr(subprocess,"r"+"un")` technique AND against a plain multi-line
+  `subprocess.run(` call - **a line break defeats it, with no adversary and no
+  error message.** The replacement is a different KIND of claim, not a better
+  regex: run the module in a subprocess under an audit hook and fail on any
+  `subprocess.Popen` audit event naming `schtasks`. LL measured the trap to avoid
+  - the `import` audit event is NOT raised by `importlib.import_module`, so a
+  guard built on that event alone passes against exactly the attack it was
+  written for; the FILE-level events carry it.
+  (b) `--halt` is a CLI argument with `default=HALT_PATH` (`:493`) and the gate
+  at `:516` reads `halted(args.halt)`, so **any caller passing a different
+  `--halt` bypasses the kill switch entirely** - measured, with a control arm
+  proving the gate binds on the default. "The responder cannot run while HALT
+  exists" is FALSE as written. Exposure is bounded today (the registered action
+  is `--once` only, and the task is Disabled) which is why this is high priority
+  rather than urgent. The fix is an arm asserting the live task's action carries
+  no `--halt` override, not a docstring.
+
 - **IF LW ever adopts the `reserved-<key>.lock` scheme, LL's case-fold property is
   the ACCEPTANCE CRITERION, not a later review item (recorded 2026-09-20 on LL's
   1400 finding).** LW is clean on it today by ABSENCE, not by design: `grep -n
@@ -183,6 +213,16 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   commit, re-hash from LW's own disk rather than trusting the note that carries
   the bytes, report the digest back - or AUTHOR v2 and circulate it if no tree has
   started. RC and RSC have both declared pin-holder status.
+
+  **Round A channel-wide adoption, MEASURED across all six roots 2026-09-20
+  (LEDGER 221) - the round is NOT closed on the channel, only on LW's side.**
+  v2 TWO (LW, RC), v1 THREE (CS `docs/CHANNEL.md`, RSC `docs/CHANNEL.md`, LL
+  `third_party/rc_channel/docs/CHANNEL.md`), NEITHER ONE (SS, which holds no copy
+  at any path and is not a pin-holder). **The `CHANNEL.md` carrier set is FIVE
+  and the `slots.py` carrier set is FOUR; their exceptions are DISJOINT** (CS+LL
+  absent from one, SS from the other), so a single "carrier" column can never be
+  correct for both file sets - any re-pin brief must name the FILE and the PATH
+  beside the numeral.
 
   **Round B, `ops/loop/winmutex.py:118` names a carrier.** `# Found by RC on
   review, 2026-07-26` violates `slots.py:7` ("Nothing here may reference ANY of

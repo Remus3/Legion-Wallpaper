@@ -87,6 +87,9 @@ STATE_PATH = ROOT / "ops" / "runtime" / "inbox_responder_seen.json"
 # kill switch that only works on the paths you remembered is not a kill switch.
 #     Kill:    type nul > "ops\runtime\inbox_responder\HALT"
 #     Release: del "ops\runtime\inbox_responder\HALT"
+#
+# ALWAYS CONSULTED, and no argument can point the cycle away from it. See
+# `halt_reason` for the defect that ruling came from.
 HALT_PATH = ROOT / "ops" / "runtime" / "inbox_responder" / "HALT"
 
 # THE ONLY DURABLE TRACE A CYCLE LEAVES. The task runs detached with `stdout`
@@ -414,6 +417,43 @@ def halted(halt_path: Path) -> str | None:
     return body or "HALT file present"
 
 
+def halt_reason(override: Path | None = None) -> str | None:
+    """Why this cycle must not run. The DEFAULT switch is ALWAYS consulted.
+
+    DEFECT MEASURED 2026-09-20. `--halt` took `HALT_PATH` as its argparse
+    DEFAULT, so `--halt <a path that does not exist>` did not add a second
+    switch, it REPLACED the only one: a probe run with that argument PROCEEDED
+    while the operator's HALT file sat untouched on disk, and only the control
+    run with no argument halted. The published claim - this responder cannot run
+    while HALT exists - therefore held for exactly one caller, the one that does
+    not pass the flag, which is the caller a kill switch does not need to defend
+    against. LW told the whole channel its refusal to pair rested on this gate.
+
+    THE FIX IS THE DIRECTION OF THE OVERRIDE, NOT THE FLAG. An override may ADD
+    a gate and can never remove one, so both are consulted and the first stop
+    wins. That keeps the flag honest for a second, narrower switch and leaves no
+    argument that can answer FOR the default. Rejected alternatives:
+      * deleting `--halt` outright - the in-process arms could inject through
+        the module attribute, but an end-to-end arm over a real argv would then
+        have to inherit the operator's live switch, and the suite's colour would
+        track whether the lane happens to be disarmed. That was measured on
+        2026-09-11: four arms went red because a real HALT existed.
+      * erroring on an override that points at an absent path - it turns the
+        ordinary case (no second switch wanted) into a failure, and it still
+        leaves the gate decided by an argument rather than by the file.
+
+    The test seam is this module's `HALT_PATH` attribute, read at call time. A
+    command line cannot reach it; only code inside the process can.
+    """
+    for path in (HALT_PATH, override):
+        if path is None:
+            continue
+        stop = halted(path)
+        if stop is not None:
+            return stop
+    return None
+
+
 # ---------------------------------------------------------------------------
 # The run log
 # ---------------------------------------------------------------------------
@@ -483,19 +523,31 @@ def register_command(shell: str = "powershell") -> str:
 # CLI
 # ---------------------------------------------------------------------------
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """The argument surface, factored out so a test can inspect it.
+
+    `--halt` DEFAULTS TO NONE DELIBERATELY. A default of `HALT_PATH` is what made
+    an override a replacement - see `halt_reason`.
+    """
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--once", action="store_true", help="one scan, then exit")
     ap.add_argument("--dry-run", action="store_true",
                     help="report what would be spawned; record no state")
     ap.add_argument("--inbox", type=Path, default=INBOX)
     ap.add_argument("--state", type=Path, default=STATE_PATH)
-    ap.add_argument("--halt", type=Path, default=HALT_PATH,
-                    help="kill switch; its presence stops the cycle before anything runs")
+    ap.add_argument("--halt", type=Path, default=None,
+                    help="an ADDITIONAL kill switch. The default switch under "
+                         "ops/runtime/inbox_responder/ is always consulted too, "
+                         "so this can add a gate and can never remove one")
     ap.add_argument("--runlog", type=Path, default=RUNLOG_PATH,
                     help="append-only record of what each non-idle cycle did")
     ap.add_argument("--print-register-command", action="store_true",
                     help="print the scheduled-task registration for the OPERATOR to run")
+    return ap
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = build_parser()
     args = ap.parse_args(argv)
 
     if args.print_register_command:
@@ -512,8 +564,9 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("nothing to do: pass --once or --print-register-command")
 
     # FIRST, before the inbox is even read. The baseline write below is a state
-    # change, so a switch checked after it would already have acted.
-    stop = halted(args.halt)
+    # change, so a switch checked after it would already have acted. The DEFAULT
+    # switch is consulted whatever the argv said - `halt_reason` carries why.
+    stop = halt_reason(args.halt)
     if stop is not None:
         payload = {"halted": stop, "spawned": []}
         if not args.dry_run:

@@ -15,6 +15,7 @@ rather than reading the verdict alone.
 """
 from __future__ import annotations
 
+import ast
 import json
 import os
 import shutil
@@ -65,8 +66,10 @@ def _the_live_kill_switch_is_never_read(monkeypatch, tmp_path):
     defect, not the operator's. Sibling rule already in this file for the run
     log: inject the path rather than inherit it.
 
-    The subprocess arm cannot be reached by monkeypatch and passes `--halt`
-    itself; `REAL_HALT_PATH` keeps the default-pinning arm honest.
+    The subprocess arms cannot be reached by monkeypatch, so `_cli` sets the
+    module attribute inside the child before `main()` runs - passing `--halt`
+    there would no longer suppress the default anyway, which is the point of the
+    2026-09-20 fix. `REAL_HALT_PATH` keeps the default-pinning arm honest.
     """
     monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "never-created-HALT")
 
@@ -493,6 +496,180 @@ def test_the_emitted_powershell_actually_parses():
     assert out.strip() == "OK", out
 
 
+# --------------------------------------------------------------------------
+# "This module may PRINT the registration and must never RUN it" - asserted
+# over the syntax tree and over behaviour, never over lines.
+#
+# THE DEFECT THIS SECTION REPLACES, measured 2026-09-20. The shipped arm was a
+# LINE-scoped scan: it collected source lines containing `subprocess.run(` and
+# friends and asserted none of them said `schtasks`. A plain multi-line call
+#
+#     subprocess.run(
+#         ["schtasks", "/Create", ...],
+#     )
+#
+# puts the launcher and its arguments on different lines, so the scan collected
+# the first and read `schtasks` on the second - and passed. No adversary is
+# needed for that; it is how a formatter writes a long call. A guard a newline
+# defeats is not a guard, so the instrument changed rather than the wording.
+# --------------------------------------------------------------------------
+
+_SPAWN_MODULES = ("subprocess", "os")
+_SUBPROCESS_SPAWNS = frozenset({"run", "Popen", "call", "check_call",
+                                "check_output", "getoutput", "getstatusoutput"})
+
+
+def _is_spawn(module: str, attr: str) -> bool:
+    """Does `module.attr` start a process?
+
+    `os` is matched by PREFIX on purpose: the family is `spawnl`, `spawnle`,
+    `spawnlp`, `spawnv`, `spawnve`, `spawnvp`, `execv`, `execve`, `execl`,
+    `posix_spawn` and more, and enumerating it by hand is how the next spelling
+    gets missed.
+    """
+    if module == "subprocess":
+        return attr in _SUBPROCESS_SPAWNS
+    return (attr in {"system", "popen", "startfile"}
+            or attr.startswith(("spawn", "exec", "posix_spawn")))
+
+
+def _spawn_sites(source: str) -> list[tuple[int, str]]:
+    """Every process-launch site in `source`, as (lineno, the whole call text).
+
+    AST, not lines. It resolves `import subprocess as sp`, `from os import
+    system`, and a `getattr(subprocess, "run")` indirection, and because the
+    text it returns is `ast.unparse` of the enclosing CALL, a line break inside
+    the argument list cannot hide an argument from the caller's assertion.
+
+    A `getattr` on a spawn module whose attribute is not a literal is reported
+    too: an opaque lookup is exactly the shape a launcher hides in, and the
+    module has no legitimate use for one.
+    """
+    tree = ast.parse(source)
+    parents = {child: parent for parent in ast.walk(tree)
+               for child in ast.iter_child_nodes(parent)}
+
+    aliases: dict[str, str] = {}
+    from_imports: dict[str, tuple[str, str]] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                if a.name in _SPAWN_MODULES:
+                    aliases[a.asname or a.name] = a.name
+        elif isinstance(node, ast.ImportFrom) and node.module in _SPAWN_MODULES:
+            for a in node.names:
+                from_imports[a.asname or a.name] = (node.module, a.name)
+
+    hits: list[ast.AST] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
+            module = aliases.get(node.value.id)
+            if module and _is_spawn(module, node.attr):
+                hits.append(node)
+        elif isinstance(node, ast.Name) and node.id in from_imports:
+            if _is_spawn(*from_imports[node.id]):
+                hits.append(node)
+        elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+              and node.func.id == "getattr" and node.args
+              and isinstance(node.args[0], ast.Name)
+              and node.args[0].id in aliases):
+            attr = node.args[1] if len(node.args) > 1 else None
+            if isinstance(attr, ast.Constant) and isinstance(attr.value, str):
+                if _is_spawn(aliases[node.args[0].id], attr.value):
+                    hits.append(node)
+            else:
+                hits.append(node)
+
+    sites: set[tuple[int, str]] = set()
+    for hit in hits:
+        chosen = hit if isinstance(hit, ast.Call) else None
+        node = hit
+        while node in parents:
+            node = parents[node]
+            if isinstance(node, ast.stmt):
+                break
+            if isinstance(node, ast.Call):
+                chosen = node
+        sites.add((hit.lineno, ast.unparse(chosen if chosen is not None else node)))
+    return sorted(sites)
+
+
+def _the_line_scoped_scan_this_replaced(source: str) -> list[str]:
+    """The SHIPPED instrument, kept verbatim as the fossil the arm below pins.
+
+    NOT a guard. It exists so the defeat is a measurement in the suite rather
+    than a claim in a commit message.
+    """
+    return [ln for ln in source.splitlines()
+            if ("subprocess.run(" in ln or "subprocess.Popen(" in ln
+                or "os.system(" in ln or "os.startfile(" in ln)]
+
+
+# Every one of these launches `schtasks`. Each is a shape the line-scoped scan
+# could not see; the first needs no adversary at all.
+_EVASIONS = {
+    "a plain multi-line call": (
+        "import subprocess\n"
+        "subprocess.run(\n"
+        '    ["schtasks", "/Create", "/TN", "LW-InboxResponder"],\n'
+        ")\n"
+    ),
+    "an aliased import": (
+        "import subprocess as sp\n"
+        'sp.run(["schtasks", "/Create"])\n'
+    ),
+    "a from-import": (
+        "from subprocess import run\n"
+        'run(["schtasks", "/Create"])\n'
+    ),
+    "a getattr indirection": (
+        "import subprocess\n"
+        'getattr(subprocess, "run")(["schtasks", "/Create"])\n'
+    ),
+    "os.system": (
+        "import os\n"
+        'os.system("schtasks /Create /TN LW-InboxResponder")\n'
+    ),
+    "os.popen": (
+        "import os\n"
+        'os.popen("schtasks /Query").read()\n'
+    ),
+    "os.spawnl": (
+        "import os\n"
+        'os.spawnl(os.P_NOWAIT, "schtasks.exe", "schtasks", "/Create")\n'
+    ),
+}
+
+
+@pytest.mark.parametrize("shape", sorted(_EVASIONS))
+def test_the_launch_detector_sees_every_shape_a_line_scan_missed(shape):
+    """The spec for the instrument. Each fixture DOES register the task."""
+    sites = _spawn_sites(_EVASIONS[shape])
+    assert sites, f"{shape}: the detector found no launch site at all"
+    assert any("schtasks" in text for _ln, text in sites), \
+        f"{shape}: the detector found {sites} but cannot see the schtasks argument"
+
+
+def test_a_line_break_alone_defeated_the_scan_this_replaced():
+    """WHY the instrument changed, as a measurement rather than an assertion.
+
+    The evasion here is a formatter's output, not an attack: the launcher on
+    one line and its argument list on the next.
+    """
+    evasion = _EVASIONS["a plain multi-line call"]
+    collected = _the_line_scoped_scan_this_replaced(evasion)
+    assert collected, "the fossil scan did not even find the launcher line"
+    assert not any("schtasks" in ln for ln in collected), \
+        "this fixture no longer demonstrates the defeat it was written for"
+    assert any("schtasks" in text for _ln, text in _spawn_sites(evasion))
+
+
+def test_the_launch_detector_does_not_flag_printing_the_command():
+    """MIRROR. A detector that flags every mention of `schtasks` grades nothing:
+    this module's whole job is to PRINT that command."""
+    assert _spawn_sites('import subprocess\nprint("schtasks /Create")\n') == []
+
+
 def test_no_process_launch_in_this_module_mentions_schtasks():
     """The one step that waits for the operator, asserted rather than intended.
 
@@ -501,12 +678,62 @@ def test_no_process_launch_in_this_module_mentions_schtasks():
     launch sites rather than over prose, which is where the two differ.
     """
     source = (ROOT / "tools" / "lw_inbox_responder.py").read_text(encoding="utf-8")
-    launches = [ln for ln in source.splitlines()
-                if ("subprocess.run(" in ln or "subprocess.Popen(" in ln
-                    or "os.system(" in ln or "os.startfile(" in ln)]
-    assert launches, "no launch site found - the arm would pass vacuously"
-    for line in launches:
-        assert "schtasks" not in line, line
+    sites = _spawn_sites(source)
+    assert any("Popen" in text for _ln, text in sites), \
+        f"no launch site found - the arm would pass vacuously (saw {sites})"
+    for lineno, text in sites:
+        low = text.lower()
+        assert "schtasks" not in low, f"line {lineno}: {text}"
+        assert "register-scheduledtask" not in low, f"line {lineno}: {text}"
+
+
+def _launcher_tripwires(monkeypatch) -> list[str]:
+    """Replace every process launcher this module could reach with a tripwire."""
+    invoked: list[str] = []
+
+    def _trip(name):
+        def _fn(*_a, **_k):
+            invoked.append(name)
+            raise AssertionError(f"{name} was invoked")
+        return _fn
+
+    for attr in sorted(_SUBPROCESS_SPAWNS):
+        monkeypatch.setattr(subprocess, attr, _trip(f"subprocess.{attr}"),
+                            raising=False)
+    for attr in ("system", "popen", "startfile", "execv", "spawnl", "spawnv",
+                 "posix_spawn"):
+        monkeypatch.setattr(os, attr, _trip(f"os.{attr}"), raising=False)
+    return invoked
+
+
+def test_printing_the_registration_command_invokes_no_launcher(monkeypatch, capsys):
+    """BEHAVIOURAL arm, which proves the property the AST arm only reads.
+
+    Every launcher reachable from the module raises if touched, and the
+    registration path still completes - so the command is emitted as text, by a
+    code path that provably did not run it.
+    """
+    invoked = _launcher_tripwires(monkeypatch)
+    assert responder.main(["--print-register-command"]) == 0
+    out = capsys.readouterr().out
+    assert "schtasks" in out and "Register-ScheduledTask" in out
+    assert invoked == []
+
+
+def test_a_halted_cycle_invokes_no_launcher(tmp_path, monkeypatch, capsys):
+    """The same tripwires over the halted path: HALT stops the spawn itself,
+    not merely the bookkeeping around it."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 2)
+    halt = tmp_path / "HALT"
+    halt.write_text("operator stopped the trial", encoding="utf-8")
+    invoked = _launcher_tripwires(monkeypatch)
+    assert responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                           "--inbox", str(inbox),
+                           "--state", str(tmp_path / "seen.json"),
+                           "--halt", str(halt)]) == 0
+    assert json.loads(capsys.readouterr().out)["halted"]
+    assert invoked == []
 
 
 def test_cli_print_register_command_exits_zero_without_touching_the_scheduler(tmp_path):
@@ -657,19 +884,124 @@ def test_the_default_halt_path_is_under_runtime_state():
     assert REAL_HALT_PATH.parent.parent.name == "runtime"
 
 
+# --------------------------------------------------------------------------
+# THE OVERRIDE MAY ADD A GATE AND MAY NEVER REMOVE ONE.
+#
+# DEFECT MEASURED 2026-09-20. `--halt` took `HALT_PATH` as its argparse
+# DEFAULT, so `--halt <a path that does not exist>` did not add a second switch
+# - it REPLACED the only one. A probe run with that argument proceeded while the
+# operator's HALT file sat untouched on disk; the control run with no argument
+# halted. So the published claim - this responder cannot run while HALT exists -
+# held only for a caller that did not pass the flag, which is the one caller a
+# kill switch does not have to defend against. LW told the whole channel its
+# refusal to pair rested on that gate, and a posture is only as strong as it.
+# --------------------------------------------------------------------------
+
+def test_no_command_line_argument_can_run_a_cycle_while_the_default_halt_exists(
+        tmp_path, capsys, monkeypatch):
+    """THE DEFECT, pinned. State is pre-seeded so the cold-start branch cannot
+    absorb the bypass: without the fix this reaches `spawn`."""
+    default_halt = tmp_path / "default" / "HALT"
+    default_halt.parent.mkdir(parents=True)
+    default_halt.write_text("operator stopped the trial", encoding="utf-8")
+    monkeypatch.setattr(responder, "HALT_PATH", default_halt)
+
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 2)
+    state = tmp_path / "seen.json"
+    state.write_text(json.dumps({"seen": []}), encoding="utf-8")
+    monkeypatch.setattr(responder, "spawn", lambda *_a, **_k: pytest.fail(
+        "an argument relocated the kill switch and the cycle spawned"))
+
+    rc = responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                         "--inbox", str(inbox), "--state", str(state),
+                         "--halt", str(tmp_path / "absent-HALT")])
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["halted"] == "operator stopped the trial"
+    assert payload["spawned"] == []
+
+
+def test_the_default_kill_switch_is_consulted_with_no_override_and_with_one(
+        tmp_path, monkeypatch):
+    """The seam is the MODULE attribute, which no command line can reach."""
+    default_halt = tmp_path / "HALT"
+    default_halt.write_text("operator stopped the trial", encoding="utf-8")
+    monkeypatch.setattr(responder, "HALT_PATH", default_halt)
+    assert responder.halt_reason() == "operator stopped the trial"
+    assert responder.halt_reason(tmp_path / "absent") == "operator stopped the trial"
+
+
+def test_an_override_can_still_add_a_second_gate(tmp_path, monkeypatch):
+    """MIRROR. Add-only must still ADD: an override with the default absent is
+    the shape every other arm in this section runs on."""
+    monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "absent-HALT")
+    extra = tmp_path / "extra-HALT"
+    extra.write_text("second gate", encoding="utf-8")
+    assert responder.halt_reason(extra) == "second gate"
+    assert responder.halt_reason(tmp_path / "also-absent") is None
+
+
+def test_no_argparse_option_defaults_to_the_kill_switch_path():
+    """The mechanism of the defect, not only its effect: an option whose default
+    IS the switch is an option that replaces it."""
+    parser = responder.build_parser()
+    defaults = {a.dest: a.default for a in parser._actions}
+    assert "halt" in defaults, "the flag is gone - update this arm deliberately"
+    assert defaults["halt"] is None, (
+        f"--halt defaults to {defaults['halt']!r}; a default of the real switch "
+        "is what made an override a replacement")
+
+
+def _cli(args: list[str], *, halt_path: Path) -> subprocess.CompletedProcess:
+    """Drive the CLI in a child process with the DEFAULT switch INJECTED.
+
+    The injection is a module attribute set before `main()` is reached, never an
+    argument - which is the whole point of the fix. Before it, this helper
+    passed `--halt` and so tested the bypass; a subprocess arm that inherited
+    the real default instead would make the suite's colour depend on whether
+    the operator currently has the lane disarmed (measured 2026-09-11, four arms
+    red for exactly that reason).
+    """
+    driver = (
+        "import sys\n"
+        f"sys.path.insert(0, {str(ROOT / 'tools')!r})\n"
+        "from pathlib import Path\n"
+        "import lw_inbox_responder as r\n"
+        f"r.HALT_PATH = Path({str(halt_path)!r})\n"
+        "raise SystemExit(r.main(sys.argv[1:]))\n"
+    )
+    return subprocess.run([sys.executable, "-c", driver, *args],
+                          capture_output=True, text=True, cwd=str(ROOT),
+                          creationflags=responder.NO_WINDOW)
+
+
 def test_cli_once_dry_run_reports_json_and_changes_no_state(tmp_path):
     inbox = tmp_path / "moon_sync_inbox"
     inbox.mkdir()
     (inbox / "2026-09-10-0001-from-RC-x.md").write_text("hello", encoding="utf-8")
     state = tmp_path / "seen.json"
-    proc = subprocess.run(
-        [sys.executable, str(ROOT / "tools" / "lw_inbox_responder.py"),
-         "--once", "--dry-run", "--inbox", str(inbox), "--state", str(state),
-         "--halt", str(tmp_path / "never-created-HALT")],
-        capture_output=True, text=True, cwd=str(ROOT),
-    )
+    proc = _cli(["--once", "--dry-run", "--inbox", str(inbox), "--state", str(state)],
+                halt_path=tmp_path / "never-created-HALT")
     assert proc.returncode == 0, proc.stdout + proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["dry_run"] is True
     assert payload["spawned"] == []
     assert not state.exists(), "a dry run recorded state"
+
+
+def test_cli_once_halts_when_the_default_switch_exists_and_an_override_is_absent(tmp_path):
+    """END TO END over a real command line, which is where the defect lived.
+    `--halt` naming a path that does not exist must not answer for the default."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    default_halt = tmp_path / "default" / "HALT"
+    default_halt.parent.mkdir(parents=True)
+    default_halt.write_text("operator stopped the trial", encoding="utf-8")
+    state = tmp_path / "seen.json"
+    proc = _cli(["--once", "--dry-run", "--inbox", str(inbox), "--state", str(state),
+                 "--halt", str(tmp_path / "absent-HALT")],
+                halt_path=default_halt)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert json.loads(proc.stdout)["halted"] == "operator stopped the trial"
+    assert not state.exists()

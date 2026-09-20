@@ -33,6 +33,10 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import lw_inbox_responder as responder  # noqa: E402
 
+# Captured BEFORE the fixture below can redirect it, so the arm pinning the REAL
+# default still reads the real default while every other arm runs injected.
+REAL_HALT_PATH = responder.HALT_PATH
+
 
 @pytest.fixture(autouse=True)
 def _the_live_run_log_is_never_touched():
@@ -44,6 +48,22 @@ def _the_live_run_log_is_never_touched():
     yield
     after = real.stat().st_mtime_ns if real.exists() else None
     assert after == before, f"an arm wrote the live run log at {real}"
+
+
+@pytest.fixture(autouse=True)
+def _the_live_kill_switch_is_never_read(monkeypatch, tmp_path):
+    """Pointing `--halt` inside `tmp_path` is no longer enough on its own.
+
+    Since 2026-09-20 the DEFAULT switch is consulted whatever the argv says -
+    an override may add a gate and can never remove one, because `--halt <an
+    absent path>` used to REPLACE the operator's kill switch and let a cycle
+    run. The consequence for a test is that an arm which only relocates `--halt`
+    reads the real switch, so the suite's colour tracks whether the operator
+    currently has the lane disarmed. MEASURED: all eight arms in this file went
+    red against the live DISARMED file the moment the bypass closed. Inject the
+    default, exactly as the sibling file already does.
+    """
+    monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "never-created-HALT")
 
 
 def _inbox(tmp_path: Path, *names: str) -> Path:
@@ -304,6 +324,6 @@ def test_the_log_directory_is_created_on_demand(tmp_path, monkeypatch):
 def test_the_default_log_sits_beside_the_kill_switch():
     """One directory for the responder's runtime state, and it is the gitignored
     one - this repo is PUBLIC and the log quotes note names and reasons."""
-    assert responder.RUNLOG_PATH.parent == responder.HALT_PATH.parent
+    assert responder.RUNLOG_PATH.parent == REAL_HALT_PATH.parent
     assert responder.RUNLOG_PATH.name == "runs.jsonl"
     assert responder.RUNLOG_PATH.is_relative_to(responder.ROOT / "ops" / "runtime")
