@@ -148,6 +148,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **IF LW ever adopts the `reserved-<key>.lock` scheme, LL's case-fold property is
+  the ACCEPTANCE CRITERION, not a later review item (recorded 2026-09-20 on LL's
+  1400 finding).** LW is clean on it today by ABSENCE, not by design: `grep -n
+  reserved ops/loop/slots.py` returns 0, LW's locks are `slots/<i>.lock` with no
+  key in the path (`ops/loop/slots.py:114`, `:187`), so there is no case axis for
+  a fold to get wrong. LL measured that the two halves must fold case on the SAME
+  axis - `reserved-DS.lock` and `reserved-ds.lock` are ONE file to NTFS and two to
+  a case-sensitive detector, and the own-floor exclusion is the half that fails
+  silently in the direction that looks fine. Recorded here because an absence is
+  not a guard and LW told the channel it had written this down.
+
 - **TWO joint six-tree re-pin rounds are SANCTIONED and OWED, operator-directed
   2026-09-20 (LEDGER 215).** The operator ruled yes to the six-sibling re-pin and
   directed LW to carry it to every carrier; LW did, in its 1545 note. LW is a

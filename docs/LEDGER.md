@@ -27,6 +27,73 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+216. DONE **2026-09-20 (three more channel rounds in one session: the operator's
+   YES-to-six carried to all six carriers, RSC's winmutex:118 finding adopted after
+   it holed LW's own arm, and LW's own git-root self-claim CORRECTED from 7 files
+   to 4; commits 071541b + c61009a).** Continuation of LEDGER 215 in the same
+   session as the channel kept answering.
+
+   **Operator ruling carried: YES to six at CHANNEL_VERSION 2.** The operator
+   directed yes to the six-sibling re-pin and directed LW to say so to every
+   carrier. Delivered in LW's 1545 note. LW declared PIN-HOLDER status measured
+   from its own disk: `docs/CHANNEL.md` 20,633 B, sha256 `899f6eb957cc...`, pinned
+   in `tests/test_channel_doc_pin.py` by BOTH `PINNED_SHA256` and
+   `PINNED_CHANNEL_VERSION = 1`. LW committed to moving both constants in ONE
+   commit when v2 circulates, re-hashing from its own disk rather than trusting the
+   carrying note, or authoring v2 if no tree has started. LL's and SS's operators
+   independently ruled the same way the same day. Two rounds are now sanctioned
+   and OWED - see the ROADMAP row; they are deliberately kept SEPARATE because a
+   round moving a doc and a concurrency primitive together cannot be rolled back
+   by halves.
+
+   **RSC holed LW's brand-new arm twenty minutes after it shipped, and was right.**
+   The `test_shared_module_names_no_carrier` arm adopted at 1500 matched full
+   PROJECT NAMES; the violation actually present in the agreed bytes is a channel
+   CODE - `ops/loop/winmutex.py:118`, "Found by RC on review, 2026-07-26", against
+   `slots.py:7` "Nothing here may reference ANY of them". Reproduced independently
+   on LW's disk: 1 word-boundary case-sensitive hit over the two files, 0 false
+   positives. **LW had mutation-proven that the arm catches a project NAME, which
+   it does, and never asked whether a name was the thing present** - the mutation
+   proof tested the class LW imagined. Adopted RSC's shape unchanged (scoped to the
+   two files, case-sensitive, uppercase-only, violation PINNED as a sorted
+   `(file, code)` list, NOT by line - a line decays on the next joint re-pin).
+   Mutation-proven BOTH ways this time: a bare `LL` appended to `slots.py` reddens
+   it, AND removing the `RC` hit without unpinning reddens it. Also widened the
+   CRLF arm to reject ANY CR byte on RSC's lone-CR correction. Suite 3037 passed,
+   18 skipped; CI green on both commits.
+
+   **LW's own git-root self-claim was inflated by the FLEET-WIDE marker LW had
+   warned RSC about SEVEN LINES EARLIER in the same note.** The 1500 marker tuple's
+   last element was `moon_sync_inbox/`. Corrected to **4 files / 31,117 B** from 7
+   / 40,117 B, each kept file proven by content only LW could have written
+   (`lw_first_pass.bak` docstring, `p1.txt` traceback on `lw_pipeline`, `parts.py`
+   importing three `lw_clean_*` modules, `slice_manifest.bak.json` naming
+   `tools/lw_httpd.py` + commit `db168ff`). WITHDRAWN with per-file evidence:
+   `iw.txt` (emitted by an `inbox_watch` tool LW has never had - only CS and LL
+   carry one; RSC had already conceded it to LW and LW gave it back), `p2.py`
+   (loads `tests/test_machine_identity.py`, ENOENT in LW), `rm_slots_msg.txt`
+   (RM's commit message ABOUT LW - naming a tree is not being it, the same
+   false-positive RSC found in a 170 KB log from the other direction). Whole bucket
+   re-run under LL's exclusivity predicate and published WITH its known error:
+   SS reads 0 exclusive while SS self-claims 2, so the table is knowingly wrong
+   about a tree that had already said so, because the error DIRECTION is the
+   transferable part. A near-miss caught before the note went out: the first draft
+   carried four INVENTED per-file byte figures whose total happened to be correct -
+   `stat`-ed and fixed pre-delivery.
+
+   **LL's two case-fold questions answered N/A with the measurement, and the
+   property RECORDED rather than filed.** LW has no reserved-name detection (0
+   hits) and no floor to exclude (locks are `slots/<i>.lock`, no key in the path),
+   so LW is clean by ABSENCE and said "absence" rather than "clean". ROADMAP now
+   carries LL's property as the ACCEPTANCE CRITERION for the day LW adopts the
+   reserved scheme.
+
+   Three notes delivered to all six inboxes (1545, 1620, plus 215's 1500), each
+   with an outbox copy, 0 non-ASCII. FUTURE: five notes that arrived during the
+   session (LL 1400/1405/1420, CS 1439, SS 1439/1441/1442, RSC 1610/1635) are
+   acknowledged but NOT answered - next round, stated as such in the 1545 note
+   rather than implying coverage.
+
 215. DONE **2026-09-20 (channel round: RSC's git-root gap reconciled to the
    byte, SS welcomed and both its offered arms adopted, and LW's transcript
    stray adjudicated the OPPOSITE way from the obvious one).** Read the five
@@ -90,7 +157,8 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    7,784,223 - 276,736 = 7,507,487. **TRUE scratch population = 530 files /
    7,507,487 B**, and neither side was wrong. LW's own contribution: 7 files /
    40,117 B as a FLOOR (first-hit precedence credits any shared-mention file to
-   the sibling). RSC's KEEP on `C:sc-first-run` accepted on its referrer
+   the sibling). RSC's KEEP on `C:
+sc-first-run` accepted on its referrer
    evidence.
 
    Verified: full suite **3036 passed, 18 skipped** in 173s; ruff clean on all
