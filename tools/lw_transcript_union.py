@@ -23,8 +23,26 @@ Appending the stray after the canonical bytes therefore reconstructs the origina
 order exactly - it is not merely lossless, it is correct.
 
 Every `cwd` in both copies of all three sessions is `C:\\LegionWallpaper` (no space), a
-path that does not exist. A phantom cwd, not a second checkout - and note it is phantom in
-the CANONICAL copies too, so cwd does not distinguish the two keys.
+path that does not exist today, and it is recorded in the CANONICAL copies too, so cwd does
+not distinguish the two keys.
+
+CORRECTED 2026-09-20 (root-cause probe, `docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md`). Two
+claims above were WRONG and both matter to whether `--apply` should ever run:
+
+  1. That cwd is NOT a phantom. `C:\\LegionWallpaper` was LW's REAL root until 2026-09-06
+     (LEDGER 146 re-spelled it to `C:\\Legion Wallpaper`); it ENOENTs because it was renamed
+     away. 37 of 66 canonical transcripts record it and were written into the canonical key
+     LIVE, so the records are right and it is the KEY that carried a spelling the root did
+     not have.
+  2. The stray store holds NOTHING unique. All 746 / 441 / 346 stray uuids are present in
+     canonical files under DIFFERENT session ids (`4930ea5c`, `6f3ec7f6`, `eed18e6e`),
+     byte-identical apart from `sessionId` - 0 missing, 0 differing, all three sessions.
+     So the `d3d7c8f7` tail does NOT exist "nowhere else": appending it would duplicate 426
+     lines that already live in canonical `eed18e6e`. The union stays lossless and causally
+     ordered, but it is not a RECOVERY, and this tool pairs on FILE NAME only - it is blind
+     to a record already present store-wide under another name (pinned by
+     `test_union_is_scoped_to_one_session_id_and_is_blind_to_a_cross_file_duplicate`).
+     Check cross-file presence before `--apply`.
 
 UNION SEMANTICS
 
@@ -233,6 +251,52 @@ class FilePlan:
         return self.name.split(".")[0] + ".canon.bak"
 
 
+def key_record_ids(directory: Path) -> set[tuple[str, str]]:
+    """Every record identity present ANYWHERE in one store key.
+
+    The whole point is the scope: not the same-named file, the KEY. See
+    assert_not_wholly_redundant for why that distinction is the difference between
+    a lossless union and 346 duplicated records.
+    """
+    seen: set[tuple[str, str]] = set()
+    for f in sorted(directory.glob("*.jsonl")):
+        for line in read_lines(f):
+            seen.add(record_key(line))
+    return seen
+
+
+def assert_not_wholly_redundant(canon_dir: Path, stray_dir: Path) -> None:
+    """Raise Refusal when the stray key adds NOTHING the canonical key lacks.
+
+    Measured on the real store 2026-09-21, then re-measured independently: every uuid
+    in the stray key was already present somewhere in the canonical key - 746 of 746,
+    441 of 441 and 346 of 346, zero missing. The 346 that the SAME-NAMED canonical
+    file lacks live in other canonical files under different session ids.
+
+    This tool pairs files by NAME, so on that input its plan reported a superset and
+    an --apply would have APPENDED 346 records that were already on disk. A union
+    that duplicates is not lossless in the direction that matters.
+
+    The refusal lives in the tool rather than only in the hand-off because a document
+    is the weakest guard available - the next caller will not have read it. It is also
+    not a special case for this one store: any stray key that is wholly contained in
+    its canonical key has nothing to contribute, and unioning it can only add
+    duplicates.
+    """
+    stray_ids = key_record_ids(stray_dir)
+    if not stray_ids:
+        return
+    missing = stray_ids - key_record_ids(canon_dir)
+    if not missing:
+        raise Refusal(
+            f"every one of the {len(stray_ids)} stray record(s) is ALREADY present "
+            f"somewhere in the canonical key, so a union can only duplicate. The "
+            f"same-named file comparison this tool plans with is the wrong predicate "
+            f"here - the records missing from the twin live in other files under "
+            f"different session ids. Nothing to do; the stray key is redundant, and "
+            f"whether to REMOVE it is the operator's call, not this tool's.")
+
+
 def plan(canon_dir: Path, stray_dir: Path) -> list[FilePlan]:
     """One FilePlan per file in the stray store. Canon-only files are left alone."""
     plans: list[FilePlan] = []
@@ -358,6 +422,11 @@ def main(argv: list[str] | None = None) -> int:
     session_id = args.session_id or os.environ.get("CLAUDE_CODE_SESSION_ID")
     refusal: Refusal | None = None
     try:
+        # Cheapest and most consequential check first: if the stray key adds nothing,
+        # a union can only DUPLICATE, and no amount of liveness safety makes that
+        # lossless. Measured on the real store 2026-09-21 - 0 of 1,533 stray records
+        # were missing from the canonical key.
+        assert_not_wholly_redundant(canon_dir, stray_dir)
         assert_safe(canon_dir, stray_dir, now=time.time(), window=args.window,
                     self_session_id=session_id)
     except Refusal as exc:

@@ -370,3 +370,90 @@ def test_verify_preserved_detects_a_dropped_canonical_line():
     assert ltu.verify_preserved([rec("a"), rec("b")], [rec("a"), rec("b")]) is True
     assert ltu.verify_preserved([rec("a"), rec("b")], [rec("a")]) is False
     assert ltu.verify_preserved([rec("a"), rec("a")], [rec("a")]) is False
+
+
+def test_union_is_scoped_to_one_session_id_and_is_blind_to_a_cross_file_duplicate(tmp_path):
+    """The tool pairs on FILE NAME and unions on uuid WITHIN that pair. It never looks at
+    the rest of the canonical key, so a stray record already present store-wide under a
+    different file name is planned for appending anyway.
+
+    Measured 2026-09-20 (docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md): this is not a
+    hypothetical. All three real stray files are uuid-subsets of canonical files carried
+    under DIFFERENT session ids, byte-identical apart from `sessionId`. "No canonical file
+    with this session id holds this record" was read as "this record exists nowhere else",
+    and it does not follow. An `--apply` therefore needs a cross-file presence check first.
+
+    This arm pins the SCOPE, so anyone who later teaches the tool to dedupe store-wide
+    sees it go RED and changes it deliberately rather than by accident.
+    """
+    cdir, sdir = write_store(
+        tmp_path,
+        # `twin.jsonl` is the canonical file under a different session id that already
+        # carries every record the stray offers - exactly the real eed18e6e shape.
+        {"twin.jsonl": [rec("a"), rec("b"), rec("c")],
+         "split.jsonl": [rec("a")]},
+        {"split.jsonl": [rec("a"), rec("b")],
+         "orphan.jsonl": [rec("c")]},
+    )
+    by_name = {p.name: p for p in ltu.plan(cdir, sdir)}
+
+    # Same-named pair: `b` already sits in twin.jsonl, and it is appended regardless.
+    assert by_name["split.jsonl"].action == "union"
+    assert by_name["split.jsonl"].appended == 1
+    assert rec("b") in by_name["split.jsonl"].out_lines
+
+    # No same-named counterpart: `c` already sits in twin.jsonl, and the whole file is
+    # still planned as a copy into the canonical key.
+    assert by_name["orphan.jsonl"].action == "copy"
+
+    # And the blindness stated positively: the canonical twin is never consulted.
+    assert "twin.jsonl" not in by_name
+
+# ---- the cross-file redundancy refusal -------------------------------------
+#
+# The defect this arm exists for, measured 2026-09-21 and then re-measured
+# independently in the parent session: EVERY uuid in the real stray key was already
+# present somewhere in the canonical key - 746 of 746, 441 of 441, 346 of 346, zero
+# missing. The 346 that the same-named canonical file lacks live in OTHER canonical
+# files under different session ids. So a union that pairs by FILENAME reports a
+# superset and would append 346 records that are already on disk.
+#
+# Third framing of one defect, same root cause every time: a cheap proxy standing in
+# for the predicate. Size, then line count, then the same-named file. The predicate
+# was always "is this record present anywhere in the canonical KEY".
+#
+# The first fix was a warning in the hand-off, which is the weakest possible guard.
+# The tool has to refuse by itself, because the next caller will not have read it.
+def test_apply_refuses_when_every_stray_record_is_already_in_the_canonical_key(tmp_path):
+    cdir, sdir = write_store(
+        tmp_path,
+        # the stray file's records are absent from its SAME-NAMED canonical twin ...
+        canon={"s1.jsonl": [rec("a"), rec("b")],
+               # ... but present in a DIFFERENT canonical file, the real situation
+               "other.jsonl": [rec("c"), rec("d")]},
+        stray={"s1.jsonl": [rec("c"), rec("d")]},
+    )
+    with pytest.raises(ltu.Refusal) as exc:
+        ltu.assert_not_wholly_redundant(cdir, sdir)
+    assert "already present" in str(exc.value).lower()
+
+
+def test_no_refusal_when_the_stray_holds_a_genuinely_new_record(tmp_path):
+    cdir, sdir = write_store(
+        tmp_path,
+        canon={"s1.jsonl": [rec("a")], "other.jsonl": [rec("c")]},
+        stray={"s1.jsonl": [rec("c"), rec("NEW")]},
+    )
+    ltu.assert_not_wholly_redundant(cdir, sdir)  # must not raise
+
+
+def test_the_redundancy_check_reads_the_whole_key_not_the_same_named_file(tmp_path):
+    """A check that compared only the same-named twin would pass the first case
+    above, which is precisely the blindness that made --apply dangerous."""
+    cdir, sdir = write_store(
+        tmp_path,
+        canon={"s1.jsonl": [], "elsewhere.jsonl": [rec("x")]},
+        stray={"s1.jsonl": [rec("x")]},
+    )
+    with pytest.raises(ltu.Refusal):
+        ltu.assert_not_wholly_redundant(cdir, sdir)
