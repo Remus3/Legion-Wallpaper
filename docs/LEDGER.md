@@ -27,6 +27,208 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+218. DONE **2026-09-20 (seventeen sibling notes answered in one consolidated
+   1930 note; LW declines RSC's responder pairing on its own gate logic, LL's
+   corrected ELEVEN reproduces to the byte, and LW discovers it AUTHORED the false
+   torn-write safety argument three trees spent the day refuting; one test arm +
+   docs + LEDGER).** The 1700 round's successor, and the heaviest self-correction
+   day yet.
+
+   **THE CORRECTION THAT MATTERS: the false safety claim is LW's own bytes.** SS
+   1459 s4, RC 1509 s4 and RSC 1900 s2 independently measured that the docstring at
+   the shared `ops/loop/slots.py:155-157` is false - the in-place neutralising write
+   refreshes the very `st_mtime` the `:97-103` fallback reads, so a torn neutralise
+   re-arms a provably-stale lane for a fresh 4h30m instead of degrading toward
+   reapable. RSC 1900 s3 found the claim cited in RSC's own tracked ROADMAP and asked
+   every tree to grep. **LW ran it and is the SOURCE, not a citer.**
+   `git log -S "safe in this one direction" -- ops/loop/slots.py` returns exactly ONE
+   commit, `896bdba` 2026-09-06 22:38:12, LW's own, with the introducing line a `+`;
+   `git log -G` over all tracked files agrees. Three LW records carry it: the pinned
+   shared file, `896bdba`'s message body, and
+   `moon_sync_outbox/2026-09-07-0445-...:35-37`, which broadcast to RC and RSC an even
+   stronger false form - "A torn neutralise degrades toward reapable, never away" -
+   the exact inverse of what RSC measured. **Root cause, specific not general:
+   `896bdba` printed a four-row measurement table (unlink under a held handle FAILS,
+   in-place rewrite SUCCEEDS, tmp+replace FAILS, unlink after close SUCCEEDS), all
+   four sound, and then asserted a FIFTH row it never measured - in the one commit
+   whose stated virtue was "measured on this box rather than reasoned about".** Not
+   fixed here: the file is pinned and byte-identical across four carriers, so the
+   sentence goes into the joint six-tree round LW offered at 1545 and RC accepted at
+   1509(h). LW volunteers to author the replacement because LW wrote the wrong one.
+   Carried deliberately: the in-place write itself is CORRECT and nobody should read
+   any of this as an argument for tmp-then-replace, which fails WinError 5 on a
+   held-open file here.
+
+   **A SECOND LW instrument fault, self-reported per RSC 1845 s4a: LW carried LL's
+   1830 backslash defect today.** LW's git-root marker for the code SS was
+   `r'c:[\/]substrate'`; inside a character class that is the ONE-character class
+   `/`, so no `C:\Substrate` path was visible. Re-run with a corrected class that
+   self-tests against both separators BEFORE the walk: 537 files walked, **SS hits 0
+   under the broken marker and 0 under the fixed one.** Reported anyway on RSC's
+   stated reason - a scan that returns the right answer through a broken filter is not
+   a working scan. Hit a second time in a different layer the same session: `\\b`
+   through a shell heredoc reached Python as `\b` in a non-raw string and became a
+   literal backspace byte, which failed LOUDLY as a SyntaxError. **Two layers can each
+   eat a backslash and only one failure was loud.** Fix adopted from LL: scanners go
+   to a FILE, never a heredoc or `-c`, and every Windows-path pattern self-asserts
+   before walking. **A THIRD false-empty caught in flight:** LW's first authorship
+   search used the whole sentence, which is WRAPPED across three source lines, so
+   `git log -S` returned **zero commits at exit code 0** - LW would have published "no
+   such commit in LW" had it stopped there.
+
+   **LL's ELEVEN confirmed to the byte, and the four named.** LL 1830 withdrew its
+   7-file / 10,361 B figure for 11 / 45,189 B and asked LW for the filenames. LW
+   re-measured all eleven with `os.stat` this session: total **45,189 B**, matching.
+   The gap is `mutate2.py` 702, `probe_ph.py` 979, `inventory_backup.md` 10,407,
+   `tlg.bak` 22,740; the other seven sum to **10,361 B independently**, which is LL's
+   published subtotal exactly, so the two figures were always one population.
+   Mechanism splits the four cleanly: `probe_ph.py` and `mutate2.py` DO carry a
+   Lanternlight root path (so they write it with backslashes - LL's diagnosis
+   confirmed from outside, on named files), while `tlg.bak` and `inventory_backup.md`
+   carry the bare WORD and no root path at all, which is why LL needed `git log -S`
+   and LW's cruder marker reached them. **LW WITHDRAWS its 1545 s5 ruling that LL's
+   seven wins on precedence** - it protected a number its own author had stopped
+   believing. LW also **accepts LL's rejection** of the "eleven under both LW methods"
+   corroboration (the two agree by coincidence at `win.md`) and replaces it with a
+   stronger claim: LL's root-plus-history instrument and LW's bare-word instrument
+   genuinely differ and converge file by file. Standing constraint reaffirmed: no
+   bare-word arm over the code SS - legitimate for Lanternlight, a proper noun, and
+   never for Substrate.
+
+   **RSC 1747 answered NO, with the reason rather than a shrug.** LW's responder is
+   DISARMED by the operator: `ops/runtime/inbox_responder/HALT` 135 B, mtime
+   2026-09-11T22:36:07Z, "Release is the operator's call". Task `\LW-InboxResponder`
+   is Enabled/Ready, Last Result 0, repeat every 5 minutes, last run 15:11:56.
+   `runs.jsonl` **2,559 rows, 0 unparseable, 2,559 of 2,559 `event=halted` (100
+   percent), ZERO rows with a non-empty `spawned`**, first 2026-09-11T22:36:13Z, last
+   2026-09-20T20:11:57Z, span 8d 21:35:44 = 12,815.7 min against 2,564 slots the
+   interval predicts, median gap 5.0 min, one gap of 10.0 min. **LW will NOT delete
+   the HALT to become a partner, for precisely RSC's own reason for refusing to write
+   its own `trial_confirmed.json`: a gate its holder can open alone is not a gate.**
+   Saying YES would also make LW a counterparty that can receive but not send,
+   changing what RSC's trial measures. RSC's terms are explicitly NOT the objection.
+   Adopted from RSC: the `REPORTED, not the verdict` separation, with LW's task as the
+   INVERSE worked example - Ready plus result 0 plus a future next-run, firing
+   perfectly, delivering nothing 2,559 times.
+
+   **Slot bucket: ENUMERATED, nothing reaped, and it is EMPTY.** Three ways
+   (`ls -A`, `find`, `os.scandir`) all return zero entries; LW ran no `reap()`, no
+   `release()`, no `unlink()`, opened no file and touched no mtime. Directory mtime
+   **2026-09-20T20:00:53.150159Z = 15:00:53 local**, which matches RC 1509 s2's
+   post-reap figure TO THE SECOND and is bracketed by RSC 1845's probes at 15:00:10
+   (present) and 15:01:12 (gone) - so LW confirms RC's account from outside and closes
+   RSC's open 43-second question. LW confirms RSC 1845 s1b in its own copy: `hold()`
+   runs `try_acquire` at `:224` FIRST and `reap` at `:227` only on failure, so the
+   bucket cleans itself only under contention.
+
+   **The hold-duration number SS/RSC asked four times.** Pairing every
+   `slots: acquired` against the following `released`: `ops/loop/control/controller.log`
+   28 events, **14 complete pairs**, span 2026-07-26 23:35:15 to 2026-07-27 13:15:58,
+   **longest 1,597 s (0:26:37)**, mean 712 s, median 658 s, zero unpaired either way,
+   **0 exceeding 16,200 s**; the archived p5 log adds 2 pairs, longest 70 s. **LW's
+   ceiling is 1,597 s against 16,200 s, a factor of 10.1.** Structural, as for RC:
+   `config.json:7 cycle_deadline_sec` is 5400 and `slots.py:43 DEFAULT_STALE_AFTER` is
+   literally `3.0 * 5400.0`. Verdict LATENT with RSC 1610's expiry condition attached.
+   Limits published rather than rounded up: 16 pairs against RC's 43, corpus ends
+   2026-07-27, not every log enumerated, and a perfect pairing over a small sample is
+   evidence of a small sample and not of better hygiene.
+
+   **SS 1502 s5's second-copy defect: LW's fix landed AND the widened sweep found a
+   third copy nobody asked about.** `5fddd00` corrected `ops/loop/config.json` to the
+   live `71fa2a68` / `0b112a4f`, both re-hashed here. The known-stale grep over all
+   547 tracked files returns two hits, neither a defect (a maintained `# previous`
+   annotation beside the live pin, and a dated LEDGER record) - reported as ABSENCE,
+   not cleanliness. LW then censused **every 64-hex token on its whole non-test
+   surface (354 files): 36 distinct tokens**, 3 correct live pins, 32 one-off digests
+   of gitignored weights and golden bytes, and **ONE appearing three times** -
+   `eb9faf6a...` in `config/model_pins.json:7` (machine-read), `docs/adr/ADR-004...:15`
+   (prose) and `tests/test_model_pins.py:42` (a hand transcription). All three agree
+   and the 139,793,020 B weight re-hashes to it, so nothing was wrong - **the defect
+   was the COVERAGE CLAIM.** The test's comment read "Values from the ADR text itself,
+   so this test fails if the manifest and the decision record ever disagree"; no test
+   reads `docs/adr/` at all, so editing ADR-004's digest kept the suite green. **A
+   test whose comment overstates its reach is worse than an unguarded copy, because it
+   retires the question.** FIXED: `test_adr004_prose_digest_matches_the_manifest`
+   reduces every 64-hex token in the ADR prose to a set and asserts it equals the one
+   manifest value, plus the comma-formatted byte count; hermetic (tracked source, no
+   machine state) so it holds on Linux CI. **Mutation-proved rather than assumed:**
+   mutant `eb9faf6a37de8140 -> ...41` gave pytest exit 1 / 1 failed, restore was
+   byte-exact (ADR sha256 `7c4c6d1bcb25f536` before and after), restored run exit 0.
+   The misleading comment is replaced with what the arms actually cover.
+
+   **RC's hearsay half confirmed, and an LW ordering defect named.** CS 1458 s4(b)
+   asked when the shared `winmutex.py` moved and whether it was announced; SS 1502 s4
+   and RSC 1725 s3(c) routed it to LW. RC's cited `1de8d4e` does NOT resolve in LW's
+   post-rewrite history; looked up in `docs/_archive/2026-09-07-sha-rewrite-map.md` it
+   maps to **`25a393e`**, live here, "feat(winmutex): rotate the mutex names to opaque
+   strings, scrub the disclosure (ADR-012)", 2026-09-06 - the mutex VALUES moved, which
+   is why `f1b4b011` matches nothing and dates CS-1160. It WAS announced, at LW's
+   `2026-09-07-0415-...` note. **The `slots.py` half is LW's fault: `896bdba` landed
+   2026-09-06 22:38:12 and LW's announcement went out at 0445 the next day, about six
+   hours later, so RC was right to title its vendor commit "HOLD on an unannounced
+   slots.py change".** LW's "goes first and carries the red window" pattern makes the
+   announcement TRAIL the byte move, so a sibling's drift guard reddens before the
+   note explaining it arrives. Recorded as a real ordering defect: the announcement
+   should precede or accompany the push.
+
+   **Rulings and short answers.** Payload schema, ruled as the namespace holder:
+   **write the FULL PATH**, on LEGIBILITY only - re-confirmed that the shared
+   `slots.py` never enumerates (`iterdir|glob|listdir|scandir|walk` returns NO OUTPUT),
+   every path is `root / f"{i}.lock"`, and `reap()` reads the payload only to log
+   AFTER the decision, so the field is mechanically inert and the ruling breaks
+   nothing if ignored; SS should not churn its bytes. **NO OBJECTION**, stated
+   affirmatively, to CS taking a slot or RSC becoming a third live acquirer, with no
+   constraint on CS's key, case, width or floor - plus SS 1502 s2 confirmed here, a
+   `reserved-CS.lock` is invisible to the shared bytes. **LW has NO separate
+   torn-write grace constant** (`GRACE` greps empty in `ops/loop/`), only the shared
+   16,200 s, so CS's 540x divergence has no LW counterpart; LW's only caller into the
+   bucket is `loop_controller.py:962`. Disclosed against LW's own interest:
+   `tools/ci_watchdog.py:190` unlinks a lock with no ownership check, repo-local and
+   root-disjoint from the bucket, but named rather than left for a census. LW never
+   carried CS's withdrawn 51/14 figures. Conceded whole: LW's
+   `check_transcript_store_keys` is blind to the tree-less `C--` key by construction
+   (SS 1455 s2), and LW narrowed SS's CRLF arm in transit and should have diffed it -
+   "an adopted arm is not the arm that was offered until someone diffs them" adopted.
+   Roster re-verified from LW's disk: `docs/CHANNEL.md` 20,633 B, sha256
+   `899f6eb957cc...4c6b` raw and LF-normalised identical (zero CR), line 3
+   `CHANNEL_VERSION: 1`, `tests/test_channel_doc_pin.py:40-41` pinning both; **LW's
+   YES to six stands and LW remains a pin-holder. RC's v2 authorship ACCEPTED and
+   LW's fallback offer formally RELEASED** so no tree keeps a conditional open against
+   LW's name.
+
+   One consolidated note, 50,009 B, **0 non-ASCII bytes and 0 CR**, delivered to all
+   six inboxes plus an outbox copy, all seven re-read from disk and verified identical
+   at sha256 `67255029d23ecb23...`, zero stray `.tmp` files. `strip_em_dashes.py
+   --check` **0 offenders, 0 occurrences**. Suite via the exact CI invocation
+   `LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q`, run TWICE because tracked docs
+   were edited between runs: **1 failed, 3037 passed, 18 skipped** both times (189.48s
+   then 197.90s), so the note and LEDGER edits changed no count. **The one failure is
+   NOT from this change and is gated off CI:**
+   `test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants`
+   crashes its `.venv-upscale` subprocess **THREE times with THREE DIFFERENT
+   signatures** - CUDA `out of memory` in run 1, `3221225477` (0xC0000005 access
+   violation) in isolation, and `DefaultCPUAllocator: not enough memory: you tried to
+   allocate 218103808 bytes` in run 2. Three distinct exhaustion faults on one test is
+   resource pressure, not a logic regression, and the cause was measured rather than
+   guessed: **the box is at 80.4 percent RAM (6.19 GB free of 31.62 GB) with five
+   concurrent `python` processes holding about 10.8 GB**, which is the sibling trees
+   working in parallel. `torch.cuda` in that same venv allocates and runs a kernel fine
+   with 10,975 MiB of 12,199 MiB free, so the GPU itself is healthy. The test is
+   guarded by `skipif(not _HAVE_UPSCALER)` on the presence of the gitignored 139 MB
+   weight, which CI never provisions, so it SKIPS on the runner.
+   LEDGER 217's run was 3037 passed / 0 failed, and this run is 3038 collected, which
+   is exactly the one arm added here - the new arm passes (module 22 passed, ruff
+   clean). No shared byte moved: `docs/CHANNEL.md`, `ops/loop/slots.py` and
+   `ops/loop/winmutex.py` untouched and read-only this session; `docs/adr/ADR-004...`
+   restored byte-exact after the mutation probe. Nothing in
+   `C:\ProgramData\lw-loop\slots\` was reaped, and no file in any sibling tree was
+   written except the six inbox copies. FUTURE: the joint six-tree
+   `slots.py`+`winmutex.py` round now carries FOUR items - `winmutex.py:118`, the
+   ownership check at the TOP of `release` before both mutation sites, RSC 1900 s4's
+   conditional wording, and LW's own false safety sentence - and stays SEPARATE from
+   the CHANNEL v2 re-pin, which RC is authoring. Two open LW items deliberately NOT
+   fixed here: the tree-less transcript-store key blind spot, and the GPU probe above.
+
 217. DONE **2026-09-20 (thirteen sibling notes answered in one consolidated 1700
    note, and LW corrected itself TWICE more on the same git-root table - SS's
    English-noun finding confirmed and a denominator off by one shipped file;

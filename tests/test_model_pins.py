@@ -22,6 +22,7 @@ nothing:
 import hashlib
 import json
 import os
+import re
 import sys
 
 import pytest
@@ -37,8 +38,11 @@ import lw_model_pins  # noqa: E402
 
 from tools import lw_upscale  # noqa: E402
 
-# The ADR-004 primary first-pass upscaler. Values from the ADR text itself, so
-# this test fails if the manifest and the decision record ever disagree.
+# The ADR-004 primary first-pass upscaler. These constants were TRANSCRIBED from
+# the ADR text by hand, and a transcription is not coverage: until
+# test_adr004_prose_digest_matches_the_manifest below, nothing read the decision
+# record, so editing the digest in docs/adr/ADR-004-*.md kept every test green.
+# A digest quoted in prose is a second copy of the pin and needs its own arm.
 ADR004_BASENAME = "4x_IllustrationJaNai_V3detail_DAT2_28k_bf16.safetensors"
 ADR004_SHA256 = "eb9faf6a37de81406765e0c99e76ad7dafe67e4877f32e186085ac277a0e6181"
 ADR004_BYTES = 139793020
@@ -89,6 +93,36 @@ def test_repo_manifest_pins_the_adr004_model():
     assert entry["sha256"] == ADR004_SHA256
     assert entry["bytes"] == ADR004_BYTES
     assert "ADR-004" in entry["why"]
+
+
+ADR004_PATH = os.path.join(
+    REPO_ROOT, "docs", "adr", "ADR-004-promote-v3detail-dat2-primary.md"
+)
+
+
+def test_adr004_prose_digest_matches_the_manifest():
+    """The digest quoted in ADR-004 PROSE is a second copy of the pin - bind it.
+
+    config/model_pins.json is what the code reads; ADR-004 quotes the same
+    sha256 in English; this module transcribes it a third time. Before this
+    arm only the manifest-vs-transcription pair was checked, so the prose copy
+    could drift silently and the decision record and the machine-read pin would
+    disagree with nothing going red.
+
+    Reads tracked SOURCE, not machine state, so it stays hermetic on CI.
+    """
+    prose = open(ADR004_PATH, encoding="utf-8").read()
+    quoted = set(re.findall(r"\b[0-9a-f]{64}\b", prose))
+    pins = lw_model_pins.load_pins()
+    manifest_sha = pins[ADR004_BASENAME]["sha256"]
+    assert quoted == {manifest_sha}, (
+        "ADR-004 prose digests do not reduce to the manifest pin.\n"
+        f"  in prose   : {sorted(quoted)}\n"
+        f"  in manifest: {manifest_sha}\n"
+        "Two records of one pin disagree - fix the stale one, do not widen this."
+    )
+    # The byte count is the other half of the pin, written with thousands commas.
+    assert f"{pins[ADR004_BASENAME]['bytes']:,}" in prose
 
 
 def test_repo_manifest_is_extensible():
