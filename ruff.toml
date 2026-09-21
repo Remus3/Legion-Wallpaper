@@ -8,6 +8,29 @@
 target-version = "py314"
 line-length = 120
 
+# `exclude` alone is not enough, because ruff defaults force-exclude to FALSE:
+# a path named EXPLICITLY on the command line bypasses `exclude` entirely, and
+# naming staged paths explicitly is exactly what tools/precommit_gate.py does
+# (`py -m ruff check --output-format=json <staged paths>` with cwd=repo root).
+# Measured 2026-09-20 on ruff 0.15.12: `ruff check tools/dwpose_onnx/onnxdet.py`
+# exited 1 with two B905 findings; the same command under force-exclude exits 0,
+# "No Python files found". Only the gate's net-new-hunk filter was masking it, so
+# a re-vendor of dwpose_onnx touching either line would have been BLOCKED by a
+# rule this file says is excluded.
+# Blast radius of turning it on, measured over `git ls-files '*.py'` (283 files):
+# exactly those 2 findings disappear, both inside the vendored tree already
+# declared below, and 0 findings on any file we maintain. `ruff check .` was 0
+# findings either way.
+# Top-level for a DIFFERENT measured reason than `exclude`, and the difference
+# matters. Re-measured on ruff 0.15.12, 2026-09-20: `exclude` under [lint] is
+# ACCEPTED and silently inert (exit 1, the vendored file linted anyway), while
+# `force-exclude` under [lint] is an unknown field and ruff refuses the whole
+# config - exit 2, empty stdout, `unknown field force-exclude`. precommit_gate
+# .py swallows that into `findings = []`, so a misplaced key here does not read
+# as stricter: it turns the gate's entire ruff pass off, silently. Pinned by
+# tests/test_ruff_exclude_binds.py.
+force-exclude = true
+
 # Don't lint generated/runtime/cache/vendored dirs.
 # MUST stay top-level: an `exclude` key under [lint] is silently INERT
 # (measured on ruff 0.15.12 - the excluded file is still linted).

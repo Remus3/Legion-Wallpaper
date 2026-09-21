@@ -51,11 +51,27 @@ def pinned_python() -> Path:
 
 
 def system_python() -> str:
-    """The interpreter to hand a subprocess.
+    """The interpreter to hand a subprocess. NEVER a `pythonw` build.
 
     The pinned install when it is present, otherwise whichever interpreter is
     running right now. Returned as `str` because every caller passes it straight
     into an argv list or an f-string.
+
+    THE CONSOLE GUARANTEE, and why it is load-bearing (measured 2026-09-20).
+    LW's hooks are invoked as `pythonw <script>`, so inside a hook
+    `sys.executable` is `pythonw.exe` - the console-less build. A subprocess run
+    under it has NO stdout attached, so output is DISCARDED and the child still
+    exits 0:
+
+        py      -m ruff --version  ->  rc=1  stdout=''   (no module named ruff)
+        pythonw -m ruff --version  ->  rc=0  stdout=''   (ran, output binned)
+        python  -m ruff --version  ->  rc=0  stdout='ruff 0.15.12'
+
+    The middle row is the dangerous one: a caller that checks the return code
+    still sees success and an empty result, which reads as "the tool found
+    nothing". That is how `tools/precommit_gate.py` came to run a ruff pass that
+    could never report anything. Any resolver used to spawn a tool whose OUTPUT
+    is the result must therefore refuse to hand back a `pythonw`.
     """
     pinned = pinned_python()
     try:
@@ -63,7 +79,28 @@ def system_python() -> str:
             return str(pinned)
     except OSError:
         pass
-    return sys.executable
+    return _console_twin(sys.executable)
+
+
+def _console_twin(exe: str) -> str:
+    """`exe`, or its console sibling when it is a `pythonw` build.
+
+    `pythonw.exe` and `python.exe` ship side by side in every CPython layout on
+    Windows, so the swap is a basename substitution in the same directory. Falls
+    back to the original when the sibling is missing, because a wrong path is
+    worse than a windowless one.
+    """
+    p = Path(exe)
+    stem = p.stem.lower()
+    if not stem.startswith("pythonw"):
+        return exe
+    twin = p.with_name(p.name.replace("pythonw", "python", 1))
+    try:
+        if twin.exists():
+            return str(twin)
+    except OSError:
+        pass
+    return exe
 
 
 def pictures_dir() -> Path:

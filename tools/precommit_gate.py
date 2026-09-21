@@ -40,6 +40,39 @@ import sys
 # 0 elsewhere).
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
+
+def _lint_python() -> str:
+    """A CONSOLE interpreter to run ruff under. Never `pythonw`, never `py`.
+
+    `py` was the original choice here and it was wrong on this box: the launcher
+    resolves a bare pythoncore build with no ruff installed, so the pass exited 1
+    with empty stdout and the caller read that as "no findings". `pythonw` is the
+    other trap - it runs ruff fine and DISCARDS the output at exit 0.
+
+    Routed through `lw_paths.system_python()`, which carries the console
+    guarantee. Falls back to this process's own interpreter, console-swapped, if
+    the helper cannot be imported - a hook must not die over its own imports.
+    """
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import lw_paths  # noqa: PLC0415 - deliberately lazy; a hook must not
+        #                  fail at import time over an optional helper.
+        return lw_paths.system_python()
+    except Exception:  # noqa: BLE001 - deliberately total. This runs inside a
+        # git hook: ANY escape here blocks every commit in the repo, and the
+        # fallback below is a complete answer on its own. Narrowing this to
+        # ImportError would let an unrelated failure in the helper wedge commits.
+        exe = sys.executable
+        stem = os.path.splitext(os.path.basename(exe))[0].lower()
+        if stem.startswith("pythonw"):
+            twin = os.path.join(
+                os.path.dirname(exe),
+                os.path.basename(exe).replace("pythonw", "python", 1))
+            if os.path.exists(twin):
+                return twin
+        return exe
+
+
 # Anchor for the Legion Wallpaper repo - final fallback when the root cannot
 # be resolved from the command or the hook's CWD.
 _LW_ROOT = r"C:\Legion Wallpaper"
@@ -308,18 +341,45 @@ def _staged_violations(root: str) -> list[str]:
         # repo, skip the ruff pass instead of crashing the hook (the glyph and
         # py_compile gates above still apply).
         findings: list = []
+        ruff_ran = False
         try:
             proc = subprocess.run(
-                ["py", "-m", "ruff", "check", "--output-format=json", *pyfiles],
+                [_lint_python(), "-m", "ruff", "check",
+                 "--output-format=json", *pyfiles],
                 cwd=root,
                 capture_output=True,
                 text=True,
                 timeout=60,
                 creationflags=_NO_WINDOW,
             )
-            findings = json.loads(proc.stdout) if proc.stdout.strip() else []
-        except (OSError, subprocess.SubprocessError, ValueError):
+            # `--output-format=json` ALWAYS emits at least `[]`, so EMPTY stdout
+            # is unambiguously "ruff did not report", never "ruff found nothing".
+            # This is the only reliable discriminator here: the return code is
+            # NOT one. Measured 2026-09-20, `pythonw -m ruff` exits 0 with empty
+            # stdout because the console-less build discards the child's output,
+            # so an rc check passes while the pass did nothing. See
+            # lw_paths.system_python's console guarantee.
+            if proc.stdout.strip():
+                findings = json.loads(proc.stdout)
+                ruff_ran = True
+            elif proc.returncode == 0:
+                # Ran, said nothing at all. Cannot happen with a console
+                # interpreter; means the output was binned.
+                raise ValueError("ruff produced no JSON on a zero exit")
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
+            # DEGRADE LOUDLY. A young or bare repo legitimately has no ruff, and
+            # wedging the hook over that would be worse than skipping - but a
+            # skip that prints nothing is how this pass stayed dead from
+            # 2026-07-03 to 2026-09-20. The glyph and py_compile passes above
+            # still applied throughout; only ruff was silently absent.
+            sys.stderr.write(
+                "precommit_gate: RUFF PASS SKIPPED - it could not be run, so "
+                "these staged lines were NOT lint-checked.\n"
+                f"  reason: {type(exc).__name__}: {exc}\n"
+                "  the glyph and py_compile passes still ran.\n")
             findings = []
+        if not ruff_ran:
+            return violations
         for f in findings:
             fn = (f.get("filename") or "").replace("\\", "/")
             rel = fn[len(root.replace("\\", "/")) + 1 :] if fn.startswith(root.replace("\\", "/")) else fn
