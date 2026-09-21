@@ -32,10 +32,23 @@ OPEN, carried forward
   - Recurrence arm on the key flip is still OPEN: 37 canonical transcripts record the
     old root, and the store demonstrably rewrote old sessions on 09-11 and 09-12.
     drift_guard.check_transcript_store_keys is the armed detector and was proven live.
-  - scripts\wakeup_prune.py treats ANY `## ` heading as a session, so a --keep run
-    would archive the standing "THE LOOP IS HELD" and parked-queue blocks along with
-    real sessions. It moved this session's own entry once before it was put back. Do
-    not run it unattended until it distinguishes a session from a standing block.
+  - scripts\wakeup_prune.py is NOT defective and an earlier claim in this file that it
+    was is WITHDRAWN. What happened: this session's entry was inserted at the TOP of
+    WAKEUP_NOTES.md, and the parser classes a non-session block BEFORE the first dated
+    session as a leading pin that rides with the header, but one AFTER a session as a
+    trailing extra it COUNTS as a session. Inserting at the top therefore reclassified
+    eight standing blocks as sessions, which is what reddened
+    test_the_parser_sees_every_heading_in_the_real_file and what made a --keep dry-run
+    look as though it wanted to archive "THE LOOP IS HELD". The tool was right; the
+    placement was wrong. The entry was re-inserted using the tool's OWN render(), and
+    the guard is back to blocks == heads == 4. Tenth instance of the session's one
+    shape: a dry-run's output read as evidence about the tool when it was evidence
+    about the edit.
+  - Pre-existing and NOT fixed: one older session block begins with a literal `---`
+    line, so the parser reads it as a trailing extra rather than a session and a
+    --keep dry-run offers to move it. Cosmetic, long-standing, and left alone rather
+    than repaired under wrap-time pressure. Fix it by deleting the stray rule inside
+    that block, then confirm blocks == heads again.
   - RC holds the shared bytes but has NO code pin and its sweep cannot catch a bare
     carrier code, so LW's KNOWN_CODE_HITS arm is currently the channel's only guard of
     that shape. LW offered the 20 lines to any tree that asks; nobody has asked yet.
