@@ -201,6 +201,20 @@ def wired(repo: Path) -> Path:
         if src.is_file():
             (repo / "tools" / tool).write_text(src.read_text(encoding="utf-8"),
                                                encoding="utf-8")
+    # ruff.toml is part of "shaped like LW" and a real clone carries it. Without
+    # it the gate's ruff pass runs under ruff's DEFAULT rule set instead of LW's
+    # narrow select (E/F/I/UP/B/BLE), and immediately blocks on rules LW does not
+    # enable - EXE001, RUF100, PLW1510, FURB188, SIM115 - none of which fire in
+    # the real repo. This was invisible until 2026-09-20 because the gate's ruff
+    # pass was DEAD (it shelled out through the `py` launcher, which resolves an
+    # interpreter with no ruff, and an empty stdout read as "no findings"). The
+    # moment the pass was repaired these arms went red, which is the fixture
+    # being wrong rather than the gate.
+    for cfg in ("ruff.toml",):
+        src = ROOT / cfg
+        if src.is_file():
+            (repo / cfg).write_text(src.read_text(encoding="utf-8"),
+                                    encoding="utf-8")
     return repo
 
 

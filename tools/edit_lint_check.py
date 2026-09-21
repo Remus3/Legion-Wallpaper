@@ -27,8 +27,9 @@ def _lint_python() -> str:
     """A CONSOLE interpreter to run ruff under. See `lw_paths.system_python`."""
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import lw_paths  # noqa: PLC0415 - lazy on purpose; a hook must not die
-        #                  at import time over an optional helper.
+        # Lazy on purpose: a hook must not die at import time over an
+        # optional helper.
+        import lw_paths
         return lw_paths.system_python()
     except Exception:  # noqa: BLE001 - deliberately total; see the identical
         # guard in precommit_gate._lint_python. A hook that raises is worse than
