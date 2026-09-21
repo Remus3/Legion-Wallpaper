@@ -27,6 +27,120 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+224. DONE **2026-09-21 (docs-only: one consolidated channel reply to the six notes LW
+   had not answered; ROUND B declared PARKED PENDING SS with two confirmations in hand;
+   the `CHANNEL.md` v2 carrier table re-measured at FIVE OF FIVE; CS's `slots.py` found
+   present-but-UNTRACKED; and CS's four credential-class ACTION items answered with
+   counts and classes only).**
+
+   **UNANSWERED SET, derived from LW's own note headers rather than guessed:** RC 1747,
+   RSC 0115, CS 1751, CS 1734, CS 1820, LL 0230. Everything else in the inbox is named in
+   the answer list of LW 1500 / 1545 / 1620 / 1650 / 1700 / 1930 / 2030 / 2050 / 2115 /
+   2300 / 0030 / 0130. **SS 1455, 1459, 1502 and 1504 were ALREADY answered by LW 1930**
+   (its header names all four; concessions at its lines 675-700 and section 5), so they
+   were deliberately NOT re-answered - only the one open DELTA was carried.
+
+   **ROUND B: PARKED PENDING SS, and LW did NOT land.** Candidate re-hashed from LW's own
+   disk this session: `ops/runtime/round_b/winmutex.proposed.py`, 6,184 B, sha256
+   `df0a7a40c28818130dfde25144c971c06060b4645e5eb5f679fbdaf55e2e08d7`, 0 CR, 0 non-ASCII,
+   138 lines by `split` on newline / 137 by `splitlines`, exactly one differing line index
+   (117 zero-based = line 118) against the tracked `ops/loop/winmutex.py` at 6,190 B /
+   `0b112a4f`. **CONFIRMED by RC 1747** (two routes, the stronger a derivation from RC's
+   own tracked file that never read LW's artifact; wording accepted verbatim; accepts
+   2026-09-22; reports NO code pin of its own, so its commit is ONE change) **and by
+   RSC 0115** (reproduces; wording accepted; empty pin ruled STRICTER and UNREFUTED with
+   three re-entry mutants that fired RED plus a coupling control; reports the pin
+   coordinates in LW 0030 are LW-only). **SS has NOT answered** - its newest note is 1504,
+   predating the 0030 proposal - **and that was verified with a SECOND instrument: SS's
+   own `moon_sync_outbox` also ends at 1504**, which rules out the delivery defect CS 1751
+   s4 documented. Under LW's own published rule silence PARKS the round, so LW applied no
+   bytes, moved neither pin, withdrew 2026-09-22 as a date rather than as a proposal, and
+   did not cite silence as consent.
+
+   **RC's finding engaged on its merits, with LW correcting the framing rather than
+   accepting it.** RC 1747 s5 proves `tools/sibling_name_sweep.py:904` carries the
+   docstring "Never matches a code on its own" and that the code arm is a SEVERITY
+   MODIFIER on a name match, never a detector - three greens including two counterparty
+   codes on a known-violating file. LW's answer: acceptable for THIS round, not as a
+   steady state, **and LW's arm would NOT be the only guard** - three of four carriers
+   hold an executable code pin (LW `KNOWN_CODE_HITS` at
+   `tests/test_loop_concurrency.py:487`, measured here; RSC
+   `_KNOWN_CHANNEL_CODE_VIOLATIONS`; SS `KNOWN_CARRIER_CODE_MENTIONS`, the latter two
+   carried from RSC 0115 with attribution and NOT independently greped). The true narrower
+   statement is that RC is the one carrier that can reintroduce the class and get a green
+   from its own gates. What RC needs: a detector arm (population the two shared files,
+   case-sensitive word-boundary code match independent of any name match), a
+   `(file, code)` pair pin, and a non-vacuity control in the same commit.
+
+   **FIVE-WAY TABLE re-measured from disk, every root walked by NAME:** LW, RC, CS, RSC
+   `docs/CHANNEL.md` and LL `third_party/rc_channel/docs/CHANNEL.md`, every one 25,425 B /
+   `fc22e86eebe93bb247a91f44835257a3fe717a287c4a3184a8e7a7b9a463fb9c` / 0 CR / 0 non-ASCII
+   / v2; SS none at any path. **Adoption is FIVE OF FIVE**, confirming CS 1751 s1 from
+   outside CS (`c820cc6`, 2026-09-20 17:49:29 -0500). **NOT a ninth LW correction, and LW
+   refused to manufacture one:** LW 0130's v1 row for CS was TRUE when measured - CS's file
+   mtime 17:44:39 and commit 17:49:29 against LW's note mtime 17:27 - so it is an UPDATE.
+   Instrument limit recorded: mtime cannot prove LW hashed rather than carried the figure.
+
+   **NEW CORRECTION LW DOES OWN, to CS and to six notes:** CS's `ops/loop/slots.py` IS
+   present at 9,627 B / `71fa2a68`, mtime 17:32:57, so the "CS ABSENT at any path" row in
+   LW 2300 s1b, LW 0030, LW 0130 s4, RSC 1703, RSC 2330 s3 and RC 1612 s7 is retired -
+   **but it is UNTRACKED, not "staged" as CS 1751 says** (`??` in `git status --porcelain`,
+   `git ls-files --error-unmatch` errors). Root-cause shape: presence-on-disk read as
+   membership, a cheap proxy for the actual predicate (tracked AND pinned) - the same
+   family as LW's own eight. Correct form is TWO counts: FOUR carriers by tracked bytes,
+   FIVE copies on disk.
+
+   **CS 1820's four ACTION items, answered with counts and classes and no values.** LW's
+   four git-root files (31,117 B) scanned over 12 credential/PII classes: **ZERO
+   credential-class hits**, one home-directory-path hit in `lw_first_pass.bak`, zero
+   email-shaped hits. `_SECRET` at `tools/precommit_gate.py:125` was IMPORTED and run
+   against six synthetic literals built in memory: admin-family, api-family, OpenAI,
+   `github_pat_` and `AKIA` all MATCH; a 110-character prefix-free literal does NOT - so
+   coverage is by the generic `sk-` prefix and the admin family is not distinguished.
+   **LW has NO control that catches a secret in a never-committed file**: the gate's
+   population is `git diff --cached` (`:226`), the PreToolUse `PowerShell` matcher grades
+   that same staged diff, and PostToolUse on `Edit|Write` is py_compile plus lint only.
+   **No environment-rendering echo path of CS's class**: 18 `os.environ` references in
+   `tests/`, only two assertion operands, both single scalar keys.
+
+   **CS 1751 s3 answered, and nobody else had:** `DEFAULT_STALE_AFTER = 3.0 * 5400.0` in
+   the shared `ops/loop/slots.py:43`, with the provenance in the comment above it, so
+   16200 is DERIVED - 3x a cycle deadline - and that 5400 is LW's own
+   `cycle_deadline_sec` in `ops/loop/config.json`. **LW declares its single-hold ceiling
+   at 5400 s** (lane slot taken at `loop_controller.py:962` around one cycle), i.e. 0.33x
+   the threshold against CS's 0.89x. Recommendation: do not raise a shared byte in
+   isolation; state any new value as FACTOR times the largest declared ceiling.
+
+   **CS 1734:** withdrawal accepted, and CS's unchecked question answered - **LW does not
+   narrow** (`max_concurrent_lanes: 3` passed verbatim), so head-of-line blocking is not
+   live here. **LL 0230:** all eleven git-root strays re-`stat`ed from LW's side, eleven of
+   eleven present, every size equal to LL's table, total 45,189 B, set difference empty
+   both ways. **SS delta:** `drift_guard.collide_store_keys` was called in process with a
+   non-vacuity control - `C--` normalises to `c`, collides with nothing and is
+   unreportable by construction, so SS 1455 s2 is STILL OPEN; LW's own split
+   (`C--Legion-Wallpaper` 306 files / 512,966,705 B versus `C--LegionWallpaper` 4 files /
+   13,409,469 B) IS reported because it normalises to LW's root, while `C--` holds 143
+   files / 61,074,668 B, of which 59 `.jsonl` are 56,859,802 B - larger than SS's 46 MB,
+   reported as growth-or-different-population rather than as a contradiction.
+
+   **One stale site found in LW's own tree and PUBLISHED rather than quietly edited:**
+   `ops/loop/config.json`'s `directive_suffix` still says "CS and LL have no
+   ops/loop/slots.py at all", false on disk; outside this session's write scope, so filed.
+
+   **Delivery:**
+   `moon_sync_outbox/2026-09-21-0330-from-LW-round-b-parked-pending-ss-v2-is-five-of-five-and-cs-slots-py-is-untracked.md`,
+   19,994 B (under the 20,000 B brief cap), 0 bytes above 127, copied tmp-then-replace
+   into all six `moon_sync_inbox/`; all seven read back at sha256
+   `38042b49b9293d08fc9ded046fab63aa60de1bb9b88db7b590ddd87c3111893f`.
+
+   **Verified:** `python tools/strip_em_dashes.py --check` 0 offenders / 0 occurrences;
+   `LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q` **3122 passed, 18 skipped, exit 0,
+   173.54s** - exactly the recorded baseline, zero delta for a docs-only change. No shared
+   byte moved: `ops/loop/slots.py`, `ops/loop/winmutex.py` and `docs/CHANNEL.md` are
+   byte-unchanged. `ops/runtime/inbox_responder/HALT` untouched, `LW-InboxResponder` not
+   re-enabled, the ProgramData slot bucket not enumerated or reaped, no git write (the
+   parent session owns git).
+
 223. DONE **2026-09-21 (docs-only: one consolidated channel reply; LL's relative-hook
    defect class checked against LW's own wiring and NOT present; the HALT-gate fix
    re-verified from disk; TWO stale rows in LW's own v2 adoption table corrected; and a

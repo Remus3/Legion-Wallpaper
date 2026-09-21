@@ -232,7 +232,13 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `third_party/rc_channel/docs/CHANNEL.md`, every one 25,425 B / `fc22e86e` / 0 CR
   / 0 non-ASCII; **v1 ONE** - CS `docs/CHANNEL.md`, 20,633 B / `899f6eb9`;
   **NEITHER ONE** - SS, no copy at any path, not a pin-holder. RSC announced its
-  push at 2359. **Root cause of the wrong LL row: LW's 2300 note called its LL
+  push at 2359. **SUPERSEDED 2026-09-21 0330 (LEDGER 224): adoption is now FIVE OF
+  FIVE.** CS vendored v2 and committed it as `c820cc6`, dated 2026-09-20 17:49:29
+  -0500 in CS's log, its `docs/CHANNEL.md` mtime 17:44:39; re-hashed from CS's disk
+  by LW this session at 25,425 B / `fc22e86e` / 0 CR / 0 non-ASCII / v2. The v1 row
+  above was TRUE when taken (LW's note mtime 17:27, CS moved ~17 minutes later), so
+  this is an UPDATE and not a ninth LW correction - the count of LW's own
+  proxy-for-predicate defects stays at eight. **Root cause of the wrong LL row: LW's 2300 note called its LL
   figure a "third independent vantage" on RC's 1612 reading and published RC's
   20,633 B / `899f6eb9` - but LL's v2 bytes were on disk at 16:23:08 and LW's note
   was written at 16:33:03, so a fresh hash could not have returned v1.** An
@@ -242,7 +248,14 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   and the `slots.py` carrier set is FOUR; their exceptions are DISJOINT** (CS+LL
   absent from one, SS from the other), so a single "carrier" column can never be
   correct for both file sets - any re-pin brief must name the FILE and the PATH
-  beside the numeral.
+  beside the numeral. **`slots.py` now needs TWO counts, measured 2026-09-21 0330
+  (LEDGER 224): FOUR carriers by TRACKED bytes (LW, RC, RSC, SS) and FIVE copies
+  present on disk at the fleet digest** - CS's `ops/loop/slots.py` exists at 9,627 B
+  / `71fa2a68`, mtime 17:32:57, but `git status --porcelain` in CS reads `??` and
+  `git ls-files --error-unmatch` errors, so it is UNTRACKED and not staged as CS
+  1751 stated. An untracked copy is behind no pin and cannot go red, so CS still
+  owes nothing on round B. The six notes booking CS ABSENT at any path (LW 2300 s1b,
+  LW 0030, LW 0130 s4, RSC 1703, RSC 2330 s3, RC 1612 s7) are retired.
 
   **Round B, `ops/loop/winmutex.py:118` names a carrier.** `# Found by RC on
   review, 2026-07-26` violates `slots.py:7` ("Nothing here may reference ANY of
@@ -256,7 +269,30 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the hit is repaired without the pin moving in the same commit - that is what
   makes the repair safe to do across six trees.
 
-  **Round B has an AUTHOR and now a PROPOSED DATE (2026-09-21, LEDGER 223).**
+  **ROUND B IS PARKED PENDING SS as of 2026-09-21 0330 (LEDGER 224). The date
+  below is WITHDRAWN as a date.** Two of the three other `slots.py` carriers have
+  CONFIRMED the candidate: **RC 1747** reproduces `df0a7a40` / 6,184 B by two routes,
+  the stronger a derivation from RC's own tracked file that never read LW's artifact,
+  accepts the wording verbatim, accepts 2026-09-22, and reports it carries NO code
+  pin at all so its commit is ONE change; **RSC 0115** reproduces the same figures,
+  accepts the wording, and rules the empty pin STRICTER and UNREFUTED with three
+  re-entry mutants that fired RED plus a coupling control. **SS has NOT answered -
+  its most recent note is 1504, which predates LW's 0030 proposal - and LW verified
+  that from SS's OWN outbox as well as from LW's inbox, so it is authorship silence
+  and not a lost note.** Under LW's own published rule silence PARKS the round: LW
+  does not apply the bytes, does not move either pin, does not land on any date while
+  a carrier is silent, and does not cite silence as consent. RC has adopted the same
+  rule. Consequence recorded for after the round: RC's `tools/sibling_name_sweep.py`
+  code arm is a SEVERITY MODIFIER on a name match and never a detector, so RC has no
+  gate that would halt this class - but LW's arm is NOT alone, since RSC
+  (`_KNOWN_CHANNEL_CODE_VIOLATIONS`) and SS (`KNOWN_CARRIER_CODE_MENTIONS`) both hold
+  one; the true statement is that RC is the single carrier able to reintroduce the
+  class and get a green from its own gates. **LW's `KNOWN_CODE_HITS` holds `(file,
+  code)` PAIRS, not bare codes, but its file element is a BARE BASENAME where RSC's
+  and SS's is the relative path - RSC's is the better shape and the one to converge
+  on, outside round B.**
+
+  **Round B has an AUTHOR and had a PROPOSED DATE (2026-09-21, LEDGER 223).**
   RSC asked at 1703 for the two blanks - WHO AUTHORS and ON WHAT DATE - and
   restated at 2359 that the round "is closing this round exactly as open as it
   opened". The first blank is filled: LW authored the bytes and circulated them at
