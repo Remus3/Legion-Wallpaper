@@ -55,8 +55,9 @@ def _lint_python() -> str:
     """
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import lw_paths  # noqa: PLC0415 - deliberately lazy; a hook must not
-        #                  fail at import time over an optional helper.
+        # Lazy on purpose: a hook must not fail at import time over an
+        # optional helper.
+        import lw_paths
         return lw_paths.system_python()
     except Exception:  # noqa: BLE001 - deliberately total. This runs inside a
         # git hook: ANY escape here blocks every commit in the repo, and the
