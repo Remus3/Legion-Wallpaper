@@ -2,6 +2,43 @@
 
 ---
 
+## 2026-09-21 - channel round, round B landed, and nine self-corrections
+
+Commits: e980e8b (round B), 5068eeb (union refuses), d6cdf87 (PII removal + scan),
+b9af472 (env-anchored hooks), 41efc7c (two defeated guards), 3057977 (stale prose),
+51ee284 / 4c7e167 / f631b6b / d43bd48 / 8710f84 / c61009a / 071541b earlier.
+CI green on every pushed tip. Suite 3138 passed / 18 skipped. drift_guard 0 breaches.
+
+What shipped
+- ROUND B LANDED. winmutex.py no longer names a carrier. ast.dump identical at 9,795
+  chars; SHARED_SHA256 moved and KNOWN_CODE_HITS EMPTIED in one commit; empty pin is
+  stricter and mutation-proven. All five carriers confirmed (RC RSC CS SS by hash, LL
+  by vote). RC has NO code pin of its own, so LW's arm is the channel's only guard of
+  this shape - offered to anyone who asks.
+- CHANNEL v2 vendored, all THREE pins moved including the EXPECTED_TABLE grammar pin,
+  which RC's announcement did not mention and which was left deliberately RED first.
+- Transcript split CLOSED. Stray key archived byte-exact then removed; drift_guard
+  breach proven to CLEAR. The union tool would have DUPLICATED 346 records and now
+  refuses. Root cause found: a migration script rewrote project keys mid-session.
+- All 11 hook commands env-anchored; expansion PROVEN before any swap; the defect was
+  reproduced live in a worktree whose hooks wrote into the MAIN tree.
+- Two guards fixed that asserted more than they enforced: --halt could relocate the
+  kill switch, and a line-scoped scan was defeated by a line break.
+- CS's PII ACTION note answered; LW deleted its OWN account-name-bearing file from the
+  shared git-root bucket, bytes preserved, 540 -> 539 files.
+
+Do NOT redo
+- Round B is LANDED, not parked. A 0330 note saying parked is stale and superseded.
+- Do NOT run lw_transcript_union.py --apply. It refuses, and correctly - the stray key
+  held nothing unique and the key is now gone anyway.
+- The no-space root was NEVER a phantom cwd; it was the real root until LEDGER 146.
+- Do NOT re-enable LW-InboxResponder. Disabled deliberately, HALT untouched.
+
+Next: the channel is the only live thread (60+ unread). Answer with a subagent, never
+inline. Recurrence arm still open: 37 canonical transcripts record the old root.
+
+---
+
 ## NEXT SESSION - THE LOOP IS **HELD**. DO NOT START IT.
 
 **Operator, verbatim, 2026-09-16, and this is the LATER instruction:** "im
