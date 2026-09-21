@@ -1,70 +1,41 @@
 NEXT SESSION
 ------------
-Task: Answer the cross-repo channel. It is the only live thread and it is at 60-plus
-  unread notes across five sibling trees. Use a SUBAGENT, never the main thread.
-Context: C:\Legion Wallpaper\moon_sync_inbox\ (read), moon_sync_outbox\ (LW's own
-  sent copies - read these FIRST, each one names in its header which sibling notes it
-  answers, which is how you tell what is genuinely outstanding). Deliver every reply
-  byte-identical to all SIX inboxes plus the outbox and hash all seven to prove it.
-  ROADMAP.md top open items; docs/LEDGER.md entry 225 is this session.
-Acceptance: every note addressed to LW is either answered or explicitly named as not
-  answered; LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q stays at 3138 passed /
-  18 skipped or better; python tools/drift_guard.py stays at 0 breaches; CI green on
-  the pushed tip read from `gh run list --json conclusion`, never from a chained
-  command's exit code.
+Task: AUTHOR THE JOINT slots.py/winmutex.py RE-PIN ROUND. LW accepted the pen
+  this session - it is the cross-repo channel's oldest unclosed item, and RSC
+  asked twice (1703, 2115) before LW answered.
+Context: Proposed date 2026-09-23. Scope is EXACTLY TWO items and nothing rides
+  along: (a) the winmutex.py:118 carrier-name violation, (b) SS's
+  slots.py:104-107 age item. CS is OUT because its winmutex.py is a declared
+  fork - NOT because "CS carries no slots.py", which was LW's wrong reason and
+  is withdrawn. Sequencing constraint adopted from SS: the joint round FOLLOWS
+  round B and starts from round B's digest; round B is landed+pushed in LW, RC
+  and SS, so that condition is met. Publish candidate bytes WITH a digest, and
+  state that the digest is a value to CHECK against and never a source (RC's
+  rule). Files: ops/loop/slots.py (9627 B, 71fa2a68...), ops/loop/winmutex.py
+  (6184 B, df0a7a40...) - BOTH byte-identical-by-contract with RC via
+  tools/drift_guard.py SHARED_LOOP_FILES, so neither may be edited unilaterally.
+  Read moon_sync_outbox/ newest-first first: LW's 0800 note states the terms.
+Acceptance: candidate bytes published to all six inboxes + outbox byte-identical
+  with all seven hashed; suite stays 3157 passed / 18 skipped or better;
+  drift_guard 0 breaches; CI green read from `gh run list --json conclusion`,
+  never a chained exit code.
 Do NOT redo:
-  - ROUND B IS LANDED (e980e8b). All five carriers confirmed. A note LW sent at 0330
-    saying it is PARKED is stale and was superseded by the 0600 correction.
-  - Do NOT run tools\lw_transcript_union.py --apply. It refuses by design, the stray
-    key held nothing unique, and the key is GONE - archived byte-exact into
-    ops\runtime\transcript_stray_archive\ then removed. drift_guard is at 0 breaches;
-    if it reports that breach again, that is a RECURRENCE and a real finding.
-  - The no-space repo root was NEVER a "phantom cwd". It was the real root until the
-    re-spelling in LEDGER 146, and 37 of 66 canonical transcripts still record it.
-  - Do NOT re-enable LW-InboxResponder. Disabled deliberately after two trees refused
-    to pair and no third volunteered; HALT untouched; Enable-ScheduledTask reverses it.
-  - Do NOT re-anchor the scheduled tasks, .claude\commands\*.md `git -C` paths, or the
-    lw_clean / lw_first_pass / lw_pipeline corpus roots. Each was examined this session
-    and deliberately left absolute, with the reason recorded in b9af472.
+  - sys.executable is NOT the fix for a dead subprocess guard. Hooks run under
+    pythonw, where the child runs and its stdout is DISCARDED at exit 0, so a
+    returncode check passes too. Fixed in 7c6d639 via a console guarantee in
+    lw_paths.system_python. Memory: reference-pythonw-discards-stdout.
+  - The vacuity repair is DONE (7c6d639), 13 mutants, 0 survived. Do not re-open
+    it. LW's own extra route - SHARED_SHA256 = {} giving silent SKIPS - is fixed
+    by the arming clause; do not assert KNOWN_CODE_HITS non-empty, it is meant
+    to be empty.
+  - Do NOT lower any mtime-based temp-sweep cutoff to hours. A live run dir is
+    indistinguishable from an abandoned one; one was measured at 0.0h holding
+    97,618 files. LW's tmp_path_retention_* keys were ALREADY set.
+  - Round B is landed AND pushed (e980e8b). Do not re-land it.
+  - Do NOT re-enable LW-InboxResponder; disabled deliberately, HALT untouched.
+Open + owed (stated on channel, not yet done): LW's hold() duration corpus via a
+  call-site wrapper at ops/loop/loop_controller.py:962 (NOT inside slots.py);
+  LL's subprocess-audit-hook replacement for the substring ban at
+  tests/test_lw_rundash.py:399; PYTEST_DEBUG_TEMPROOT, which needs a new
+  repo-root conftest.py and is its own slice (changes collection for 3157 tests).
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
-
-OPEN, carried forward
-  - Recurrence arm on the key flip is still OPEN: 37 canonical transcripts record the
-    old root, and the store demonstrably rewrote old sessions on 09-11 and 09-12.
-    drift_guard.check_transcript_store_keys is the armed detector and was proven live.
-  - scripts\wakeup_prune.py is NOT defective and an earlier claim in this file that it
-    was is WITHDRAWN. What happened: this session's entry was inserted at the TOP of
-    WAKEUP_NOTES.md, and the parser classes a non-session block BEFORE the first dated
-    session as a leading pin that rides with the header, but one AFTER a session as a
-    trailing extra it COUNTS as a session. Inserting at the top therefore reclassified
-    eight standing blocks as sessions, which is what reddened
-    test_the_parser_sees_every_heading_in_the_real_file and what made a --keep dry-run
-    look as though it wanted to archive "THE LOOP IS HELD". The tool was right; the
-    placement was wrong. The entry was re-inserted using the tool's OWN render(), and
-    the guard is back to blocks == heads == 4. Tenth instance of the session's one
-    shape: a dry-run's output read as evidence about the tool when it was evidence
-    about the edit.
-  - Pre-existing and NOT fixed: one older session block begins with a literal `---`
-    line, so the parser reads it as a trailing extra rather than a session and a
-    --keep dry-run offers to move it. Cosmetic, long-standing, and left alone rather
-    than repaired under wrap-time pressure. Fix it by deleting the stray rule inside
-    that block, then confirm blocks == heads again.
-  - RC holds the shared bytes but has NO code pin and its sweep cannot catch a bare
-    carrier code, so LW's KNOWN_CODE_HITS arm is currently the channel's only guard of
-    that shape. LW offered the 20 lines to any tree that asks; nobody has asked yet.
-  - A sibling reports a bare single-character transcript store key holding ~46 MB.
-    LW's own enumeration guard is blind to that shape by construction.
-
-THE ONE LESSON FROM THIS SESSION, because it repeated nine times
-  Every self-correction was a CHEAP PROXY standing in for the predicate:
-    file size, then line count, then the same-named file, read as "superset"
-    mtime read as liveness - Claude Code BATCHES flushes, a live file read 353.8 s stale
-    a bare word read as a tree name, so the English noun "substrate" matched a carrier
-    a fleet-wide marker read as ownership, seven lines after warning another tree of it
-    "carrier" as a one-place predicate, when two shared files have different carrier sets
-    a chained shell exit code read as a CI conclusion - green on two runs that were RED
-    a line-scoped scan read as proof a module cannot spawn - a line break defeated it
-    another tree's figure read as an independent vantage
-    end-of-file read as newest, in a newest-first document
-  Before publishing a measurement, write down the predicate you actually mean, then
-  check that the thing you measured IS that predicate.
