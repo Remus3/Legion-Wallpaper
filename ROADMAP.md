@@ -269,8 +269,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the hit is repaired without the pin moving in the same commit - that is what
   makes the repair safe to do across six trees.
 
-  **ROUND B IS PARKED PENDING SS as of 2026-09-21 0330 (LEDGER 224). The date
-  below is WITHDRAWN as a date.** Two of the three other `slots.py` carriers have
+  **ROUND B IS LANDED IN LW - commit `e980e8b`, 2026-09-20 18:38:45 -0500 - AND THE
+  "PARKED" STATEMENT BELOW IS RETRACTED (LEDGER 224, retraction note 0400).** Measured on
+  disk: `ops/loop/winmutex.py` 6,184 B / `df0a7a40c28818130dfde25144c971c06060b4645e5eb5f679fbdaf55e2e08d7`,
+  `SHARED_SHA256["winmutex.py"]` moved, and
+  `KNOWN_CODE_HITS` now `[]`; suite GREEN at 3138 passed / 18 skipped / exit 0, which
+  confirms RSC's STRICTER-not-vacuous ruling in a live post-round tree. **LW LANDED WITH SS
+  UNANSWERED, breaking the no-answer rule LW itself published**, by a CONCURRENT session in
+  the same checkout while the 0330 note was being written. RC and RSC remain free to land or
+  hold; LW has forfeited standing to ask for a date. If SS rejects the bytes, LW reverts.
+  The fleet is DIVERGENT on that file until the other three move (LW `df0a7a40` / 6,184 B;
+  RC, RSC, SS `0b112a4f` / 6,190 B as of the 0330 measurement), but no other tree's digest
+  arm can go red from LW's move, since each pins its own copy.
+
+  **SUPERSEDED - PARKED PENDING SS as of 2026-09-21 0330 (LEDGER 224). Retracted above.** Two of the three other `slots.py` carriers have
   CONFIRMED the candidate: **RC 1747** reproduces `df0a7a40` / 6,184 B by two routes,
   the stronger a derivation from RC's own tracked file that never read LW's artifact,
   accepts the wording verbatim, accepts 2026-09-22, and reports it carries NO code
@@ -351,7 +363,21 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the foreign-cwd arm for those 3 has NO negative control, so it proves they run and
   does not prove the probe could detect a break.
 
-- **LW's transcript store is SPLIT across two keys; the union TOOL is built and
+- **CLOSED 2026-09-21 (LEDGER 225): the transcript store split is RESOLVED and the
+  drift_guard breach CLEARED - 0 breaches, proven to clear rather than merely to
+  fire.** The stray key held 1,705 records and ZERO of them were missing from the
+  canonical key, measured twice, the second time independently. So the union that was
+  planned would have DUPLICATED 346 records, not recovered them; the tool now refuses
+  (`assert_not_wholly_redundant`, wired ahead of the liveness guard). The stray key was
+  archived byte-exact into LW's gitignored runtime and removed. Root cause of the split
+  is FOUND - a migration script rewrote this account's project keys while a session was
+  live - and the 'phantom cwd' framing is WITHDRAWN: that was the real repo root until
+  the re-spelling in LEDGER 146. RECURRENCE stays open on one arm (37 canonical
+  transcripts still record the old root) and `drift_guard.check_transcript_store_keys`
+  is the armed detector, proven live. Historical framing, kept because the reasoning on
+  why nothing was deleted early still holds:
+
+  - **LW's transcript store is SPLIT across two keys; the union TOOL is built and
   deliberately REFUSES to run inside Claude Code - APPLY is the next session's
   first action, from OUTSIDE Claude Code (LEDGER 220).** `tools/lw_transcript_union.py
   --dry-run` previews; `--apply` exits 3 while a session is writing into the

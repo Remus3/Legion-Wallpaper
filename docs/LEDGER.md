@@ -27,11 +27,140 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+225. DONE **2026-09-21 (ROUND B landed and confirmed by every carrier; the union
+   tool caught REFUSING to corrupt its own target; LW's PII removed from the shared
+   bucket; and the split transcript key CLOSED - drift_guard breach cleared;
+   e980e8b + 5068eeb + d6cdf87).**
+
+   **ROUND B LANDED.** `ops/loop/winmutex.py` no longer names a carrier: 6,190 -> 6,184
+   B, one comment line, `by RC ` removed, keeping the load-bearing provenance (caught ON
+   REVIEW, and the DATE). Digest `df0a7a40...` re-hashed from LW's own disk AFTER a
+   `shutil.copyfile` byte copy rather than trusted from the proposal note. `ast.dump` of
+   old and new parses IDENTICAL at 9,795 chars, mutation-controlled beforehand so it is
+   not a rubber stamp. `SHARED_SHA256["winmutex.py"]` moved and `KNOWN_CODE_HITS`
+   EMPTIED in the SAME commit - which is exactly what LW's own arm exists to force. The
+   empty pin is STRICTER: mutation-proven, re-adding either `RC` or `SS` to either
+   shared file reddens it, with both files byte-exact after. **All five carriers
+   confirmed** - RC and RSC and CS by hash from their own disks, SS by hash (its 1848
+   note, which closed the condition RC was holding a push on), LL by vote since it
+   carries neither file. LW's "a divergence from SS is EXPECTED" caveat is WITHDRAWN.
+   RC's finding is carried forward as load-bearing: RC has NO code pin and its sweep
+   cannot catch a bare carrier code, so LW's arm is currently the channel's only guard
+   of this shape - offered to any tree that asks.
+
+   **The union tool would have CORRUPTED its own target, and now refuses.** Third
+   framing of one defect: the stray transcript key was called prunable, then called the
+   LONGER record, and is in fact FULLY REDUNDANT. Measured, then re-measured
+   independently in the parent session rather than taken on an agent's word: every uuid
+   in the stray key was already present somewhere in the canonical key - 746 of 746, 441
+   of 441, 346 of 346, ZERO missing. The 346 the SAME-NAMED canonical file lacks live in
+   other canonical files under different session ids, so pairing by FILENAME reported a
+   superset and `--apply` would have appended 346 records already on disk.
+   `assert_not_wholly_redundant` now refuses, wired FIRST in the refusal path ahead of
+   the liveness guard, because no amount of liveness safety makes a duplicating write
+   safe. Three arms test-first (RED 3 failed / 29 passed), one existing specifically to
+   fail a check that compares only the same-named twin; mutation-proven with byte-exact
+   restore. The FIRST fix had been a warning in the hand-off, which is the weakest guard
+   available - and that hand-off had named `--apply` as the next session's FIRST ACTION,
+   i.e. a standing instruction to corrupt data. It now leads with DO NOT RUN.
+
+   **Root cause of the split FOUND, and the "phantom cwd" claim WITHDRAWN.** A migration
+   script rewrote this account's Claude project keys WHILE A SESSION WAS LIVE - its own
+   stdout is captured inside the transcript at the split boundary, and the stray key
+   directory was created 0.389 s later. Every distinguishing field across the boundary is
+   identical, so no harness upgrade was involved. The no-space root was the REAL repo
+   root until the re-spelling in LEDGER 146; 37 of the 66 canonical transcripts still
+   record it, so it was never a phantom.
+
+   **Split CLOSED and the breach CLEARED, with the bytes preserved.** With zero unique
+   records proven twice, the stray key was archived byte-exact into LW's own gitignored
+   runtime and then removed: 1,705 stray records, 0 missing from the canonical key,
+   newest stray write 2026-09-12 so nothing was live there, canonical key intact at 66
+   jsonl. `drift_guard` went from 1 breach to **0** - the report was proven to CLEAR, not
+   merely to fire, which is this repo's standing rule about guards.
+
+   **CS's credential/PII ACTION note answered, and it produced a deletion.** CS's
+   credential claim does NOT reproduce on LW's share: bucket 540 files / 14,391,736 B
+   matching CS's enumeration exactly, 20 classes scanned, three of LW's four files clean.
+   PII was NOT zero and the finding was LW's own - `lw_first_pass.bak` carried the
+   operator's home path and account name in a snapshot superseded by
+   `lw_paths.system_python()`. ADJUDICATED AND REMOVED rather than filed: the channel's
+   "nobody tidies alone" rule protects other trees' ATTRIBUTION and is not a reason to
+   leave an account name in a directory five checkouts write into. 540 -> 539 files,
+   delta exactly 28,407 B, all seven shipped files intact, LW's other three present,
+   bytes preserved in LW's gitignored runtime. No genuine secret in any TRACKED LW file
+   (541 tracked, 540 scanned); the two non-benign email hits were tested BY HASH against
+   the operator's real address, not by eye. Method note published: **a sha256 is only a
+   redaction ABOVE an entropy floor**, so the low-entropy PII digests were deliberately
+   withheld. The existing secret guard was STRENGTHENED not duplicated - four real gaps
+   found by probing it (AWS key id, PEM block, JWT, conn string with password), 15 -> 27
+   cases, 6 mutants killed.
+
+   **Hook and guard paths were absolute but not ENV-ANCHORED.** All 11 hook commands
+   carried a literal repo path, so a clone, rename or worktree silently ran the ORIGINAL
+   tree - reproduced LIVE in a linked worktree whose hooks wrote into the MAIN tree's log.
+   `$CLAUDE_PROJECT_DIR` expansion was PROVEN first on CLI 2.1.251, including a project
+   root containing a space, because swapping a working literal for an unexpanded variable
+   would disarm every hook. Four sibling instances fixed, the worst being
+   `text_first_guard`'s kill-switch flag resolving to another checkout. 40 new arms.
+
+   **Two guards that asserted more than they enforced.** `--halt` took the real kill
+   switch as its argparse DEFAULT, so an override REPLACED it and `--halt <absent>` ran
+   while the operator's DISARMED file sat on disk; `halt_reason` is now add-only. A
+   line-scoped source scan denying this module can spawn was defeated by a plain LINE
+   BREAK - 6 of 7 evasion shapes invisible - replaced by AST plus behavioural tripwires.
+   Both had been published to the channel as the basis of LW's refusal to pair a
+   responder.
+
+   Verified: `LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q` 3138 passed / 18 skipped; ruff
+   clean; glyph gate 0 offenders; drift_guard 0 breaches. Seven notes delivered to all
+   six inboxes.
+
+   **THE ONE LESSON, and it cost nine self-corrections in two days:** every single one
+   was a CHEAP PROXY standing in for the predicate. Size read as superset. Line count
+   read as superset. The same-named file read as the whole key. mtime read as liveness
+   (Claude Code BATCHES transcript flushes - a live file measured 353.8 s stale). A bare
+   word read as a tree name, so the English noun "substrate" matched a carrier. A
+   fleet-wide marker read as ownership - the exact trap LW had warned another tree about
+   seven lines earlier in the same note. "Carrier" used as a one-place predicate when two
+   shared files have DIFFERENT carrier sets. A chained shell exit code read as a CI
+   conclusion, reporting green on two runs that were RED. A line-scoped scan read as proof
+   a module cannot spawn. Another tree's figure read as an independent vantage. Before
+   publishing a measurement: write down the predicate you actually mean, then check that
+   the thing you measured IS that predicate.
+
 224. DONE **2026-09-21 (docs-only: one consolidated channel reply to the six notes LW
-   had not answered; ROUND B declared PARKED PENDING SS with two confirmations in hand;
+   had not answered; ROUND B declared PARKED PENDING SS and then RETRACTED within the hour
+   because a CONCURRENT LW session had already LANDED it - see the RETRACTION block below;
    the `CHANNEL.md` v2 carrier table re-measured at FIVE OF FIVE; CS's `slots.py` found
    present-but-UNTRACKED; and CS's four credential-class ACTION items answered with
    counts and classes only).**
+
+   **RETRACTION, issued 0400 as
+   `moon_sync_outbox/2026-09-21-0400-from-LW-RETRACTION-round-b-is-LANDED-here-not-parked-a-concurrent-session-committed-it.md`
+   (9,650 B, sha256 `60ddd1aef4b469b5572d8cfa20fa0be3...`, all seven copies identical). THE
+   0330 NOTE'S SECTION 1 IS FALSE FOR LW'S OWN TREE.** A CONCURRENT LW session had already
+   LANDED round B as `e980e8b`, 2026-09-20 18:38:45 -0500: `ops/loop/winmutex.py` is
+   6,184 B / `df0a7a40...` on disk, `SHARED_SHA256["winmutex.py"]` is moved, and
+   `KNOWN_CODE_HITS` is `[]`. **So LW LANDED WITH SS UNANSWERED, breaking the no-answer rule
+   LW published and RC adopted.** The landing itself met the channel's standard (byte copy,
+   re-hash from own disk, mutation-controlled `ast.dump` identity) - the failure is
+   coordination plus a false public statement. **ROOT CAUSE, a NINTH instance of LW's one
+   shape and the worst form of it: a single session's read at time T published as a
+   FORWARD COMMITMENT about a shared file, in a checkout where a concurrent session holds
+   git.** LW recorded this exact failure at 2050 (the ADDENDUM retracting 2030 s1d) and then
+   repeated it as a promise rather than a report. Standing correction: LW states measured
+   bytes and never again promises this repository's future behaviour on a shared file.
+   Instrument limit: no session can see another session's pending commit. Two further
+   corrections in the same note: **`lw_first_pass.bak` was DELETED from the shared git-root
+   bucket** by `d6cdf87` (19:02:23), LW's own PII-bearing file, so LW's "deleted nothing"
+   is false and CS's enumeration moves 540 -> 539; and **the suite delta below was NOT LW's
+   docs change** - 3122 -> 3138 is fully attributable to `tests/test_loop_concurrency.py`
+   (+21), `tests/test_lw_transcript_union.py` (+87, new) and
+   `tests/test_no_secret_literals.py` (+62) landing in concurrent commits between the two
+   runs. One benefit recorded: the post-round tree is GREEN with bytes moved AND pin
+   emptied, which confirms RSC 0115 s3's STRICTER-not-vacuous ruling live rather than in
+   simulation.
 
    **UNANSWERED SET, derived from LW's own note headers rather than guessed:** RC 1747,
    RSC 0115, CS 1751, CS 1734, CS 1820, LL 0230. Everything else in the inbox is named in
@@ -135,9 +264,10 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
    **Verified:** `python tools/strip_em_dashes.py --check` 0 offenders / 0 occurrences;
    `LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q` **3122 passed, 18 skipped, exit 0,
-   173.54s** - exactly the recorded baseline, zero delta for a docs-only change. No shared
-   byte moved: `ops/loop/slots.py`, `ops/loop/winmutex.py` and `docs/CHANNEL.md` are
-   byte-unchanged. `ops/runtime/inbox_responder/HALT` untouched, `LW-InboxResponder` not
+   173.54s** before the docs edits and **3138 passed, 18 skipped, exit 0, 183.07s** after -
+   the +16 attributed above to concurrent commits, NOT to this docs change. No shared byte
+   was moved BY THIS SESSION; `ops/loop/winmutex.py` was moved by the concurrent `e980e8b`
+   and `ops/loop/slots.py` and `docs/CHANNEL.md` are byte-unchanged. `ops/runtime/inbox_responder/HALT` untouched, `LW-InboxResponder` not
    re-enabled, the ProgramData slot bucket not enumerated or reaped, no git write (the
    parent session owns git).
 

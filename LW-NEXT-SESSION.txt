@@ -1,95 +1,57 @@
-LW NEXT SESSION - rewritten 2026-09-21, supersedes every earlier copy INCLUDING the
-one written a few hours earlier the same day. That earlier copy told you to run the
-transcript union --apply as your FIRST ACTION. DO NOT DO THAT. Reason below.
+NEXT SESSION
+------------
+Task: Answer the cross-repo channel. It is the only live thread and it is at 60-plus
+  unread notes across five sibling trees. Use a SUBAGENT, never the main thread.
+Context: C:\Legion Wallpaper\moon_sync_inbox\ (read), moon_sync_outbox\ (LW's own
+  sent copies - read these FIRST, each one names in its header which sibling notes it
+  answers, which is how you tell what is genuinely outstanding). Deliver every reply
+  byte-identical to all SIX inboxes plus the outbox and hash all seven to prove it.
+  ROADMAP.md top open items; docs/LEDGER.md entry 225 is this session.
+Acceptance: every note addressed to LW is either answered or explicitly named as not
+  answered; LW_REQUIRE_HOOK_GATE=1 python -m pytest tests/ -q stays at 3138 passed /
+  18 skipped or better; python tools/drift_guard.py stays at 0 breaches; CI green on
+  the pushed tip read from `gh run list --json conclusion`, never from a chained
+  command's exit code.
+Do NOT redo:
+  - ROUND B IS LANDED (e980e8b). All five carriers confirmed. A note LW sent at 0330
+    saying it is PARKED is stale and was superseded by the 0600 correction.
+  - Do NOT run tools\lw_transcript_union.py --apply. It refuses by design, the stray
+    key held nothing unique, and the key is GONE - archived byte-exact into
+    ops\runtime\transcript_stray_archive\ then removed. drift_guard is at 0 breaches;
+    if it reports that breach again, that is a RECURRENCE and a real finding.
+  - The no-space repo root was NEVER a "phantom cwd". It was the real root until the
+    re-spelling in LEDGER 146, and 37 of 66 canonical transcripts still record it.
+  - Do NOT re-enable LW-InboxResponder. Disabled deliberately after two trees refused
+    to pair and no third volunteered; HALT untouched; Enable-ScheduledTask reverses it.
+  - Do NOT re-anchor the scheduled tasks, .claude\commands\*.md `git -C` paths, or the
+    lw_clean / lw_first_pass / lw_pipeline corpus roots. Each was examined this session
+    and deliberately left absolute, with the reason recorded in b9af472.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
 
-DO NOT RUN: python tools\lw_transcript_union.py --apply
+OPEN, carried forward
+  - Recurrence arm on the key flip is still OPEN: 37 canonical transcripts record the
+    old root, and the store demonstrably rewrote old sessions on 09-11 and 09-12.
+    drift_guard.check_transcript_store_keys is the armed detector and was proven live.
+  - scripts\wakeup_prune.py treats ANY `## ` heading as a session, so a --keep run
+    would archive the standing "THE LOOP IS HELD" and parked-queue blocks along with
+    real sessions. It moved this session's own entry once before it was put back. Do
+    not run it unattended until it distinguishes a session from a standing block.
+  - RC holds the shared bytes but has NO code pin and its sweep cannot catch a bare
+    carrier code, so LW's KNOWN_CODE_HITS arm is currently the channel's only guard of
+    that shape. LW offered the 20 lines to any tree that asks; nobody has asked yet.
+  - A sibling reports a bare single-character transcript store key holding ~46 MB.
+    LW's own enumeration guard is blind to that shape by construction.
 
-It would DUPLICATE 346 records that are already on disk. Measured twice, the second
-time independently in the parent session: every single uuid in the stray transcript
-key is ALREADY present somewhere in the canonical key - 746 of 746, 441 of 441 and
-346 of 346, with ZERO missing. The records the earlier analysis called a unique
-"continuation tail" live in canonical files eed18e6e and 3fe144d2 under different
-session ids.
-
-The union tool pairs files by NAME. That was the wrong predicate: the same-named
-canonical file is missing 346 of those records, so a per-file comparison reports a
-superset, while the whole KEY holds every one of them. A test now pins that
-blindness (test_union_is_scoped_to_one_session_id_and_is_blind_to_a_cross_file_duplicate).
-
-THIS IS THE THIRD FRAMING OF ONE DEFECT AND THE ROOT CAUSE IS THE SAME EACH TIME
-  first framing  the stray key is small, old and prunable         WRONG
-  second framing the stray key is the LONGER record, do not touch WRONG conclusion,
-                 though "do not delete yet" happened to be right
-  third framing  the stray key is FULLY REDUNDANT against the key, and the tool
-                 that would "fix" it would corrupt instead
-Every one of those came from a cheap proxy standing in for the actual predicate:
-file size, then line count, then the same-named file. The predicate was always
-"is this record present anywhere in the canonical key".
-
-ROOT CAUSE OF THE SPLIT - FOUND, and it was not a phantom.
-A migration script, C:\lw_rename_fixup.py, rewrote this account's Claude project
-keys WHILE A SESSION WAS LIVE. Its own stdout, captured inside the transcript at the
-split boundary, reads "step_trust_keys: dropped 3 stale, wrote 3 agreeing spellings"
-and "memory dir: C--LegionWallpaper -> C--Legion-Wallpaper". The stray key directory
-was created 0.389 s later. The session then fell back to deriving its key from its
-live cwd. Every distinguishing field across the boundary is IDENTICAL - same cwd,
-same version 2.1.260, same branch, same sessionId - so no harness upgrade was
-involved.
-
-ALSO WITHDRAWN: the no-space root was never a "phantom cwd". It was the REAL repo
-root until the re-spelling recorded in LEDGER 146. 37 of the 66 canonical transcripts
-still record it. Anything LW published calling it a phantom is wrong.
-
-WHAT IS ACTUALLY LEFT ON THIS
-  The stray key holds nothing unique, so removing it destroys nothing - but it is the
-  operator's call and this session did not make it. drift_guard's standing BREACH
-  clears when it goes, and that guard was proven live to catch a recurrence.
-  RECURRENCE IS STILL OPEN on one arm: 37 transcripts still record the old root, and
-  the store demonstrably rewrote old sessions on 09-11 and 09-12. The mid-flight flip
-  itself is closed for now (old root ENOENT, three agreeing spellings, fixup script
-  gone) but re-arms on the next root re-spelling.
-  Detail: docs\TRANSCRIPT_KEY_FLIP_2026-09-20.md and docs\TRANSCRIPT_UNION_2026-09-20.md.
-
-ROUND B IS LANDED, not parked. ops\loop\winmutex.py no longer names a carrier: six
-bytes removed from the line-118 comment, digest df0a7a40 re-hashed from this disk
-after a byte copy, ast.dump identical at 9,795 chars, and SHARED_SHA256 plus
-KNOWN_CODE_HITS moved in the SAME commit. KNOWN_CODE_HITS is now EMPTY, which is
-stricter - there is no grandfathered entry left to hide behind. RC, RSC, CS and LL
-have all now confirmed or voted; SS never answered, so SS may still carry the old
-bytes and a divergence report from SS is EXPECTED, not a fault. A note LW sent at
-0330 says the round is PARKED - that note is STALE, the operator directed the
-landing after it went out.
-
-OPEN, CARRIED FORWARD
-  A sibling's ACTION note says the shared git-install-root scratch bucket holds
-  credential-class and PII-class content and asks every tree to scan its own
-  contribution. A scan was dispatched; read
-  docs\GIT_ROOT_SECRET_SCAN_2026-09-21.md for the verdict if it landed. NEVER write a
-  found secret into a file, a note or a commit message - refer to it by class, file,
-  line and the sha256 of the value. This repo already republished one leaked address
-  five times in its own purge write-up.
-  RC warns of a STALE INBOX ARTIFACT that would regress any carrier applying round B
-  by FILENAME rather than by digest. LW applied by digest, verified after the copy.
-  The channel is running at roughly 60 unread notes. Answer it with a subagent, never
-  inline - the main session stays free for the operator.
-
-STATE AT HAND-OFF
-  branch main; round B commit e980e8b local, plus uncommitted agent work
-  suite LW_REQUIRE_HOOK_GATE=1 pytest tests/ -q = 3123 passed, 18 skipped
-  all 11 hook commands env-anchored to CLAUDE_PROJECT_DIR, expansion PROVEN on
-    CLI 2.1.251 including a project root containing a space; the defect was
-    reproduced live first in a linked worktree whose hooks wrote into the MAIN tree
-  LW-InboxResponder DISABLED, HALT untouched, reversible with Enable-ScheduledTask
-  docs\CHANNEL.md at v2, all three pins moved - digest, version, and the grammar table
-
-THE ONE LESSON THIS SESSION KEEPS PAYING FOR
-  Nine self-corrections in one day, every one the same shape: a cheap proxy used as
-  the predicate. Size read as superset. mtime read as liveness - Claude Code BATCHES
-  transcript flushes, so a live file measured 353.8 s stale. A bare word read as a
-  tree name. A fleet-wide marker read as ownership. "Carrier" used as a one-place
-  predicate when two files have different carrier sets. A chained shell exit code
-  read as a CI conclusion, twice reporting green on red. A line-scoped scan read as
-  proof a module cannot spawn. Another tree's figure read as an independent vantage.
-  A same-named file read as the whole key.
+THE ONE LESSON FROM THIS SESSION, because it repeated nine times
+  Every self-correction was a CHEAP PROXY standing in for the predicate:
+    file size, then line count, then the same-named file, read as "superset"
+    mtime read as liveness - Claude Code BATCHES flushes, a live file read 353.8 s stale
+    a bare word read as a tree name, so the English noun "substrate" matched a carrier
+    a fleet-wide marker read as ownership, seven lines after warning another tree of it
+    "carrier" as a one-place predicate, when two shared files have different carrier sets
+    a chained shell exit code read as a CI conclusion - green on two runs that were RED
+    a line-scoped scan read as proof a module cannot spawn - a line break defeated it
+    another tree's figure read as an independent vantage
+    end-of-file read as newest, in a newest-first document
   Before publishing a measurement, write down the predicate you actually mean, then
-  check the thing you measured IS that predicate.
+  check that the thing you measured IS that predicate.

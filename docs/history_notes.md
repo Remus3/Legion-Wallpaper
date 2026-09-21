@@ -436,6 +436,7 @@ LongPathsEnabled (deferred).
 
 ---
 
+
 ## 2026-09-11 - the inbox responder's run log, and the hermeticity bug it exposed in four trees (LEDGER 184-185)
 
 Started from "is the sync inbox lane properly set up". It was: report, ack,
