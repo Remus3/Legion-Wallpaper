@@ -445,16 +445,76 @@ CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper", "Riot Commander",
                  "Clockspeed", "Lanternlight", "Substrate")
 
 
+# ---- the detectors, refactored into seams a FIXTURE can be pointed at -------
+#
+# Each of the three arms below used to read ROOT/ops/loop directly, which made
+# every one of them vacuous: a pure negative assertion over bytes the arm
+# fetches itself cannot tell "scanned real clean bytes" from "scanned nothing".
+# Measured on this disk 2026-09-20: forcing the scanned text empty left all
+# three GREEN, and so did emptying CARRIER_CODES or CARRIER_NAMES.
+#
+# The `root` argument is the whole point. Production passes the real directory;
+# the non-vacuity arms further down write their OWN fixture and point the same
+# detector at that, which is the only way to prove the detector still fires on
+# a day when the real files legitimately contain ZERO violations - which is
+# exactly today's state, post round B.
+#
+# NOT claimed: that these seams change what production checks. They do not. The
+# scan logic is the same logic, lifted out of three function bodies unmodified.
+
+LOOP = ROOT / "ops" / "loop"
+
+
+def _scan_carrier_codes(root: Path, names=None, codes=None) -> list:
+    """[(file, code)] for every code present as a WHOLE WORD, case-SENSITIVE."""
+    names = sorted(SHARED_SHA256 if names is None else names)
+    codes = CARRIER_CODES if codes is None else codes
+    found = []
+    for name in names:
+        text = (root / name).read_text(encoding="utf-8")
+        for code in codes:
+            if re.search(r"\b" + code + r"\b", text):
+                found.append((name, code))
+    return sorted(found)
+
+
+def _scan_carrier_names(root: Path, names=None, carriers=None) -> list:
+    """[(file, [carrier, ...])] by case-INSENSITIVE SUBSTRING, files with hits only."""
+    names = sorted(SHARED_SHA256 if names is None else names)
+    carriers = CARRIER_NAMES if carriers is None else carriers
+    out = []
+    for name in names:
+        low = (root / name).read_text(encoding="utf-8").lower()
+        hits = [n for n in carriers if n.lower() in low]
+        if hits:
+            out.append((name, hits))
+    return out
+
+
+def _scan_byte_hygiene(root: Path, names=None) -> tuple:
+    """(cr, high): [(file, cr count)] and [(file, [byte, ...])], hits only."""
+    names = sorted(SHARED_SHA256 if names is None else names)
+    cr, high = [], []
+    for name in names:
+        raw = (root / name).read_bytes()
+        if 13 in raw:
+            cr.append((name, raw.count(13)))
+        bad = sorted({b for b in raw if b > 127})
+        if bad:
+            high.append((name, bad))
+    return cr, high
+
+
 @pytest.mark.parametrize("name", sorted(SHARED_SHA256))
 def test_shared_module_is_lf_only_and_ascii(name: str):
-    raw = (ROOT / "ops" / "loop" / name).read_bytes()
-    assert 13 not in raw, (
+    cr, high = _scan_byte_hygiene(LOOP, names=(name,))
+    assert not cr, (
         f"{name} carries a CR byte: it was copied in TEXT mode, not with "
         f"shutil.copyfile. The digest arm will fail too and will blame the "
         f"protocol - the cause is the copy. Matched on ANY CR, not the "
         f"CRLF pair: RSC 1520 measured that a pair-only arm is blind to a "
         f"lone CR, and read_text would strip both under universal newlines.")
-    bad = sorted({b for b in raw if b > 127})
+    bad = [b for _, bs in high for b in bs]
     assert not bad, f"{name} carries non-ASCII bytes {bad} - repo-wide hard rule"
 
 
@@ -462,9 +522,7 @@ def test_shared_module_is_lf_only_and_ascii(name: str):
 def test_shared_module_names_no_carrier(name: str):
     """A digest cannot catch a name re-entering during a re-pin, because the
     digest is expected to move in that same commit."""
-    text = (ROOT / "ops" / "loop" / name).read_text(encoding="utf-8")
-    low = text.lower()
-    found = [n for n in CARRIER_NAMES if n.lower() in low]
+    found = [n for _, hits in _scan_carrier_names(LOOP, names=(name,)) for n in hits]
     assert not found, (
         f"{name} names {found}. This file is shared verbatim by every carrier "
         f"in the bucket and may reference none of them - the rule is stated in "
@@ -499,6 +557,34 @@ CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS")
 # what the arm below exists to force. An empty pin is STRICTER than the one it
 # replaces: any carrier code entering either shared file now reddens immediately,
 # with no grandfathered entry to hide behind.
+#
+# WHEN THIS LIST SHRINKS, ASK WHAT ELSE WAS READING IT.
+#
+# Shrinking it to [] on 2026-09-21 did not just tighten the arm below, it
+# DISARMED it, plus two of its neighbours, and nobody noticed for a day. While
+# the pin held [("winmutex.py", "RC")] the arm was comparing against a POSITIVE
+# value, so a scanner that had stopped finding anything showed up RED. With the
+# pin empty, `found == []` is satisfied just as well by a scanner that scans
+# nothing, and the four-cell truth table has a hole in it:
+#
+#     pin=RC     scanner healthy -> PASS
+#     pin=RC     scanner BROKEN  -> RED    (the POSITIVE pin was the detector)
+#     pin=EMPTY  scanner healthy -> PASS
+#     pin=EMPTY  scanner BROKEN  -> PASS   <- the hole, measured live here
+#
+# Measured 2026-09-20 on this disk, before the repair: writing the scanner's
+# regex non-raw so `\b` collapses to byte 0x08 and matches nothing left this
+# arm GREEN. So did forcing the scanned text to "". So did CARRIER_CODES = ().
+# Worst of the set: SHARED_SHA256 = {} reduced the whole four-arm block to 1
+# pass and 3 SKIPS, exit 0, which is one dict literal against the entire
+# cross-repo parity guard.
+#
+# Do NOT repair that by re-growing the pin. The pin is allowed to be empty and
+# SHOULD be. The repair is below: the detectors are seams, and separate arms
+# write their own fixture, prove the fixture real FROM THE FIXTURE'S OWN BYTES
+# (never from a pin - a pin is the thing under test), and point the detector at
+# it. Those arms hold on a day when the real bytes are clean, which is the day
+# a pure negative arm silently stops meaning anything.
 KNOWN_CODE_HITS = []
 
 
@@ -506,17 +592,182 @@ def test_shared_modules_carry_only_the_pinned_carrier_codes():
     """Red if a new code enters either file. Red if the RC hit is repaired
     without this pin being updated in the SAME round - which is the half a
     digest cannot give you, because the digest moves legitimately either way."""
-    found = []
-    for name in sorted(SHARED_SHA256):
-        text = (ROOT / "ops" / "loop" / name).read_text(encoding="utf-8")
-        for code in CARRIER_CODES:
-            if re.search(r"\b" + code + r"\b", text):
-                found.append((name, code))
-    assert sorted(found) == sorted(KNOWN_CODE_HITS), (
+    found = _scan_carrier_codes(LOOP)
+    assert found == sorted(KNOWN_CODE_HITS), (
         f"carrier codes in the shared files changed: {sorted(found)} vs pinned "
         f"{sorted(KNOWN_CODE_HITS)}. A NEW code is a violation to remove in a "
         f"joint round. A code that DISAPPEARED means the round happened - drop "
         f"it from KNOWN_CODE_HITS in that same commit.")
+
+
+# ---- is the block above ARMED? a SKIPPED parametrize is not a pass ----------
+#
+# Every arm over the shared files is parametrized off SHARED_SHA256, so an
+# empty dict collapses three of them to zero cases. pytest reports that as
+# "3 skipped", exit 0, and a green run. Measured: 1 passed + 3 skipped.
+# KNOWN_CODE_HITS is deliberately NOT asserted non-empty here - it is allowed
+# to be empty, and that it can be is the whole reason the arms below exist.
+
+def test_the_shared_file_guard_block_is_armed():
+    assert SHARED_SHA256, (
+        "SHARED_SHA256 is empty, so every parametrized arm over the shared "
+        "files has zero cases and SKIPS. pytest exits 0 and the cross-repo "
+        "parity guard is gone with no red anywhere.")
+    assert CARRIER_CODES, (
+        "CARRIER_CODES is empty, so the code scanner has nothing to look for "
+        "and reports [] over any input at all.")
+    assert CARRIER_NAMES, (
+        "CARRIER_NAMES is empty, so the name scanner reports [] over any "
+        "input at all.")
+    for name in sorted(SHARED_SHA256):
+        raw = (LOOP / name).read_bytes()
+        assert len(raw) > 4000, (
+            f"{name} is {len(raw)} bytes. These two files are ~6-10 KB; "
+            f"anything this short means the arms are scanning a stub or a "
+            f"truncated copy, and a negative assertion over it proves nothing.")
+
+
+# ---- non-vacuity: the detectors, proved to FIRE and proved to stay QUIET ----
+#
+# Design rule, from RSC and adopted verbatim by SS: a non-vacuity arm must
+# prove its fixture real WITHOUT CONSULTING ANY PIN. RSC could derive fixture
+# reality from the real shared files' own code content; here that is impossible,
+# because post round B those files legitimately contain ZERO carrier codes. So
+# each arm WRITES its own fixture and proves it real from the FIXTURE'S OWN
+# bytes, read back off disk, against a sentinel spelled literally right here.
+#
+# Both directions, because a matcher wide enough to fire is not yet a matcher
+# narrow enough to mean anything.
+#
+# NOT claimed: coverage of an alternation-ordering defect. There is no
+# alternation in these scanners - the code scanner loops one code at a time -
+# so no mutant of that shape was run and no message below mentions one.
+
+def _plant(root: Path, name: str, raw: bytes) -> Path:
+    """Write `raw` verbatim, then prove the fixture REAL from its own bytes."""
+    p = root / name
+    tmp = p.parent / (p.name + ".tmp")
+    tmp.write_bytes(raw)
+    tmp.replace(p)
+    back = p.read_bytes()
+    assert back == raw, (
+        f"{name} did not land byte-exact, so anything measured over it is "
+        f"measured over the wrong bytes.")
+    assert len(back) > 60, (
+        f"{name} is {len(back)} bytes. An empty or trivially short fixture is "
+        f"how a non-vacuity arm becomes vacuous itself.")
+    return p
+
+
+_POS_CODE = (
+    b"# fixture, not shared bytes. Reproduces the real 2026-07-26 violation in\n"
+    b"# shape: a channel code sitting as a whole word inside a comment.\n"
+    b"# call would then pass green. Found by RC on review, 2026-07-26.\n"
+)
+_NEG_CODE = (
+    b"# fixture, not shared bytes. Every token here is a NEAR MISS and a\n"
+    b"# correct scanner stays silent over all of them.\n"
+    b"# glued to word characters: ARCHIVE RCS CSV LWP SSH DSL RMDIR LLVM RSCX\n"
+    b"# wrong case, standalone:  rc cs lw ll rsc ss rm ds\n"
+)
+
+
+def test_the_carrier_code_scanner_fires_on_a_planted_code(tmp_path: Path):
+    p = _plant(tmp_path, "planted.py", _POS_CODE)
+    assert b"Found by RC on review" in p.read_bytes(), (
+        "the sentinel is not in the fixture's own bytes, so this arm is not "
+        "measuring a detection at all.")
+    assert _scan_carrier_codes(tmp_path, names=("planted.py",),
+                               codes=("RC",)) == [("planted.py", "RC")], (
+        "the code scanner did NOT find a whole-word RC in a fixture whose own "
+        "bytes contain it. The detector is broken, not the shared files. "
+        "First thing to check: the word-boundary regex is built with RAW "
+        "string literals - written non-raw, \\b is byte 0x08 and matches "
+        "nothing, and every negative arm over the real files goes green.")
+    # Separate claim, deliberately second so an empty pin cannot be what made
+    # the arm above green: the tuple production actually passes still carries
+    # the code.
+    assert _scan_carrier_codes(tmp_path, names=("planted.py",)) == [("planted.py", "RC")], (
+        "the scanner finds RC when handed a literal tuple but not when handed "
+        "CARRIER_CODES, so CARRIER_CODES no longer covers it.")
+
+
+def test_the_carrier_code_scanner_is_silent_over_near_misses(tmp_path: Path):
+    p = _plant(tmp_path, "nearmiss.py", _NEG_CODE)
+    assert b"ARCHIVE" in p.read_bytes() and b"rc cs lw" in p.read_bytes(), (
+        "the near-miss tokens are not in the fixture's own bytes, so a silent "
+        "scanner here proves nothing.")
+    assert _scan_carrier_codes(tmp_path, names=("nearmiss.py",)) == [], (
+        "the code scanner fired on near misses. Either the word boundaries "
+        "were dropped, so a code glued inside ARCHIVE or CSV now counts, or "
+        "the match went case-insensitive, so ordinary lowercase prose counts. "
+        "Both turn the arm over the real shared files into noise.")
+
+
+def test_the_carrier_name_scanner_fires_on_a_planted_name(tmp_path: Path):
+    body = (b"# fixture, not shared bytes. This is the 2026-09-07 defect in\n"
+            b"# shape: the shared file naming a carrier it may not reference.\n"
+            b"# handed to Riot Commander verbatim, then re-pinned on both sides\n")
+    p = _plant(tmp_path, "named.py", body)
+    assert b"Riot Commander" in p.read_bytes(), (
+        "the sentinel name is not in the fixture's own bytes.")
+    assert _scan_carrier_names(tmp_path, names=("named.py",),
+                               carriers=("Riot Commander",)) == [("named.py", ["Riot Commander"])], (
+        "the name scanner did NOT find a carrier name present in the "
+        "fixture's own bytes.")
+    assert _scan_carrier_names(tmp_path, names=("named.py",)) == [("named.py", ["Riot Commander"])], (
+        "the scanner finds the name from a literal tuple but not from "
+        "CARRIER_NAMES, so CARRIER_NAMES no longer covers it.")
+
+
+def test_the_carrier_name_scanner_is_silent_over_near_misses(tmp_path: Path):
+    body = (b"# fixture, not shared bytes. Near misses only: a mutex over one\n"
+            b"# slot bucket, commander of nothing, a legion of ordinary tests,\n"
+            b"# compute that is not resinous, a lantern, a clock, a substratum.\n")
+    p = _plant(tmp_path, "nonames.py", body)
+    assert b"legion of ordinary tests" in p.read_bytes(), (
+        "the near-miss tokens are not in the fixture's own bytes.")
+    assert _scan_carrier_names(tmp_path, names=("nonames.py",)) == [], (
+        "the name scanner fired on near misses. A single word out of a "
+        "carrier name is not the carrier name, and matching on one turns the "
+        "arm over the real shared files into noise.")
+
+
+def test_the_byte_hygiene_scanner_fires_on_a_planted_cr_and_high_byte(tmp_path: Path):
+    lone_cr = b"# fixture, not shared bytes: ONE bare CR, no LF after it ->\r"
+    body = lone_cr + b"# and one byte above 127 -> \xc2\xa0 <- right there.\n"
+    p = _plant(tmp_path, "dirty.py", body)
+    raw = p.read_bytes()
+    assert 13 in raw and b"\r\n" not in raw, (
+        "the fixture does not actually carry a LONE CR, so it cannot show "
+        "whether the detector is pair-only.")
+    assert max(raw) > 127, "the fixture carries no byte above 127."
+    # The other half of the message the production arm carries, MEASURED
+    # here rather than asserted: under universal newlines read_text turns
+    # that lone CR into an LF, so a detector built on read_text cannot see
+    # this fixture at all. That is why the seam reads BYTES.
+    assert "\r" not in p.read_text(encoding="utf-8"), (
+        "read_text preserved the CR, so the note about universal newlines in the CR message below is wrong for this platform.")
+    cr, high = _scan_byte_hygiene(tmp_path, names=("dirty.py",))
+    assert cr == [("dirty.py", 1)], (
+        "the CR detector missed a bare CR in bytes it read itself. A "
+        "detector that looks for the CRLF PAIR is blind to this, and so is "
+        "read_text under universal newlines.")
+    assert high and high[0][0] == "dirty.py" and 194 in high[0][1], (
+        "the non-ASCII detector missed a byte above 127 in bytes it read "
+        "itself.")
+
+
+def test_the_byte_hygiene_scanner_is_silent_over_clean_lf_ascii(tmp_path: Path):
+    body = (b"# fixture, not shared bytes: LF only, 7-bit ASCII throughout.\n"
+            b"# tilde ~ and DEL-adjacent 0x7e are the highest bytes present.\n")
+    p = _plant(tmp_path, "clean.py", body)
+    raw = p.read_bytes()
+    assert 13 not in raw and max(raw) < 128, (
+        "the clean fixture is not actually clean.")
+    assert _scan_byte_hygiene(tmp_path, names=("clean.py",)) == ([], []), (
+        "the byte-hygiene detector fired over clean LF ASCII bytes, so its "
+        "silence over the real shared files means nothing.")
 
 
 # ---- the shared surface no digest can pin: a VALUE, not a file --------------

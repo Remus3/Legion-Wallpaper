@@ -22,6 +22,26 @@ from pathlib import Path
 # 0 elsewhere).
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
+
+def _lint_python() -> str:
+    """A CONSOLE interpreter to run ruff under. See `lw_paths.system_python`."""
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import lw_paths  # noqa: PLC0415 - lazy on purpose; a hook must not die
+        #                  at import time over an optional helper.
+        return lw_paths.system_python()
+    except Exception:  # noqa: BLE001 - deliberately total; see the identical
+        # guard in precommit_gate._lint_python. A hook that raises is worse than
+        # a hook that falls back, and the fallback is a complete answer.
+        exe = sys.executable
+        if os.path.basename(exe).lower().startswith("pythonw"):
+            twin = os.path.join(
+                os.path.dirname(exe),
+                os.path.basename(exe).replace("pythonw", "python", 1))
+            if os.path.exists(twin):
+                return twin
+        return exe
+
 _BANNED = {
     chr(0x2014): "em-dash",
     chr(0x2013): "en-dash",
@@ -64,15 +84,27 @@ def main() -> int:
 
     py_files = [str(p) for p in paths if p.suffix == ".py"]
     if py_files:
+        # `py` resolved a bare pythoncore build with no ruff on this box, so this
+        # autofix silently did nothing from the day it was written until
+        # 2026-09-20. `pythonw` is the other trap - it runs ruff and discards the
+        # output at exit 0. `system_python()` carries the console guarantee.
+        # Unlike the commit gate this pass is a convenience, not a gate: a miss
+        # costs an unformatted line, not a false green, so it stays quiet on
+        # failure. It reports a MISSING RUFF once, because "my autofix stopped
+        # working" is otherwise invisible.
         try:
-            subprocess.run(
-                ["py", "-m", "ruff", "check", "--fix", *py_files],
+            proc = subprocess.run(
+                [_lint_python(), "-m", "ruff", "check", "--fix", *py_files],
                 check=False,
                 capture_output=True,
                 text=True,
                 timeout=15,
                 creationflags=_NO_WINDOW,
             )
+            if "No module named ruff" in (proc.stderr or ""):
+                sys.stderr.write(
+                    "edit_lint_check: ruff is not importable under "
+                    f"{_lint_python()} - the autofix pass did nothing.\n")
         except (OSError, subprocess.SubprocessError):
             pass
 
