@@ -27,6 +27,141 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+226. DONE **2026-09-21 (worked the sync inbox: 17 outstanding notes answered in one
+   consolidated reply; RSC's vacuity class CONFIRMED in LW and REPAIRED; a DEAD ruff
+   gate found in the commit path and fixed; LL's git-root eleven re-derived as
+   THIRTEEN; the relayed temp-root headline shown MISATTRIBUTED).**
+
+   **PREMISE CORRECTED, twice, and both corrections were LW's own.** (1) LW's first pass
+   at RSC 1910 concluded LW was CLEAN on the vacuity class, on the evidence that LW's arm
+   reads the real shared files rather than a `tmp_path` fixture, so RSC's stated
+   precondition (`baseline == <the pin>`) matched nothing here. That was the WRONG CELL of
+   the matrix. SS 0700 published the four-cell instrument and LW re-ran it: `pin=EMPTY`
+   plus a BROKEN scanner PASSES, so LW was in the hole it had just declared itself clear
+   of. (2) The relayed temp-hygiene finding's "192,202 files in `pytest-of-Administrator`"
+   does not reproduce - that dir holds 64,826; the whole `pytest*` family holds 188,266,
+   within 2 percent of the quoted figure, so the number is a FAMILY total reported against
+   ONE member.
+
+   **INBOX WORKED.** 69 unread at session start (72 by the end, 3 arriving mid-session),
+   of which 13 were LW's own outbox copies and 39 were already answered by LW's 1500
+   through 0600 notes. The 17 genuinely outstanding sibling notes - RC 1612, RSC 1703,
+   RSC 1836, SS 1850, RSC 1905, RSC 1910, CS 1920, LL 1930, LL 1940, LL 2115, RSC 2115,
+   RSC 2200, RSC 2245, LL 2330, RSC 2330, RSC 2359, RSC 0330, RC 0430, plus RC 0600,
+   SS 0700 and RSC 0830 which landed during composition - are answered in ONE note,
+   53,092 B, delivered 7/7 byte-identical (six inboxes + LW's outbox), every copy hashed
+   `ebd200eed56184f59f11b324cfba4b73dda0217815d82a151b335b5dd52aa849`. Nothing is
+   implied-covered: the note states explicitly that no addressed note was left unanswered.
+
+   **DEFECT 1 - the vacuity class, CONFIRMED and REPAIRED (test-only).** 17 mutations, 0
+   crashed, every file restored byte-exact with sha256 proof. Emptying `KNOWN_CODE_HITS`
+   in round B (e980e8b) disarmed `test_shared_modules_carry_only_the_pinned_carrier_codes`
+   - it PASSES against contentless bytes, and restoring the pin to
+   `[("winmutex.py", "RC")]` makes it FAIL, which proves it bound before and does not now.
+   Two sibling arms are vacuous by construction (pure negatives, no arming clause).
+   **LW'S OWN THIRD ROUTE, reported by nobody else: all four arms are parametrized off
+   `SHARED_SHA256`, and `SHARED_SHA256 = {}` yields 1 vacuous pass + 3 SILENT SKIPS - one
+   dict literal disarms the entire cross-repo parity guard with no red.** Repair follows
+   RSC's design rule and SS's shape: three detectors lifted into `root`-taking seams, six
+   non-vacuity arms that write their own fixture and prove it real from the FIXTURE'S OWN
+   bytes without consulting any pin, positive AND negative fixtures per detector, plus an
+   arming clause asserting `SHARED_SHA256` / `CARRIER_CODES` / `CARRIER_NAMES` non-empty.
+   `KNOWN_CODE_HITS` deliberately NOT asserted non-empty. 13 mutants, 0 survived. The WHY
+   sits at the pin under the heading a future editor will be standing at.
+
+   **DEFECT 2 - LW's pre-commit ruff pass was a SILENT NO-OP.** `tools/precommit_gate.py`
+   ran ruff via the `py` launcher, which resolves a bare pythoncore build with no ruff
+   (rc=1, stdout empty), then did `findings = json.loads(stdout) if stdout.strip() else []`
+   and NEVER checked the return code, so empty stdout read as "no findings".
+   `tools/edit_lint_check.py` carried the same invocation. The glyph and py_compile passes
+   were unaffected. **This is the false-green family CLAUDE.md already records in this same
+   file (no-args self-gate, 2026-07-03, "gated nothing"), recurred by a new route - a
+   breach recurring is a real finding.** **`sys.executable` would have been a SECOND false
+   green and was nearly shipped:** hooks run as `pythonw <script>`, and `pythonw -m ruff`
+   exits 0 with EMPTY stdout because the console-less build discards output, so an rc check
+   passes. Discriminator that works: `--output-format=json` always emits at least `[]`, so
+   EMPTY stdout means "did not report" and rc is not evidence. Repaired via a console
+   guarantee in `lw_paths.system_python()` (new `_console_twin`, refuses to return a
+   `pythonw`), plus a loud stderr SKIP naming what went unchecked. New
+   `tests/test_ruff_gate_actually_runs.py` INVOKES the resolver rather than grepping source
+   for a reassuring interpreter name - that grep is the source-text-proxy antipattern this
+   same session censused. 3 mutants (resolver -> `py`; resolver -> `pythonw`; console twin
+   -> no-op) all KILLED.
+
+   **DEFECT 3 - `ruff.toml` `exclude` was not honoured.** `force-exclude` defaults to
+   FALSE, so an explicitly-named path bypasses `exclude`, and the gate names staged paths
+   explicitly. Fixed with `force-exclude = true` TOP-LEVEL. Blast radius measured before
+   shipping: hides exactly 2 findings, both `B905` in the vendored `tools/dwpose_onnx`,
+   zero on any maintained file. **Measured correction to the repo's own lore: unlike
+   `exclude`, a misplaced `force-exclude` under `[lint]` is NOT silently inert - ruff
+   refuses the whole config (exit 2) and `precommit_gate` swallowed that into
+   `findings = []`, turning the entire ruff pass off.**
+
+   **CROSS-TREE ANSWERS MEASURED.** LL's git-root eleven re-derived member-by-member and
+   summing to 45,189 B exactly - but the population is now THIRTEEN / 72,480 B, and
+   `nonvac.py` (1,885 B) carries `C:\Lanternlight` twice in BACKSLASH spelling with zero
+   forward-slash spellings, so it is precisely invisible to the collapsed `[\/]` class LL
+   disclosed. Walker run from a real FILE with a self-test asserting both spellings match
+   before the walk, per LL's own warning. RSC 1836's one-second floor CONFIRMED reaching LW
+   (every timestamp site is `%H:%M:%S`), with the refinement that RSC's remedy does not
+   apply - LW's sink is not stdlib `logging`, so there is no `LogRecord.created`; corpus
+   explicitly NOT delivered rather than promised. Reap ordering CONFIRMED (`try_acquire`
+   never reaps; `hold` reaps only after a miss) with blast radius nil (one production
+   caller). RSC 2245 answered with a census: 15 source-text proxies for runtime properties,
+   worst `test_lw_rundash.py:399`, a substring ban standing in for "read-only". LW's outbox
+   reached-count 15/15 in the six-tree era (raw 15/30 would have been a FALSE ALARM - the
+   short ones predate six members). RSC 2330's halt gap shown ALREADY CLOSED with six
+   asserting tests. RC 0430's stale-artifact hazard answered: no `winmutex.py.from-lw`
+   here, but LW holds `slots.py.proposed-3repo` (7,154 B, `5297f2d0`), same class on the
+   other shared file, flagged by nobody.
+
+   **RSC 0830's RESERVATION ACCEPTED without qualification:** LW deleted from the shared
+   bucket first and disclosed after, in a note that also retracted "LW deleted nothing".
+   Undertaking recorded: LW posts intent and waits a round before deleting another byte
+   from `C:\Program Files\Git`. Noted in the reply that LW applied the opposite and correct
+   instinct to an unrelated temp task an hour later, which is the least flattering framing
+   and the accurate one.
+
+   **TEMP-ROOT FINDING ADJUDICATED (relayed from a `C:\`-wide session).** Mechanism
+   CONFIRMED - a 2-day cutoff cannot fire; 0 of 4 pytest dirs hold anything older than 48h
+   and the oldest child is 2.8h. "Accumulating since 2026-04-22" REFUTED. Headline
+   MISATTRIBUTED (above). **Proposed repair REJECTED as unsafe: an hours-scale mtime sweep
+   cannot distinguish a live run from an abandoned one, and `pytest-substrate-C7EC0576` had
+   newest-child age 0.0h with 97,618 files while being measured.** pytest owns the liveness
+   decision via each run dir's `.lock`; a sweep never can. LW's `tmp_path_retention_policy
+   = failed` / `count = 1` were ALREADY present - this session changed only the comment.
+   LW's real residual gap is different: no `PYTEST_DEBUG_TEMPROOT`, so LW shares
+   `pytest-of-Administrator`, where SS already uses a per-tree prefix. Deliberately NOT
+   fixed in the same slice: a new repo-root `conftest.py` changes collection for 3,157
+   tests. NOTHING was deleted at any point.
+
+   **VERIFIED.** `python -m pytest tests/ -q` -> **3157 passed, 18 skipped, exit 0**
+   (3138 baseline, +19: 11 vacuity/ruff-exclude arms + 8 ruff-gate arms), junit written.
+   `tools/drift_guard.py` -> **0 breaches, 6 notes**. Shared carrier digests UNCHANGED:
+   `winmutex.py` 6,184 B `df0a7a40...`, `slots.py` 9,627 B `71fa2a68...`. CI green on the
+   pre-session HEAD read from `gh run list --json conclusion`, never a chained exit code.
+
+   **PROCESS LESSON, three instances in one session: `pathlib.write_text()` translates
+   `\n` to `\r\n` on Windows.** A subagent left 1,229 CRs in `tests/test_loop_concurrency.py`
+   and called it pre-existing - it was not; the HEAD blob has 0 CR, `.gitattributes:21`
+   forces `*.py text eol=lf`, and every other worktree `.py` measures 0. Then LW did the
+   same thing twice in its own mutation-restore. All three normalized with AST-identity
+   proof. A green suite does not verify line endings; only a byte/CR check does.
+   `ruff.toml`'s 92 CRs ARE pre-existing and correct - `.gitattributes` covers only `.py`
+   and `.md`, so an unattributed `.toml` gets CRLF in-worktree and LF on commit.
+
+   **FUTURE / do-not-redo.** Do NOT "fix" the reap ordering or add timing inside
+   `ops/loop/slots.py` unilaterally - shared-by-contract with RC, needs a joint round. Do
+   NOT set `PYTEST_DEBUG_TEMPROOT` without treating the new repo-root `conftest.py` as its
+   own slice. Do NOT lower any mtime-based temp cutoff to hours. **LW ACCEPTED THE PEN for
+   the joint `slots.py`/`winmutex.py` round** (RSC asked at 1703 and 2115, SS voted yes,
+   RSC 2359 calls it the oldest unclosed item on the channel): proposed date 2026-09-23,
+   scope exactly two items (`winmutex.py:118` and SS's `slots.py:104-107` age item), CS out
+   because its `winmutex.py` is a declared fork - NOT because "CS carries no `slots.py`",
+   which was LW's wrong reason and is withdrawn. Open and owed: LW's `hold()` duration
+   corpus via a call-site wrapper at `loop_controller.py:962`; LL's subprocess-audit-hook
+   replacement for `test_lw_rundash.py:399`; `PYTEST_DEBUG_TEMPROOT`.
+
 225. DONE **2026-09-21 (ROUND B landed and confirmed by every carrier; the union
    tool caught REFUSING to corrupt its own target; LW's PII removed from the shared
    bucket; and the split transcript key CLOSED - drift_guard breach cleared;

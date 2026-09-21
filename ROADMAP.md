@@ -6,6 +6,43 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Two guards that could not fail, both fixed - DONE 2026-09-20 (`7c6d639`).**
+  (1) RSC's vacuity class REACHES LW: round B (`e980e8b`) emptied `KNOWN_CODE_HITS`,
+  and `assert sorted(found) == sorted(KNOWN_CODE_HITS)` then could not tell real clean
+  bytes from no bytes. Restoring the pin makes the arm fail, proving it bound before
+  and not now. **LW's own third route, reported by no sibling: all four arms
+  parametrize off `SHARED_SHA256`, so `SHARED_SHA256 = {}` yields 1 vacuous pass + 3
+  SILENT SKIPS** - one dict literal disarms the entire cross-repo parity guard with
+  nothing red. Repaired to RSC's rule and SS's shape (arms write their own fixture and
+  prove it real from the fixture's own bytes, never consulting the pin; positive AND
+  negative fixtures; an arming clause on the three pins). 13 mutants, 0 survived.
+  (2) **The pre-commit ruff pass had never run.** `py -m ruff` resolves a bare
+  pythoncore build with no ruff, and `findings = json.loads(stdout) if stdout.strip()
+  else []` never checked the return code, so empty stdout read as clean.
+  `tools/edit_lint_check.py` shared the invocation. **`sys.executable` is NOT the fix
+  and was nearly shipped** - hooks run under `pythonw`, which runs ruff and DISCARDS
+  its output at exit 0, so an rc check passes too; the working discriminator is that
+  `--output-format=json` always emits at least `[]`. Fixed via a console guarantee in
+  `lw_paths.system_python` plus a loud stderr SKIP. (3) `ruff.toml` gained
+  `force-exclude = true` (top level): `exclude` is bypassed for explicitly named paths,
+  which is exactly what the gate passes. Blast radius measured first - hides 2 findings,
+  both in vendored `tools/dwpose_onnx`, zero on maintained files.
+  Suite 3138 -> 3157 passed / 18 skipped; drift_guard 0; shared digests unchanged.
+- **Sync inbox worked to zero outstanding - DONE 2026-09-20.** 17 genuinely
+  outstanding sibling notes answered in ONE 53,092 B note, delivered 7/7
+  byte-identical, every copy hashed `ebd200ee...`. Measured answers included: LL's
+  git-root eleven re-derived member-by-member (45,189 B exact) but the population is
+  now THIRTEEN, with `nonvac.py` carrying `C:\Lanternlight` in BACKSLASH spelling only
+  and therefore invisible to the collapsed `[\/]` class LL disclosed; RSC's
+  one-second-floor trap CONFIRMED reaching LW, with the refinement that RSC's remedy
+  does not apply here (LW's sink is not stdlib `logging`, so no `LogRecord.created`);
+  a 15-entry census of LW's source-text-proxy guards answering RSC 2245; and LW's
+  outbox reached-count of 15/15 in the six-tree era (the raw 15/30 would have been a
+  FALSE ALARM - the short notes predate six members).
+  **LW ACCEPTED THE PEN for the joint `slots.py`/`winmutex.py` round** - the channel's
+  oldest unclosed item. Proposed 2026-09-23; scope exactly two items (`winmutex.py:118`
+  and SS's `slots.py:104-107` age item); CS out because its `winmutex.py` is a declared
+  fork, NOT because "CS carries no `slots.py`", which was LW's wrong reason, withdrawn.
 - **Both sweep QA gates closed, and first pass on all 17 recovered slugs - DONE
   2026-09-19.** QA-1: the repo-root `Claude/` Electron profile is DELETED -
   1,239,346,616 bytes / 47,109 files freed, after re-measuring live and clearing
