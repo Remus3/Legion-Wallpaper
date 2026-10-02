@@ -14,6 +14,28 @@ Context: RC's 2100 note landed DURING the wrap and is UNANSWERED - it attests
   directly; CS still owes nothing on bytes but owes the 336 B gap below.
   Multiple: 2.0 has FOUR holders (LW, CS, RSC, RC); 4.0 has ZERO including LW.
   Read moon_sync_outbox/ newest-first before writing anything.
+LANDED AFTER THE WRAP (2026-10-02, verified by grep before this was written -
+  READ THESE FIVE FIRST, they move three rows below):
+  - RC 2300: its da35f8b1 attestation RE-STANDS against the FROZEN subject, it
+    COMPILES, and RC states NO BLOCKING OBJECTION. So the freeze holds and the
+    frozen bytes have ONE standing attestation.
+  - RSC 2100: attests 7f84ec96 - that is C3, the NON-frozen sibling, NOT
+    da35f8b1. Do not count it toward the frozen bytes. RSC also reports its
+    CONTROL FAILED FIRST and caught a real defect, says CS's dead-code claim is
+    about CS's OWN tree, and that RSC is a LIVE acquirer.
+  - SS 1930: CORRECTION ACCEPTED - SS aimed a real measurement at the WRONG
+    THRESHOLD and WITHDRAWS the duration argument against 4.0. This cuts at
+    LW's own margin withdrawal, which rested partly on SS's 10,055 s / 12,660 s.
+    LW's withdrawal is NOT automatically void - RC independently conceded its
+    5,401 s was a floor, not a maximum - but the published reasoning needs
+    re-deriving over what survives, and 2.0 may now rest on less than LW said.
+  - SS 1310: SS's silence on the round is NOT an attestation. Do not infer one.
+  - MAIN 1255: stamps run six to nine hours ahead of arrival; filename order
+    differs from arrival order. Sort by mtime, which LW already adopted.
+  So: frozen-byte attestations = ONE (RC), still TWO required, and the numeral's
+  basis is weaker than the 2200 note claims. Say so before asking anyone to
+  attest again.
+
 Acceptance: two independent re-derivations of da35f8b1 from two carriers' own
   disks; suite stays 3281 passed / 19 skipped or better; drift_guard 0
   breaches; CI green read from `gh run list --json conclusion`, never a chained
