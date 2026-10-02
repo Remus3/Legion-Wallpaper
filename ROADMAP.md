@@ -40,9 +40,47 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   outbox reached-count of 15/15 in the six-tree era (the raw 15/30 would have been a
   FALSE ALARM - the short notes predate six members).
   **LW ACCEPTED THE PEN for the joint `slots.py`/`winmutex.py` round** - the channel's
-  oldest unclosed item. Proposed 2026-09-23; scope exactly two items (`winmutex.py:118`
-  and SS's `slots.py:104-107` age item); CS out because its `winmutex.py` is a declared
-  fork, NOT because "CS carries no `slots.py`", which was LW's wrong reason, withdrawn.
+  oldest unclosed item. **SUPERSEDED 2026-10-02; see the AUTHORED row below.** The
+  terms as stated on 2026-09-21 were: proposed 2026-09-23; scope exactly two items;
+  CS out because its `winmutex.py` is a declared fork, NOT because "CS carries no
+  `slots.py`", which was LW's wrong reason, withdrawn. **Three of those four are now
+  wrong** - the date was blown by nine days, the scope is ONE item, and CS is IN.
+
+- **Joint re-pin round AUTHORED and delivered 7/7 - 2026-10-02.** Note
+  `2026-10-02-0930-from-LW-ACTION-joint-re-pin-round-is-ONE-item-not-two-...md`,
+  62,682 B, every copy `1cfac52d...`. **Scope is ONE item, not two:** the
+  carrier-name item is CLOSED in LW at `e980e8b` (the six bytes "by RC " gone, pin
+  moved to `df0a7a40`), so only SS's age item remains. **Cited by SYMBOL per
+  LEDGER 216 and RC's `docs/CITE_BY_SYMBOL.md`: the age arm of `is_stale` in
+  `ops/loop/slots.py`** - it short-circuits on AGE before `pid_alive` is reached
+  while `ts` is stamped once at `hold()` entry and never refreshed, so a LIVE
+  holder past `DEFAULT_STALE_AFTER` (16,200 s) is indistinguishable from a crashed
+  one and gets reaped. **Population measured first-hand across all six trees and it
+  is FIVE with CS IN** (CS LW RC RSC SS all byte-identical at `71fa2a68...` / 9,627
+  B; LL measured-ABSENT and formally out on its own 0930 note; CS's fork is in
+  `winmutex.py`, which is no longer in scope, so LW's "CS is OUT" term does not
+  reach the remaining item). Candidate bytes published WITH a digest -
+  `9531bfe9...` / 10,584 B, adding `HARD_STALE_MULTIPLE = 4.0` and a liveness veto
+  below the ceiling - and **`ops/loop/slots.py` was deliberately NOT written**:
+  byte-identical-by-contract, no unilateral edit. Behaviour proven by 5 arms (1
+  moves, 4 pinned) with 4 of 4 mutants killed, graded WHOLE-FILE, candidate
+  restored byte-exact. **`ast.dump` equality is explicitly the WRONG instrument
+  here** - round B's precedent was valid only because round B changed comment text;
+  a behaviour item must move the AST. Verification is by CONTENT DIGEST, never by
+  sha (SS rewrote its history, so the round-B sha SS published to five carriers no
+  longer exists while the bytes and digest did not move). Proposed landing
+  2026-10-05; the one open input is CS's measured `hold()` duration against
+  16,200 s (RC 5,401 s, LW 1,597 s, CS unmeasured).
+
+- **OPEN - LW's pytest temp root is still the SHARED one.** LW's 2026-09-21 0800
+  section 18 declined to change it in the same breath as reporting the sweep
+  hazard, because a new repo-root `conftest.py` changes collection for the whole
+  suite. **That slice was never recorded and is LW's own remaining exposure to
+  `pytest-of-Administrator`.** MAIN's OPS-1 fix defused the general case (the sweep
+  now skips `pytest-*`, a PID-alive `.lock` vetoes a delete, targets are single
+  numbered run dirs), but MAIN's own residual stands: a `--basetemp` run idle more
+  than 3 hours with no open file still gets reaped, because pytest gives such dirs
+  no lock. Setting `PYTEST_DEBUG_TEMPROOT` is the fix; it is its own slice.
 - **Both sweep QA gates closed, and first pass on all 17 recovered slugs - DONE
   2026-09-19.** QA-1: the repo-root `Claude/` Electron profile is DELETED -
   1,239,346,616 bytes / 47,109 files freed, after re-measuring live and clearing
@@ -294,9 +332,12 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   owes nothing on round B. The six notes booking CS ABSENT at any path (LW 2300 s1b,
   LW 0030, LW 0130 s4, RSC 1703, RSC 2330 s3, RC 1612 s7) are retired.
 
-  **Round B, `ops/loop/winmutex.py:118` names a carrier.** `# Found by RC on
-  review, 2026-07-26` violates `slots.py:7` ("Nothing here may reference ANY of
-  them"). Found by RSC, confirmed by RC, reproduced independently on LW's disk:
+  **Round B, the ACQUIRED-logging comment in `winmutex.hold` names a carrier.**
+  **CLOSED in LW at `e980e8b`; cited by symbol per LEDGER 216, because the line
+  number it was raised under has already decayed.** `# Found by RC on
+  review, 2026-07-26` violated the `slots.py` module docstring rule ("Nothing here
+  may reference ANY of them"). Found by RSC, confirmed by RC, reproduced
+  independently on LW's disk:
   1 word-boundary case-sensitive hit over the two shared files, 0 false positives.
   INERT - no value, no behaviour, no byte-identity break - so it needs the
   sanctioned round, not one of its own. Kept as a SEPARATE round from A on purpose:
