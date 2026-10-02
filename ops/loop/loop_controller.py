@@ -16,6 +16,7 @@ Both the oracle and the executor are stateless per cycle; continuity lives on di
 (git history + docs/LEDGER.md + the directive chain). Ported 1:1 from the RC
 ancestor loop - process mechanics unchanged, product references TBD.
 """
+import contextlib
 import importlib.util
 import json
 import os
@@ -106,6 +107,222 @@ def awrite(path, text):
     tmp = Path(str(path) + ".tmp")
     tmp.write_text(text, encoding="utf-8")
     os.replace(tmp, path)
+
+
+# ---- executor-slot bound + the owed hold()-duration corpus -----------------
+# WHY A BOUND AT ALL. slots.hold() stamps `"ts": time.time()` into the lock
+# payload at ENTRY (slots.py:220), BEFORE its acquire/backoff loop starts
+# (:224), and `timeout=None` leaves `deadline = None` (:221) so the loop's only
+# raise site (:230) is unreachable. slots.is_stale then ages a lock from exactly
+# that payload stamp (:105). This call site passed NO timeout, so the age of a
+# lock at release had no upper bound by construction: a run that waited a long
+# time for a contended slot acquired a lock whose stamp was already old, because
+# `ts` records when the WAIT started and not when the lock was ACQUIRED. A
+# long-waiting run could hold a lock already past the staleness threshold the
+# moment it got it, at which point another repo's reap() takes it out from under
+# a live executor call.
+#
+# THE FIX LIVES HERE AND NOT IN slots.py: that file is byte-identical-by-
+# contract across every sibling repo that vendors it, pinned by sha256 in
+# tests/test_loop_concurrency.py, so the bound and the instrumentation are both
+# the caller's job. Pinned by tests/test_slot_hold_is_bounded.py.
+SLOT_CORPUS = ROOT / "ops" / "runtime" / "slot_holds.jsonl"
+
+
+def slot_wait_timeout(cfg=None):
+    """How long a cycle may wait for an executor slot, in seconds.
+
+    DERIVED, never a magic number: one cycle deadline (`cycle_deadline_sec`).
+    The slot is held only around the executor call and the executor's own budget
+    is that same deadline, so wait <= deadline and hold <= deadline puts a hard
+    ceiling of 2x cycle_deadline_sec on a lock's age at release - comfortably
+    under slots.DEFAULT_STALE_AFTER (3x 5400s), so a lock this loop holds can
+    never age into its own reap window mid-hold. The operational reading: if no
+    slot has freed in the time a whole cycle is allowed to take, every holder is
+    hung or the box is oversubscribed, and waiting longer cannot produce a lock
+    that is still fresh when it is finally acquired.
+
+    `slot_wait_timeout_sec` in the config overrides it when a tighter bound is
+    wanted; absent, the deadline drives it so the two cannot drift apart.
+    """
+    cfg = CFG if cfg is None else cfg
+    override = cfg.get("slot_wait_timeout_sec")
+    if override is not None:
+        return float(override)
+    return float(cfg.get("cycle_deadline_sec", 5400))
+
+
+def corpus_append(record, path=None, log=None):
+    """Append one JSONL record to the hold-duration corpus. Returns success.
+
+    DURABLE and gitignored: the default path sits under ops/runtime/, which
+    .gitignore ignores wholesale, so the corpus survives restarts without ever
+    becoming a tracked artifact.
+
+    ATOMIC by read-append-rewrite through a tmp file plus os.replace, rather
+    than open(..., "a"): a consumer may poll this file mid-write, and a torn
+    final line reads as a CORRUPT record rather than a missing one. The corpus
+    grows by two lines per cycle against a max_cycles of 12, so rewriting it is
+    far cheaper than that risk.
+
+    EVERY exception is swallowed on purpose. This is instrumentation. An IO
+    error here - a full disk, a reader holding the file open on Windows, a
+    record that will not serialise - must never take down the cycle it is
+    measuring. It is logged instead, so a silent corpus is still visible.
+    """
+    try:
+        p = Path(path) if path is not None else SLOT_CORPUS
+        line = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        prior = p.read_bytes() if p.exists() else b""
+        if prior and not prior.endswith(b"\n"):
+            prior += b"\n"
+        tmp = p.with_name(p.name + ".tmp")
+        tmp.write_bytes(prior + line)
+        os.replace(tmp, p)
+        return True
+    except Exception as e:  # noqa: BLE001 - instrumentation must not raise
+        if log:
+            log(f"slots: corpus write failed (NOT fatal, the cycle goes on): {e!r}")
+        return False
+
+
+def read_slot_corpus(path=None, now=None):
+    """Summarise the corpus, ONE entry per acquisition, leaks kept and flagged.
+
+    HOW A READER TELLS A LEAKED HOLD FROM A SHORT ONE. Every acquisition writes
+    two records joined on `hold_id`: an `acquired` record at acquire time
+    (state "open", carrying `wait_sec`, `hold_sec: null`) and a `released`
+    record in a finally (state "closed", carrying `hold_sec` and
+    `age_at_release_sec`). So an `acquired` with no matching `released` is a
+    LEAK - the holder was killed or died inside the block - and it is still on
+    disk, which is the whole point. A reader that instead PAIRS the two lines
+    and drops the unpaired ones silently loses every leak and reports a maximum
+    that is really a floor over the holds that happened to be short; that is the
+    sibling defect this format exists to exclude.
+
+    A leak's `hold_sec` is None, never 0 and never invented, and
+    `hold_floor_sec` carries its lower bound (`now` minus `ts_acquire`). It is a
+    CENSORED observation and must be reported as one. Its `wait_sec` IS known
+    exactly, because the wait was recorded at acquire.
+
+    Malformed lines (a torn write, a foreign line) are skipped rather than
+    raising, so one bad line cannot hide the rest of the corpus.
+    """
+    p = Path(path) if path is not None else SLOT_CORPUS
+    try:
+        raw = p.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    opened, closed = [], {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(rec, dict):
+            continue
+        if rec.get("event") == "acquired":
+            opened.append(rec)
+        elif rec.get("event") == "released":
+            closed[rec.get("hold_id")] = rec
+    now = time.time() if now is None else float(now)
+    out = []
+    for rec in opened:
+        end = closed.get(rec.get("hold_id"))
+        leaked = end is None
+        entry = {
+            "hold_id": rec.get("hold_id"),
+            "run_id": rec.get("run_id"),
+            "cycle": rec.get("cycle"),
+            "pid": rec.get("pid"),
+            "slot": rec.get("slot"),
+            "wait_sec": rec.get("wait_sec"),
+            "hold_sec": None if leaked else end.get("hold_sec"),
+            "age_at_release_sec": None if leaked else end.get("age_at_release_sec"),
+            "leaked": leaked,
+            "hold_floor_sec": None,
+        }
+        if leaked and rec.get("ts_acquire") is not None:
+            entry["hold_floor_sec"] = round(now - float(rec["ts_acquire"]), 3)
+        out.append(entry)
+    return out
+
+
+@contextlib.contextmanager
+def held_slot(max_slots, *, repo="", run_id="", cycle=0, timeout,
+              corpus=None, log=None, hold=None, clock=None, **kw):
+    """slots.hold() plus the per-acquisition duration corpus.
+
+    THE WRAPPER IS AT THE CALL SITE, deliberately not inside slots.py - see the
+    block comment above.
+
+    WAIT AND HOLD ARE RECORDED SEPARATELY and never summed. `wait_sec` is
+    stamp-to-acquire, measured from the `ts` slots itself wrote into the lock
+    payload; `hold_sec` is acquire-to-release; `age_at_release_sec` is
+    release-minus-stamp, which is the quantity the unbounded wait was
+    corrupting. Conflating wait with hold is what let a 5401s figure read as a
+    maximum when it was a floor.
+
+    `timeout` is REQUIRED and must be positive, so the unbounded wait cannot be
+    reintroduced through this wrapper by a caller who simply forgets it.
+
+    `hold` and `clock` exist as injection seams for the tests: the duration
+    arithmetic is then provable without sleeping, which is how the arms avoid
+    racing the clock.
+    """
+    if timeout is None or float(timeout) <= 0:
+        raise ValueError(
+            "held_slot requires a positive timeout - an unbounded wait is the "
+            "defect this wrapper exists to prevent")
+    hold = slots.hold if hold is None else hold
+    clock = time.time if clock is None else clock
+    path = SLOT_CORPUS if corpus is None else Path(corpus)
+    hold_id = f"{run_id or 'run'}-c{cycle}-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+    started_at = clock()
+    with hold(max_slots, repo=repo, run_id=run_id, cycle=cycle,
+              timeout=float(timeout), log=log, **kw) as slot:
+        acquired_at = clock()
+        stamp, stamp_source = _slot_stamp(slot, started_at)
+        wait_sec = round(acquired_at - stamp, 3)
+        corpus_append({"event": "acquired", "state": "open", "hold_id": hold_id,
+                       "repo": repo, "run_id": run_id, "cycle": cycle,
+                       "pid": os.getpid(), "slot": Path(slot).name,
+                       "max_slots": max_slots, "timeout_sec": float(timeout),
+                       "ts_stamp": stamp, "ts_acquire": acquired_at,
+                       "stamp_source": stamp_source,
+                       "wait_sec": wait_sec, "hold_sec": None},
+                      path=path, log=log)
+        try:
+            yield slot
+        finally:
+            released_at = clock()
+            corpus_append({"event": "released", "state": "closed",
+                           "hold_id": hold_id, "run_id": run_id, "cycle": cycle,
+                           "pid": os.getpid(), "slot": Path(slot).name,
+                           "ts_acquire": acquired_at, "ts_release": released_at,
+                           "wait_sec": wait_sec,
+                           "hold_sec": round(released_at - acquired_at, 3),
+                           "age_at_release_sec": round(released_at - stamp, 3)},
+                          path=path, log=log)
+
+
+def _slot_stamp(slot, fallback):
+    """The `ts` slots wrote into the lock payload at hold() ENTRY.
+
+    That stamp is what is_stale ages a lock from, so it is the only honest
+    origin for a wait measurement. If it cannot be read, fall back to our own
+    pre-call time - which is at or before the real stamp, so the wait is
+    UNDER-reported rather than invented - and say which was used in the record.
+    """
+    try:
+        rec = json.loads(Path(slot).read_text(encoding="utf-8"))
+        return float(rec["ts"]), "payload"
+    except (OSError, ValueError, KeyError, TypeError):
+        return float(fallback), "fallback"
 
 def consume_directive_override(ctl=None):
     """One-shot operator directive override (written by the operator; the RC
@@ -959,9 +1176,27 @@ def main():
         # budget.json and the metering below.
         # Slot held ONLY around the executor call - never around git or the
         # adjudicator, so a long merge in this repo cannot starve the other one.
-        with slots.hold(int(CFG.get("max_concurrent_lanes", 3)),
-                        repo=str(ROOT), run_id=RUN_ID, cycle=cycle, log=log):
-            rec = EXEC.run(cycle, body, src)
+        # The wait is BOUNDED now (slot_wait_timeout: one cycle deadline, which
+        # keeps a held lock's age at release under the stale window). It used to
+        # be unbounded, which is the defect described at slot_wait_timeout.
+        # WHY THE TIMEOUT IS CAUGHT HERE. Converting an unbounded hang into a
+        # crashed controller would be a worse failure than the one being fixed,
+        # so a SlotTimeout SKIPS the cycle and the run advances to the next one -
+        # the same shape the director-error branch above uses. The failure is
+        # handed to the next director call as last_done so a contention outage
+        # is visible rather than silent, and the run stays bounded by max_cycles.
+        slot_timeout = slot_wait_timeout()
+        try:
+            with held_slot(int(CFG.get("max_concurrent_lanes", 3)),
+                           repo=str(ROOT), run_id=RUN_ID, cycle=cycle,
+                           timeout=slot_timeout, log=log):
+                rec = EXEC.run(cycle, body, src)
+        except slots.SlotTimeout as e:
+            log(f"cycle {cycle}: no executor slot within {slot_timeout}s - "
+                f"skipping this cycle, NOT proceeding unslotted ({e})")
+            last_done = executor.failure_raw(
+                cycle, f"no executor slot within {slot_timeout}s", None)
+            continue
         done = rec.raw
         last_done = done
         new_sha = rec.sha or head()

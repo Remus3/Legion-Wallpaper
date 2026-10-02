@@ -202,7 +202,14 @@ def test_the_subprocess_never_flashes_a_console(tmp_path):
 def test_the_run_flow_invokes_the_gate():
     """The whole point of item 7. A bridge nothing calls is the previous bug."""
     src = CONTROLLER.read_text(encoding="utf-8")
-    body = src[src.index("with slots.hold("):]
+    # Anchored on the slot hold that wraps the executor call, in WHICHEVER
+    # spelling the controller carries. The bare `slots.hold(` was replaced by
+    # the bounded `held_slot(` wrapper (tests/test_slot_hold_is_bounded.py), and
+    # pinning one literal made this arm red for a reason that has nothing to do
+    # with the truth gate.
+    anchors = [a for a in ("with held_slot(", "with slots.hold(") if a in src]
+    assert anchors, "could not find the executor slot hold in the controller"
+    body = src[src.index(anchors[0]):]
     assert "run_truth_gate(" in body, "the gate is defined but never called"
 
 
