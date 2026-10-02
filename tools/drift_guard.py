@@ -220,6 +220,40 @@ def find_tracked_but_ignored(repo: pathlib.Path | str) -> list[str]:
     return sorted(p for p in ci.stdout.split("\0") if p)
 
 
+def tracked_file_count(repo: pathlib.Path | str) -> int:
+    """How many files `ls-files` enumerates here: N, ZERO, or -1 for UNASKABLE.
+
+    THREE dispositions, not two, for the same reason `tests/gitdep.py` carries
+    three: git ran and counted N, git ran and counted ZERO, and the question
+    could not be asked at all (no repo, no git binary, a missing directory).
+    Collapsing ZERO into N is the vacuity this exists to expose - an ignore
+    sweep over an empty index finds no offenders and reads exactly like a clean
+    one. Collapsing UNASKABLE into ZERO would install a false red in CI on a
+    tarball checkout.
+
+    `ls-files` exits 0 with EMPTY stdout in states this repo passes through: a
+    fresh `git init` before the first add, a reset index, an empty worktree
+    slice. In all of them git answered, and nothing in the answer said the
+    corpus was empty.
+    """
+    repo = str(repo)
+    if not pathlib.Path(repo).is_dir():
+        return -1
+    inside = subprocess.run(
+        ["git", "-C", repo, "rev-parse", "--is-inside-work-tree"],
+        capture_output=True, text=True, creationflags=NO_WINDOW,
+    )
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return -1
+    ls = subprocess.run(
+        ["git", "-C", repo, "ls-files", "-z"],
+        capture_output=True, text=True, creationflags=NO_WINDOW,
+    )
+    if ls.returncode != 0:
+        return -1
+    return sum(1 for p in ls.stdout.split("\0") if p)
+
+
 def check_tracked_but_ignored(repo: pathlib.Path | str | None = None) -> None:
     r"""An ignore rule covering a directory that already holds TRACKED files.
 
@@ -248,9 +282,32 @@ def check_tracked_but_ignored(repo: pathlib.Path | str | None = None) -> None:
     eat the next file written beside it.
     """
     repo = ROOT if repo is None else repo
+    # VACUITY FIRST. An empty offender list means "no offenders" only if the
+    # sweep had something to sweep. Ask the population size BEFORE reading the
+    # result, because a zero-file walk produces the identical clean answer.
+    n_corpus = tracked_file_count(repo)
+    if n_corpus < 0:
+        notes.append(
+            "ignore sweep COULD NOT RUN here - no git work tree at "
+            f"{repo} - this is not a clean result, it is an unasked question"
+        )
+        return
+    if n_corpus == 0:
+        warn(
+            f"VACUOUS IGNORE SWEEP: `git ls-files` enumerated 0 tracked files at "
+            f"{repo}, so the ignore check found no offenders because it examined "
+            f"nothing - not because the rules are clean. An empty index (fresh "
+            f"`git init`, a reset index, an empty worktree slice) satisfies every "
+            f"acceptance condition this check has. Point the guard at a populated "
+            f"work tree, or add the files, before reading its verdict."
+        )
+        return
     hits = find_tracked_but_ignored(repo)
     if not hits:
-        notes.append("no tracked path is covered by an ignore rule")
+        notes.append(
+            f"no tracked path is covered by an ignore rule ({n_corpus} tracked "
+            f"files swept)"
+        )
         return
     known = [h for h in hits if h.startswith(IGNORED_TRACKED_EXEMPT)]
     rogue = [h for h in hits if not h.startswith(IGNORED_TRACKED_EXEMPT)]
