@@ -585,6 +585,13 @@ CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS")
 # (never from a pin - a pin is the thing under test), and point the detector at
 # it. Those arms hold on a day when the real bytes are clean, which is the day
 # a pure negative arm silently stops meaning anything.
+# Checked 2026-10-02, when pytest.ini gained `empty_parameter_set_mark =
+# fail_at_collect`: this pin feeds the plain assert below, NOT a parametrize, so
+# the new setting does not touch it and the "allowed to be empty" ruling above
+# still holds unchanged. If a future arm ever parametrizes over it, do NOT
+# re-grow the pin to get past the collection error - use the skipped-sentinel
+# opt-out that pytest.ini documents, which keeps the emptiness deliberate and
+# stated. tests/test_empty_parametrize_is_red.py proves that opt-out works.
 KNOWN_CODE_HITS = []
 
 

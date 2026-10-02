@@ -11,10 +11,21 @@ import os
 
 import pytest
 
+_AUTOINSTALL = "YOLO_AUTOINSTALL"
+
 
 def test_autoinstall_env_guard_is_set():
-    """conftest.py pins the ultralytics autoinstall gate off for the suite."""
-    assert os.environ.get("YOLO_AUTOINSTALL") == "false"
+    """conftest.py pins the ultralytics autoinstall gate off for the suite.
+
+    The lookup is bound to a local BEFORE the assert on purpose. Asserting on
+    `os.environ.get(...)` directly makes pytest's rewriter repr the `os._Environ`
+    object to explain the attribute access, which renders the whole environment
+    into the failure output - and this repo is PUBLIC with world-readable CI
+    logs. See tests/test_assert_never_renders_the_environ.py for the measured
+    table and the guard that keeps the shape out.
+    """
+    flag = os.environ.get(_AUTOINSTALL)
+    assert flag == "false", f"{_AUTOINSTALL} is {flag!r}, expected 'false'"
 
 
 def test_ultralytics_autoinstall_is_disabled_when_importable():
@@ -51,7 +62,13 @@ def test_lw_clean_pass_sets_the_guard_itself(monkeypatch):
     import lw_clean_pass
 
     importlib.reload(lw_clean_pass)
-    assert os.environ.get("YOLO_AUTOINSTALL") == "false"
+    # Bound to a local first - same reason as the arm at the top of this file.
+    # This is the arm that matters most for the leak: the ABSENT-key branch is
+    # the one it deliberately exercises, and absent is exactly when the assert
+    # fails and prints.
+    flag = os.environ.get(_AUTOINSTALL)
+    assert flag == "false", (
+        f"lw_clean_pass did not pin {_AUTOINSTALL} at import - it is {flag!r}")
 
 
 def test_pil_image_open_failure_does_not_trigger_an_install(monkeypatch, tmp_path):
