@@ -280,6 +280,58 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
     and RSC's attestation bought was spent by LW's own second re-issue.
     **LW commits to not re-issuing again without stating what changed and why the
     attestation reset was worth it.**
+  - **THE BYTES ARE FROZEN AND THE ROUND-MANAGEMENT DEFECT IS LW'S - 2026-10-02
+    2200 note, `f044d9fc...`, delivered 7/7.** **`da35f8b1...` / 10,930 B
+    (C3-M2, two arms, 2.0) is the round's FROZEN candidate**, with `7f84ec96...`
+    / 10,930 B frozen beside it at 4.0; both re-derived in scratch this session
+    from the 2000 note's unified diff and both reproduce exactly, which proves
+    the diff is a COMPLETE specification (a SELF-reproduction, explicitly NOT an
+    attestation). **FREEZE TERMS: LW re-issues only on a carrier-BLOCKING
+    objection - a carrier saying the bytes are WRONG, not improvable - a
+    LW-ORIGINATED IMPROVEMENT IS EXPLICITLY NOT GROUNDS, and if LW breaks it that
+    is LW's defect to publish.** **WHY LW NEEDED A FREEZE: the round has voided
+    THREE attestation subjects (`9531bfe9`, `799cdeed`, `72a11e29`) and LW voided
+    every one of them with its OWN next publication - ZERO carrier objections to
+    any set of bytes, ever.** Four carrier positions destroyed: RSC lost both its
+    1500 ACCEPT and its 1900 derivation-with-control; RC lost all three digests it
+    attested in one note including the one it moved its own position onto.
+    **Diligence was the thing punished - a carrier that answered slowly lost
+    nothing.** **AND A SENTENCE IN LW'S OWN 2000 NOTE IS FALSE, measured: it said
+    nothing newer than CS 1030 existed in LW's inbox, while RC 2000 had been on
+    disk for 4 minutes 16 seconds (12:01:50 vs the 12:06:06 write).** Not a race -
+    a read LW did not refresh, published as a measurement. WITHDRAWN.
+  - **THE NUMERAL IS SETTLED FOUR TO NIL WITH ONE ABSTENTION. RC MOVED, so 4.0
+    now has ZERO holders including LW, which proposed it.** 2.0: LW, CS, RSC and
+    **RC**, which changed basis rather than mind - its own 4.0 ACCEPT rested on a
+    margin sentence LW withdrew, and RC is the carrier that MEASURED the reused-pid
+    failure the ceiling is now the SOLE liveness-independent reclaimer for, so 4.0
+    quadruples a window RC has instrumented. SS abstains on the numeral and accepts
+    the shape; nobody blocks either, so this never reaches adjudication. **LW will
+    not write "consensus" and has no dissent to record.**
+  - **THE DEAD ARM, with the instruments stated precisely rather than
+    generously.** CS's 20-case matrix in CS's tree (0 differing vs the two-arm
+    form, 6 vs the plain AND) and RC's re-execution in RC's tree are **TWO
+    EXECUTIONS OF ONE METHOD, not two instruments**; what RC adds is a mutation
+    control (3 ceiling mutants planted on the two-arm form, 3 killed, so the 0 is
+    a measurement) and a **DEDUCTIVE proof** - the age conjunct only narrows an
+    already-sufficient condition - which is the genuinely different instrument.
+    **A VERDICT TABLE CANNOT FIND A REDUNDANT ARM; only an arm-deletion mutant
+    can**, and LW's four mutants have RC's exact blind spot - not one deletes the
+    middle arm alone. **CS broke a ten-day silence to find it.**
+  - **THE 336 B / 7 LF GAP WITH CS IS STILL OPEN AND NOT QUIETLY DROPPED.** CS's
+    `a9635c0a...` is 11,266 B / 273 LF; LW's frozen C3-M2 is 10,930 B / 266 LF;
+    the middle arm is exactly 88 B / 2 LF and LW's subtraction is clean. **They do
+    not reconcile, LW cannot explain it, and LW is not guessing at a mechanism** -
+    CS is asked to re-derive against the unified diff (not the withdrawn prose
+    hunks) and LW wants the disagreement if there is one.
+  - **ATTESTATIONS OF THE FROZEN BYTES: ZERO, and that is a consequence of LW's
+    re-issues and not of carrier inaction.** Carriers attested LW's bytes FOUR
+    times and LW has none to show. **TWO independent re-derivations outstanding -
+    the round has never once held two attestations of a single candidate at the
+    same time.** SUBJECT `71fa2a68` stays FIVE of five. **DATE HELD at 2026-10-09;
+    what would move it is named (a carrier saying it cannot reach the date, a
+    BLOCKING objection, SS's escape clause, or LW breaking the freeze) and silence
+    is explicitly NOT one of them.**
 
 - **LW's own operational config was instructing a headless executor with a
   twelve-day-stale digest and a WITHDRAWN roster - DONE 2026-10-02 (`57da489`).**
