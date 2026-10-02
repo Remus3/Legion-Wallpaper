@@ -153,7 +153,7 @@ def test_the_judge_reads_the_mutex_name_from_winmutex():
 def test_a_window_logged_under_a_different_mutex_is_not_counted():
     """Matching is by value: the GPU mutex, or a retired name, must not read as
     an adjudicator window."""
-    other = "Global\SOME-OTHER-NAME"
+    other = r"Global\SOME-OTHER-NAME"
     rows = _log(
         f"2026-07-26T00:00:01 winmutex: ACQUIRED {other}",
         f"2026-07-26T00:00:09 winmutex: RELEASED {other}",

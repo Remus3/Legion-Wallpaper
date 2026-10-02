@@ -1,4 +1,4 @@
-"""drift_guard: telling a RENAMED sibling repo apart from an ABSENT one.
+r"""drift_guard: telling a RENAMED sibling repo apart from an ABSENT one.
 
 Reported by RC 2026-09-06 (Amberstone e752e4edc). RC's cross-repo guards held
 LW_ROOT = C:\LegionWallpaper; LW's rename to "C:\Legion Wallpaper" turned both
