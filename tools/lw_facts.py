@@ -91,6 +91,9 @@ _SHOWN = _ROOT / "ops" / "runtime" / "sync_inbox_shown.json"
 _INVOCATIONS = _ROOT / "ops" / "runtime" / "lw_facts_invocations.log"
 _INVOCATIONS_KEEP = 2000
 _INBOX_SHOWN = 10
+# How many 0.Originals filenames ride along with the loose-file count. Small: the
+# line is a digest row, and the count stays the authoritative total.
+_ORIGINALS_SAMPLE = 3
 
 # Bounds on the stdin payload read. BOTH are load-bearing and neither alone is
 # enough. A byte cap without a clock cap still blocks forever on a parent that
@@ -211,8 +214,14 @@ def _task_lines(anomalies: list[str]) -> list[str]:
                 rows.append((name, rec[2] or "?"))
         if not rows:
             return ["- scheduled tasks (LW-*): none registered yet"]
-        lines = [f"- scheduled tasks ({len(rows)} LW-*):"]
-        for name, state in sorted(set(rows)):
+        # COUNT THE ROWS WE SHIP, not the raw records. schtasks emits one record
+        # per TRIGGER, so LW-CIWatchdog (boot + PT2M) arrives twice; `len(rows)`
+        # said 6 while the roster below printed 4 on this box 2026-10-02. A
+        # header that disagrees with the lines under it is worse than no header -
+        # it looks checked. Dedupe once, then count and print the SAME list.
+        roster = sorted(set(rows))
+        lines = [f"- scheduled tasks ({len(roster)} LW-*):"]
+        for name, state in roster:
             lines.append(f"  - {name}: state={state}")
             if state.lower() == "disabled":
                 anomalies.append(f"scheduled task {name} is Disabled")
@@ -317,12 +326,22 @@ def _pipeline_lines(anomalies: list[str], root: Path | None = None) -> list[str]
         else:
             # 0.Originals: loose files awaiting intake ("new since last
             # intake" - intake removes files, so presence = pending).
-            awaiting = 0
+            # A SAMPLE TRAVELS WITH THE COUNT (memory
+            # `feedback-anchor-name-searches`). This is the one pipeline number an
+            # operator acts on directly, and a bare N is uncheckable: 8 real drops
+            # and one stray counted eight times by a bad filter print identically.
+            # Bounded to _ORIGINALS_SAMPLE and it SAYS it truncated, so the sample
+            # is never misread as the roster.
             orig = images / _STAGE_FOLDERS[0]
-            if orig.is_dir():
-                awaiting = sum(
-                    1 for p in orig.iterdir() if p.is_file() and p.name != ".gitkeep"
+            loose = (
+                sorted(
+                    p.name for p in orig.iterdir()
+                    if p.is_file() and p.name != ".gitkeep"
                 )
+                if orig.is_dir()
+                else []
+            )
+            awaiting = len(loose)
             # Stages 1-9: per-image subfolder counts.
             stage_counts: list[tuple[str, int]] = []
             staged_total = 0
@@ -340,7 +359,16 @@ def _pipeline_lines(anomalies: list[str], root: Path | None = None) -> list[str]
             if awaiting == 0 and staged_total == 0 and ref_n == 0:
                 lines.append("- pipeline idle - no files staged under images/")
             else:
-                lines.append(f"- 0.Originals: {awaiting} loose files awaiting intake")
+                shown = loose[:_ORIGINALS_SAMPLE]
+                tail = (
+                    f", ... and {awaiting - len(shown)} more"
+                    if awaiting > len(shown)
+                    else ""
+                )
+                lines.append(
+                    f"- 0.Originals: {awaiting} loose files awaiting intake"
+                    + (f" - {', '.join(shown)}{tail}" if shown else "")
+                )
                 lines.append(
                     "- stages: "
                     + " | ".join(f"{name}={n}" for name, n in stage_counts)

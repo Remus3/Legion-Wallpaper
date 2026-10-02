@@ -197,6 +197,20 @@ def _is_pure_mojibake_201d(raw: bytes) -> bool:
 
 
 @gitdep.requires_git
+def test_the_sweep_selects_a_real_corpus() -> None:
+    """Guard the guard: a sweep that enumerated nothing would pass vacuously.
+
+    `_tracked_files()` returns [] whenever `git ls-files` exits 0 with empty
+    stdout - a fresh init, a reset index, an empty worktree slice. The banned-set
+    walk below then appends no violations and the arm reads green having examined
+    no bytes. This is the vacuity class without pytest's involvement, so
+    `empty_parameter_set_mark = fail_at_collect` does not touch it.
+    """
+    scanned = len(_tracked_files())
+    assert scanned > 200, f"only {scanned} files enumerated - the corpus is wrong"
+
+
+@gitdep.requires_git
 def test_no_smart_quotes_in_authored_source() -> None:
     """Walk every enumerated source file and assert no banned codepoint bytes."""
     violations: list[tuple[str, int, str, int]] = []
