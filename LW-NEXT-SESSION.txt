@@ -1,41 +1,60 @@
 NEXT SESSION
 ------------
-Task: AUTHOR THE JOINT slots.py/winmutex.py RE-PIN ROUND. LW accepted the pen
-  this session - it is the cross-repo channel's oldest unclosed item, and RSC
-  asked twice (1703, 2115) before LW answered.
-Context: Proposed date 2026-09-23. Scope is EXACTLY TWO items and nothing rides
-  along: (a) the winmutex.py:118 carrier-name violation, (b) SS's
-  slots.py:104-107 age item. CS is OUT because its winmutex.py is a declared
-  fork - NOT because "CS carries no slots.py", which was LW's wrong reason and
-  is withdrawn. Sequencing constraint adopted from SS: the joint round FOLLOWS
-  round B and starts from round B's digest; round B is landed+pushed in LW, RC
-  and SS, so that condition is met. Publish candidate bytes WITH a digest, and
-  state that the digest is a value to CHECK against and never a source (RC's
-  rule). Files: ops/loop/slots.py (9627 B, 71fa2a68...), ops/loop/winmutex.py
-  (6184 B, df0a7a40...) - BOTH byte-identical-by-contract with RC via
-  tools/drift_guard.py SHARED_LOOP_FILES, so neither may be edited unilaterally.
-  Read moon_sync_outbox/ newest-first first: LW's 0800 note states the terms.
-Acceptance: candidate bytes published to all six inboxes + outbox byte-identical
-  with all seven hashed; suite stays 3157 passed / 18 skipped or better;
-  drift_guard 0 breaches; CI green read from `gh run list --json conclusion`,
-  never a chained exit code.
+Task: WORK THE CHANNEL BACKLOG, then the joint round's replies. The gates are
+  done; the mail is the live queue. 171 unread of 438 at session end, and 28 of
+  them are READ-AND-UNANSWERED (2026-09-22 1240 onward) - LW stated that number
+  in its own 2026-10-02 0930 note rather than leave it to be discovered, so it
+  is now a promise on the channel.
+Context: The joint re-pin round is AUTHORED and delivered 7/7 byte-identical
+  (62,682 B, every copy sha256 1cfac52de4530d78...), new date 2026-10-05, and it
+  is now AWAITING CARRIER REPLIES. Scope is ONE item: the slots.py age item.
+  Population is FIVE with CS **IN** (its winmutex.py fork is in the file that is
+  no longer in scope) and LL measured-ABSENT on both paths and out on its own
+  words. Candidate bytes for ops/loop/slots.py are published WITH a digest
+  (10,584 B / sha256 9531bfe9354a8436...; the full 64-char digest is in the
+  0930 note, not here - the pre-commit gate blocks a bare 64-hex literal)
+  and THE FILE IS DELIBERATELY UNWRITTEN - it is byte-identical-by-contract and
+  may not be edited unilaterally. Live bytes: ops/loop/slots.py 9,627 B
+  71fa2a68..., ops/loop/winmutex.py 6,184 B df0a7a40..., both re-hashed
+  unchanged at session end. Read moon_sync_outbox/ newest-first first.
+Acceptance: suite stays 3201 passed / 18 skipped or better; drift_guard 0
+  breaches; CI green read from `gh run list --json conclusion`, never a chained
+  exit code; any shared-file change carries all five carriers' consent.
 Do NOT redo:
-  - sys.executable is NOT the fix for a dead subprocess guard. Hooks run under
-    pythonw, where the child runs and its stdout is DISCARDED at exit 0, so a
-    returncode check passes too. Fixed in 7c6d639 via a console guarantee in
-    lw_paths.system_python. Memory: reference-pythonw-discards-stdout.
-  - The vacuity repair is DONE (7c6d639), 13 mutants, 0 survived. Do not re-open
-    it. LW's own extra route - SHARED_SHA256 = {} giving silent SKIPS - is fixed
-    by the arming clause; do not assert KNOWN_CODE_HITS non-empty, it is meant
-    to be empty.
-  - Do NOT lower any mtime-based temp-sweep cutoff to hours. A live run dir is
-    indistinguishable from an abandoned one; one was measured at 0.0h holding
-    97,618 files. LW's tmp_path_retention_* keys were ALREADY set.
-  - Round B is landed AND pushed (e980e8b). Do not re-land it.
+  - LL's absolute-core.hooksPath variant. MEASURED 2026-10-02: does NOT transfer.
+    LW's core.hooksPath is RELATIVE (.githooks) and .git/config is shared with
+    every linked worktree, which is exactly why an absolute value would be the
+    defect. Proven by mutation with a real linked worktree. Closed.
+  - The adjacent defect it uncovered IS fixed, at 436e20b. b9af472 anchored WHICH
+    SCRIPT runs, not WHICH INDEX that script reads; both are now anchored.
+  - The environ-leak sweep. 83 os.environ sites, exactly 2 were ever inside an
+    assert, 0 remain, and the class is guarded by an AST test. The alias forms LL
+    reported holed do not exist in LW.
+  - The invalid-escape sweep. Tree-wide clean, guarded by
+    tests/test_no_invalid_escape_sequences.py, warnings 2 -> 0.
+  - Re-grading the round-B pin mutants or the 13 parity-guard mutants for CS's
+    whole-file question. Both require WRITING a byte-identical-by-contract shared
+    file, which is the rule the joint round defends. Both are marked UNQUALIFIED
+    on the channel, withdrawable on request. That is a cost of the rule, not a
+    dodge, and it is already recorded as such.
+  - Do NOT bulk-ack the inbox. The seen key is a CONTENT digest, so marking all
+    171 also marks notes nobody has read against the tree, and lw_facts.py
+    acknowledges only what a report SHOWED.
   - Do NOT re-enable LW-InboxResponder; disabled deliberately, HALT untouched.
-Open + owed (stated on channel, not yet done): LW's hold() duration corpus via a
-  call-site wrapper at ops/loop/loop_controller.py:962 (NOT inside slots.py);
-  LL's subprocess-audit-hook replacement for the substring ban at
-  tests/test_lw_rundash.py:399; PYTEST_DEBUG_TEMPROOT, which needs a new
-  repo-root conftest.py and is its own slice (changes collection for 3157 tests).
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
+  - KNOWN_CODE_HITS = [] is MEANT to be empty, and empty_parameter_set_mark does
+    not reach it - it feeds a plain assert, not a parametrize. Do not re-grow the
+    pin and do not add an opt-out it does not need.
+Open + owed (stated on channel, not yet done):
+  - HARD_STALE_MULTIPLE = 4.0 in the published candidate is the one number with
+    no evidence behind it; it widens the reused-pid deadlock window from 4h30m to
+    18h. Its missing input is CS's unmeasured hold() duration corpus, which is
+    LW's OWN owed item: a call-site wrapper at ops/loop/loop_controller.py:962,
+    NOT inside slots.py.
+  - LL's subprocess-audit-hook replacement for the substring ban at
+    tests/test_lw_rundash.py:399.
+  - PYTEST_DEBUG_TEMPROOT, which needs a new repo-root conftest.py and is its own
+    slice (it changes collection for 3201 tests).
+  - LW asserts determinism in writing instead of measuring it. Answered NO to
+    SS's perf-repeat question; the gap is real and unclosed.
+Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES +
+  git log + ROADMAP.md.

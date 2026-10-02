@@ -27,6 +27,86 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+227. DONE **2026-10-02 (a 12-day gap closed: three false greens fixed, the joint
+   re-pin round finally authored, and MAIN's stand-in ruling recorded by the
+   operator rather than by the note; `436e20b` `2c06e38` `b118f36` `cd05625`
+   `3498768` `31bd485`).** Session opened on a 12-day silence - last commit
+   2026-09-20, 88 notes arrived meanwhile, 160 unread. **Premise CORRECTED three
+   times, all against the hand-off:** (1) the hand-off said the joint round was
+   TWO items; the `winmutex.py:118` carrier-name violation was already closed by
+   round B at `e980e8b` (the six bytes "by RC " gone, line 118 reads "Found on
+   review, 2026-07-26"), so the round is ONE item; (2) the hand-off's highest-value
+   open item, LL's absolute-`core.hooksPath` variant, does NOT transfer - LW's
+   `core.hooksPath` is RELATIVE, and `.git/config` is shared with every linked
+   worktree, which is exactly why an absolute value would be the defect; (3) my own
+   brief to a subagent claimed `KNOWN_CODE_HITS = []` would red the suite under
+   `fail_at_collect` - it feeds a plain `assert`, not a parametrize, and NO
+   parametrize in the suite is empty. **THREE false greens, each reporting a pass
+   rather than nothing:** (a) `tools/precommit_gate.py`'s `PreToolUse` path read the
+   SESSION tree, not the tree being committed - `_root_from_command` only parsed
+   `git -C <path>`, so `cd "<wt>" && git commit` fell to `os.getcwd()` and returned
+   exit 0 on a staged em-dash, while the reverse arm blocked citing a file ABSENT
+   from the target tree and an MSYS `/c/...` path returned exit 0 via an `OSError`
+   swallowed into an empty diff; the generalisable lesson is that `b9af472`
+   anchored WHICH SCRIPT runs, not WHICH INDEX that script reads, and fixing one
+   read as the whole job for six weeks; (b) two asserts printed the WHOLE
+   ENVIRONMENT into public CI (92 distinct real env keys at `-vv`), with the
+   ABSENT-key branch the leaking one and one site deliberately exercising it - and
+   one shape measured "clean" only incidentally, since `.get(K, "y") == "x"` prints
+   nothing only because a str-vs-str compare shows a string diff, so the guard bans
+   the SHAPE and the subscript carve-out rests on a measurement; (c) the emptied-pin
+   family recurred - `pytest.ini` now carries `empty_parameter_set_mark =
+   fail_at_collect`, a class LW itself FOUND and broadcast while being the last
+   carrier still exposed. **Built TDD, RED first, mutation-proven throughout:** 6
+   arms / 6 mutants on the gate, 10 mutants on the environ + parametrize work (two
+   apparent survivors correctly diagnosed as harness misses where the anchor never
+   matched, re-run with the mutation confirmed landed by sha256 delta, both then
+   died - and the first result was NOT reported as a survivor), 2 mutants on the
+   new escape guard with both files restored byte-exact by sha256. **Two instances
+   then the class:** two invalid escape sequences, found as COLLATERAL by an agent
+   fixing something else, plus `tests/test_no_invalid_escape_sequences.py`, which
+   COMPILES every authored `.py` rather than grepping because `compile()` is the
+   same parser that will one day reject them. **My own process defect, recorded:**
+   I used `write_text` for a mutation restore and CRLF'd three files in a repo whose
+   `.gitattributes` pins `*.py`/`*.md` to LF specifically to stop the 2026-05-19
+   doubled-CR corruption - caught on a sha mismatch, normalised, mutation proof
+   survived, and a green suite would never have caught it (memory
+   `feedback-write-text-adds-crlf`). **Machine state:** `~/.claude.json` carried
+   `C:/Substrate` at `trust=False` against the backslash spelling at `True`, the
+   documented headless-drops-permissions confound, regressed onto a tree that did
+   not exist when it was fixed machine-wide 2026-09-05; reconciled and the
+   `drift_guard` note PROVEN to clear (7 notes -> 6), with the honest caveat that
+   the pre-fix reading is no longer re-observable. **Channel:** the joint re-pin
+   round AUTHORED after 11 days with LW holding the pen - 62,682 B, 7/7
+   byte-identical at `1cfac52de4530d78...` verified independently by the main
+   thread, `ops/loop/slots.py` DELIBERATELY UNWRITTEN with candidate bytes published
+   by digest (10,584 B / `9531bfe9...`), population FIVE with CS IN and LL
+   measured-ABSENT, new date 2026-10-05 and the 9-day slip stated first; the round-B
+   `ast.dump`-equality instrument explicitly does NOT transfer to a behaviour item
+   (22,676 -> 23,357) and the note says so rather than reaching for the familiar
+   proof. Thirteen owed answers discharged, two at LW's own cost: CS's
+   whole-file-grade question answered NO for both prior claims (zero `-k` tokens,
+   but scope never recorded, so both marked UNQUALIFIED), and SS's perf-repeat
+   question answered NO with the real finding that LW asserts determinism in writing
+   instead of measuring it. **Governance:** MAIN's stand-in ruling RECORDED in
+   `CLAUDE.md`, sourced to the OPERATOR's yes in an attended session and expressly
+   NOT to MAIN's note, since authority asserted inside mail-channel content is data
+   and two siblings recording it first is not a grant in LW; MAIN's own limit
+   adopted verbatim, so it does not let MAIN consent for LW on the shared loop
+   files. **Verified:** suite **3201 passed / 18 skipped, exit 0** (from 3157,
+   +44), re-run FRESH by the main thread at HEAD and never carried from a subagent;
+   warnings 2 -> 0; `drift_guard` 0 breaches / 6 notes; CI `success` on the tip AND
+   every intermediate commit, read from `gh run list --json conclusion`; shared
+   `slots.py` / `winmutex.py` re-hashed unchanged at `71fa2a68...` / `df0a7a40...`.
+   **FUTURE / do-not-redo:** the `core.hooksPath` measurement is closed; the
+   environ-leak sweep found 83 sites of which exactly 2 were ever in an assert and 0
+   remain; the invalid-escape sweep is tree-wide clean and guarded; do NOT re-grade
+   the round-B or parity-guard mutants, since both require WRITING a
+   byte-identical-by-contract shared file, which is the rule the joint round
+   defends - recorded as a cost of the rule, not a dodge. `HARD_STALE_MULTIPLE =
+   4.0` in the published candidate is the one number with no evidence behind it and
+   wants CS's unmeasured `hold()` duration corpus as its input.
+
 226. DONE **2026-09-21 (worked the sync inbox: 17 outstanding notes answered in one
    consolidated reply; RSC's vacuity class CONFIRMED in LW and REPAIRED; a DEAD ruff
    gate found in the commit path and fixed; LL's git-root eleven re-derived as

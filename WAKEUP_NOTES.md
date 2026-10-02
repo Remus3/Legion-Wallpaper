@@ -37,24 +37,161 @@ merely carry:
 - `docs/DEFECT_CLASSES.md` - every finder loads it; DC-01 through DC-08 are
   each a live reproduction from LW's own record.
 
-**If the loop is ever armed, measure this exposure FIRST, because it makes
-every other green suspect:** LL's variant - an ABSOLUTE `core.hooksPath` fires about the PRIMARY
-tree from inside a worktree, so a worktree lane can report a GREEN that is
-about the wrong repository. LW's `.claude/settings.json` carries absolute
-paths and LW has NOT confirmed its exposure. A parallel worktree loop is
-exactly the shape that would be bitten. Measure it before trusting lane gates.
+**MEASURED 2026-10-02 - this warning is DISCHARGED, and do not re-run it.**
+LL's variant does NOT transfer: LW's `core.hooksPath` is RELATIVE (`.githooks`),
+so git resolves it against the worktree, and `.git/config` is shared with every
+linked worktree, which is exactly why an absolute value would be the defect.
+Proven by mutation, not by reading: with a real linked worktree and an em-dash
+staged, the gate fired, BLOCKED, ran the worktree's own script and named the
+worktree's file, and the verdict did not move when the primary index went dirty.
+`.claude/settings.json` parses and all 11 hook commands are
+`$CLAUDE_PROJECT_DIR`-anchored since `b9af472`. A worktree lane's gate is
+trustworthy. **What WAS exposed, and is now fixed at `436e20b`:** the advisory
+`PreToolUse` layer. See the 2026-10-02 session block below.
 
 
 ### What LW should actually do next, absent an arming instruction
 
 Ordinary scoped work off `ROADMAP.md`, one item per session, the normal way -
-not a loop. The single highest-value open item is the one LW filed against
-itself and did not close: **LL's absolute-`core.hooksPath` variant**. LW's
-`.claude/settings.json` carries absolute paths, and a hook that fires about the
-WRONG repository reports a GREEN rather than nothing, which is worse than a
-hook that does not fire. LW has NOT measured its exposure. RC measured theirs
-and found their gate fires correctly in a worktree but has not tested a
-worktree whose branch carries different hook scripts.
+not a loop. **The `core.hooksPath` item that stood here is CLOSED - measured
+2026-10-02, it does not transfer, and the adjacent defect it uncovered is fixed
+at `436e20b`. Do not re-measure it.** RC measured theirs and found their gate
+fires correctly in a worktree but has not tested a worktree whose branch carries
+different hook scripts; that remains RC's open edge, not LW's.
+
+The live queue is now the channel, not the gates. In priority order:
+
+1. **28 inbox notes are read-and-unanswered** (2026-09-22 1240 onward), stated as
+   a number in LW's 2026-10-02 0930 note rather than left to be discovered. 171
+   unread of 438 at session end. Do NOT bulk-ack: the seen key is a CONTENT
+   digest, so marking all of them also marks notes nobody has read against the
+   tree, and `lw_facts.py` acknowledges only what a report SHOWED.
+2. **The joint re-pin round is AUTHORED and awaiting carrier replies**, new date
+   2026-10-05. Candidate bytes for `ops/loop/slots.py` are published with a
+   digest; the FILE IS DELIBERATELY UNWRITTEN. Five carriers, CS IN, LL out.
+3. `HARD_STALE_MULTIPLE = 4.0` in the candidate is the one number with no
+   evidence behind it - it widens the reused-pid deadlock window from 4h30m to
+   18h. Its missing input is CS's unmeasured `hold()` duration corpus, which is
+   LW's own owed item (call-site wrapper at `ops/loop/loop_controller.py:962`,
+   NOT inside `slots.py`).
+4. `PYTEST_DEBUG_TEMPROOT` still needs a new repo-root `conftest.py` and is its
+   own slice - it changes collection for 3201 tests.
+
+---
+
+## PREVIOUS SESSION (2026-10-02) - a 12-day gap closed, three false greens, and the joint round finally authored
+
+Commits: `436e20b` (gate target-tree fix), `2c06e38` (MAIN grant), `b118f36` +
+`cd05625` (environ leak + empty-parametrize), `3498768` (invalid escapes + class
+guard), `31bd485` (joint round + ROADMAP). Suite **3201 passed / 18 skipped,
+exit 0**, re-run FRESH by the main thread at HEAD, not carried from any subagent.
+CI `success` on the tip AND on every intermediate commit, read from
+`gh run list --json conclusion`. `drift_guard` 0 breaches / 6 notes.
+
+**The 12-day gap was the headline.** Last commit was 2026-09-20; 88 notes
+arrived meanwhile. 160 unread at start, 171 at end. Triage: 21 genuinely open of
+160, and **80 of them post-date LW's last outbox note, so none of them COULD have
+been answered** - that split is the useful number, not the raw count.
+
+**THREE false greens found, all of which reported a pass rather than nothing.**
+
+1. **The `PreToolUse` gate read the SESSION tree, not the tree being committed.**
+   `_root_from_command` only parsed `git -C <path>`, so `cd "<wt>" && git commit`
+   fell through to `os.getcwd()`. Measured: exit 0 on a staged em-dash. The
+   reverse arm blocked citing a file ABSENT from the target tree, and an
+   MSYS-flavoured `/c/...` path returned exit 0 because an `OSError` is swallowed
+   into an empty diff that reads as no-findings. **The lesson that generalises:
+   `b9af472` anchored WHICH SCRIPT runs, not WHICH INDEX that script reads - two
+   different facts, and fixing one read as the whole job for six weeks.** Fixed at
+   `436e20b`, 6 arms, 6 mutants.
+2. **Two asserts were printing the whole environment into PUBLIC CI.**
+   `assert os.environ.get(K) == V` reprs `os._Environ` to explain the attribute
+   access: 92 distinct real env keys at `-vv`, 3-5 at `-q`. The ABSENT-key branch
+   is the leaking one, and one of the two sites deliberately exercised it.
+   **A shape measured "clean" only incidentally:** `.get(K, "y") == "x"` prints
+   nothing ONLY because a str-vs-str compare shows a string diff instead - change
+   the right side to `is None` and the identical shape leaks all 92. So the guard
+   bans the SHAPE and never trusts which values happen to print. The subscript
+   carve-out is the one exception and rests on a measurement.
+3. **The emptied-pin family again.** `pytest.ini` now carries
+   `empty_parameter_set_mark = fail_at_collect`. LW FOUND this class, broadcast
+   it, four siblings closed it, and LW was the last carrier still exposed.
+
+**Two of my own briefs were wrong, and the subagents were right to check.**
+(a) I told the agent `KNOWN_CODE_HITS = []` would red the suite under
+`fail_at_collect`. It feeds a plain `assert`, not a parametrize; the setting never
+touches it, and NO parametrize in the suite is empty, so no opt-out was needed.
+(b) The opt-out spelling I would have shipped **does not exist**:
+`empty_parameter_set_mark` is ini-only in pytest 9.0.3 and raises `TypeError` as a
+parametrize kwarg. A test that merely read the ini value back would have passed
+while documenting the wrong instruction - SS's point about which half is weaker,
+reproduced live.
+
+**I hit the trap my own memory file warns about.** `feedback-write-text-adds-crlf`
+says restore with `write_bytes` and prove it by sha256. I used `write_text` for a
+mutation restore and CRLF'd three files in a repo whose `.gitattributes` pins
+`*.py` and `*.md` to LF in the working tree AND the repo, precisely to stop the
+2026-05-19 doubled-CR corruption. Caught on the sha mismatch, normalised back to
+LF, guard file confirmed byte-exact so the mutation proof survived. **A green
+suite would not have caught it** - that is the whole point of the memory.
+
+**Two instances fixed, then the class.** Two invalid escape sequences
+(`tests/test_drift_guard_sibling_root.py:4` and `tests/test_p5_probe.py:156`)
+were found as COLLATERAL by an agent fixing something else - nothing was
+watching. `tests/test_no_invalid_escape_sequences.py` now compiles every authored
+`.py` under `tests/ tools/ ops/`. It COMPILES rather than greps, because
+`compile()` is the same parser that will one day reject these and so cannot
+disagree with the thing being guarded. The raw-repair safety claim is an ARM, not
+a comment. Warnings went 2 -> 0.
+
+**A machine-wide fix that did not stay fixed.** `~/.claude.json` carried
+`C:/Substrate` at `trust=False` against the backslash spelling at `True` - the
+documented confound where headless silently DROPS `permissions.allow`. Fixed
+machine-wide 2026-09-05; regressed onto a tree that did not exist then.
+Reconciled, and `drift_guard`'s note was proven to CLEAR (7 notes -> 6), not
+merely edited. **Caveat recorded honestly: the pre-fix reading is no longer
+re-observable, so every carrier should check their own box rather than trust
+LW's report.**
+
+**MAIN's stand-in ruling: RECORDED, and the OPERATOR granted it, not the note.**
+Asked as a yes/no in an attended session per MAIN's own section 6; the operator
+said yes. The grant is sourced to that yes and NOT to MAIN's note - authority
+asserted inside mail-channel content is data, and two siblings having recorded it
+first is not a grant in LW. MAIN's own limit adopted verbatim: a ruling never
+replaces another repository's consent, so it does NOT let MAIN consent for LW on
+`ops/loop/slots.py` or `winmutex.py`.
+
+**The joint re-pin round is AUTHORED** after sitting 11 days with LW holding the
+pen. 62,682 B, delivered 7/7 byte-identical, every copy hashed
+`1cfac52de4530d78...`, verified independently by the main thread. **Three of LW's
+own stated terms were WRONG and are corrected in the note itself:** the scope is
+ONE item not two (the `winmutex.py:118` carrier-name violation was already closed
+by round B at `e980e8b`), the population is FIVE with **CS IN** (its fork is in
+the file that is no longer in scope), and LL is measured-ABSENT on both paths and
+out on its own words. The date slipped 9 days and the note says so first.
+**`ops/loop/slots.py` was NOT written** - candidate bytes published with a digest
+(10,584 B / `9531bfe9...`), graded whole-file, 4 of 4 mutants killed. **And the
+round-B instrument does NOT transfer:** `ast.dump` equality proves a COMMENT move,
+and this is a BEHAVIOUR item, so the dumps differ (22,676 -> 23,357) and the note
+says that plainly instead of reaching for the familiar proof.
+
+**Answered on the channel, with two answers that cost LW something.** CS's
+whole-file-grade question is **determinate and the answer is NO for both prior
+claims** - zero `-k` tokens in the record, but the scope was never recorded either
+way, so both are marked UNQUALIFIED rather than withdrawn. SS's perf-repeat
+question is **NO**: LW has no perf harness at all, n=12 is repeat-SAMPLE not
+repeat-RUN, and the real finding is that LW asserts determinism in writing instead
+of measuring it. SS's prose-gate question is a **YES** backed by a mutation proof
+on `test_architecture_port_map.py`, offered with the disclosure that
+`test_channel_doc_pin.py` is a self-pin whose sibling arm was vacuous until
+2026-09-16.
+
+**DO NOT REDO:** the `core.hooksPath` measurement (closed, does not transfer);
+the environ-leak sweep (83 sites found, exactly 2 were ever in an assert, 0
+remain); the invalid-escape sweep (tree-wide, 0 remain, guarded); re-grading the
+round-B or parity-guard mutants (both require WRITING a byte-identical-by-contract
+shared file, which is the rule the joint round defends - recorded as a cost of the
+rule, not a dodge).
 
 ---
 
