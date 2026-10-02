@@ -79,6 +79,79 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-02, second half) - the backlog answered, and the round FROZEN because LW kept voiding its own carriers
+
+Commits: `6dbe5e9` (C1/C4/C5 measured), `4e49d0c` (identity-in-history guard),
+`3dbf336` `dbe1b03` `8b1c09e` (three channel notes + ROADMAP), `a23fc68`
+(bounded slot wait + owed corpus), `57da489` (stale executor directive),
+`d3c036c` (a guard that stated a false finding). Suite **3281 passed / 19
+skipped, exit 0**, run FRESH by the main thread. drift_guard 0 breaches.
+
+**The backlog could not be counted, so LW published the roster.** LW had said
+"28 read-and-unanswered". Four independent derivations of LW's OWN definition
+gave 28, 51, 52 and 55/57. The definition never specified the tie-break clock,
+and on this channel stamps and mtimes disagree by hours - one note stamped 0020
+was written 27 minutes AFTER the note it answers. **A corrected number would
+have carried the original defect**, so the note ships the rows plus RC's
+matching rule (for comparability) and RSC's mtime clause (for reproducibility).
+46 of 53 in-window notes were one sender, SS.
+
+**The lesson series got measurements, not acknowledgements.** C1 vacuity LIVE
+(`tools/drift_guard.py:195` returned `[]` on an empty `git ls-files` and
+published a CLEAN note - SS's exact "vacuous tree walk"); C4 count-as-evidence
+LIVE (`lw_facts.py` printed `6 LW-*` above FOUR rows, **in this session's own
+startup banner**, which I read past); C5 citation decay NOT live in docs but
+LIVE where it bites - `ops/loop/config.json`'s `directive_suffix`, fed verbatim
+to the headless executor, carried a PRE-ROUND-B winmutex digest for twelve days
+and the withdrawn FOUR-carriers roster saying CS carries no `slots.py`.
+
+**No credentials in history** - 2,331 blobs / 137 MiB / 26s, positive control
+11/11, 20 unreferenced-but-present blobs covered. The operator's email DOES
+survive in 5 history blobs reachable from origin/main; **the operator considered
+and DECLINED remediation**, so it is guarded (`4e49d0c`) and recorded by digest
+in `docs/IDENTITY_IN_HISTORY_2026-10-02.md`. Both prior secret guards are
+working-tree guards and structurally could not see it.
+
+**The joint round is FROZEN at `da35f8b1` (C3-M2, 10,930 B) and the reason is
+LW's own defect.** LW voided THREE attestations in a row - `9531bfe9`,
+`799cdeed`, `72a11e29` - and **every one was killed by LW's own next
+publication, never by a carrier objection**. RSC derived bytes LW had already
+superseded; RC attested three digests including the one it moved to. Worse than
+a race: measured mtimes show RC's 2000 note had been on LW's disk 4m16s when
+LW's own note asserted nothing newer existed. A stale read published as a
+measurement. Freeze terms are falsifiable: no re-issue except on a carrier
+BLOCKING objection; an LW-originated improvement is explicitly not grounds.
+
+**`4.0` is held by nobody, including LW.** 2.0 has LW + CS + RSC + RC. RC MOVED
+rather than digging in, and that is what closed it. SS abstains on the numeral.
+LW's section-4 margin sentence ("a 3.0x margin, no carrier has measured a hold
+that approaches the line") is WITHDRAWN: SS measured 10,055 s observed and
+12,660 s designed. The finding that cut hardest came from LW's own tree -
+`loop_controller.py:962` called `slots.hold()` with no timeout, so age-at-release
+was unbounded BY CONSTRUCTION, meaning LW's own 4.0 would have made LW's worst
+case worse. Bounded in `a23fc68`; the owed corpus records WAIT and HOLD
+separately because conflating them is what made 5,401 s read as a maximum.
+
+**CS broke ten days of silence** with a finding that changed the bytes: the
+candidate's middle arm is dead code. Confirmed by RC via arm deletion. LW's own
+config had until `57da489` been telling an executor that CS carries nothing.
+
+**My own four corrections, recorded because they were mine:** my backlog figure
+of 51 was one of four incompatible answers; I flattened RC's position into
+agreement it never gave (RC kept ACCEPT on 4.0, withdrew only the margin); I
+briefed an agent that `KNOWN_CODE_HITS=[]` would red the suite when the setting
+cannot reach a plain `assert`; and I used `write_text` for a mutation restore,
+CRLF'ing three LF-pinned files - the trap my own memory file warns about. Each
+was caught by an agent checking the premise instead of implementing it.
+
+**DO NOT REDO:** the hooksPath measurement (closed, does not transfer); the
+environ-leak sweep (83 sites, 2 ever in an assert, 0 remain); the invalid-escape
+sweep (tree-wide clean, guarded); re-grading the round-B or parity-guard mutants
+(both require WRITING a byte-identical-by-contract file - a cost of the rule,
+not a dodge).
+
+---
+
 ## PREVIOUS SESSION (2026-10-02) - a 12-day gap closed, three false greens, and the joint round finally authored
 
 Commits: `436e20b` (gate target-tree fix), `2c06e38` (MAIN grant), `b118f36` +

@@ -27,6 +27,68 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+228. DONE **2026-10-02 (answered the read-and-unanswered backlog with MEASUREMENTS,
+   froze the joint round after LW voided three of its own carriers' attestations, and
+   found a guard that stated a false finding; `6dbe5e9` `4e49d0c` `a23fc68` `57da489`
+   `3dbf336` `dbe1b03` `8b1c09e` `d3c036c`).** Operator asked for the 28
+   read-and-unanswered notes to be answered. **The count was not reproducible:** four
+   independent derivations of LW's own published definition gave 28, 51, 52 and 55/57,
+   splitting on a tie-break clock LW never specified, so the note ships the ROSTER plus
+   RC's matching rule and RSC's mtime clause - a corrected number would have carried the
+   original defect. **Answered the lesson series by measuring LW rather than
+   acknowledging:** C1 vacuity LIVE (`tools/drift_guard.py:195` returned `[]` on an empty
+   `git ls-files` and published a clean note, SS's exact vacuous tree walk, fixed with
+   three dispositions because collapsing UNASKABLE into ZERO installs a false red on a
+   tarball); C4 count-as-evidence LIVE (`lw_facts.py` printed `6 LW-*` above FOUR rows,
+   present in this session's own startup banner and read past); C5 NOT live in docs
+   (0 of 103 decidable citations decayed) but LIVE in `ops/loop/config.json`'s
+   `directive_suffix`, which is fed verbatim to the headless executor and carried a
+   PRE-ROUND-B winmutex digest for twelve days plus the withdrawn FOUR-carriers roster
+   claiming CS carries no `slots.py` - both repaired with a class guard. **Ran the
+   full-history credential scan SS asked every carrier for:** 2,331 blobs / 137 MiB /
+   26s, positive control 11 of 11 arms, 20 unreferenced-but-present blobs covered, NO
+   credential anywhere; the operator's email DOES survive in 5 blobs reachable from
+   origin/main, **remediation CONSIDERED AND DECLINED by the operator**, so it is guarded
+   and recorded by digest in `docs/IDENTITY_IN_HISTORY_2026-10-02.md` - and both prior
+   secret guards were working-tree guards that structurally could not see it. **The joint
+   round is FROZEN at `da35f8b1` and the reason is LW's own process defect:** LW voided
+   three attestations in a row (`9531bfe9`, `799cdeed`, `72a11e29`) and every one was
+   killed by LW's own next publication rather than a carrier objection - RSC derived
+   superseded bytes, RC attested the digest LW obsoleted, and measured mtimes show RC's
+   note had been on LW's disk 4m16s while LW asserted nothing newer existed. **`4.0` now
+   has zero holders including LW; 2.0 has four (LW, CS, RSC, RC) after RC MOVED.** LW's
+   own margin sentence is WITHDRAWN against SS's 10,055 s observed / 12,660 s designed.
+   **The sharpest finding was LW's own:** `ops/loop/loop_controller.py:962` called
+   `slots.hold()` with no timeout, so age-at-release was unbounded by construction and
+   LW's proposed 4.0 would have made LW's own worst case WORSE; bounded at one cycle
+   deadline, and the owed hold corpus records WAIT and HOLD separately with leaked holds
+   censored-not-dropped, because conflating them is what made 5,401 s read as a maximum.
+   CS broke ten days of silence to report the candidate's middle arm is dead code,
+   confirmed independently by RC via arm deletion. **A guard that stated a FALSE
+   finding:** the wrap's own pre-flight reddened claiming `empty_parameter_set_mark` now
+   works as a parametrize kwarg - it does not; the child pytest had died of
+   `FileNotFoundError` on a concurrent pytest's `garbage-<uuid>` basetemp GC in the shared
+   temp root. The assertion conflated "the child failed" with "the child failed for my
+   reason" in one expression; the directions now report separately, `--rootdir` closes the
+   looking half that `TEMP` injection (which only moves where the child WRITES) left open,
+   and `_run` retries only on a signature provably unrelated to any arm. **Retry
+   deliberately NOT mutation-proven** - its benefit is statistical (3 of 6 module runs
+   reddened before, 0 of 6 after) and publishing a non-binding mutant table would be the
+   defect this channel exists to catch; a deterministic arm proves the classifier
+   discriminates instead, including that a genuine TypeError does not read as unrelated.
+   **Four self-corrections recorded:** the 51 figure, flattening RC's position into
+   agreement it never gave, a brief asserting `KNOWN_CODE_HITS=[]` would red the suite,
+   and `write_text` CRLF'ing three LF-pinned files - the trap LW's own memory warns about.
+   **Verified:** suite **3281 passed / 19 skipped exit 0** run fresh by the main thread
+   (from 3157, +124), ruff clean, drift_guard 0 breaches, 7-of-7 byte-identical delivery
+   on all four channel notes, shared `slots.py`/`winmutex.py` re-hashed UNCHANGED at
+   `71fa2a68...`/`df0a7a40...`. New memories: `reference-heredoc-collapses-backslashes`
+   (a regex through a heredoc matched NOTHING and reported a false clean),
+   `feedback-anchor-the-script-and-the-subject`. **FUTURE:** `PYTEST_DEBUG_TEMPROOT` is
+   the root cause of the temp race and is its own slice (new repo-root `conftest.py`,
+   changes collection for 3281 tests); attestations of the frozen bytes stand at ONE
+   (RC 2100, which arrived during this wrap) against TWO required.
+
 227. DONE **2026-10-02 (a 12-day gap closed: three false greens fixed, the joint
    re-pin round finally authored, and MAIN's stand-in ruling recorded by the
    operator rather than by the note; `436e20b` `2c06e38` `b118f36` `cd05625`
