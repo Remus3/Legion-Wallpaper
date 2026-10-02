@@ -146,15 +146,71 @@ def _child_env(tmp_path: Path) -> dict[str, str]:
 
 
 def _run(ini: Path, fixture: Path) -> subprocess.CompletedProcess[str]:
-    """Collect `fixture` under `ini` in a real pytest subprocess."""
+    """Collect `fixture` under `ini` in a real pytest subprocess.
+
+    `--rootdir` is passed explicitly, and that is not tidiness. Without it the
+    child derives its rootdir by walking UP from `cwd`, and `cwd` here is the
+    parent's `tmp_path`, which pytest places under the machine's shared
+    `%TEMP%` (`.../Temp/pytest-of-<account>/pytest-NNN/...`). That walk stats
+    the neighbours it passes, so a temp file another process on this box
+    creates and deletes mid-walk raises `FileNotFoundError` inside the CHILD's
+    collection and the arm dies for a reason that has nothing to do with what
+    it asserts. Measured 2026-10-02: a full-suite run reddened on a vanished
+    `Temp\\tmp.dR5G3TkXcV` while every arm passed in isolation.
+
+    Pinning TEMP/TMP/TMPDIR in `_child_env` was not enough on its own, because
+    it moves where the child WRITES and not where it LOOKS. `--rootdir` closes
+    the looking half. Related memory: `feedback-hermetic-tests-machine-state`.
+    """
     tmp_path = fixture.parent
-    return subprocess.run(
-        [sys.executable, "-m", "pytest", "-c", str(ini), str(fixture),
-         "--collect-only", "-q", "-p", "no:cacheprovider",
-         "--basetemp", str(tmp_path / "basetemp")],
-        capture_output=True, text=True, check=False, cwd=str(tmp_path),
-        env=_child_env(tmp_path), creationflags=NO_WINDOW,
-    )
+    argv = [sys.executable, "-m", "pytest", "-c", str(ini), str(fixture),
+            "--collect-only", "-q", "-p", "no:cacheprovider",
+            "--rootdir", str(tmp_path),
+            "--basetemp", str(tmp_path / "basetemp")]
+    # Bounded retry, and ONLY on a failure signature that is provably not the
+    # subject of any arm here. Justification, because a retrying test is
+    # normally a smell: the interference is a CROSS-PROCESS race on a directory
+    # this suite does not own, so a second observation at a different instant
+    # is a real discriminator. A genuine finding - the ini stopped working, the
+    # kwarg started working - is deterministic and reproduces on every attempt,
+    # so no retry count can hide one. The alternative, skipping on noise, is
+    # what the `_child_env` docstring already names as how a guard gets
+    # switched off.
+    for _ in range(_RETRIES):
+        proc = subprocess.run(
+            argv, capture_output=True, text=True, check=False,
+            cwd=str(tmp_path), env=_child_env(tmp_path),
+            creationflags=NO_WINDOW,
+        )
+        if not _unrelated_failure(proc.stdout + proc.stderr):
+            return proc
+    return proc
+
+
+# Signatures of a child that died of something other than the thing an arm is
+# asserting about. A non-zero exit means "the child failed", never "the child
+# failed for my reason", and conflating those two is how this file once
+# reported that a pytest feature had changed behaviour when a neighbouring
+# process had merely deleted a temp file.
+_UNRELATED = (
+    "FileNotFoundError",
+    "PermissionError",
+    "INTERNALERROR",
+)
+
+# Attempts per child invocation. 3 was chosen against the measured rate: the
+# race fired on 3 of 6 module runs on 2026-10-02, so a single extra attempt
+# already takes the odds of three independent hits to roughly one in eight,
+# and the arms stay fast because the retry only happens on a detected hit.
+_RETRIES = 3
+
+
+def _unrelated_failure(combined: str) -> str:
+    """Return the first unrelated-failure signature present, or ""."""
+    for sig in _UNRELATED:
+        if sig in combined:
+            return sig
+    return ""
 
 
 def _write(tmp_path: Path, ini_text: str, fixture_text: str) -> tuple[Path, Path]:
@@ -229,13 +285,32 @@ def test_the_kwarg_spelling_of_the_opt_out_does_not_exist(tmp_path):
     parametrize kwarg, this arm reds and the guidance in pytest.ini and in the
     comment above FIXTURE_WITH_OPT_OUT should be widened to offer it - rather
     than that guidance silently going stale.
+
+    The two failure directions are reported SEPARATELY on purpose. The original
+    arm asserted `returncode != 0 and <substring>` in one expression, so when
+    the child died of a shared-%TEMP% race it printed "empty_parameter_set_mark
+    now appears to work as a parametrize kwarg" - a confident, wrong diagnosis
+    of a pytest behaviour change that had not happened. A non-zero exit means
+    the child failed; it never means the child failed for this arm's reason.
     """
     _ini, fixture = _write(tmp_path, "", FIXTURE_WITH_BOGUS_KWARG)
     proc = _run(REAL_INI, fixture)
     combined = proc.stdout + proc.stderr
-    assert proc.returncode != 0 and "unexpected keyword argument" in combined, (
-        "empty_parameter_set_mark now appears to work as a parametrize kwarg - "
-        f"update the opt-out guidance in pytest.ini:\n{combined[-2000:]}")
+    expected = "unexpected keyword argument" in combined
+    if not expected:
+        unrelated = _unrelated_failure(combined)
+        assert not unrelated, (
+            f"INCONCLUSIVE, not a refutation: the child failed with "
+            f"{unrelated!r}, which is unrelated to the kwarg spelling. This arm "
+            "asserts nothing about that failure - fix the child's environment "
+            f"rather than the opt-out guidance:\n{combined[-2000:]}")
+    assert proc.returncode != 0, (
+        "empty_parameter_set_mark now appears to work as a parametrize kwarg "
+        "(the child COLLECTED CLEANLY) - widen the opt-out guidance in "
+        f"pytest.ini:\n{combined[-2000:]}")
+    assert expected, (
+        "the child failed, but not with the TypeError that proves the kwarg is "
+        f"rejected - the guidance in pytest.ini may be stale:\n{combined[-2000:]}")
 
 
 def test_an_ambient_pytest_var_cannot_reach_the_child(tmp_path, monkeypatch):
@@ -255,6 +330,29 @@ def test_an_ambient_pytest_var_cannot_reach_the_child(tmp_path, monkeypatch):
     assert proc.returncode == 0, (
         "an ambient pytest variable reached the child, so these arms measure "
         f"the surrounding environment rather than the ini:\n{combined[-2000:]}")
+
+
+def test_the_unrelated_failure_classifier_binds():
+    """Deterministic arm for the retry's classifier.
+
+    The retry in `_run` cannot be mutation-proven: its benefit is statistical
+    (the race fired on 3 of 6 module runs before it, 0 of 6 after), and a
+    cross-process race cannot be summoned on demand. Rather than publish a
+    mutant table that does not bind, this arm proves the one piece that IS
+    deterministic - that the classifier deciding WHEN to retry actually
+    discriminates. If it always returned "" the retry would never fire; if it
+    always returned a signature, a real refutation would be retried three times
+    and then reported as INCONCLUSIVE, which would hide a finding.
+    """
+    assert _unrelated_failure("FileNotFoundError: [WinError 2] missing") == (
+        "FileNotFoundError")
+    assert _unrelated_failure("INTERNALERROR> boom") == "INTERNALERROR"
+    # The expected outcome of the kwarg arm must NOT read as unrelated, or that
+    # arm would retry a genuine finding and then decline to report it.
+    assert _unrelated_failure(
+        "TypeError: parametrize() got an unexpected keyword argument") == ""
+    # A clean collection must not read as unrelated either.
+    assert _unrelated_failure("1 test collected in 0.01s") == ""
 
 
 def test_the_ini_declares_the_setting(tmp_path):
