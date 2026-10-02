@@ -240,19 +240,82 @@ def _git(args: list[str], root: str | None) -> str:
 
 _DASH_C = re.compile(r"git\s+-C\s+(\"([^\"]+)\"|'([^']+)'|(\S+))")
 
+# The OTHER way a command names its tree, and the one that was missing:
+# `cd "<path>" && git commit`. PowerShell's aliases are included because the
+# Bash tool is not the only channel that reaches this hook.
+_CHDIR = re.compile(
+    r"(?:^|[;&|{(]\s*)(?:cd|chdir|pushd|Set-Location|sl)\s+(?:/d\s+)?"
+    r"(\"([^\"]+)\"|'([^']+)'|([^;&|\s]+))",
+    re.IGNORECASE,
+)
+
+# Either shape, used only to answer "does this command name a tree at all?".
+# A command that names NO tree runs in the hook's own CWD by construction.
+_NAMES_A_TREE = re.compile(
+    r"(?:^|[;&|{(]\s*)(?:cd|chdir|pushd|Set-Location|sl)\s|git\s+(?:\S+\s+)*?-C\s",
+    re.IGNORECASE,
+)
+
+# Git Bash / MSYS hand over `/c/Users/...` for `C:\Users\...`. Left unconverted
+# it is not a directory on Windows, `_git` raises OSError there, `_staged_added`
+# swallows that into an empty diff, and an empty diff reads as "no findings" -
+# a false green of exactly the family CLAUDE.md already records.
+_MSYS_DRIVE = re.compile(r"^/([A-Za-z])(/.*)?$")
+
+
+def _normalise_root(path: str) -> str:
+    """Strip quoting and convert an MSYS `/c/...` path to `C:/...`."""
+    p = path.strip().strip("\"'")
+    m = _MSYS_DRIVE.match(p)
+    if m:
+        p = m.group(1).upper() + ":" + (m.group(2) or "/")
+    return p
+
 
 def _root_from_command(command: str) -> str | None:
-    """Repo dir from `git -C <path> ... commit`, preferring the segment that
-    carries the commit (worktree agents commit via -C into their own tree -
-    resolving the hook's CWD would gate the WRONG repo's staged diff)."""
-    root = None
+    """The tree the commit will actually run in, read off the command text.
+
+    Two shapes, both real on this box:
+      git -C <path> ... commit   - worktree agents and the orchestrator
+      cd <path> && git commit    - what a human or an agent types most often
+
+    Both prefer the segment that CARRIES the commit: resolving the hook's CWD
+    instead would gate the WRONG tree's staged diff. For chained `cd`s the LAST
+    one before the commit wins, because that is the directory the shell is in
+    when git runs. An explicit `git -C` beats a `cd`, because git obeys `-C`
+    regardless of where the shell happens to be standing.
+
+    Returns None when the command names no tree at all - which the caller must
+    distinguish from "named one and it could not be resolved", see main().
+    """
+    weak = None
     for m in _DASH_C.finditer(command):
         path = m.group(2) or m.group(3) or m.group(4)
         tail = command[m.end():]
         if re.match(r"\s+(?:(?:-\S+|\"[^\"]*\"|'[^']*')\s+)*commit\b", tail):
-            return path
-        root = root or path
-    return root
+            return _normalise_root(path)
+        weak = weak or path
+    chdir = None
+    for m in _CHDIR.finditer(command):
+        path = m.group(2) or m.group(3) or m.group(4)
+        if _is_commit(command[m.end():]):
+            chdir = path
+    if chdir:
+        return _normalise_root(chdir)
+    return _normalise_root(weak) if weak else None
+
+
+def _worktree_top(path: str) -> str | None:
+    """The worktree top git itself reports for `path`, or None.
+
+    Asking git rather than trusting the string is what makes a linked worktree
+    resolve to ITS own top (not the primary tree's) and what turns an
+    unreachable or non-repository path into an honest None instead of a silently
+    empty diff.
+    """
+    if not path or not os.path.isdir(path):
+        return None
+    return _git(["rev-parse", "--show-toplevel"], path).strip() or None
 
 
 def _staged_added(root: str) -> dict[str, dict]:
@@ -399,6 +462,70 @@ def _report(violations: list[str], what: str) -> int:
         + "\n".join(violations)
         + "\n\nFix the staged lines (ruff check --fix / strip the glyph) and re-commit.\n"
     )
+    return 2
+
+
+def _resolve_target_tree(command: str) -> str | None:
+    """The tree whose staged diff this commit is about, or None to refuse.
+
+    The PreToolUse placement is the one with no guarantee: its CWD is the
+    SESSION root, which is not necessarily the tree the command commits in. Both
+    old fallbacks were unusable there - fail-open gated a clean index and passed
+    banned content (exit 0, no output), and fail-closed named a file that does
+    not exist where the commit runs. So this draws ONE distinction and refuses
+    on the wrong side of it:
+
+      the command NAMES a tree (`git -C <p>` or `cd <p> && ...`)
+          -> ask git for that path's worktree top. Resolvable: gate it. Not
+             resolvable (unexpanded variable, typo, a path this process cannot
+             reach): REFUSE. The command demonstrably targets something other
+             than our CWD, so our CWD is not a lesser answer, it is a wrong one.
+
+      the command names NO tree
+          -> the commit runs in the CWD it was handed, so `rev-parse
+             --show-toplevel` there is not a guess - it is the same answer git
+             itself will reach. This is the overwhelmingly common shape (a plain
+             `git commit -m "..."` in the primary tree, no worktree in play) and
+             it keeps the old chain, fallbacks and all. Refusing it would be a
+             worse defect than the one this fixes.
+
+    `--git-hook` mode deliberately does not come through here: git runs that
+    hook with CWD already at the worktree top, so it has the guarantee this
+    function exists to replace.
+    """
+    named = _root_from_command(command)
+    if named is not None:
+        return _worktree_top(named)
+    if _NAMES_A_TREE.search(command):
+        # A `cd` or `-C` is present but no path came out of it - a quoting shape
+        # the parser above does not cover. Unknown, not ours to assume.
+        return None
+    return (
+        _git(["rev-parse", "--show-toplevel"], os.getcwd()).strip()
+        or fallback_root()
+    )
+
+
+def _report_unknown_tree(command: str) -> int:
+    """Block, saying WHICH thing could not be determined.
+
+    Exit 2, the same BLOCKED code the content gates use, because the outcome is
+    the same from the caller's side: this commit does not proceed. The message
+    is what differs, and it has to - the two old behaviours were a silent pass
+    and a foreign filename, and neither told the reader anything true.
+    """
+    sys.stderr.write(
+        "precommit_gate BLOCKED commit - cannot determine the target tree.\n"
+        f"  command: {command.strip()[:200]}\n"
+        "  It names a directory (git -C / cd) that this gate could not resolve "
+        "to a git worktree,\n"
+        "  so there is no index it can honestly check. It will NOT fall back to "
+        "its own CWD:\n"
+        "  that read the wrong tree's staged diff, which passed banned content "
+        "once and named a\n"
+        "  file from a foreign tree the other time.\n"
+        "  Fix: use a real absolute path, or run `git commit` with the shell "
+        "already in that tree.\n")
     return 2
 
 
@@ -571,11 +698,9 @@ def main() -> int:
     if not _is_commit(command):
         return 0
 
-    root = (
-        _root_from_command(command)
-        or _git(["rev-parse", "--show-toplevel"], os.getcwd()).strip()
-        or fallback_root()
-    )
+    root = _resolve_target_tree(command)
+    if root is None:
+        return _report_unknown_tree(command)
     violations = _staged_violations(root)
 
     # The -m text lives in the command string here. (In the git-hook placement
