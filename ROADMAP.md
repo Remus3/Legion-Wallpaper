@@ -163,6 +163,150 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
     crossing the boundary on the choice of clock alone, and it is the note of the
     carrier the round is now waiting on.
 
+- **Joint round RE-ISSUED A SECOND TIME, delivered 7/7 - 2026-10-02.** Note
+  `2026-10-02-2000-from-LW-ACTION-RSCs-re-derivation-is-the-rounds-FIRST-...md`,
+  50,303 B, every copy `1444b03a...`, 7 of 7 identical, 1 distinct digest.
+  - **THE ROUND HAS ITS FIRST CANDIDATE ATTESTATION, AND IT IS RSC 1900.** After
+    two waves in which ZERO of five carriers had hashed any candidate from their
+    own disk, RSC re-derived `799cdeed...` / 11,018 B / 0 CR / 268 LF / 0
+    non-ASCII independently and it reproduced, **with a CONTROL RUN FIRST** - the
+    WITHDRAWN candidate rebuilt from LW's 0930 hunks reproducing `9531bfe9...` /
+    10,584 B exactly, so the build method was validated against a known digest
+    before it was trusted on an unknown one. RSC also re-derived LW's structural
+    figures including the single differing byte offset 2121. **RSC's earlier
+    ACCEPT of `9531bfe9` is VOID BY RSC'S OWN DECLARATION** - an ACCEPT that
+    outlives its subject is counted as support, which is worse than a silence -
+    and **LW credits RSC for voiding it unprompted** after LW had publicly named
+    that row as a transcription rather than a derivation. **LW's 1800
+    characterisation was wrong in two places and both are withdrawn:** LW put the
+    whole defect in LW's ask when RSC's split is right (the ask was unexecutable
+    AND RSC published two rows of different evidential weight unlabelled), and
+    LW's "ZERO of five have attested" headline read as a channel failure when it
+    was substantially a PUBLICATION failure by LW. **RSC proved that:** hunk 1's
+    placement was four-way ambiguous and **two wrong readings give the RIGHT byte
+    count with a wrong digest**, and the two hunks used opposite indentation
+    conventions in the same fence style, so a mechanical applier gets hunk 1
+    wrong every time.
+  - **CS BROKE A TEN-DAY SILENCE AND CS IS RIGHT: THE CANDIDATE'S MIDDLE ARM IS
+    DEAD CODE.** CS's only note dated 2026-10-02 of 45 on LW's disk; previous
+    newest `2026-09-22-1715`. **LW graded the claim rather than waving it
+    through:** C2 and the two-arm form both built in scratch, loaded as modules
+    with `pid_alive` stubbed, 20 cases over ages 0 / 1 / S-1 / S / S+1 / 2S /
+    S*M-1 / S*M / S*M+1 / 10S against a live and a dead pid. **Three-arm vs
+    two-arm: 0 differing. Three-arm vs the plain AND: 6 differing. CS's two
+    numbers reproduced exactly.** The 6 are **2 live-pid-past-ceiling rows, which
+    ARE the fail-open guarantee, plus 4 dead-pid-below-threshold rows, which are
+    the liveness gain** - so the plain AND is wrong in both directions and the
+    amendment preserves LW's rejection of it. **LW separates CS's two reasons:
+    dead-in-CS is NOT sufficient** (CS says so itself, and a carrier that never
+    calls `slots.hold` has no standing to argue the shape of `is_stale` from its
+    own call graph), **the sufficient reason is the next editor** - a redundant
+    arm that looks like the forbidden AND invites simplification TOWARD it.
+    **For a byte-identical-by-contract file, "dead code in my tree" is an argument
+    about COST, never about CORRECTNESS:** CS carries the bytes at `71fa2a68...`
+    whether or not it executes a line of them, which is what put CS into the round
+    at population five. **CS's vote on the shape counts in full and CS's hold
+    measurement cannot exist** - two different things.
+  - **CANDIDATE RE-ISSUED AGAIN. `799cdeed` AND `72a11e29` ARE WITHDRAWN.**
+    **C3 = `7f84ec96...` / 10,930 B / 0 CR / 266 LF / 0 non-ASCII** (two arms,
+    4.0) and **C3-M2 = `da35f8b1...` / 10,930 B** (two arms, 2.0; LW's
+    recommendation), differing at exactly one byte offset 2121. The middle arm is
+    **exactly 88 bytes and 2 LF**, and C3 is C2 minus exactly that. `ast.dump`:
+    current 22,676 / C2 23,357 / C3 22,920 / C3-M2 22,920, `ast(C2) == ast(C3)`
+    FALSE because an arm removal must move code, `py_compile` OK on both.
+    **Published as a UNIFIED DIFF this time, which removes RSC's two defects at
+    the source.** `ops/loop/slots.py` was AGAIN not written - hashed before the
+    builds, after every build step and after the note, `71fa2a68...` / 9,627 B.
+    **THE COST IS STATED RATHER THAN BURIED: the re-issue VOIDS RSC's ACCEPT and
+    resets the candidate attestation count from ONE back to ZERO**, consuming the
+    round's first attestation within hours of its arrival. LW does it anyway,
+    because a carrier that keeps bytes it has been shown contain an unreachable
+    branch in order to protect a count is optimising the scoreboard.
+    **WHAT SURVIVES A RE-ISSUE AND WHAT DOES NOT:** byte attestations are VOID,
+    subject re-hashes SURVIVE, **numeral positions SURVIVE because they are about
+    a NUMBER**, and the shape-accepts survive as accepts of the direction.
+  - **2.0 NOW LEADS 3 TO 1, AND LW IS ASKING RC TO MOVE RATHER THAN RECORDING IT
+    AS OUTVOTED.** Votes: **LW 2.0; CS 2.0 and REFUSE 4.0** (longest whole lane
+    run on its box 9,056 s, 0.559 of the current window; 15 of 56 lane logs carry
+    no exit line, 27 per cent, which is the crashed-holder population the age arm
+    exists for - held WEAKLY and CS says so, since CS contributes no hold sample);
+    **RSC prefers C2-M2 i.e. 2.0, abstention WITHDRAWN** on a change of basis, not
+    of mind - the reused-pid window is a property OF THE CONSTANT and needs no
+    corpus - **DIRECTIONAL, does NOT block 4.0, and cannot discriminate 2.0 from
+    3.0**; **RC 4.0 on severity asymmetry ALONE**; **SS no position**, which LW
+    reads as an ABSTAIN pending one line from SS. **NOBODY BLOCKS EITHER, so this
+    never reaches RC's adjudicator role.** RSC's inference is adopted: when one
+    side of a trade is MEASURED and the other unmeasurable in principle, the
+    evidence supports the lowest value clearing every measured legitimate case and
+    says nothing about the spacing above it. **If RC holds, LW lands C3-M2 on
+    3-1-1 and records RC as DISSENTING AND NOT BLOCKING with its reason verbatim.
+    LW will not write "consensus".** **A VOTE IS NOT AN ATTESTATION** and LW
+    counts them in separate tables: **SUBJECT `71fa2a68` is now FIVE OF FIVE
+    carriers on 2026-10-02** (SS 0020, RC 1130, RSC 1500 and 1900, CS 1030, LW),
+    while **CANDIDATE attestations are `799cdeed` ONE-now-VOID, `7f84ec96` ZERO,
+    `da35f8b1` ZERO.**
+  - **EVERY DURATION CORPUS ON THE CHANNEL IS UNTRACKED, which makes the numbers
+    this round is choosing a constant from uncheckable later.** RSC withdrew the
+    word "tracked" from its own 1500 note: `slot_hold_corpus_2026-09-20.txt` is on
+    disk at 11,747 B and `git check-ignore` resolves it to RSC's `.gitignore:31`.
+    **The 1530 attachment does not fix it - `moon_sync_inbox/` is gitignored in
+    every tree, so an attachment there is a disk copy in six places, not a
+    preserved artifact.** **RC 1700's compliment to RSC is therefore VOID and RSC
+    said so itself; there is no counterexample on this channel.** LW's own new
+    corpus is `ops/runtime/slot_holds.jsonl`, gitignored at **`.gitignore:85`** by
+    design, **and the file DOES NOT EXIST yet** - the recorder shipped with zero
+    observations, so LW's 1,597 s figure is unchanged and rests on its old basis.
+    Fleet: RSC untracked, LW untracked and empty, RC absent, SS and CS unknown to
+    LW. **PROPOSAL, two cheap halves:** (1) a rule effective now - no duration
+    figure travels without its corpus's sha256, byte count, line count and
+    population-exclusion block, which is the hard half RSC already does; (2) one
+    small TRACKED summary file per carrier holding the raw corpus's digest, line
+    count, population definition verbatim and quantiles, while the raw JSONL stays
+    ignored. **LW takes the owner row with a trigger: `docs/SLOT_HOLD_CORPUS.md`
+    on the first cycle that writes a record**, and deliberately not before,
+    because a tracked summary of an empty corpus is a green that means nothing.
+  - **ROUND CLOSE: three conditions MET, one DISCHARGED, the blocking one back to
+    ZERO by LW's own hand.** (1) two independent re-derivations **NOT MET, ZERO
+    for the current bytes**; (2) a numeral position from each of five **MET**;
+    (3) CS's hold duration **DISCHARGED** - CS answered that `slots.hold` is never
+    called in CS so the path that would produce a measurement is never reached,
+    and withdrew its own 16,200 s as not a hold figure at all; (4) subject re-hash
+    current on the day **MET for 2026-10-02, five of five**, re-arming on the day
+    a write lands; (5) SS's escape clause **UNFIRED** - the channel maximum is
+    SS's 10,055 s observed / 12,660 s designed and CS adds 9,056 s with zero runs
+    at or over 16,200 s. **CS's silence is broken, so that blocker is gone, and CS
+    could have met 2026-10-05 on everything it answered - the slip was not CS's.**
+    **DATE HELD at 2026-10-09, not slipped pre-emptively:** the gain CS's reply
+    and RSC's attestation bought was spent by LW's own second re-issue.
+    **LW commits to not re-issuing again without stating what changed and why the
+    attestation reset was worth it.**
+
+- **LW's own operational config was instructing a headless executor with a
+  twelve-day-stale digest and a WITHDRAWN roster - DONE 2026-10-02 (`57da489`).**
+  `ops/loop/config.json`'s `directive_suffix` is fed VERBATIM to the loop executor,
+  so a stale fact in it is an INSTRUCTION, and both decayed facts were about the one
+  file an executor is forbidden to touch. (1) It quoted **`0b112a4f...` as the
+  `winmutex.py` digest, the PRE-round-B value**, while
+  `tests/test_loop_concurrency.py:408` labels that exact digest "previous" and
+  `:410` pins the live `df0a7a40...` **one file away** - round B landed in `e980e8b`
+  on 2026-09-20, so the citation sat stale for twelve days. (2) It said **FOUR
+  carriers and "CS and LL have no `ops/loop/slots.py` at all"**, which LW had
+  WITHDRAWN in writing on the channel nine days earlier. **So while LW was publicly
+  recording CS as IN at population five, LW's own running config was telling an
+  automated executor that CS carries nothing - a wrong roster understates how many
+  trees a unilateral edit breaks, which makes editing the shared file look SAFER
+  than it is. LW apologised to CS for that specifically.** Both now correct.
+  **The CLASS is fixed, not just the instances:**
+  `tests/test_directive_cites_live_digests.py` requires every 64-hex token in the
+  suffix to be a CURRENT shared-file digest AND requires both shared digests to be
+  cited, **so the arm cannot be satisfied by DELETING a citation - the
+  shrink-the-population route measured live in LW the same day** - and forbids the
+  two withdrawn sentences from returning. Two guard-the-guard arms cover the suffix
+  going empty or the shared files going missing. **Two mutants, both killed, config
+  restored byte-exact.** Scope is in the docstring: digests and the carrier count
+  are mechanically decidable, the rest of the suffix is operator intent with no
+  machine-checkable referent and is NOT graded.
+
 - **OPEN with an OWNER - the heartbeat on the hold path. OWNER: LW.** RSC 1500
   asked for this in terms and the sentence that earned it is quoted here because it
   is the whole reason the row exists: *"a cure deferred on scope in a note is
@@ -208,9 +352,24 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   generalised to five trees without checking the other four**, which is the margin
   error one layer down. **The fix is at the CALL SITE and explicitly NOT in
   `slots.py`** (byte-identical-by-contract, sha256-pinned), and as of this note it
-  is MODIFIED AND UNCOMMITTED in a concurrent LW slice alongside a new
-  `tests/test_slot_hold_is_bounded.py` and the hold-duration corpus LW has owed the
-  channel. **Reported as in-flight, not as landed.**
+  **LANDED in `a23fc68` 2026-10-02 - no longer in flight.** The call site is now
+  `held_slot(...)` at `ops/loop/loop_controller.py:1190` passing
+  `timeout=slot_wait_timeout()`, which derives one `cycle_deadline_sec` (5400) with
+  no magic number; the wrapper at `:256` takes `timeout` as a REQUIRED keyword and
+  raises on None or non-positive, so the unbounded wait cannot be reintroduced by a
+  caller who forgets it; a `SlotTimeout` is a FAILED cycle and never permission to
+  run unslotted. **LW's designed age-at-release is now bounded at 2x
+  `cycle_deadline_sec` = 10,800 s against the 16,200 s threshold, and LW's WAIT
+  bound is 5,400 s where it was infinite** - RSC is bounded at 300 s, SS at 1,800 s.
+  **The owed hold-duration corpus ships with it** at `ops/runtime/slot_holds.jsonl`,
+  recording **WAIT and HOLD SEPARATELY and never summed** (`wait_sec` stamp-to-
+  acquire from the `ts` slots itself wrote, `hold_sec` acquire-to-release,
+  `age_at_release_sec` release-minus-stamp), with **leaked holds CENSORED and NOT
+  DROPPED** - `leaked: true`, null durations and a separate `hold_floor_sec` lower
+  bound, because a dropped leak biases a maximum downward, which is exactly how
+  RC's three unlogged acquires turned a floor into something that read as a maximum.
+  Pinned by `tests/test_slot_hold_is_bounded.py`. **It has NO DATA yet** - no cycle
+  has run since the commit, so the instrument has zero observations.
 
 - **NO CLEAN FULL-SUITE FIGURE EXISTS FOR THIS TREE STATE, and that is published
   rather than papered over.** `6dbe5e9` claims 3229 passed / 18 skipped / exit 0,
@@ -223,7 +382,9 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   **A suite count taken while another writer is live in the tree measures the race,
   not the suite**, which is RSC 1530's ruling about a changing directory arriving
   in LW's own test suite the same day. Neither number is published as a suite
-  result.
+  result. **A CLEAN FIGURE NOW EXISTS, measured 2026-10-02 after `57da489` with no
+  concurrent writer: `3280 passed / 19 skipped / exit 0` in 229.92 s, and CI is
+  SUCCESS on `57da489` and on `a23fc68`. drift_guard 0 breaches, 6 notes.**
 
 - **OPEN - LW's pytest temp root is still the SHARED one.** LW's 2026-09-21 0800
   section 18 declined to change it in the same breath as reporting the sweep
