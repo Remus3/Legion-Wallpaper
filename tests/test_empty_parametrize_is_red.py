@@ -21,8 +21,12 @@ Hermetic by construction:
   - nothing is read from the repo except pytest.ini itself, which IS the
     artifact under test, resolved relative to __file__ rather than from an
     absolute path (CLAUDE.md: no account paths in tracked files);
-  - the subprocess gets an explicit `-c`, so no rootdir discovery and no
-    inherited addopts can decide the outcome;
+  - the subprocess gets an explicit `-c`, so no rootdir discovery decides the
+    outcome;
+  - the subprocess gets an INJECTED minimal environment, not the inherited one,
+    and its own `--basetemp`, so neither an ambient PYTEST_ADDOPTS nor the
+    shared machine temp root can reach it. See `_child_env` for the measured
+    reason that is not theoretical.
   - `-p no:cacheprovider` keeps it from writing a cache anywhere.
 
 The negative control is the point of the pair. An arm that only watches the
@@ -107,13 +111,49 @@ INI_WITHOUT_SETTING = "[pytest]\n"
 INI_WITH_SETTING = f"[pytest]\n{SETTING} = {WANT}\n"
 
 
+# The only variables the child pytest is given. Everything else is withheld.
+_INHERIT = ("SYSTEMROOT", "SYSTEMDRIVE", "COMSPEC", "PATH", "PATHEXT",
+            "HOME", "LANG", "LC_ALL")
+
+
+def _child_env(tmp_path: Path) -> dict[str, str]:
+    """A minimal INJECTED environment for the child, never the inherited one.
+
+    MEASURED need, 2026-10-02. The first full-suite run after this file landed
+    reddened one arm here: the child pytest walked the SHARED pytest temp root
+    under %TEMP% at startup and raised FileNotFoundError on a run directory a
+    concurrently-running SIBLING repo deleted mid-walk. The same arm passed in
+    isolation, before and after, and no such directory existed by the time it
+    was investigated - so it was a cross-process race on shared machine state,
+    not an ordering bug in this suite.
+
+    That is still this file's defect to fix, not someone else's. An arm another
+    repo's test run can turn red is not hermetic however firmly its docstring
+    says so, and a spurious red in a guard is how a guard gets switched off.
+    Pinning TEMP/TMP here and --basetemp below takes the shared directory out of
+    the child's path completely.
+
+    Withholding the rest also closes the quieter half: an inherited PYTEST_ADDOPTS
+    or PYTEST_PLUGINS could change the collection outcome these arms assert on,
+    which would make them measure the ambient environment rather than the ini.
+    """
+    tmp = tmp_path / "childtmp"
+    tmp.mkdir(exist_ok=True)
+    env = {name: os.environ[name] for name in _INHERIT if name in os.environ}
+    env["TEMP"] = env["TMP"] = env["TMPDIR"] = str(tmp)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    return env
+
+
 def _run(ini: Path, fixture: Path) -> subprocess.CompletedProcess[str]:
     """Collect `fixture` under `ini` in a real pytest subprocess."""
+    tmp_path = fixture.parent
     return subprocess.run(
         [sys.executable, "-m", "pytest", "-c", str(ini), str(fixture),
-         "--collect-only", "-q", "-p", "no:cacheprovider"],
-        capture_output=True, text=True, check=False, cwd=str(fixture.parent),
-        creationflags=NO_WINDOW,
+         "--collect-only", "-q", "-p", "no:cacheprovider",
+         "--basetemp", str(tmp_path / "basetemp")],
+        capture_output=True, text=True, check=False, cwd=str(tmp_path),
+        env=_child_env(tmp_path), creationflags=NO_WINDOW,
     )
 
 
@@ -196,6 +236,25 @@ def test_the_kwarg_spelling_of_the_opt_out_does_not_exist(tmp_path):
     assert proc.returncode != 0 and "unexpected keyword argument" in combined, (
         "empty_parameter_set_mark now appears to work as a parametrize kwarg - "
         f"update the opt-out guidance in pytest.ini:\n{combined[-2000:]}")
+
+
+def test_an_ambient_pytest_var_cannot_reach_the_child(tmp_path, monkeypatch):
+    """Proves the injected environment BINDS, which the race itself cannot.
+
+    The measured failure in `_child_env` was a cross-process race, so it is not
+    reproducible on demand and no mutant can summon it. This arm proves the same
+    mechanism a different way: it plants a PYTEST_ADDOPTS that WOULD be a usage
+    error if the child inherited it, and requires the child's outcome to be
+    unchanged. Revert the `env=` injection in `_run` and this arm goes red.
+    """
+    monkeypatch.setenv("PYTEST_ADDOPTS", "--definitely-not-a-real-flag")
+    monkeypatch.setenv("PYTEST_PLUGINS", "lw_not_a_real_plugin")
+    _ini, fixture = _write(tmp_path, "", FIXTURE_WITH_OPT_OUT)
+    proc = _run(REAL_INI, fixture)
+    combined = proc.stdout + proc.stderr
+    assert proc.returncode == 0, (
+        "an ambient pytest variable reached the child, so these arms measure "
+        f"the surrounding environment rather than the ini:\n{combined[-2000:]}")
 
 
 def test_the_ini_declares_the_setting(tmp_path):
