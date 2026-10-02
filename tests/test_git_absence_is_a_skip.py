@@ -44,6 +44,7 @@ REPRESENTATIVE = (
     "tests/test_no_account_paths.py::test_no_tracked_file_carries_an_account_path",
     "tests/test_no_secret_literals.py::test_no_tracked_file_carries_a_secret_literal",
     "tests/test_no_split_identity.py::test_no_tracked_file_carries_an_identity_fragment",
+    "tests/test_no_identity_enters_history.py::test_no_entering_content_carries_a_pinned_identity",
     "tests/test_tracked_settings_is_safe.py::test_every_declared_hook_script_exists",
 )
 
