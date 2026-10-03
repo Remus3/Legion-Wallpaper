@@ -26,6 +26,5 @@ Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
   email-residual history rewrite (operator declined).
 Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
   form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-Open + owed: held loop's
-  claude-opus-5 model id not proven through the proxy; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
+Open + owed: LL's audit-hook replacement at tests/test_lw_rundash.py:399.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
