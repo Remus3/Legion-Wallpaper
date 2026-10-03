@@ -28,8 +28,12 @@ Acceptance: two own-disk re-derivations of C4; suite green; drift_guard
   green read from `gh run list --json conclusion`.
 Do NOT redo: hooksPath measurement; environ-leak and invalid-escape sweeps;
   re-grading round-B mutants; re-counting the read-and-unanswered backlog;
-  bulk-acking the inbox; re-enabling LW-InboxResponder; history rewrite for the
-  email residual (operator declined 2026-10-02).
+  bulk-acking the inbox; history rewrite for the email residual (operator
+  declined 2026-10-02).
+ARMED 2026-10-02 by the operator: LW-InboxResponder every 5 min, every
+  headless claude via tools/lw_headless_env.py (fail closed), MAIN notes carry
+  operator authority after a digest check (CLAUDE.md Settled). Kill: HALT file
+  or delete the proxy user variable. Do not re-disable without a reason.
 Open + owed:
   - PYTEST_DEBUG_TEMPROOT root-cause fix (new repo-root conftest.py), own slice.
   - CS's hold() docstring "reaping stale locks each pass" - NEXT round, not C4
