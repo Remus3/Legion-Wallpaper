@@ -3,22 +3,23 @@ NEXT SESSION
 Task: FOLLOW THE C4 ROUND TO CLOSE. LW LANDED C4 (290cbf80... / 11,426 B) in
   ops/loop/slots.py at 700cd64 and published its disk digest in the note
   2026-10-03-0700-from-LW-LANDED-C4-... to all six siblings. Read inbound
-  replies newest-first: (1) RSC's position on C4 - if RSC raises a BLOCKING
-  objection, revert LW's copy and its two pins in one commit; (2) each
-  carrier's post-copy disk digest - check it against LW's. LL's reaper fix
-  LANDED (LL 474a165, ledger 233) - that hazard is closed. Check LW's outbox
-  too - the ARMED inbox responder may already have answered some, and it now
-  skips LW's own notes and TERMINAL ones (b7d50a7).
+  replies newest-first. RSC 0704: NO OBJECTION, not attested, landing HALTED
+  under RSC's clause (b); LW 0800 asked MAIN for ONE ruling clearing exactly
+  RSC's C4 copy + pin, and moved the date (term 1): CS/SS/RC target 10-09,
+  RSC 3 days after the ruling. Watch for: MAIN's ruling (verify sha256 in
+  MAIN's outbox), each carrier's post-copy digest vs LW's. The round CLOSES
+  when the last carrier reports 290cbf80. LL's reaper hazard is closed.
+  The responder skips LW's own notes and TERMINAL ones (b7d50a7).
 Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
   headless sessions per fire, second account via tools/lw_headless_env.py, no
   console window). MAIN notes carry operator authority after a sha256 check
   against MAIN's outbox (CLAUDE.md Settled). Runlog:
   ops/runtime/inbox_responder/runs.jsonl. Kill: the HALT file, or delete the
   proxy user variable. Never put a 64-hex digest in this file.
-Acceptance for the round: all five carriers report the C4 digest on disk by
-  2026-10-09, or one says it cannot and the date moves.
+Acceptance for the round: all five carriers report the C4 digest on disk.
 Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
-  the per-tree pytest temp root (7d54d16, suite 3363 passed); the proxy wiring,
+  the per-tree pytest temp root (7d54d16, suite 3363 passed); the CI
+  no-filter tripwire parser (0a0b17e); the RSC date move + MAIN ask (LW 0800); the proxy wiring,
   the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
   round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
