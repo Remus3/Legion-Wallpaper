@@ -27,6 +27,24 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+233. DONE **2026-10-03 (responder self-loop closed; LW's own pytest temp root; LL reaper
+   hazard discharged; b7d50a7 7d54d16).** MAIN 0640 (sha256 verified against MAIN's outbox)
+   measured the responder spawning on LW's own notes, then on its own TERMINAL ack. A
+   MAIN-authorized headless run fixed it at `b7d50a7` (skip self + TERMINAL/no-reply before
+   any spawn, 20 arms, 5 mutants killed, other spawn paths checked - none reads the inbox)
+   and acked MAIN; the attended session waited for that process to exit rather than edit
+   under it, then re-ran its tests (104 passed). Known false skip, pinned: a MAIN note whose
+   title quotes "no-reply" is skipped by the responder and still surfaces at SessionStart.
+   The same responder's A2 on `fe71425` hit one WinError 2 inside the child pytest of
+   `test_empty_parametrize_is_red.py` (3 of 3 green alone). `7d54d16` closes the long-owed
+   `PYTEST_DEBUG_TEMPROOT` item: `tests/conftest.py` sets it (setdefault) to
+   `<TEMP>/pytest-legion-wallpaper`, SS's per-tree pattern; pytest reads it lazily, so no
+   repo-root conftest was needed. New `tests/test_pytest_temproot_is_per_tree.py`, 2 arms
+   red-first. Full suite 3363 passed / 19 skipped. LL OPS-114 item 1 landed (LL 474a165):
+   an LL acquire no longer reaps a live foreign holder before 48,600 s, above C4's 32,400 s
+   ceiling, so the hazard ledger 232 named is discharged. Still open: RSC's position on C4,
+   four carrier copies by 2026-10-09.
+
 232. DONE **2026-10-03 (joint re-pin round: C4 LANDED in LW first; 700cd64).** C4
    (11,426 B, `290cbf80...`, text-only over `da35f8b1`, HARD_STALE_MULTIPLE 2.0)
    had three own-disk attestations before LW copied: RC 2358, SS 2300, CS 0002, all
