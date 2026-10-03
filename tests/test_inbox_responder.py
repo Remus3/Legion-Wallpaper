@@ -1133,3 +1133,100 @@ def test_no_spawn_site_in_tools_or_ops_uses_detached_process():
             for i, ln in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1)
             if "DETACHED_PROCESS" in ln.split("#", 1)[0]]
     assert hits == []
+
+
+# ---------------------------------------------------------------------------
+# The authoritative form of the no-schtasks claim: observed at RUN time.
+#
+# `test_no_process_launch_in_this_module_mentions_schtasks` above reads source
+# lines, and LW measured its predicate defeated by a plain line break inside a
+# `subprocess.run(` call (LEDGER, LL's audit-hook proposal). The in-process
+# tripwires above monkeypatch `subprocess` / `os` and cannot see a launch made
+# below them (`_winapi.CreateProcess`, `os.posix_spawn`). An audit hook sees
+# every launch the interpreter makes, whatever spelled it. It runs in a CHILD
+# interpreter because an audit hook can never be removed, and it RAISES on every
+# launch event, so nothing it observes is ever actually started.
+# Trap recorded by LL: `importlib.import_module` raises no `import` event, so
+# this arm keys on launch events only.
+# ---------------------------------------------------------------------------
+
+_AUDIT_CHILD = r'''
+import json, sys
+LAUNCH = ("subprocess.Popen", "os.system", "os.exec", "os.posix_spawn",
+          "os.spawn", "os.startfile", "_winapi.CreateProcess")
+seen = []
+def hook(event, args):
+    if event in LAUNCH:
+        seen.append([event, repr(args)])
+        raise RuntimeError("launch blocked by audit hook: " + event)
+sys.addaudithook(hook)
+sys.path.insert(0, sys.argv[1])
+mode, argv = sys.argv[2], json.loads(sys.argv[3])
+rc = None
+try:
+    if mode == "control":
+        import subprocess
+        subprocess.run(["schtasks", "/Query"])
+    else:
+        import lw_inbox_responder as r
+        rc = r.main(argv)
+except BaseException as exc:
+    rc = "raised: %r" % (exc,)
+sys.stdout.flush()
+sys.__stdout__.write("\n@@AUDIT@@" + json.dumps({"rc": repr(rc), "seen": seen}) + "\n")
+'''
+
+
+def _audited(mode: str, argv: list[str], cwd: Path) -> dict:
+    proc = subprocess.run(
+        [sys.executable, "-c", _AUDIT_CHILD, str(ROOT / "tools"), mode, json.dumps(argv)],
+        capture_output=True, text=True, cwd=str(cwd), timeout=120,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    marker = [ln for ln in proc.stdout.splitlines() if ln.startswith("@@AUDIT@@")]
+    assert marker, f"child produced no audit record:\n{proc.stdout}\n{proc.stderr}"
+    return json.loads(marker[-1][len("@@AUDIT@@"):])
+
+
+def _names_the_scheduler(seen: list) -> list:
+    return [s for s in seen
+            if "schtasks" in s[1].lower() or "register-scheduledtask" in s[1].lower()]
+
+
+def test_audit_hook_positive_control_sees_and_blocks_a_schtasks_launch(tmp_path):
+    """Without this the arms below could pass because the hook never fires."""
+    got = _audited("control", [], tmp_path)
+    assert _names_the_scheduler(got["seen"]), got
+    assert "launch blocked" in got["rc"], got
+
+
+def test_print_register_command_launches_nothing_observed_by_audit_hook(tmp_path):
+    got = _audited("main", ["--print-register-command"], tmp_path)
+    assert got["seen"] == [], got
+    assert got["rc"] == "0", got
+
+
+def test_dry_run_and_halted_cycles_launch_nothing_observed_by_audit_hook(tmp_path):
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 3)
+    common = ["--once", "--inbox", str(inbox), "--state", str(tmp_path / "seen.json"),
+              "--runlog", str(tmp_path / "runs.jsonl")]
+    dry = _audited("main", common + ["--dry-run"], tmp_path)
+    assert dry["seen"] == [] and dry["rc"] == "0", dry
+    halt = tmp_path / "HALT"
+    halt.write_text("stop", encoding="utf-8")
+    halted = _audited("main", common + ["--halt", str(halt)], tmp_path)
+    assert halted["seen"] == [] and halted["rc"] == "0", halted
+
+
+def test_a_live_cycle_never_launches_the_scheduler_observed_by_audit_hook(tmp_path):
+    """A non-dry cycle over notes the state has not seen. Whatever it tries to
+    launch (the headless child, or nothing if the proxy gate refuses), the hook
+    blocks it before it starts, and none of it may name the scheduler."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    common = ["--once", "--inbox", str(inbox), "--state", str(tmp_path / "seen.json"),
+              "--runlog", str(tmp_path / "runs.jsonl")]
+    _audited("main", common, tmp_path)          # cold start baselines the inbox
+    (inbox / "2026-09-10-9999-from-RC-new.md").write_text("new", encoding="utf-8")
+    got = _audited("main", common, tmp_path)
+    assert _names_the_scheduler(got["seen"]) == [], got
