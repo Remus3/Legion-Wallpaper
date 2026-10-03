@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -57,13 +58,80 @@ def _cfg(tmp_path: Path, argv: list, **over) -> dict:
     return cfg
 
 
-def _build(cfg, tmp_path, logs=None):
+PROXY_URL = "http://127.0.0.1:4999/tc-acct/fake-id"
+
+
+def _proxy_up():
+    """The proxy gate, injected as passing. Hermetic: never reads the real var."""
+    return dict(os.environ, ANTHROPIC_BASE_URL=PROXY_URL)
+
+
+def _build(cfg, tmp_path, logs=None, headless_env=_proxy_up, stop=None):
     return executor.build(cfg, tmp_path, log=(logs.append if logs is not None
                                               else (lambda *a: None)),
-                          stop=lambda m: None, awrite=lambda *a: None,
+                          stop=stop or (lambda m: None), awrite=lambda *a: None,
                           wait_for=lambda *a: True, wait_gone=lambda *a: True,
                           rjson=lambda *a, **k: {}, stall_action=lambda n: "stop",
-                          stall_recovery_directive=lambda c: "")
+                          stall_recovery_directive=lambda c: "",
+                          headless_env=headless_env)
+
+
+# ---- the proxy gate (operator directive 2026-10-02) -------------------------
+
+def test_the_child_gets_the_proxy_url(tmp_path: Path):
+    """The shim echoes its env var into the structured output's summary."""
+    script = tmp_path / "env_claude.py"
+    script.write_text(
+        "import sys, os, json\n"
+        "sys.stdin.read()\n"
+        "so = {'sha': 'abc', 'tests_pass': '1', 'regressions': False,\n"
+        "      'summary': os.environ.get('ANTHROPIC_BASE_URL', 'MISSING')}\n"
+        "sys.stdout.write(json.dumps({'is_error': False, 'structured_output': so}))\n",
+        encoding="utf-8")
+    ex = _build(_cfg(tmp_path, [sys.executable, str(script)]), tmp_path)
+    rec = ex.run(1, "body", "fixed")
+    assert rec.error is None
+    assert rec.raw["summary"] == PROXY_URL
+    parent_untouched = os.environ.get("ANTHROPIC_BASE_URL") != PROXY_URL
+    assert parent_untouched
+
+
+def test_a_refused_proxy_stops_the_cycle_and_spawns_nothing(tmp_path: Path, monkeypatch):
+    he = executor._headless_env_module()
+    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+    marker = tmp_path / "spawned.txt"
+    script = tmp_path / "must_not_run.py"
+    script.write_text(f"open(r'{marker}', 'w').write('x')\n", encoding="utf-8")
+
+    def _refuse():
+        raise he.HeadlessRefused("CLAUDE_HEADLESS_BASE_URL unset")
+
+    stops, logs = [], []
+    ex = _build(_cfg(tmp_path, [sys.executable, str(script)]), tmp_path, logs=logs,
+                headless_env=_refuse, stop=stops.append)
+    rec = ex.run(3, "body", "fixed")
+    assert not marker.exists(), "a refused gate must never fall back to a spawn"
+    assert stops and "headless spawn refused" in stops[0]
+    assert rec.error and "refused" in rec.error and not rec.sha
+    assert rec.raw["error"] == rec.error, "the director must see why the cycle failed"
+    assert list((tmp_path / "logs").glob("*.log")), "the refusal must be logged"
+
+
+def test_the_gate_is_not_a_config_key(tmp_path: Path, monkeypatch):
+    """No cfg value can switch the gate off: with no injected seam, a refused
+    resolution still refuses whatever the config says."""
+    he = executor._headless_env_module()
+    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setattr(he, "child_env", lambda *a, **k: (_ for _ in ()).throw(
+        he.HeadlessRefused("CLAUDE_HEADLESS_BASE_URL unset")))
+    marker = tmp_path / "spawned.txt"
+    script = tmp_path / "must_not_run.py"
+    script.write_text(f"open(r'{marker}', 'w').write('x')\n", encoding="utf-8")
+    cfg = _cfg(tmp_path, [sys.executable, str(script)], headless_env=None,
+               proxy=False, skip_proxy=True)
+    rec = _build(cfg, tmp_path, headless_env=None).run(1, "b", "fixed")
+    assert not marker.exists()
+    assert rec.error and "refused" in rec.error
 
 
 # ---- happy path -----------------------------------------------------------

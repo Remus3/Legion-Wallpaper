@@ -85,6 +85,23 @@ def _bind_truth_gate():
     return mod
 
 
+def _bind_headless_env():
+    """Bind tools/lw_headless_env.py BY PATH, reusing an already-loaded copy.
+
+    The proxy gate (operator directive 2026-10-02): every headless claude this
+    tool starts goes through it, and a refusal means NO fix attempt - never a
+    plain `claude` in its place.
+    """
+    if "lw_headless_env" in sys.modules:
+        return sys.modules["lw_headless_env"]
+    spec = importlib.util.spec_from_file_location(
+        "lw_headless_env", ROOT / "tools" / "lw_headless_env.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
 # ==========================================================================
 # Pure decision logic - no network, no worktree, no model
 # ==========================================================================
@@ -224,11 +241,11 @@ def log(msg):
         pass
 
 
-def run(argv, cwd=None, timeout=600, stdin=None):
+def run(argv, cwd=None, timeout=600, stdin=None, env=None):
     return subprocess.run(argv, cwd=str(cwd or ROOT), input=stdin,
                           capture_output=True, text=True, encoding="utf-8",
                           errors="replace", timeout=timeout,
-                          creationflags=NO_WINDOW)
+                          creationflags=NO_WINDOW, env=env)
 
 
 FIX_PROMPT = """\
@@ -258,14 +275,18 @@ HARD BOUNDARIES:
 """
 
 
-def _fix_in_worktree(wt, sha, runs, model, timeout):
-    """Run headless claude inside the worktree. Returns (ok, transient, output)."""
+def _fix_in_worktree(wt, sha, runs, model, timeout, env):
+    """Run headless claude inside the worktree. Returns (ok, transient, output).
+
+    `env` is the child env from `lw_headless_env.child_env` - REQUIRED, so no
+    caller can reach the spawn without having passed the proxy gate first.
+    """
     prompt = FIX_PROMPT.format(base=BASE_BRANCH, sha=sha, runs=runs)
     argv = ["claude", "-p", prompt, "--model", model,
             "--permission-mode", "bypassPermissions",
             "--add-dir", str(wt)]
     try:
-        r = run(argv, cwd=wt, timeout=timeout)
+        r = run(argv, cwd=wt, timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
         return False, False, "timeout"
     out = (r.stdout or "") + (r.stderr or "")
@@ -287,8 +308,31 @@ def _cleanup_worktree(wt, branch, *, keep):
     run(["git", "branch", "-D", branch], timeout=60)
 
 
-def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout):
-    """One fix attempt: worktree -> model -> push -> PR -> self-gate -> merge."""
+def headless_gate(**seams):
+    """(child_env, None) when the proxy gate passes, else (None, reason).
+
+    Runs BEFORE the worktree exists and before the dry-run return, so a refusal
+    creates nothing and a dry run reports it too. The reason never carries the
+    URL; it is logged here and to the shared daily log.
+    """
+    he = _bind_headless_env()
+    try:
+        return he.child_env(**seams), None
+    except he.HeadlessRefused as exc:
+        log(f"headless spawn refused: {exc} - no fix attempted, no fallback")
+        he.log_refusal("ci_watchdog", str(exc))
+        return None, str(exc)
+
+
+def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout, env_seams=None):
+    """One fix attempt: worktree -> model -> push -> PR -> self-gate -> merge.
+
+    Returns "refused" when the headless proxy gate refuses: nothing was
+    attempted, so the caller refunds the attempt exactly as for a transient.
+    """
+    env, refused = headless_gate(**(env_seams or {}))
+    if refused is not None:
+        return "refused"
     branch = branch_name(sha, attempt)
     wt = ROOT / "worktrees" / branch.replace("/", "_")
     if dry_run:
@@ -303,7 +347,7 @@ def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout):
     keep = False
     try:
         before = _head_of(wt)
-        ok, transient, out = _fix_in_worktree(wt, sha, runs, model, fix_timeout)
+        ok, transient, out = _fix_in_worktree(wt, sha, runs, model, fix_timeout, env)
         if transient:
             # Vendor-side, not a repo fault. Reported by the caller as a
             # non-attempt so one bad afternoon cannot exhaust the budget.
@@ -372,11 +416,14 @@ def one_pass(*, model, dry_run, max_attempts, fix_timeout, state_dir=STATE_DIR):
         runs = ", ".join(x.get("name", "?") for x in (ci.get("runs") or []))
         result = do_fix_pass(d["sha"], runs, state["attempts"], tg,
                              model=model, dry_run=dry_run, fix_timeout=fix_timeout)
-        if result == "transient":
-            # Refund: the repo was never the problem.
+        if result in ("transient", "refused"):
+            # Refund: the repo was never the problem. A refused proxy gate
+            # attempted nothing at all, so it must not burn the budget either -
+            # but it is NOT a completed pass, so it exits 1 where a transient
+            # (which did run and will self-resolve) exits 0.
             write_state(state_dir, {"sha": d["sha"],
                                     "attempts": max(0, state["attempts"] - 1)})
-            return 0
+            return 1 if result == "refused" else 0
         return 0 if result else 1
     finally:
         release(state_dir)

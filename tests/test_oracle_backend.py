@@ -157,3 +157,45 @@ def test_gemini_mutex_still_exists_for_the_cross_repo_contract():
 def test_oracle_role_must_be_known():
     with pytest.raises(ValueError):
         lc.oracle("body", "inst", role="nonsense")
+
+
+# ---- the headless proxy gate (operator directive 2026-10-02) ----------------
+
+def test_a_refused_proxy_fails_the_claude_oracle_call_without_spawning(monkeypatch, tmp_path):
+    """Refusal = this call fails with the None sentinel. No retry, no subprocess,
+    and never a plain `claude` in its place."""
+    he = lc.headless_env
+    logged, ran = [], []
+
+    def _refuse(*_a, **_k):
+        raise he.HeadlessRefused("CLAUDE_HEADLESS_BASE_URL unset")
+
+    monkeypatch.setattr(he, "child_env", _refuse)
+    monkeypatch.setattr(he, "LOG_DIR", tmp_path)
+    monkeypatch.setattr(lc, "log", logged.append)
+    monkeypatch.setattr(lc, "CFG", {})
+    monkeypatch.setattr(lc.subprocess, "run", lambda *a, **k: ran.append(a))
+    monkeypatch.setattr(lc.time, "sleep", lambda *_a: ran.append("sleep"))
+    assert lc.claude_oracle("body", "inst") is None
+    assert ran == [], "a refused gate must not spawn, and must not back off into a retry"
+    assert any("headless spawn refused" in m for m in logged)
+    assert list(tmp_path.glob("*.log"))
+
+
+def test_the_claude_oracle_hands_the_child_the_gated_env(monkeypatch):
+    he = lc.headless_env
+    seen = {}
+    monkeypatch.setattr(he, "child_env", lambda *a, **k: {"ANTHROPIC_BASE_URL": "u"})
+    monkeypatch.setattr(lc, "CFG", {"claude_cmd": ["shim"]})
+
+    class _R:
+        stdout = "answer"
+        stderr = ""
+
+    def _run(argv, **kw):
+        seen.update(kw)
+        return _R()
+
+    monkeypatch.setattr(lc.subprocess, "run", _run)
+    assert lc.claude_oracle("body", "inst") == "answer"
+    assert seen["env"] == {"ANTHROPIC_BASE_URL": "u"}

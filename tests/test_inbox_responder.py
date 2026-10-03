@@ -387,6 +387,16 @@ def test_the_spawn_argv_is_headless_and_carries_no_window_binding():
     assert "--title" not in joined
 
 
+def test_the_spawn_argv_pins_a_model_and_does_not_inherit_the_session_alias():
+    """Measured 2026-10-02: with no --model the child inherits the interactive
+    session's local alias, which the headless proxy answers with 404, so every
+    responder spawn would have failed after a clean launch."""
+    argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
+    assert "--model" in argv
+    assert argv[argv.index("--model") + 1] == responder.RESPONDER_MODEL
+    assert argv[-1].startswith("A new cross-repo note arrived")
+
+
 def test_the_spawn_prompt_names_the_note_and_the_deny_set():
     argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
     prompt = argv[-1]
@@ -413,7 +423,8 @@ def test_dry_run_spawns_nothing(monkeypatch):
         raise AssertionError("dry run spawned a process")
 
     monkeypatch.setattr(responder.subprocess, "Popen", _boom)
-    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), dry_run=True)
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), dry_run=True,
+                              env_seams=_PROXY_UP)
     assert outcome.verdict == responder.AUTO
     assert outcome.checked is True
 
@@ -432,11 +443,86 @@ def test_the_spawn_is_detached_and_windowless(monkeypatch):
 
     monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
     monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
-    outcome = responder.spawn(Path("moon_sync_inbox/note.md"))
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=_PROXY_UP)
     assert outcome.verdict == responder.AUTO
     flags = seen["kwargs"]["creationflags"]
     assert flags & responder.NO_WINDOW == responder.NO_WINDOW
     assert flags & responder.DETACHED == responder.DETACHED
+    # The child, and only the child, carries the proxy URL.
+    child_has_it = seen["kwargs"]["env"].get("ANTHROPIC_BASE_URL") == _PROXY_URL
+    parent_untouched = os.environ.get("ANTHROPIC_BASE_URL") != _PROXY_URL
+    assert child_has_it and parent_untouched
+
+
+# --------------------------------------------------------------------------
+# The proxy gate (operator directive 2026-10-02): fail closed, never fall back
+# --------------------------------------------------------------------------
+
+_PROXY_URL = "http://127.0.0.1:4999/tc-acct/fake-id"
+_PROXY_UP = {"registry_reader": lambda: None,
+             "environ": {"CLAUDE_HEADLESS_BASE_URL": _PROXY_URL},
+             "probe": lambda _h, _p: True}
+_PROXY_UNSET = {"registry_reader": lambda: None, "environ": {}}
+_PROXY_DOWN = {"registry_reader": lambda: None,
+               "environ": {"CLAUDE_HEADLESS_BASE_URL": _PROXY_URL},
+               "probe": lambda _h, _p: False}
+
+
+@pytest.mark.parametrize("seams", [_PROXY_UNSET, _PROXY_DOWN], ids=["unset", "down"])
+def test_a_refused_proxy_launches_nothing(monkeypatch, tmp_path, seams):
+    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
+    monkeypatch.setattr(responder.lw_headless_env, "LOG_DIR", tmp_path)
+
+    def _boom(*_a, **_k):  # pragma: no cover - the arm is that it is not called
+        raise AssertionError("a refused proxy still spawned")
+
+    monkeypatch.setattr(responder.subprocess, "Popen", _boom)
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=seams)
+    assert outcome.verdict == responder.UNAVAILABLE
+    assert outcome.checked is True, "the gate RAN and refused - that is checked"
+    assert "headless spawn refused" in outcome.reason
+    assert "fake-id" not in outcome.reason
+    logged = "".join(f.read_text(encoding="utf-8") for f in tmp_path.glob("*.log"))
+    assert "lw_inbox_responder" in logged and "fake-id" not in logged
+
+
+def test_a_dry_run_also_reports_a_refused_proxy(monkeypatch):
+    """The gate runs BEFORE the dry-run return, so a dry run is not a false AUTO."""
+    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), dry_run=True,
+                              env_seams=_PROXY_UNSET)
+    assert outcome.verdict == responder.UNAVAILABLE
+    assert "unset" in outcome.reason
+
+
+def test_a_refused_note_stays_unseen(tmp_path, capsys, monkeypatch):
+    """main records ONLY AUTO, so a refusal is retried next cycle, not dropped."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    state = tmp_path / "seen.json"
+    runlog = tmp_path / "runs.jsonl"
+    responder.main(["--once", "--runlog", str(runlog),
+                    "--inbox", str(inbox), "--state", str(state)])
+    capsys.readouterr()
+    (inbox / "2026-10-02-0001-from-RC-fresh.md").write_text("fresh", encoding="utf-8")
+    monkeypatch.setattr(responder, "spawn", lambda p, dry_run=False: responder.Disposition(
+        responder.UNAVAILABLE, "spawn", "headless spawn refused: x unset", True))
+    responder.main(["--once", "--runlog", str(runlog),
+                    "--inbox", str(inbox), "--state", str(state)])
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["spawned"][0]["verdict"] == responder.UNAVAILABLE
+    assert [n.name for n in responder.new_notes(inbox, state)] == [
+        "2026-10-02-0001-from-RC-fresh.md"]
+
+
+def test_the_prompt_carries_the_main_authority_clause_and_stays_ascii():
+    prompt = responder._PROMPT
+    assert prompt.isascii()
+    assert "MAIN AUTHORITY" in prompt and "sha256" in prompt
+    assert "moon_sync_outbox" in prompt
+    assert "tools/lw_headless_env.py exec" in prompt
+    # D1, D2 and D4 are floors MAIN cannot lift.
+    assert "D1 history rewrites, D2 visibility" in prompt and "D4 deletions stay DRAFT" in prompt
 
 
 # --------------------------------------------------------------------------

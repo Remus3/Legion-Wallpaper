@@ -39,7 +39,10 @@ def test_the_halt_check_precedes_the_claude_invocation():
     whole assertion: ORDER, not presence."""
     lines = _text().splitlines()
     halt = next(i for i, ln in enumerate(lines) if "Test-Path" in ln and "halt" in ln)
-    launch = next(i for i, ln in enumerate(lines) if ln.lstrip().startswith("$out = & claude"))
+    # The launch now runs through the proxy gate (`& $Python $HeadlessEnv exec
+    # -- claude ...`, 2026-10-02), so match the invocation, not its first word.
+    launch = next(i for i, ln in enumerate(lines)
+                  if ln.lstrip().startswith("$out = &") and " claude " in ln)
     assert halt < launch, \
         f"the HALT check at line {halt + 1} runs after claude at line {launch + 1}"
 
