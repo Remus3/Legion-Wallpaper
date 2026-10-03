@@ -22,10 +22,27 @@ Two consequences, both fixed by pinning the env var off here:
      looking for a codec instead of raising. That is test pollution, not a flake.
 
 Set before any import of ultralytics so the module-level `env_bool` read sees it.
+
+PYTEST_DEBUG_TEMPROOT: every repo on this account shared ONE tmp_path root,
+`<TEMP>/pytest-of-<user>`, so a sibling's run or a temp sweep aimed at that name
+could remove a dir an LW test was still using (2026-10-03: one WinError 2 inside
+the child pytest of test_empty_parametrize_is_red.py, green 3 of 3 alone). LW now
+gets its own root, `<TEMP>/pytest-legion-wallpaper`, named `pytest-*` so sweeps
+that already spare pytest trees still recognise it. pytest reads the variable
+lazily at first tmp_path use, so conftest import is early enough. setdefault, so
+an explicit value (CI, a debugging run) still wins. Pinned by
+tests/test_pytest_temproot_is_per_tree.py.
 """
 import os
+import tempfile
+from pathlib import Path
 
 os.environ.setdefault("YOLO_AUTOINSTALL", "false")
+
+if not os.environ.get("PYTEST_DEBUG_TEMPROOT"):
+    _temproot = Path(tempfile.gettempdir()) / "pytest-legion-wallpaper"
+    _temproot.mkdir(exist_ok=True)          # pytest mkdirs only the child
+    os.environ["PYTEST_DEBUG_TEMPROOT"] = str(_temproot)
 
 try:                                        # PIL is absent on some lanes
     from PIL import Image as _PILImage
