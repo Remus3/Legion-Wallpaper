@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+239. DONE **2026-10-03 (attended: Stop-gate false "no-verify" fixed; MAIN 0850 plugin order;
+   c8b0c6c 68aaf57).** The Stop hook blocked on "no-verify" though no commit bypassed a hook:
+   `claimed_green_gate._is_commit_bypass` tokenised a whole compound line, so `grep -n` in
+   the same `&&` chain as a file-scoped `git commit` read as `git commit -n`, paired with
+   the commit-msg hook's ADVISORY subject-length note as the "rejection". The same rule
+   missed real bypasses (`git add f && git commit -n`, `git -C repo commit -n`, `git -c k=v
+   commit --no-verify`). Now per simple command, verb after git's global options; 10 arms, 7
+   red first, gate files 63 passed. Left loose, harmless once scoped: the advisory note still
+   matches the rejection pattern. MAIN 0850 (sha256 verified): the four project-scope
+   re-enables (firecrawl, github, pyright-lsp, ralph-loop) set false in the gitignored
+   `.claude/settings.local.json` (backup in session scratch); two Firecrawl tooling lines
+   removed from the headless command files; no hook, test, allowlist or skill names any of
+   the ten. The responder's child on 0850 found the work done and replied to MAIN. RSC
+   landed C4 (RSC 3d62942, per the responder's ack of RSC 0826).
+
 238. DONE **2026-10-03 (attended: audit-hook arm for the no-scheduler claim; live-file
    guards moved from mtime to writer spies; 4f2106c dbf067e 3e4a54f).** LL's owed audit-hook
    replacement: a child interpreter installs `sys.addaudithook`, RAISES on every launch
