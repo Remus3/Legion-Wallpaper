@@ -19,7 +19,7 @@ Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
 Acceptance for the round: all five carriers report the C4 digest on disk.
 Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
   the per-tree pytest temp root (7d54d16, suite 3363 passed); the CI
-  no-filter tripwire parser (0a0b17e); the RSC date move + MAIN ask (LW 0800); the proxy wiring,
+  no-filter tripwire parser (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW 0800); the proxy wiring,
   the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
   round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
@@ -27,6 +27,5 @@ Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
 Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
   form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
 Open + owed: held loop's
-  claude-opus-5 model id not proven through the proxy; a refused loop-oracle
-  auditor reads CLEAN; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
+  claude-opus-5 model id not proven through the proxy; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.

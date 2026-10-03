@@ -27,6 +27,18 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+235. DONE **2026-10-03 (an unaudited loop cycle no longer advances the clean anchor;
+   6e1da28).** Closes the open item "a refused loop oracle reads CLEAN" (ledger 230 FUTURE).
+   Worse than stated: `auditor()` turned the oracle's None sentinel into CLEAN and the cycle
+   loop then advanced `last_clean_sha`, so an unaudited cycle left every later audit window
+   permanently. Now `VERDICT: UNAUDITED` - not blocking (N3 kept), anchor kept, so the next
+   real audit covers it. Pure helpers `verdict_kind` / `next_clean_anchor`; 5 arms red
+   first; full suite 3377 passed / 19 skipped. Loop is HELD; nothing live affected. Also
+   this session: CI went RED on 4654c32 because ledger 234 cited RSC's rules file by
+   `<file>:<line>` and LW's live-doc guard resolved it against LW's own CLAUDE.md; fixed at
+   a5568d0 by naming the clause. Lesson: run `tests/test_live_docs_cite_lines_that_exist.py`
+   before pushing a ledger entry that names a sibling's file.
+
 234. DONE **2026-10-03 (CI no-filter tripwire saw 2 of 4 shapes; C4 date moved, MAIN asked
    for RSC's ruling; 0a0b17e).** `test_real_workflow_declares_no_path_filter` (the guard on
    the Settled no-paths-filter rule) read ci.yml through a block-list-only parser: an inline
