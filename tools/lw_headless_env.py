@@ -55,6 +55,16 @@ REFUSED_EXIT = 78  # EX_CONFIG
 ROOT = Path(__file__).resolve().parents[1]
 LOG_DIR = ROOT / "logs"
 
+# EVERY headless spawn passes these (MAIN 0912, 2026-10-03, digest-verified).
+# Setup, not work, is most of a headless call's input, and it is re-sent on
+# every model call of a run. Measured from this checkout through the proxy, one
+# trivial prompt: no flags 58,510 input tokens; with `project,local` 53,143;
+# with `project` alone 47,026. LOCAL is dropped too because in this tree it
+# re-enables three plugins and pins the `rc-main` alias the proxy answers with
+# 404, and it carries no hook and no deny rule. Project hooks STAY - the floors
+# live there - which is also why `--bare` (skips every hook) is not used.
+LEAN_ARGS = ("--strict-mcp-config", "--setting-sources", "project")
+
 # 0 off Windows so the module still imports and tests on a CI runner.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 

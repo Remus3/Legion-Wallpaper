@@ -456,7 +456,14 @@ class SdkExecutor:
             "--permission-mode", self.cfg.get("permission_mode", "bypassPermissions"),
             "--json-schema", _json.dumps(DONE_SCHEMA),
             "--add-dir", str(self.cfg.get("repo_root", ".")),
+            *_headless_env_module().LEAN_ARGS,
         ]
+        # --strict-mcp-config with no config means NO MCP servers (MAIN 0912).
+        # A loop whose work needs one - a browser for a UI audit - names the
+        # file here, and only what it names is loaded.
+        mcp = self.cfg.get("executor_mcp_config")
+        if mcp:
+            argv += ["--mcp-config", str(mcp)]
         model = self.cfg.get("executor_model")
         if model:
             argv += ["--model", str(model)]

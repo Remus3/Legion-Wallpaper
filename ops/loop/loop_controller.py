@@ -832,6 +832,10 @@ def claude_oracle_argv(instruction, cfg):
         "--input-format", "text",
         "--permission-mode", "plan",
         "--add-dir", str(cfg.get("repo_root", ".")),
+        # No MCP, no user/local scope (MAIN 0912), and no transcript: the answer
+        # is the returned text and nobody reads an oracle session back.
+        *headless_env.LEAN_ARGS,
+        "--no-session-persistence",
     ]
     model = cfg.get("oracle_model")
     if model:

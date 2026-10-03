@@ -290,6 +290,7 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, env):
         return False, False, "claude CLI is not on PATH"
     argv = [exe, "-p", prompt, "--model", model,
             "--permission-mode", "bypassPermissions",
+            *_bind_headless_env().LEAN_ARGS,
             "--add-dir", str(wt)]
     try:
         r = run(argv, cwd=wt, timeout=timeout, env=env)
