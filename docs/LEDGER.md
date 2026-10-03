@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+234. DONE **2026-10-03 (CI no-filter tripwire saw 2 of 4 shapes; C4 date moved, MAIN asked
+   for RSC's ruling; 0a0b17e).** `test_real_workflow_declares_no_path_filter` (the guard on
+   the Settled no-paths-filter rule) read ci.yml through a block-list-only parser: an inline
+   `paths-ignore: [...]` and a positive `paths:` filter both left it GREEN (measured by LW
+   responder 0714 for SS 0921 1500 Q2). `parse_paths_ignore` now reads one-line flow lists
+   (unclosed -> sentinel, never a silent empty); new `parse_path_filters` reads both keys;
+   `check_ci` semantics unchanged. 9 arms red first; 183 truth_gate-adjacent tests green. Not
+   covered: a job-level `if:` or changed-files step. C4: RSC 0704 = NO OBJECTION, not
+   attested, landing HALTED under RSC `CLAUDE.md:298` clause (b) pending operator or a
+   verified MAIN note. Term 1 fired; note `2026-10-03-0800-from-LW-ACTION-to-MAIN-...` (7/7
+   delivered) asks MAIN for one ruling naming one act (RSC's C4 copy + pin) and moves the
+   date: CS/SS/RC target 10-09, RSC 3 days after the ruling, round closes when the last
+   carrier reports 290cbf80. RC holds for RC's operator; nothing asked of MAIN for RC.
+
 233. DONE **2026-10-03 (responder self-loop closed; LW's own pytest temp root; LL reaper
    hazard discharged; b7d50a7 7d54d16).** MAIN 0640 (sha256 verified against MAIN's outbox)
    measured the responder spawning on LW's own notes, then on its own TERMINAL ack. A
