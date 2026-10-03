@@ -1230,3 +1230,111 @@ def test_a_live_cycle_never_launches_the_scheduler_observed_by_audit_hook(tmp_pa
     (inbox / "2026-09-10-9999-from-RC-new.md").write_text("new", encoding="utf-8")
     got = _audited("main", common, tmp_path)
     assert _names_the_scheduler(got["seen"]) == [], got
+
+
+# --------------------------------------------------------------------------
+# MAIN provenance is verified by the PARENT, from a gitignored carrier row
+# --------------------------------------------------------------------------
+# MAIN 0830 (2026-10-03, digest-verified): an UNATTENDED responder must verify a
+# MAIN note itself. Before this, the child was told only "sibling tree Main" in
+# tracked prose and had to guess the path - a location the parent never read and
+# never recorded. The row is per-host and gitignored; every arm injects its own.
+
+@pytest.fixture(autouse=True)
+def _the_live_carrier_row_is_never_read(monkeypatch, tmp_path):
+    monkeypatch.setattr(responder, "CARRIERS_PATH", tmp_path / "never-created-carriers.json")
+
+
+_MAIN_NOTE = "2026-10-03-0830-from-MAIN-FIX-ALL-verify-it.md"
+
+
+def _main_channel(tmp_path, *, outbox_bytes=b"same bytes\n", row=True):
+    """LW's inbox copy, MAIN's inbox + outbox, and the carrier row naming MAIN."""
+    lw_inbox = tmp_path / "lw" / "moon_sync_inbox"
+    lw_inbox.mkdir(parents=True)
+    note = lw_inbox / _MAIN_NOTE
+    note.write_bytes(b"same bytes\n")
+    main_inbox = tmp_path / "main" / "moon_sync_inbox"
+    main_inbox.mkdir(parents=True)
+    outbox = main_inbox.parent / "moon_sync_outbox"
+    outbox.mkdir()
+    if outbox_bytes is not None:
+        (outbox / _MAIN_NOTE).write_bytes(outbox_bytes)
+    carriers = tmp_path / "carriers.json"
+    if row:
+        carriers.write_text(json.dumps({"MAIN": {"inbox": str(main_inbox)}}), encoding="utf-8")
+    return note, carriers
+
+
+def _sha(data: bytes) -> str:
+    import hashlib
+    return hashlib.sha256(data).hexdigest()
+
+
+def test_main_provenance_matches_a_byte_identical_outbox_copy(tmp_path):
+    note, carriers = _main_channel(tmp_path)
+    line = responder.main_provenance(note, carriers)
+    assert line.startswith("MAIN PROVENANCE (computed by the parent responder): MATCH")
+    assert _sha(b"same bytes\n") in line
+
+
+def test_main_provenance_mismatch_names_both_digests(tmp_path):
+    note, carriers = _main_channel(tmp_path, outbox_bytes=b"other bytes\n")
+    line = responder.main_provenance(note, carriers)
+    assert ": MISMATCH" in line
+    assert _sha(b"other bytes\n") in line and _sha(b"same bytes\n") in line
+
+
+def test_main_provenance_with_no_outbox_copy_is_a_failed_check(tmp_path):
+    note, carriers = _main_channel(tmp_path, outbox_bytes=None)
+    line = responder.main_provenance(note, carriers)
+    assert ": ABSENT" in line and "ordinary note" in line
+
+
+def test_main_provenance_without_a_carrier_row_could_not_check(tmp_path):
+    """COULD-NOT-CHECK is not MISMATCH and never MATCH."""
+    note, carriers = _main_channel(tmp_path, row=False)
+    line = responder.main_provenance(note, carriers)
+    assert ": UNAVAILABLE" in line and "MATCH" not in line.replace("UNAVAILABLE", "")
+
+
+def test_main_provenance_with_a_corrupt_carrier_row_could_not_check(tmp_path):
+    note, carriers = _main_channel(tmp_path)
+    carriers.write_text("{not json", encoding="utf-8")
+    assert ": UNAVAILABLE" in responder.main_provenance(note, carriers)
+
+
+def test_main_provenance_is_silent_for_a_note_not_from_main(tmp_path):
+    """`from-LW-ACTION-to-MAIN` is LW's own note; the FIRST from- code decides."""
+    for name in ("2026-10-03-0815-from-LL-ANSWER-x.md", "2026-10-03-0800-from-LW-ACTION-to-MAIN-x.md"):
+        note = tmp_path / name
+        note.write_bytes(b"x")
+        assert responder.main_provenance(note, tmp_path / "absent.json") == ""
+
+
+def test_the_spawn_carries_the_parent_computed_digest_into_the_prompt(monkeypatch, tmp_path):
+    note, carriers = _main_channel(tmp_path)
+    monkeypatch.setattr(responder, "CARRIERS_PATH", carriers)
+    seen = {}
+
+    def _fake_popen(argv, **_kwargs):
+        seen["argv"] = argv
+
+        class _P:
+            pid = 4242
+
+        return _P()
+
+    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
+    monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
+    outcome = responder.spawn(note, env_seams=_PROXY_UP)
+    digest = _sha(b"same bytes\n")
+    assert digest in seen["argv"][-1] and "MATCH" in seen["argv"][-1]
+    # The run log records the spawn's reason, so the digest is durable there too.
+    assert digest in outcome.reason
+
+
+def test_the_prompt_names_main_by_role_not_by_location():
+    """MAIN 0830: nothing tracked names a sibling's location."""
+    assert "sibling tree" not in responder._PROMPT
+    assert "carrier row" in responder._PROMPT
