@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+241. DONE **2026-10-03 (pipeline: 7 slugs intaken + first-passed; e50866d, 864a173, data-only).**
+   Operator away. Intake of the 8 loose files in `images/0.Originals` via `lw_pipeline intake`
+   (dry-run then execute): 7 intaken, 1 refused (lux coven -pre, byte-equal duplicate of a slug
+   already at FIRST_SCRATCH; left in 0.Originals, deletion is the operator's). Recovery via
+   `tools/lw_recover_campaign.py`: Tier 1 resolved all 7 deviations, SauceNAO never queried; five
+   -pre slugs gained a 1280x721 fetch over the 1191x671 preview, yuumi same dims but less
+   compressed, miss-fortune 403 -> `data/recovery/manual_queue.csv`. `data/recovery/matches.json`
+   is overwritten per campaign; rebuilt to 24 records (17 prior + 7). First pass via
+   `tools/lw_first_pass.py --batch`: all 7 G1 PASS with no gate reasons, all at _firstneedauth,
+   NONE approved. Watch: banding +0.008..+0.014 on the five -pre slugs; miss-fortune ~0.7 pct
+   aspect stretch inside tolerance. Verified on disk independently of the subagents: 7 needauth
+   files, INTAKE + ANNOTATE log lines. C4 tally re-hashed: still 2 of 5. ROADMAP pytest temp-root
+   row closed (fixed at 7d54d16).
+
 240. DONE **2026-10-03 (responder-authored: MAIN 0912 headless overhead cut; d1a8566).** MAIN 0912
    (operator order, sha256 a59494ae...0f21 MATCH against MAIN's outbox, 4652 B) ordered every tree
    to trim headless setup tokens. Measured from LW's checkout through the proxy, one trivial prompt,

@@ -17,7 +17,7 @@ Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
   ops/runtime/inbox_responder/runs.jsonl. Kill: the HALT file, or delete the
   proxy user variable. Never put a 64-hex digest in this file.
 Acceptance for the round: all five carriers report the C4 digest on disk.
-  TALLY 2026-10-03 09:30 (own-disk hash of each tree, read-only): 2 of 5 -
+  TALLY 2026-10-03 re-hashed again at session 5 - unchanged (own-disk hash of each tree, read-only): 2 of 5 -
   LW 700cd64, RSC 3d62942 carry C4; RC, CS, SS still on the 9,627 B v2
   bytes (targets 10-09). LL carries no slots.py. Re-hash, do not trust notes.
 Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
