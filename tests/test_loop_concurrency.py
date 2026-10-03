@@ -384,7 +384,13 @@ SHARED_SHA256 = {
     # that it does not (three differences, one of them because the MECHANISM
     # differs), and shipped RC's wording unchanged anyway rather than deviate on
     # one side's private judgement.
-    "slots.py": "71fa2a683f2eaa04dd61feb2bebc646b5f9086e692c5acc05a9239de49d07d1b",
+    # Re-pinned 2026-10-03 to the joint-round candidate C4 (11,426 B, text-only
+    # over da35f8b1): HARD_STALE_MULTIPLE 2.0, a readable lock with a live pid is
+    # reaped only past the fail-open ceiling, and five false sentences replaced.
+    # Re-derived from their own disks by RC, CS and SS before LW copied it; LW
+    # landed FIRST, so the sibling-parity arms elsewhere stay red until the
+    # other carriers copy. Bytes built by a context-asserting applier, LF only.
+    "slots.py": "290cbf80ce6989e15ad778be9032503733c8820030bfa6a9b27439b29d70486e",
     # Re-pinned 2026-09-07 (ADR-012): the two mutex NAMES are rotated to opaque
     # strings and the header prose that described the vendor and a failover
     # defect is scrubbed. This one is NOT docstring-only - the name VALUES move,
