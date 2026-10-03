@@ -45,7 +45,6 @@ import importlib.util
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import time
@@ -279,48 +278,43 @@ HARD BOUNDARIES:
 """
 
 
-def _fix_in_worktree(wt, sha, runs, model, timeout, env):
+def _fix_in_worktree(wt, sha, runs, model, timeout, kit_seams=None):
     """Run headless claude inside the worktree. Returns (ok, transient, output).
 
-    `env` is the child env from `lw_headless_env.child_env` - REQUIRED, so no
-    caller can reach the spawn without having passed the proxy gate first.
-    argv is the kit's `build_argv` (lean flags, json receipt, no transcript),
-    `bare=False` because LW's floors live in hooks; the run is bracketed by the
-    kit's budget/status/usage accounting (`start_run` / `end_run`).
+    ONE call to `kit.spawn` through `lw_headless_env.spawn` (kit v4): the child
+    runs in the worktree (`cwd=wt`), its stderr comes back for the transient
+    check (`return_stderr`), a code-writing fix runs at effort `high`, and the
+    kit owns everything else - proxy gate, `claude_exe` (never from cwd), lean
+    project-only flags, the budget counted under its lock, status, usage line,
+    and the process-tree kill on a timeout. `bare` stays False and the kit is
+    told LW's floors live in hooks. `kit_seams` reaches kit.spawn's
+    url_source / connect / run / exe_source - the test seam.
     """
     he = _bind_headless_env()
-    kit = he.kit
     prompt = FIX_PROMPT.format(base=BASE_BRANCH, sha=sha, runs=runs)
-    # kit.claude_exe, searched on the CHILD's PATH: resolved, never bare - on
-    # Windows the CLI is claude.CMD and CreateProcess given "claude" raises
-    # FileNotFoundError (measured 2026-10-03).
     try:
-        exe = he.claude_exe(which=lambda name: shutil.which(name, path=env.get("PATH")))
-    except he.HeadlessRefused:
-        return False, False, "claude CLI is not on PATH"
-    model = model or kit.pick_model(True)
-    effort = kit.pick_effort(FIX_NOTE)
-    argv = kit.build_argv(exe, prompt, model, effort, bare=False,
-                          extra=("--permission-mode", "bypassPermissions",
-                                 "--add-dir", str(wt)))
-    try:
-        started = he.start_run()
+        line = he.spawn(prompt, note=FIX_NOTE, writes_code=True, model=model or None,
+                        effort=FIX_EFFORT, cwd=wt, return_stderr=True, timeout=timeout,
+                        extra=("--permission-mode", "bypassPermissions",
+                               "--add-dir", str(wt)),
+                        **(kit_seams or {}))
     except he.HeadlessRefused as exc:
-        # The budget filled between the gate and here: not a repo fault, so it
-        # is refunded like a transient and retried on a later pass.
+        # The gate passed a moment ago, so this is the budget or a lock filling
+        # in between: not a repo fault, refunded like a transient.
         return False, True, f"headless spawn refused: {exc}"
-    try:
-        r = run(argv, cwd=wt, timeout=timeout, env=env)
-    except subprocess.TimeoutExpired:
-        he.end_run(started, note=FIX_NOTE, model=model, effort=effort, rc=None)
+    except OSError as exc:
+        return False, False, f"could not start claude ({type(exc).__name__})"
+    if line.get("error") == "timeout":
         return False, False, "timeout"
-    he.end_run(started, note=FIX_NOTE, model=model, effort=effort, rc=r.returncode,
-               stdout=r.stdout)
-    out = (r.stdout or "") + (r.stderr or "")
-    if r.returncode != 0 and is_transient(out):
+    out = str(line.get("result") or "") + str(line.get("stderr") or "")
+    rc = line.get("rc")
+    if rc != 0 and is_transient(out):
         return False, True, out[-2000:]
-    return r.returncode == 0, False, out[-2000:]
+    return rc == 0, False, out[-2000:]
 
+
+# A CI fix writes code: kit v4 effort `high` (the kit's pick would be medium).
+FIX_EFFORT = "high"
 
 # The kit's `note` for this run: names it in the usage log and picks its effort.
 FIX_NOTE = "ci-watchdog-fix"
@@ -341,6 +335,9 @@ def _cleanup_worktree(wt, branch, *, keep):
 
 def headless_gate(**seams):
     """(child_env, None) when the proxy gate passes, else (None, reason).
+
+    A PRE-flight only: the spawn itself runs the kit's gate again. This one
+    exists so a refusal creates no worktree and a dry run reports it.
 
     Runs BEFORE the worktree exists and before the dry-run return, so a refusal
     creates nothing and a dry run reports it too. The reason never carries the
@@ -364,7 +361,7 @@ def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout, env_seam
     Returns "refused" when the headless proxy gate refuses: nothing was
     attempted, so the caller refunds the attempt exactly as for a transient.
     """
-    env, refused = headless_gate(**(env_seams or {}))
+    _env, refused = headless_gate(**(env_seams or {}))
     if refused is not None:
         return "refused"
     branch = branch_name(sha, attempt)
@@ -381,7 +378,8 @@ def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout, env_seam
     keep = False
     try:
         before = _head_of(wt)
-        ok, transient, out = _fix_in_worktree(wt, sha, runs, model, fix_timeout, env)
+        ok, transient, out = _fix_in_worktree(wt, sha, runs, model, fix_timeout,
+                                              kit_seams=env_seams)
         if transient:
             # Vendor-side, not a repo fault. Reported by the caller as a
             # non-attempt so one bad afternoon cannot exhaust the budget.

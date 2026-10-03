@@ -46,7 +46,7 @@ def _bind(modname, filename):
 
 executor = _bind("lw_loop_executor", "executor.py")
 # tools/ is not on sys.path either. The headless gate, tools/lw_headless_env.py
-# (LW's binding of MAIN's fleet kit, kit v3), is bound through the executor's
+# (LW's binding of MAIN's fleet kit, kit v4), is bound through the executor's
 # own by-path binder so the two share ONE module object and one HeadlessRefused
 # class (the kit's Refused).
 headless_env = executor._headless_env_module()
@@ -809,41 +809,24 @@ def oracle_backend(cfg, role):
     return name if name in ORACLE_BACKENDS else ORACLE_DEFAULT_BACKEND
 
 
-def claude_oracle_argv(instruction, cfg):
-    """argv for a READ-ONLY headless claude call.
+def claude_oracle_extra(cfg):
+    """The oracle's own flags, carried through kit.spawn's `extra`.
 
-    Deliberately NOT executor.SdkExecutor.build_argv: that one carries
-    --permission-mode bypassPermissions and a done-record --json-schema, because
-    the executor's job is to edit and commit. An adjudicator that can write is
-    not an adjudicator, so this path takes `plan` and returns plain text - the
-    same read-only posture `gemini --approval-mode plan` had.
+    Deliberately NOT the executor's: that one carries --permission-mode
+    bypassPermissions and a done-record --json-schema, because the executor's
+    job is to edit and commit. An adjudicator that can write is not an
+    adjudicator, so this path takes `plan` - the same read-only posture
+    `gemini --approval-mode plan` had. Lean flags, json receipt and
+    --no-session-persistence come from the kit (nobody reads an oracle session
+    back).
     """
-    cmd = cfg.get("claude_cmd")
-    if isinstance(cmd, list):
-        argv = list(cmd)
-    elif isinstance(cmd, str) and cmd:
-        argv = [cmd]
-    else:
-        # kit.claude_exe: the real binary behind the npm shim when it exists.
-        try:
-            argv = [headless_env.claude_exe()]
-        except headless_env.HeadlessRefused:
-            argv = ["claude"]  # not on PATH: the call fails and returns None
-    argv += [
-        "-p", instruction,
-        "--output-format", "text",
-        "--input-format", "text",
-        "--permission-mode", "plan",
-        "--add-dir", str(cfg.get("repo_root", ".")),
-        # No MCP, no user/local scope (MAIN 0912), and no transcript: the answer
-        # is the returned text and nobody reads an oracle session back.
-        *headless_env.LEAN_ARGS,
-        "--no-session-persistence",
-    ]
-    model = cfg.get("oracle_model")
-    if model:
-        argv += ["--model", str(model)]
-    return argv
+    return ("--input-format", "text",
+            "--permission-mode", "plan",
+            "--add-dir", str(cfg.get("repo_root", ".")))
+
+
+# The kit's `note` for an oracle run: names it in the usage log.
+ORACLE_NOTE = "loop-oracle"
 
 
 def claude_oracle(prompt_body, instruction):
@@ -859,50 +842,35 @@ def claude_oracle(prompt_body, instruction):
     to spend. `ceiling_usd` stays a real rail for gemini alone.
     """
     prompt_body = cap_stdin(prompt_body)
-    # The fleet kit's gate. A refusal fails THIS call with the None sentinel at
-    # once: no retry (a retry against a refused gate is the same refusal), and
-    # never a plain `claude` in its place. `kit.spawn` cannot carry this call:
-    # the prompt body goes on STDIN (it can exceed a Windows command line) and
-    # the answer is plain text. Each try is one run against the kit's budget,
-    # with the kit's status and usage line around it. bare=False: LW's floors
-    # live in hooks.
-    try:
-        env = headless_env.child_env()
-    except headless_env.HeadlessRefused as exc:
-        log(f"claude oracle: headless spawn refused: {exc} - call fails, no fallback")
-        headless_env.log_refusal("loop oracle (claude)", str(exc))
-        return None
-    argv = claude_oracle_argv(instruction, CFG)
+    # ONE kit.spawn per try (kit v4): the prompt body and the instruction go on
+    # STDIN (`stdin=True` - the body can exceed a Windows command line), the
+    # answer is the json receipt's result text, the model is the loop config's
+    # exact id, and the kit owns the gate, budget, status, usage line and the
+    # process-tree kill on a timeout. A refusal fails THIS call with the None
+    # sentinel at once: no retry (a retry against a refused gate is the same
+    # refusal), and never a plain `claude` in its place. bare=False: LW's
+    # floors live in hooks.
+    prompt = f"{prompt_body}\n\n{instruction}"
     timeout = float(CFG.get("oracle_timeout_sec", 900))
-    model = str(CFG.get("oracle_model") or "")
+    model = CFG.get("oracle_model") or None
     out = ""
     for tryn in range(1, 4):
         try:
-            started = headless_env.start_run()
+            line = headless_env.spawn(prompt, note=ORACLE_NOTE, writes_code=False,
+                                      model=model, stdin=True, return_stderr=True,
+                                      timeout=timeout, extra=claude_oracle_extra(CFG))
         except headless_env.HeadlessRefused as exc:
             log(f"claude oracle: headless spawn refused: {exc} - call fails, no fallback")
             headless_env.log_refusal("loop oracle (claude)", str(exc))
             return out or None
-        rc = None
-        try:
-            r = subprocess.run(argv, input=prompt_body, capture_output=True,
-                               text=True, encoding="utf-8", errors="replace",
-                               timeout=timeout, creationflags=NO_WINDOW, env=env)
-            rc = r.returncode
-            out = (r.stdout or "").strip()
-            if not out and (r.stderr or "").strip():
-                log(f"claude oracle try {tryn} empty stdout; stderr: "
-                    f"{_err_summary((r.stderr or '').strip())}")
         except Exception as e:  # noqa: BLE001
-            out = ""
-            log(f"claude oracle try {tryn} error: {e}")
-        try:
-            headless_env.end_run(started, note="loop-oracle", model=model, effort="",
-                                 rc=rc)
-        except OSError as e:
-            log(f"claude oracle: usage line not written ({type(e).__name__})")
+            line = {"error": f"{type(e).__name__}: {e}"}
+        out = str(line.get("result") or "").strip()
         if out:
             break
+        log(f"claude oracle try {tryn} no answer (rc {line.get('rc')}, error "
+            f"{line.get('error')}); stderr: "
+            f"{_err_summary(str(line.get('stderr') or '').strip())}")
         time.sleep(8 * tryn)
     return out or None
 

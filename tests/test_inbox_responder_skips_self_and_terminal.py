@@ -19,13 +19,15 @@ seen and logging the skip:
   * TERMINAL - the filename carries a `terminal` or `no-reply` token, or the
     title line says TERMINAL or no reply, from any sender.
 
-SINCE FLEET KIT v3 THE RULE IS THE KIT'S: `should_skip(name, "LW", head)`, a
-SUBSTRING match of TERMINAL / NO-REPLY / NO REPLY over the name and the note's
-first few hundred chars. That is WIDER than LW's old tight set (a `terminals`
-token and a body line "no reply requested" now skip too - latency only, since
-`lw_facts` still reports every note at SessionStart) and in one place NARROWER:
-a bare `noreply` token is no longer a terminal marker. The narrowing is a kit
-gap, reported to MAIN and pinned xfail(strict) here, not patched locally.
+THE RULE IS THE KIT'S: `should_skip(name, "LW", head)`. Since FLEET KIT v4
+(MAIN 1204, defect 2) TERMINAL means a WHOLE TERMINAL / NOREPLY / NO-REPLY
+token in the name, or a head line that is ONLY such a marker; a sentence that
+mentions the rule is not a marker, and ORDER / FIX / RULING notes are never
+damped. v4 closed LW's reported gap (a bare `noreply` token is terminal again,
+so its strict-xfail pin is removed) and narrowed v3's substring rule: a title
+SENTENCE saying "terminal" or "no reply" no longer skips. That narrowing is
+MAIN's rule and is pinned below as a v4 trade-off: a false spawn on a
+non-LW ack costs one budgeted run, and LW's own notes are still caught by SELF.
 """
 from __future__ import annotations
 
@@ -146,11 +148,7 @@ def test_lws_own_note_produces_zero_spawns(tmp_path, inbox, spawns, name):
 @pytest.mark.parametrize("name", [LL_TERMINAL,
                                   "2026-10-03-0900-from-RC-ANSWER-closed-TERMINAL.md",
                                   "2026-10-03-0901-from-CS-ACK-received-no-reply.md",
-                                  pytest.param(
-                                      "2026-10-03-0902-from-SS-ACK-received-noreply.md",
-                                      marks=pytest.mark.xfail(strict=True, reason=(
-                                          "kit v3 gap: a bare noreply token is not "
-                                          "terminal to should_skip; reported to MAIN")))])
+                                  "2026-10-03-0902-from-SS-ACK-received-noreply.md"])
 def test_a_terminal_filename_produces_zero_spawns_from_any_sender(tmp_path, inbox, spawns, name):
     _write(inbox, name)
 
@@ -162,20 +160,39 @@ def test_a_terminal_filename_produces_zero_spawns_from_any_sender(tmp_path, inbo
     assert skip["reason"].startswith("terminal")
 
 
-@pytest.mark.parametrize("title", [
-    "# From LL - ANSWER to LW 0117: nothing owed. TERMINAL - no reply wanted.",
-    "# From RC - ACK: received, terminal",
-    "# From CS - ACK: received. No reply.",
+@pytest.mark.parametrize("marker", [
+    "TERMINAL",
+    "## TERMINAL - no reply",
+    "**NO-REPLY.**",
 ])
-def test_a_terminal_title_produces_zero_spawns(tmp_path, inbox, spawns, title):
-    """The header half of MAIN's rule: the filename is clean, the title is not."""
+def test_a_marker_only_head_line_produces_zero_spawns(tmp_path, inbox, spawns, marker):
+    """The header half of MAIN's v4 rule: the filename is clean, a head line is
+    ONLY a terminal marker."""
     name = "2026-10-03-0910-from-RC-ACK-received.md"
-    _write(inbox, name, f"{title}\n\nbody\n")
+    _write(inbox, name, f"# From RC - ACK: received\n\n{marker}\n\nbody\n")
 
     record = _run(tmp_path, inbox)
 
     assert spawns == []
     assert record["skipped"][0]["reason"].startswith("terminal")
+
+
+@pytest.mark.parametrize("title", [
+    "# From LL - ANSWER to LW 0117: nothing owed. TERMINAL - no reply wanted.",
+    "# From RC - ACK: received, terminal",
+    "# From CS - ACK: received. No reply.",
+])
+def test_a_title_sentence_mentioning_terminal_now_spawns(tmp_path, inbox, spawns, title):
+    """PINNED v4 TRADE-OFF (MAIN 1204 defect 2): a sentence is not a marker.
+    These skipped under v3's substring rule; under v4 they spawn. A rule change
+    that skips them again must change this arm on purpose."""
+    name = "2026-10-03-0910-from-RC-ACK-received.md"
+    _write(inbox, name, f"{title}\n\nbody\n")
+
+    record = _run(tmp_path, inbox)
+
+    assert spawns == [name]
+    assert record["skipped"] == []
 
 
 def test_the_three_live_notes_together_spawn_nothing(tmp_path, inbox, spawns):
@@ -239,16 +256,16 @@ def test_lookalikes_the_kit_still_lets_through(tmp_path, inbox, spawns, name, bo
     ("2026-10-03-0951-from-CS-REVIEW-the-terminals-list.md", None),
     ("2026-10-03-0952-from-SS-REVIEW-terminally-slow-suite.md", None),
 ])
-def test_the_kits_substring_rule_is_wider_than_the_old_tight_set(
+def test_the_kits_whole_token_rule_lets_lookalikes_through(
         tmp_path, inbox, spawns, name, body):
-    """PINNED TRADE-OFF of kit v3: these skip now. Latency only - the note is
-    still shown at every SessionStart - and the rule is MAIN's, not LW's."""
+    """Kit v4 (MAIN 1204 defect 2): whole tokens and marker-only lines. These
+    skipped under v3's substring rule; they are ordinary mail again."""
     _write(inbox, name, body)
 
     record = _run(tmp_path, inbox)
 
-    assert spawns == []
-    assert record["skipped"][0]["reason"].startswith("terminal")
+    assert spawns == [name]
+    assert record["skipped"] == []
 
 
 def test_a_note_mentioning_LW_after_another_sender_is_not_self(tmp_path, inbox, spawns):
@@ -261,21 +278,17 @@ def test_a_note_mentioning_LW_after_another_sender_is_not_self(tmp_path, inbox, 
     assert spawns == [name]
 
 
-def test_mains_own_fix_note_is_a_known_false_skip(tmp_path, inbox, spawns):
-    """PINNED TRADE-OFF, not an endorsement. MAIN 0640 describes the defect, so
-    its own filename ends `...-skip-self-and-terminal` and its title says
-    `TERMINAL no-reply`: the rule MAIN wrote catches the note that wrote it.
-    Erring this way costs latency only - the note is still shown at every
-    SessionStart by `lw_facts`, whose seen-state the responder never touches -
-    while erring the other way costs a headless session per false spawn and is
-    how the measured loop ran. A narrowing that lets this note through must
-    change this arm on purpose."""
+def test_mains_own_fix_note_is_never_damped(tmp_path, inbox, spawns):
+    """Under kit v3 this was a pinned false skip: MAIN 0640's own filename
+    carries `TERMINAL-no-reply`, so the rule MAIN wrote caught the note that
+    wrote it. Kit v4 (MAIN 1204 defect 2) never damps ORDER / FIX / RULING, so
+    the FIX note spawns despite the marker token."""
     _write(inbox, MAIN_FIX, "# From MAIN - FIX to LW: an ack marked TERMINAL no-reply\n")
 
     record = _run(tmp_path, inbox)
 
-    assert spawns == []
-    assert record["skipped"][0]["reason"].startswith("terminal")
+    assert spawns == [MAIN_FIX]
+    assert record["skipped"] == []
 
 
 def test_a_dry_run_reports_skips_and_records_nothing(tmp_path, inbox, spawns):

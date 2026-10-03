@@ -15,9 +15,9 @@ MAIN 0845's other knobs were RETRACTED by 0855 and stay absent:
 
 A note held back by the budget stays UNSEEN: deferred, not dropped.
 
-KNOWN KIT GAP, reported to MAIN and pinned xfail(strict) below: the kit's
-RunBudget reads an unreadable budget file as ZERO runs (could-not-read reads as
-zero), where LW's old run-log budget spawned nothing.
+Kit v4 (MAIN 1204 defect 4) closed LW's reported gap: a budget file that
+exists but cannot be read or parsed REFUSES every start (fail closed), as LW's
+old run-log budget did. The strict-xfail pin is removed; the arm is plain.
 """
 from __future__ import annotations
 
@@ -174,8 +174,6 @@ def test_a_full_budget_spawns_nothing_and_publishes_the_limit(tmp_path, inbox, s
     assert (status["state"], status["task"]) == ("limit", "Turn Limit Reached")
 
 
-@pytest.mark.xfail(strict=True, reason="kit v3 gap: RunBudget reads an unreadable "
-                   "budget file as zero runs; reported to MAIN, not patched")
 def test_an_unreadable_budget_spawns_nothing(tmp_path, inbox, spawns):
     b = responder.lw_headless_env.budget()
     b.path.parent.mkdir(parents=True, exist_ok=True)

@@ -27,6 +27,29 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+243. DONE **2026-10-03 (fleet: MAIN FLEET-KIT v4 adopted; adoption commit in the v4 ANSWER).**
+   Operator order via MAIN 1204 (supersedes v3). Provenance READ BACK per file with kit v4
+   `verify_main` (MAIN's COMMITTED blob): the order note (sha256 b2b3c189) and all five bundle
+   files at `<bundle dir>/<file>` - 6 of 6 MATCH; the five also equal the hashes the note lists.
+   Vendored byte-for-byte to `ops/fleet_kit/` (MANIFEST v4 pins FLEET-COMMON.md, LICENSE, NOTICE,
+   fleet_headless.py; LICENSE + NOTICE new); `conformance(repo root)` read back `[]`; CLAUDE.md
+   fleet block unchanged (block hash 5f3385ee, same as v3). Strict-xfail pins for gaps 4/6/8/9
+   removed (v4 closes them): budget unreadable-file arm plain, `noreply` token arm plain;
+   skip-rule arms rewritten to v4 semantics (whole tokens + marker-only lines; FIX/ORDER/RULING
+   never damped; MAIN 0640's FIX note now spawns; title SENTENCES no longer skip - pinned as a v4
+   trade-off). All LW spawns pass floors_in_hooks=True + project-only setting_sources. Spawn paths moved onto v4 `spawn()` parameters: CI watchdog (cwd, return_stderr,
+   effort high, tree kill) and loop oracle (stdin, exact model, return_stderr); responder +
+   weekly hygiene already on spawn. DECISION (adjudicated in-session): the loop EXECUTOR stays on
+   kit primitives. Alternatives: spawn(log_path=) and parse the stream log behind the kit's back;
+   wait for v5. Why: v4 spawn returns only the receipt's `result` text, and the executor needs
+   `structured_output`, `is_error`, `session_id` and `total_cost_usd` from its `--json-schema`
+   receipt - KIT GAP A for MAIN (return the full result event). KIT GAP B: `_run`'s Popen gets
+   creationflags only via `**kw`, so LW's AST console-flash sweep cannot see it; the site is
+   exempted by exact shape (one site, guarded) and proved at runtime by two arms (spawn hands
+   run `CREATE_NO_WINDOW`; `_run` forwards it to Popen) - ask MAIN for a literal keyword. Ruff
+   clean on touched files. Full suite: 3487 passed / 0 failed / 20 skipped (first run 1 failed,
+   the console-flash site above). Reverse if: a MAIN FLEET-KIT-vN note supersedes v4.
+
 242. DONE **2026-10-03 (fleet: MAIN FLEET-KIT v3 adopted + MAIN 1029 bundle-dir fix; 062ffd5, fc6cdb4).**
    Operator order via MAIN 0955/1014/1016 (+1029), all four sha256 MATCH MAIN's outbox. Kit v3
    vendored byte-for-byte to `ops/fleet_kit/` (hashes read back), marked `-text` in

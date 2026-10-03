@@ -1280,8 +1280,23 @@ def _the_live_carrier_row_is_never_read(monkeypatch, tmp_path):
 _MAIN_NOTE = "2026-10-03-0830-from-MAIN-FIX-ALL-verify-it.md"
 
 
-def _main_channel(tmp_path, *, outbox_bytes=b"same bytes\n", row=True):
-    """LW's inbox copy, MAIN's inbox + outbox, and the carrier row naming MAIN."""
+def _commit_tree(top: Path) -> None:
+    """MAIN's tree as a git repo with everything in it committed (kit v4
+    verify_main reads the COMMITTED blob, never the working tree)."""
+    import os
+    import subprocess
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    for args in (["init", "-q"], ["add", "-A"],
+                 ["-c", "user.name=t", "-c", "user.email=t@example.invalid",
+                  "-c", "commit.gpgsign=false", "commit", "-q", "--no-verify", "-m", "m"]):
+        subprocess.run(["git", *args], cwd=top, env=env, check=True, capture_output=True,
+                       creationflags=flags)
+
+
+def _main_channel(tmp_path, *, outbox_bytes=b"same bytes\n", row=True, commit=True):
+    """LW's inbox copy, MAIN's inbox + outbox (committed unless commit=False),
+    and the carrier row naming MAIN."""
     lw_inbox = tmp_path / "lw" / "moon_sync_inbox"
     lw_inbox.mkdir(parents=True)
     note = lw_inbox / _MAIN_NOTE
@@ -1292,6 +1307,9 @@ def _main_channel(tmp_path, *, outbox_bytes=b"same bytes\n", row=True):
     outbox.mkdir()
     if outbox_bytes is not None:
         (outbox / _MAIN_NOTE).write_bytes(outbox_bytes)
+    (main_inbox / ".keep").write_bytes(b"")
+    if commit:
+        _commit_tree(main_inbox.parent)
     carriers = tmp_path / "carriers.json"
     if row:
         carriers.write_text(json.dumps({"MAIN": {"inbox": str(main_inbox)}}), encoding="utf-8")
@@ -1350,7 +1368,7 @@ def test_the_spawn_carries_the_parent_computed_digest_into_the_prompt(monkeypatc
     seen = {}
     outcome = responder.spawn(note, kit_seams=_kit_seams(seen))
     digest = _sha(b"same bytes\n")
-    prompt = seen["argv"][seen["argv"].index("-p") + 1]
+    prompt = seen["kw"]["input"]  # kit v4 stdin=True: the prompt is never in argv
     assert digest in prompt and "MATCH" in prompt
     # The run log records the spawn's reason, so the digest is durable there too.
     assert digest in outcome.reason
@@ -1361,8 +1379,65 @@ def test_main_provenance_reads_an_explicit_outbox_from_the_row(tmp_path):
     outbox = tmp_path / "elsewhere"
     outbox.mkdir()
     (outbox / _MAIN_NOTE).write_bytes(b"same bytes\n")
+    _commit_tree(outbox)
     carriers.write_text(json.dumps({"MAIN": {"outbox": str(outbox)}}), encoding="utf-8")
     assert ": MATCH" in responder.main_provenance(note, carriers)
+
+
+# --------------------------------------------------------------------------
+# kit v4: verify_main reads MAIN's COMMITTED copy (MAIN 1204 section 7 item 4)
+# --------------------------------------------------------------------------
+
+def test_an_uncommitted_identical_copy_is_not_a_match(tmp_path):
+    """Same bytes on disk, not yet committed by MAIN: UNCOMMITTED, never MATCH,
+    and never MISMATCH either - the bytes agree, the commit has not landed."""
+    note, carriers = _main_channel(tmp_path, commit=False)
+    line = responder.main_provenance(note, carriers)
+    assert ": UNCOMMITTED" in line and ": MATCH" not in line and "MISMATCH" not in line
+
+
+def test_an_uncommitted_main_note_spawns_nothing_and_stays_unseen(monkeypatch, tmp_path):
+    """Retry on the next tick: UNAVAILABLE (main records only AUTO as seen)."""
+    note, carriers = _main_channel(tmp_path, commit=False)
+    monkeypatch.setattr(responder, "CARRIERS_PATH", carriers)
+    seen = {}
+    outcome = responder.spawn(note, kit_seams=_kit_seams(seen))
+    assert seen == {}
+    assert outcome.verdict == responder.UNAVAILABLE and "UNCOMMITTED" in outcome.reason
+
+
+def test_a_committed_main_note_spawns_once_main_commits(monkeypatch, tmp_path):
+    """Mirror arm: the same channel, committed, spawns - the wait clears."""
+    note, carriers = _main_channel(tmp_path, commit=False)
+    monkeypatch.setattr(responder, "CARRIERS_PATH", carriers)
+    _commit_tree(note.parents[2] / "main")
+    seen = {}
+    outcome = responder.spawn(note, kit_seams=_kit_seams(seen))
+    assert outcome.verdict == responder.AUTO and "argv" in seen
+
+
+def test_a_timeout_comes_back_as_a_kit_line_not_a_raise():
+    """kit v4 catches the timeout inside spawn and kills the process tree; the
+    responder reads error "timeout" off the line."""
+    seams = _kit_seams()
+    seams["run"] = lambda argv, **kw: (_ for _ in ()).throw(
+        subprocess.TimeoutExpired(argv, kw.get("timeout")))
+    line = responder.lw_headless_env.spawn("p", note="n.md", **seams)
+    assert line["error"] == "timeout" and line["rc"] is None
+
+
+def test_the_responder_hands_the_kit_its_halt_file(monkeypatch, tmp_path):
+    """A HALT landing between the tick's own check and the launch still refuses:
+    the kit reads halt_file just before it starts anything."""
+    halt = tmp_path / "HALT"
+    halt.write_text("stop", encoding="utf-8")
+    monkeypatch.setattr(responder, "HALT_PATH", halt)
+    monkeypatch.setattr(responder.lw_headless_env, "LOG_DIR", tmp_path)
+    seen = {}
+    outcome = responder.spawn(Path("moon_sync_inbox/2026-10-03-from-RC-REVIEW-x.md"),
+                              kit_seams=_kit_seams(seen))
+    assert seen == {}
+    assert outcome.verdict == responder.UNAVAILABLE and "halt" in outcome.reason
 
 
 def test_the_prompt_names_main_by_role_not_by_location():

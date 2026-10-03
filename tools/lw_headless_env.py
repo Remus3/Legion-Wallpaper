@@ -1,8 +1,8 @@
 """LW's binding of MAIN's fleet kit - the ONE path a headless `claude` starts by.
 
-# arch: headless-claude spawn gate - thin adapter over ops/fleet_kit/fleet_headless.py (kit v3), fail closed
+# arch: headless-claude spawn gate - thin adapter over ops/fleet_kit/fleet_headless.py (kit v4), fail closed
 
-MAIN order (kit v3, 2026-10-03): every headless `claude` this tree starts goes
+MAIN order (kit v3, 2026-10-03; kit v4 the same day): every headless `claude` this tree starts goes
 through `fleet_headless.spawn(...)`, and LW's own proxy-env, probe, budget,
 skip, status and console code is deleted - one path, the kit's. The kit lives
 at `ops/fleet_kit/` byte-pinned by its MANIFEST; it is NEVER edited here (see
@@ -10,26 +10,34 @@ at `ops/fleet_kit/` byte-pinned by its MANIFEST; it is NEVER edited here (see
 bound BY PATH and an already-loaded copy is reused, exactly as the loop binds
 this module.
 
-WHAT THIS MODULE STILL CARRIES, AND WHY. `kit.spawn` is synchronous, captures
-output, always passes `--output-format json --no-session-persistence`, runs
-with `cwd=root`, takes the prompt as argv and offers no stdin. Four LW paths
-cannot be expressed that way (stdin-fed or session-resumed loop executor,
-stdin-fed oracle, a CI fix that must run in a worktree, a live-console .ps1
-run). For those this module gives the kit's PRIMITIVES, never a copy of them:
+WHAT THIS MODULE STILL CARRIES, AND WHY. Since kit v4 `kit.spawn` takes cwd,
+stdin, return_stderr, session id / resume, an exact model, effort high, the
+setting sources, a streamed log and a halt file, and kills the process tree on
+a timeout - so the CI watchdog's worktree fix and the loop oracle run through
+`spawn` below. Two LW paths still cannot: the loop executor needs the FULL
+result event (structured_output, session_id, is_error) while spawn returns only
+its `result` text, and a live-console .ps1 run is hours long on this process's
+stdio. For those this module gives the kit's PRIMITIVES, never a copy of them:
 
   * `child_env` / `resolve` - `kit.base_url` (registry first; a readable
     registry WITHOUT the value is the kill switch), `kit.check_url` (plain
     http, loopback, explicit port), `kit.probe`, `kit.child_env`.
   * `start_run` / `end_run` - the kit's own pre- and post-launch accounting,
-    in kit.spawn's order: `RunBudget` check (writes the "limit" status and
-    refuses), `record`, "running" status, then one `usage_line` appended to the
-    kit's usage log and the "idle" status.
-  * `LEAN_ARGS` - read off `kit.build_argv`, so the non-bare flag set exists
-    once, in the kit.
+    in kit.spawn's order: `RunBudget.start()` under the kit's lock (cap reached
+    writes the "limit" status; an unreadable budget file or a busy lock writes
+    "refused" - both raise, fail closed), "running" status, then one
+    `usage_line` appended to the kit's usage log and the "idle" status.
+  * `LEAN_ARGS` - read off `kit.build_argv` with LW's `SETTING_SOURCES`, so the
+    non-bare flag set exists once, in the kit.
 
-`bare` is False on every LW path: LW's floors live in hooks
-(`.claude/settings.json` PreToolUse `precommit_gate.py`, `text_first_guard.py`),
-and `--bare` skips every hook.
+`bare` is False on every LW path and `floors_in_hooks=True` is passed on every
+`spawn`: LW's floors live in hooks (`.claude/settings.json` PreToolUse
+`precommit_gate.py`, `text_first_guard.py`), `--bare` skips every hook, and the
+kit then refuses `--bare` outright.
+
+`SETTING_SOURCES` is `project` alone (kit v4 parameter): LW measured it at
+47,026 input tokens against 53,143 for `project,local`, and this tree's local
+scope re-enables three plugins and pins a model alias the proxy answers 404.
 
 `FLEET_ROOT` is where the kit's status, budget and usage files live
 (`ops/loop/control/`, gitignored). Tests redirect it; production never does.
@@ -87,9 +95,14 @@ VAR = kit.VAR
 HeadlessRefused = kit.Refused
 
 
+# LW's setting scope for every headless child (see the module docstring).
+SETTING_SOURCES = "project"
+
+
 def _lean_args() -> tuple:
     """The kit's non-bare flags, read off its own argv builder."""
-    argv = kit.build_argv("<exe>", "<prompt>", "<model>", "<effort>")
+    argv = kit.build_argv("<exe>", "<prompt>", "<model>", "<effort>",
+                          setting_sources=SETTING_SOURCES)
     return tuple(argv[argv.index("<effort>") + 1:])
 
 
@@ -135,11 +148,19 @@ def claude_exe(which=None) -> str:
 
 
 def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool = False,
-          rules_file=None, timeout: float = 3600, extra=(), **seams) -> dict:
-    """kit.spawn for LW: FLEET_ROOT, code LW. Raises kit.Refused before any launch."""
+          rules_file=None, timeout: float = 3600, extra=(), **params) -> dict:
+    """kit.spawn for LW: FLEET_ROOT, code LW, floors in hooks, project scope.
+
+    Raises kit.Refused before any launch. `params` reaches kit.spawn's v4
+    options (cwd, stdin, return_stderr, persist, session_id, resume, model,
+    effort, log_path, halt_file) and its test seams (url_source, connect, run,
+    exe_source). A timeout does NOT raise: the kit kills the process tree and
+    returns a line with rc None and error "timeout".
+    """
+    params.setdefault("setting_sources", SETTING_SOURCES)
     return kit.spawn(FLEET_ROOT, CODE, prompt, note=note, writes_code=writes_code,
                      bare=bare, rules_file=rules_file, timeout=timeout,
-                     extra=tuple(extra), **seams)
+                     extra=tuple(extra), floors_in_hooks=True, **params)
 
 
 # ---------------------------------------------------------------------------
@@ -156,19 +177,29 @@ def can_start() -> bool:
 
 
 def start_run() -> float:
-    """Budget check (status "limit" + Refused), record, status "running"."""
+    """Count one start under the kit's lock, then status "running".
+
+    kit.spawn's own order: `RunBudget.start()` False = cap reached (status
+    "limit"); Refused = unreadable budget file or busy lock (status "refused").
+    Both raise HeadlessRefused - fail closed, nothing is launched.
+    """
     b = budget()
-    if not b.can_start():
+    try:
+        counted = b.start()
+    except HeadlessRefused:
+        kit.write_status(FLEET_ROOT, CODE, "refused", "Refused", None, b)
+        raise
+    if not counted:
         kit.write_status(FLEET_ROOT, CODE, "limit", "Turn Limit Reached", None, b)
         raise HeadlessRefused(f"run budget exhausted ({b.used()}/{b.cap})")
-    b.record()
     started = time.time()
     kit.write_status(FLEET_ROOT, CODE, "running", "Running Session", started, b)
     return started
 
 
 def end_run(started: float, *, note: str, model: str, effort: str, rc,
-            stdout: str | None = None, bare: bool = False) -> dict:
+            stdout: str | None = None, bare: bool = False,
+            error: str | None = None) -> dict:
     """One kit usage line appended, status back to "idle". Returns the line."""
     try:
         result = json.loads(stdout) if stdout else None
@@ -177,7 +208,7 @@ def end_run(started: float, *, note: str, model: str, effort: str, rc,
     if not isinstance(result, dict):
         result = None
     line = kit.usage_line(result, CODE, note, model, effort, bare, rc,
-                          time.time() - started)
+                          time.time() - started, error)
     log = Path(FLEET_ROOT) / kit.USAGE_REL
     log.parent.mkdir(parents=True, exist_ok=True)
     with open(log, "a", encoding="ascii", newline="\n") as fh:
@@ -289,10 +320,10 @@ def main(argv: list[str] | None = None, *, log_dir: Path | None = None,
             print(f"lw_headless_env: REFUSED {exc}", file=sys.stderr)
             log_refusal(f"spawn {args.note or 'note'}", str(exc), log_dir=log_dir)
             return REFUSED_EXIT
-        except subprocess.TimeoutExpired:
+        print(json.dumps(line))
+        if line.get("error") == "timeout":
             print(f"lw_headless_env: timeout after {args.timeout:.0f}s", file=sys.stderr)
             return TIMEOUT_EXIT
-        print(json.dumps(line))
         rc = line.get("rc")
         return rc if isinstance(rc, int) else 1
 

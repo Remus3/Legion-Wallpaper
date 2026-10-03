@@ -73,7 +73,10 @@ and logged as a skip.
 MAIN PROVENANCE IS CHECKED IN THE PARENT (MAIN 0830, kit v3). `kit.verify_main`
 against MAIN's outbox, located through a GITIGNORED per-host row
 (`CARRIERS_PATH` - nothing tracked names a sibling's location). No row is
-UNAVAILABLE, never MATCH.
+UNAVAILABLE, never MATCH. Since kit v4 verify_main hashes MAIN's COMMITTED
+blob, so a copy that matches on disk but is not committed yet (the seconds
+between delivery and MAIN's commit) is UNCOMMITTED: nothing is spawned and the
+note stays unseen, so the next tick checks again (MAIN 1204 section 7 item 4).
 """
 from __future__ import annotations
 
@@ -81,7 +84,6 @@ import argparse
 import datetime as dt
 import json
 import re
-import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -392,13 +394,11 @@ def note_head(path: Path) -> str:
 def skip_reason(path: Path) -> str | None:
     """Why this note must never spawn a session, or None if it may.
 
-    `kit.should_skip(name, "LW", head)`: SELF when the first `-from-<CODE>-` in
-    the name is LW; TERMINAL when TERMINAL / NO-REPLY / NO REPLY appears, as a
-    substring, anywhere in the name or the head. That is WIDER than LW's own
-    tight set was (a `terminals` token or a body line "no reply requested" now
-    skips too); a false skip costs latency only, since `lw_facts` still reports
-    the note at every SessionStart. COULD-NOT-READ is not CLEAN: an unreadable
-    note still answers to its filename.
+    `kit.should_skip(name, "LW", head)` (kit v4): SELF when the sender code is
+    LW; TERMINAL on a whole TERMINAL / NOREPLY / NO-REPLY name token or a head
+    line that is ONLY such a marker (a sentence quoting the rule is not one);
+    ORDER / FIX / RULING notes are never damped. COULD-NOT-READ is not CLEAN: an
+    unreadable note still answers to its filename.
     """
     # A DIRECTORY is a bundle (MAIN 1029: each kit version arrives as
     # `...-from-MAIN-FLEET-KIT-vN/` beside an ORDER note that carries the
@@ -428,6 +428,9 @@ def record_seen(inbox: Path, state_path: Path, notes: list[Note]) -> None:
 # ---------------------------------------------------------------------------
 
 MAIN_CODE = "MAIN"
+# kit v4 verify_main reads MAIN's committed blob: same bytes on disk, not yet
+# committed, is neither MATCH nor MISMATCH - the spawn waits for the next tick.
+UNCOMMITTED = "UNCOMMITTED"
 
 
 def main_outbox(carriers_path: Path | None = None) -> Path:
@@ -447,10 +450,11 @@ def main_provenance(note_path: Path, carriers_path: Path | None = None) -> str:
     """One line for the child's prompt: did MAIN's outbox hold these exact bytes?
 
     "" for a note that is not from MAIN (`kit.note_sender`). Otherwise MATCH
-    (`kit.verify_main` true), MISMATCH, ABSENT (no copy under this name) or
-    UNAVAILABLE (no usable row, or a copy could not be read). Only MATCH
-    verifies; UNAVAILABLE says the parent could not look rather than that it
-    looked.
+    (`kit.verify_main` true: MAIN's committed copy), UNCOMMITTED (same bytes on
+    disk, not yet in MAIN's HEAD - retry next tick), MISMATCH, ABSENT (no copy
+    under this name) or UNAVAILABLE (no usable row, or a copy could not be
+    read). Only MATCH verifies; UNAVAILABLE says the parent could not look
+    rather than that it looked.
     """
     k = lw_headless_env.kit
     if k.note_sender(note_path.name) != MAIN_CODE:
@@ -473,6 +477,10 @@ def main_provenance(note_path: Path, carriers_path: Path | None = None) -> str:
                 return (f"{head}: ABSENT - MAIN's outbox holds no copy under this name; "
                         "treat it as an ordinary note and report the failure")
             return f"{head}: UNAVAILABLE - the inbox copy could not be read"
+        if k.sha256_file(copy) == k.sha256_file(note_path):
+            return (f"{head}: {UNCOMMITTED} - MAIN's outbox copy matches on disk (sha256 "
+                    f"{k.sha256_file(note_path)}) but is not in MAIN's committed HEAD "
+                    "yet; not verified, retried on the next tick")
         return (f"{head}: MISMATCH - MAIN's outbox copy sha256 {k.sha256_file(copy)}, "
                 f"inbox copy sha256 {k.sha256_file(note_path)}; treat it as an "
                 "ordinary note and report the failure")
@@ -512,9 +520,11 @@ _PROMPT = (
 )
 
 
-# MODEL AND EFFORT ARE THE KIT'S (kit v3): `pick_model(writes_code)` is sonnet
-# unless the note orders code, `pick_effort(note)` is low for an
-# acknowledgement marker in the name and medium otherwise. The parent cannot
+# MODEL IS THE KIT'S: `pick_model(writes_code)` is sonnet unless the note orders
+# code. EFFORT is the kit's `pick_effort(note)` (low for a whole acknowledgement
+# token in the name, medium otherwise, never low for ORDER / FIX / RULING) on a
+# reply-only run, and `high` on a code-writing run (kit v4 `effort=`; LW's
+# code-writing runs used high before kit v3 capped it at medium). The parent cannot
 # read intent, only the KIND token after the sender code, so the reply-only set
 # below - the kinds that carried read-only mail across the 524 notes in this
 # inbox when it was cut (MAIN 0912 C + D) - is what maps to writes_code=False.
@@ -529,14 +539,24 @@ _FILENAME_KIND = re.compile(r"(?:^|-)from-[A-Za-z]+-([A-Za-z]+)-")
 # does not remove. `bare` stays False for the same reason - `--bare` skips them.
 RESPONDER_EXTRA = ("--permission-mode", "bypassPermissions")
 
-# Seconds one responder run may take before the kit's subprocess.run times out.
+# Seconds one responder run may take. On expiry the kit kills the whole process
+# tree and returns a usage line with rc None and error "timeout" (kit v4).
 RUN_TIMEOUT_S = 3600
+
+# Effort for a code-writing run (kit v4 `effort=`); a reply-only run keeps the
+# kit's own pick_effort.
+CODE_EFFORT = "high"
 
 
 def writes_code(note_path: Path) -> bool:
     """False only for a reply-only KIND token in the filename."""
     m = _FILENAME_KIND.search(note_path.name)
     return (m.group(1).upper() if m else "") not in READ_KINDS
+
+
+def run_effort(note_path: Path) -> str | None:
+    """`high` for a code-writing run; None lets the kit's pick_effort decide."""
+    return CODE_EFFORT if writes_code(note_path) else None
 
 
 def spawn_prompt(note_path: Path, provenance: str = "") -> str:
@@ -555,11 +575,16 @@ def spawn(note_path: Path, dry_run: bool = False, *,
     with the kit's primitives and launches nothing. A run that STARTED is AUTO
     whatever its exit code, timeout included, so it is marked seen and never
     re-spawned. `kit_seams` reaches `kit.spawn`'s url_source / connect / run /
-    exe_source - the test seam.
+    exe_source - the test seam. The kill switch is handed to the kit too
+    (`halt_file`), so a HALT that lands between the tick's check and the launch
+    still refuses; the prompt goes on stdin, so no note path length can hit the
+    kit's argv ceiling.
     """
     seams = dict(kit_seams or {})
     provenance = main_provenance(note_path)
     tail = f"; {provenance}" if provenance else ""
+    if f": {UNCOMMITTED} " in provenance and not dry_run:
+        return Disposition(UNAVAILABLE, "spawn", provenance, True)
     try:
         if dry_run:
             lw_headless_env.resolve(seams.get("url_source"), seams.get("connect"))
@@ -567,17 +592,19 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         line = lw_headless_env.spawn(spawn_prompt(note_path, provenance),
                                      note=note_path.name,
                                      writes_code=writes_code(note_path),
+                                     effort=run_effort(note_path),
                                      timeout=RUN_TIMEOUT_S, extra=RESPONDER_EXTRA,
+                                     stdin=True, halt_file=HALT_PATH,
                                      **seams)
     except lw_headless_env.HeadlessRefused as exc:
         if not dry_run:
             lw_headless_env.log_refusal("lw_inbox_responder", str(exc))
         return Disposition(UNAVAILABLE, "spawn", f"headless spawn refused: {exc}", True)
-    except subprocess.TimeoutExpired:
-        return _auto("spawn", f"kit.spawn run timed out after {RUN_TIMEOUT_S}s{tail}")
     except OSError as exc:
         return Disposition(UNAVAILABLE, "spawn",
                            f"could not start claude ({type(exc).__name__})", False)
+    if line.get("error") == "timeout":
+        return _auto("spawn", f"kit.spawn run timed out after {RUN_TIMEOUT_S}s{tail}")
     return _auto("spawn", f"kit.spawn run rc {line.get('rc')} model {line.get('model')} "
                           f"effort {line.get('effort')} {line.get('duration_s')}s{tail}")
 
