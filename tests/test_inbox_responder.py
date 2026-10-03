@@ -37,22 +37,30 @@ REAL_HALT_PATH = responder.HALT_PATH
 
 
 @pytest.fixture(autouse=True)
-def _the_live_run_log_is_never_touched():
-    """A test that writes `ops/runtime/inbox_responder/runs.jsonl` fabricates
-    responder history in the operator's real tree.
+def _the_live_run_log_is_never_touched(monkeypatch):
+    """No arm may write `ops/runtime/inbox_responder/runs.jsonl`.
 
-    MEASURED, not hypothetical: the cycle arms below drove `main()` without a
-    `--runlog`, and the first suite run after the log landed appended 13 records
-    of invented cold starts to the live file. Injecting the path at each call
-    site fixes those arms; this fixture is what keeps the NEXT one honest, and
-    it guards by MTIME rather than by patching the constant, so the arm pinning
-    the real default still reads the real default.
+    Guarded at the WRITER, in-process, not by the file's mtime. The mtime form
+    raced the clock: since the responder was ARMED (2026-10-02) it appends to
+    that file every few minutes, so any arm spanning an append ERRORED in
+    teardown with nothing wrong (measured 2026-10-03, 1 error in 19 runs, at the
+    responder's 08:16:58 append). `_record_cycle` swallows writer exceptions into
+    `runlog_error`, so the spy RECORDS and the teardown asserts. A child process
+    is outside the spy; every child arm passes an explicit `--runlog`.
     """
-    real = responder.RUNLOG_PATH
-    before = real.stat().st_mtime_ns if real.exists() else None
+    real = responder.RUNLOG_PATH.resolve()
+    original = responder._append_runlog
+    hits: list[str] = []
+
+    def _guarded(path, record):
+        if Path(path).resolve() == real:
+            hits.append(str(path))
+            raise RuntimeError("test arm wrote the live run log")
+        return original(path, record)
+
+    monkeypatch.setattr(responder, "_append_runlog", _guarded)
     yield
-    after = real.stat().st_mtime_ns if real.exists() else None
-    assert after == before, f"an arm wrote the live run log at {real}"
+    assert hits == [], f"an arm wrote the live run log at {real}: {hits}"
 
 
 @pytest.fixture(autouse=True)
