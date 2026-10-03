@@ -552,6 +552,33 @@ _PROMPT = (
 # the headless proxy answered with 404 - a clean launch that could never
 # reply. A CLI alias, so it follows the current Opus without a re-pin.
 RESPONDER_MODEL = "opus"
+RESPONDER_EFFORT = "high"
+
+# MODEL AND EFFORT BY THE NOTE'S KIND (MAIN 0912 C + D, 2026-10-03,
+# digest-verified): sonnet for a reply that only reads and answers, opus where
+# the note orders code. The parent cannot read intent, only the KIND token after
+# the sender code, so the DOWNGRADE is the tight set below - the kinds that
+# carried read-only mail across the 524 notes in this inbox when it was cut.
+# Everything else, a kind nobody listed included, keeps the model the responder
+# always ran: a code order phrased oddly must not reach the cheaper one.
+READ_MODEL = "sonnet"
+READ_KINDS = {"ANSWER": "medium", "ACK": "low", "INFORMATION": "low", "FYI": "low"}
+
+_FILENAME_KIND = re.compile(r"(?:^|-)from-[A-Za-z]+-([A-Za-z]+)-")
+
+# Where each run's `--output-format json` receipt lands - tokens, turns and
+# duration (MAIN 0912 E). One file per run, gitignored under ops/runtime/. Its
+# `total_cost_usd` is NOTIONAL on a Max plan (LEDGER 40) and is never summed.
+USAGE_DIR = HALT_PATH.parent / "usage"
+
+
+def route(note_path: Path) -> tuple[str, str]:
+    """(model, effort) for one note, read off its filename's kind token."""
+    m = _FILENAME_KIND.search(note_path.name)
+    kind = m.group(1).upper() if m else ""
+    if kind in READ_KINDS:
+        return READ_MODEL, READ_KINDS[kind]
+    return RESPONDER_MODEL, RESPONDER_EFFORT
 
 
 def spawn_argv(note_path: Path, provenance: str = "") -> list[str]:
@@ -559,8 +586,21 @@ def spawn_argv(note_path: Path, provenance: str = "") -> list[str]:
     prompt = _PROMPT.format(note=note_path.as_posix())
     if provenance:
         prompt = f"{prompt} {provenance}"
+    model, effort = route(note_path)
     return ["claude", "-p", "--permission-mode", "bypassPermissions",
-            "--model", RESPONDER_MODEL, prompt]
+            "--model", model, "--effort", effort,
+            *lw_headless_env.LEAN_ARGS, "--output-format", "json", prompt]
+
+
+def _open_usage(note_path: Path):
+    """A fresh receipt file for this run, or DEVNULL - never the failure."""
+    stamp = _utc_now().replace(":", "").replace("-", "")
+    # Bounded so a long note name cannot push the path past MAX_PATH.
+    try:
+        USAGE_DIR.mkdir(parents=True, exist_ok=True)
+        return (USAGE_DIR / f"{stamp}-{note_path.stem[-80:]}.json").open("wb")
+    except OSError:
+        return subprocess.DEVNULL
 
 
 def spawn(note_path: Path, dry_run: bool = False, *,
@@ -596,12 +636,18 @@ def spawn(note_path: Path, dry_run: bool = False, *,
     tail = f"; {provenance}" if provenance else ""
     if dry_run:
         return _auto("spawn", f"dry run, would launch: {' '.join(argv[:4])} ...{tail}")
-    proc = subprocess.Popen(
-        argv, cwd=str(ROOT), env=env,
-        creationflags=NO_WINDOW | NEW_GROUP,
-        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-        close_fds=True,
-    )
+    usage = _open_usage(note_path)
+    try:
+        proc = subprocess.Popen(
+            argv, cwd=str(ROOT), env=env,
+            creationflags=NO_WINDOW | NEW_GROUP,
+            stdin=subprocess.DEVNULL, stdout=usage, stderr=subprocess.DEVNULL,
+            close_fds=True,
+        )
+    finally:
+        # The child holds its own handle; the parent's copy is closed at once.
+        if usage is not subprocess.DEVNULL:
+            usage.close()
     return Disposition(AUTO, "spawn", f"detached headless session pid {proc.pid}{tail}",
                        True, proc.pid)
 
