@@ -37,7 +37,10 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    this session: CI went RED on 4654c32 because ledger 234 cited RSC's rules file by
    `<file>:<line>` and LW's live-doc guard resolved it against LW's own CLAUDE.md; fixed at
    a5568d0 by naming the clause. Lesson: run `tests/test_live_docs_cite_lines_that_exist.py`
-   before pushing a ledger entry that names a sibling's file.
+   before pushing a ledger entry that names a sibling's file. Also closed: the held loop's
+   `claude-opus-5` id (executor_model / oracle_model) answers through the proxy -
+   `lw_headless_env.py exec -- claude -p "reply ok" --model claude-opus-5` -> `ok`, exit 0;
+   the proxy log line was not read, so which concrete model it resolved to is unrecorded.
 
 234. DONE **2026-10-03 (CI no-filter tripwire saw 2 of 4 shapes; C4 date moved, MAIN asked
    for RSC's ruling; 0a0b17e).** `test_real_workflow_declares_no_path_filter` (the guard on
