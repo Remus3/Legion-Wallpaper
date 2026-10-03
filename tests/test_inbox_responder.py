@@ -920,14 +920,19 @@ def test_a_burst_is_capped_and_the_remainder_is_deferred_not_dropped(tmp_path, c
                     "--inbox", str(inbox), "--state", str(state)])
     capsys.readouterr()
 
-    for i in range(5):
-        (inbox / f"2026-09-10-8{i:03d}-from-LL-burst.md").write_text(f"b{i}", encoding="utf-8")
+    # Senders spread across codes so the per-SENDER cap (MAIN 0845) never binds
+    # first and this arm grades the per-cycle cap alone.
+    burst = responder.MAX_SPAWNS_PER_CYCLE + 2
+    for i in range(burst):
+        sender = f"X{chr(65 + i % 26)}"  # never LW: an LW note is a self-skip
+        (inbox / f"2026-09-10-8{i:03d}-from-{sender}-burst.md").write_text(
+            f"b{i}", encoding="utf-8")
     responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
                     "--inbox", str(inbox), "--state", str(state)])
     payload = json.loads(capsys.readouterr().out)
     assert len(payload["spawned"]) == responder.MAX_SPAWNS_PER_CYCLE
-    assert payload["deferred"] == 5 - responder.MAX_SPAWNS_PER_CYCLE
-    assert len(responder.new_notes(inbox, state)) == 5 - responder.MAX_SPAWNS_PER_CYCLE
+    assert payload["deferred"] == burst - responder.MAX_SPAWNS_PER_CYCLE
+    assert len(responder.new_notes(inbox, state)) == burst - responder.MAX_SPAWNS_PER_CYCLE
 
 
 # --------------------------------------------------------------------------
