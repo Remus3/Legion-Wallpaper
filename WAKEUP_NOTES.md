@@ -79,6 +79,16 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-03, fifth) - pipeline intake + first pass while operator away
+
+Commits: e50866d (ROADMAP temp-root row closed), 864a173 (hand-off), plus the /done docs.
+- C4 re-hashed from disk: 2 of 5 (LW, RSC); RC/CS/SS still 71fa2a68, targets 10-09.
+- Intake: 7 of 8 loose originals in; lux coven -pre refused as a byte-equal duplicate (still in
+  0.Originals - operator deletes). Miss Fortune DA fetch 403 -> manual_queue.csv.
+- First pass: all 7 G1 PASS, at _firstneedauth. NOT approved - approval is the operator's.
+  Check banding on the five -pre slugs. LEDGER 241.
+- Do NOT redo: intake/first pass of these 7; matches.json rebuild (24 records).
+
 ## PREVIOUS SESSION (2026-10-02/03, fourth) - operator arming: second-account proxy, responder live, MAIN speaks for the operator
 
 Operator order typed in session, confirmed "item 1-4 as written". Commits
