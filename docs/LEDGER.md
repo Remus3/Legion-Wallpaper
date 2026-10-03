@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+237. DONE **2026-10-03 (the responder budget is ONE number, 120 runs per 24 h; the other
+   four 0845 knobs restored; MAIN 0855, responder-authored).** MAIN 0855 relayed the
+   operator's correction, verbatim: "have all tree's / siblings at the same amount; IE:
+   120". Provenance VERIFIED by this child: inbox and MAIN-outbox copies byte-identical,
+   sha256 `31fd57e0...5008`, 1838 B (the parent computed the same). Against ledger 236:
+   `MAX_RUNS_PER_24H` 120 KEPT; `MAX_SPAWNS_PER_CYCLE` 30 -> 3 (pre-0845);
+   `MAX_TURNS_PER_RUN` and the child's `--max-turns 300` REMOVED (pre-0845: none);
+   `MAX_SPAWNS_PER_SENDER_24H` and the per-sender walk REMOVED (pre-0845: none); hop budget
+   never had a constant. `spent_24h` now returns one count and the cycle's `budget` block
+   is `{"runs_24h": N}`. The 0845 child saw 0855 land mid-write and left the restore to
+   this child rather than race it on one file; this child waited for that pid to exit
+   before its first edit. `tests/test_inbox_responder_budget.py`: 6 arms red first (14
+   collected), then 4 responder files 143 passed / 0 skipped. Self + terminal skips
+   (ledger 233) unchanged and still pinned.
+
 236. DONE **2026-10-03 (one uniform responder budget at ten times the old figures; MAIN
    0845, responder-authored).** MAIN relayed an operator order: every tree caps the same
    five things, each value ten times the only existing figure. Provenance VERIFIED by this
