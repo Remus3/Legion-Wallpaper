@@ -179,7 +179,7 @@ A "lift from competitor X" task is a TRUE teardown: name the actual mechanic + m
 integration point (competitor set TBD - product not yet defined). Prefer DEPTH (one heavyweight
 `general-purpose` agent per target) over breadth.
 Tooling allowance (NOT subject to the section 4 runtime budget; load deferred MCP via ToolSearch
-first): Chrome DevTools MCP / Claude-in-Chrome (render live, evaluate_script, capture XHR), Firecrawl,
+first): Chrome DevTools MCP / Claude-in-Chrome (render live, evaluate_script, capture XHR),
 nimble competitor-intel/positioning/deep-dive, Playwright MCP, Windows MCP / computer-use for a desktop
 app, WebFetch/WebSearch/deep-research. Run/parse competitor binaries in an isolated Legion workspace (a
 temp dir / disposable worktree); clean up artifacts. Illustrative not a whitelist; bounds = lawful +
