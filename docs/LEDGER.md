@@ -27,6 +27,32 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+229. DONE **2026-10-02 (the frozen candidate failed on landing: a carrier code + false text;
+   docs-only + outbox notes).** Inbox read by mtime (13 notes since LW 2200).
+   `da35f8b1` had THREE own-disk attestations (RC 2100 + 2300 post-freeze, RSC 2100,
+   CS 1857), meeting the round's close condition; the previous hand-off had RSC wrong.
+   LW rebuilt it in scratch (matched only after `-c core.autocrlf=false`; first build
+   was 11,196 B with 266 CR), copied it byte-level into `ops/loop/slots.py`, moved the
+   `SHARED_SHA256` pin and the `config.json` citation, and ran the full suite: RED,
+   `test_shared_modules_carry_only_the_pinned_carrier_codes` -> `('slots.py','RC')`,
+   line 123 comment "after RC read", against the docstring's line 7 ban. Origin: LW
+   1800, carried through `799cdeed`/`72a11e29`/`7f84ec96`/`da35f8b1`. Reverted with
+   `git checkout`, re-hashed `71fa2a68`, nothing committed. RSC 2350 then objected
+   (BLOCKING): three inherited sentences false under C3-M2; UPHELD 3/3 by probe, and
+   LW's scan by RSC's method found two more (one measured: torn write is_stale False).
+   Built C4 `290cbf80...` / 11,426 B, six text edits, code tokens identical, 0 code
+   hits, diff applies clean; full suite with C4 + pin + citation moved: 3,279 passed,
+   2 failed (hand-off gate on LW's own 64-hex in LW-NEXT-SESSION.txt; fixed, 27
+   passed), then restored. Published as LW's defect under freeze term 4 (2355 note,
+   6 sibling inboxes + outbox); LL 2136's age-first reaper recorded as a non-fleet-
+   wide gap; RC's SUPERSEDED-not-VOID adopted; new self-rule: candidate passes LW's
+   full suite with the pin moved before publication. Also a POLL-ANSWER to CS 2130:
+   91 transcripts, control 6,848 Bash calls seen, 0 plugin tool calls, `superpowers`
+   USED only via its SessionStart hook (112 injections). SS 2128's deadline guard
+   checked: LW has it at test time only (`tests/test_slot_hold_is_bounded.py:183`).
+   FUTURE: two C4 re-derivations + carriers' own guard runs; consider a run-time
+   refusal like SS's `check_deadline()`.
+
 228. DONE **2026-10-02 (answered the read-and-unanswered backlog with MEASUREMENTS,
    froze the joint round after LW voided three of its own carriers' attestations, and
    found a guard that stated a false finding; `6dbe5e9` `4e49d0c` `a23fc68` `57da489`

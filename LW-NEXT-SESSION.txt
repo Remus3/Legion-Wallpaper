@@ -1,77 +1,44 @@
 NEXT SESSION
 ------------
-Task: GET THE SECOND ATTESTATION AND CLOSE THE JOINT ROUND. The bytes are
-  FROZEN at da35f8b1 (C3-M2, 10,930 B) and LW has committed in writing not to
-  re-issue except on a carrier BLOCKING objection - an LW-originated
-  improvement is explicitly NOT grounds. Breaking that is LW's defect.
-Context: RC's 2100 note landed DURING the wrap and is UNANSWERED - it attests
-  BOTH 7f84ec96 and da35f8b1 from RC's own disk, accepts C3-M2, says RC had
-  already built C3 as a mutation control before LW published it, and asks that
-  attestations be called SUPERSEDED rather than VOID (an attestation of bytes
-  stays true about those bytes; it does not become false when newer bytes
-  appear). ADOPT that wording - LW used VOID in three notes. Read it first.
-  Attestations of the frozen bytes: ONE (RC). TWO are required. Ask RSC and SS
-  directly; CS still owes nothing on bytes but owes the 336 B gap below.
-  Multiple: 2.0 has FOUR holders (LW, CS, RSC, RC); 4.0 has ZERO including LW.
-  Read moon_sync_outbox/ newest-first before writing anything.
-LANDED AFTER THE WRAP (2026-10-02, verified by grep before this was written -
-  READ THESE FIVE FIRST, they move three rows below):
-  - RC 2300: its da35f8b1 attestation RE-STANDS against the FROZEN subject, it
-    COMPILES, and RC states NO BLOCKING OBJECTION. So the freeze holds and the
-    frozen bytes have ONE standing attestation.
-  - RSC 2100: attests 7f84ec96 - that is C3, the NON-frozen sibling, NOT
-    da35f8b1. Do not count it toward the frozen bytes. RSC also reports its
-    CONTROL FAILED FIRST and caught a real defect, says CS's dead-code claim is
-    about CS's OWN tree, and that RSC is a LIVE acquirer.
-  - SS 1930: CORRECTION ACCEPTED - SS aimed a real measurement at the WRONG
-    THRESHOLD and WITHDRAWS the duration argument against 4.0. This cuts at
-    LW's own margin withdrawal, which rested partly on SS's 10,055 s / 12,660 s.
-    LW's withdrawal is NOT automatically void - RC independently conceded its
-    5,401 s was a floor, not a maximum - but the published reasoning needs
-    re-deriving over what survives, and 2.0 may now rest on less than LW said.
-  - SS 1310: SS's silence on the round is NOT an attestation. Do not infer one.
-  - MAIN 1255: stamps run six to nine hours ahead of arrival; filename order
-    differs from arrival order. Sort by mtime, which LW already adopted.
-  So: frozen-byte attestations = ONE (RC), still TWO required, and the numeral's
-  basis is weaker than the 2200 note claims. Say so before asking anyone to
-  attest again.
-
-Acceptance: two independent re-derivations of da35f8b1 from two carriers' own
-  disks; suite stays 3281 passed / 19 skipped or better; drift_guard 0
-  breaches; CI green read from `gh run list --json conclusion`, never a chained
-  exit code; ops/loop/slots.py and winmutex.py still 71fa2a68.../df0a7a40...
-Do NOT redo:
-  - The hooksPath measurement. Closed; LL's variant does not transfer because
-    LW's core.hooksPath is RELATIVE and .git/config is shared with worktrees.
-  - The environ-leak sweep (83 sites, 2 ever inside an assert, 0 remain) or the
-    invalid-escape sweep (tree-wide clean, both guarded).
-  - Re-grading the round-B or parity-guard mutants for CS's whole-file
-    question. Both require WRITING a byte-identical-by-contract file. Recorded
-    on the channel as a cost of the rule, not a dodge.
-  - Re-counting the read-and-unanswered backlog. Four derivations of one
-    definition gave 28, 51, 52 and 55/57. The roster is published; the fix is
-    RC's rule plus RSC's mtime clause, not another number.
-  - Bulk-acking the inbox. The seen key is a CONTENT digest, so marking all
-    194 marks notes nobody read against the tree.
-  - Re-enabling LW-InboxResponder; disabled deliberately, HALT untouched.
-  - Rewriting history for the email residual. The operator CONSIDERED and
-    DECLINED it 2026-10-02; it is guarded and recorded in
-    docs/IDENTITY_IN_HISTORY_2026-10-02.md.
+Task: COLLECT TWO RE-DERIVATIONS OF C4 AND CLOSE THE JOINT ROUND.
+  The candidate is now C4 = 290cbf80... / 11,426 B (LW 2150 note, full digest
+  in the note). It is da35f8b1 with SIX text-only edits (comments, docstrings,
+  one log string; code tokens identical): LW's own guard found the carrier
+  code RC in a comment at line 123 on landing, RSC 2350 found three inherited
+  sentences false under the new behaviour, and LW's own scan found two more.
+  da35f8b1 had THREE attestations (RC 2100+2300, RSC 2100 and 2350, CS 1857).
+Context: C4 is FROZEN under the 2200 freeze terms. Attestations are now
+  SUPERSEDED, not VOID (RC's rule, adopted 2150); only positions void. LW asked
+  each carrier for (1) re-derivation of C4 and (2) a run of THEIR OWN
+  shared-file guards against C4 with their pin moved. Read moon_sync_outbox/
+  newest-first, then the inbox BY MTIME.
+Landing recipe once two C4 attestations exist (measured this session):
+  - rebuild in scratch: LW 2000 diff via `git -c core.autocrlf=false apply
+    --recount`, then the 2150 note's C4 diff; or copy the attested bytes.
+  - shutil.copyfile into ops/loop/slots.py; move SHARED_SHA256["slots.py"] in
+    tests/test_loop_concurrency.py (add a Previous: line + rationale) and the
+    digest in ops/loop/config.json directive_suffix (one occurrence).
+  - full suite must be green: KNOWN_CODE_HITS stays [].
+  - publish LW's disk digest after the write; the other four check their own.
+  - loop_controller.py comments cite slots.py line numbers (:220 :224 :105);
+    they drift on landing - fix in the same commit.
+  - NEVER put a 64-hex digest in this file: test_handoff_write_gate refuses it.
+Acceptance: two own-disk re-derivations of C4; suite green; drift_guard
+  divergence on slots.py is the EXPECTED red window after LW lands first; CI
+  green read from `gh run list --json conclusion`.
+Do NOT redo: hooksPath measurement; environ-leak and invalid-escape sweeps;
+  re-grading round-B mutants; re-counting the read-and-unanswered backlog;
+  bulk-acking the inbox; re-enabling LW-InboxResponder; history rewrite for the
+  email residual (operator declined 2026-10-02).
 Open + owed:
-  - PYTEST_DEBUG_TEMPROOT is the ROOT CAUSE of the shared-temp race that
-    reddened this session's own pre-flight with a FALSE finding. d3c036c
-    treated the symptom (retry on a provably-unrelated signature, plus
-    --rootdir). The real fix needs a new repo-root conftest.py and changes
-    collection for 3281 tests. Its own slice.
-  - The 336 B gap: CS published a9635c0a at 11,266 B, LW's C3 is 10,930 B, the
-    middle arm is exactly 88 B / 2 LF. Unexplained. CS asked to re-derive
-    against LW's published unified diff.
-  - docs/SLOT_HOLD_CORPUS.md - LW owns it on the first cycle that writes a
-    record to ops/runtime/slot_holds.jsonl (gitignored, and still EMPTY: the
-    recorder has had zero observations). Every carrier's duration corpus is
-    untracked, so the fleet's are uncheckable by construction.
-  - LL's subprocess-audit-hook replacement for the substring ban at
-    tests/test_lw_rundash.py:399.
-  - LW asserts determinism in writing instead of measuring it (answered NO to
-    SS's perf-repeat question). Real and unclosed.
+  - PYTEST_DEBUG_TEMPROOT root-cause fix (new repo-root conftest.py), own slice.
+  - CS's hold() docstring "reaping stale locks each pass" - NEXT round, not C4
+    (RSC and CS both read it as ambiguous, not false).
+  - Heartbeat deferral now has a trigger (SS measured-hold + CS configured-
+    deadline arm). LW's deadline guard exists at TEST time only
+    (tests/test_slot_hold_is_bounded.py:183); a run-time refusal like SS's
+    check_deadline() is optional.
+  - docs/SLOT_HOLD_CORPUS.md when ops/runtime/slot_holds.jsonl gets a record.
+  - LL's subprocess-audit-hook replacement at tests/test_lw_rundash.py:399.
+  - LW asserts determinism instead of measuring it (SS's perf-repeat question).
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.

@@ -6,6 +6,33 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **The frozen candidate reached THREE attestations and FAILED on landing - 2026-10-02
+  2355 note, TWO BLOCKING objections upheld, LW's own defect.** `da35f8b1` was attested from own disk by RC
+  (2100, re-stood post-freeze 2300), RSC (2100 - the hand-off said only `7f84ec96`;
+  wrong, LW miscounted its own inbox) and CS (1857). LW landed it first and its suite
+  went RED on `test_shared_modules_carry_only_the_pinned_carrier_codes`: line 123's
+  comment says "after RC read", and line 7 says "Nothing here may reference ANY of
+  them". LW wrote that sentence in 1800 and carried it through four candidates.
+  **Reverted, nothing committed; LW stays at `71fa2a68`.** Every attestation was
+  correct - a digest proves identity, not content - and the instrument was LW's own
+  suite, never run against its own candidate. **Rule adopted: an LW candidate passes
+  LW's FULL suite with the pin moved BEFORE it is published.** RSC 2350 also
+  objected: three sentences inherited from `71fa2a68` are FALSE under the new
+  behaviour (PROTOCOL `reap:` line, `is_stale` docstring, `release` WARNING string);
+  UPHELD 3/3 on LW's probe, and LW's own scan by RSC's method found two more (the
+  `DEFAULT_STALE_AFTER` rationale, and `release`'s torn-write "reports stale too",
+  measured False). C4 = `290cbf80...` / 11,426 B: six text edits, zero code tokens
+  changed, 0 code hits, frozen; LW suite with C4 + pin moved 3,279 passed (2 hand-off
+  gate fails from LW's own hand-off file, fixed). LL 2136: LL's own `lane_slot.py`
+  still reaps age-first, so C4's live-holder protection is NOT fleet-wide until LL
+  fixes it. RC's SUPERSEDED-not-VOID adopted for attestations. Ask: two
+  re-derivations of C4 plus each carrier's OWN guard run against it. Date 2026-10-09
+  held. CS 336 B gap CLOSED (comment text only). Two LW delivery traps disclosed:
+  2000's hunk header needs `--recount`; Windows `core.autocrlf=true` makes `git
+  apply` write CRLF (11,196 B). SS 2128's deadline guard: LW has it at TEST time
+  (`tests/test_slot_hold_is_bounded.py:183`, 10,800 of 16,200 s on the live config),
+  not as a run-time refusal; the held AHK path's one-shot extension is outside it.
+
 - **Two guards that could not fail, both fixed - DONE 2026-09-20 (`7c6d639`).**
   (1) RSC's vacuity class REACHES LW: round B (`e980e8b`) emptied `KNOWN_CODE_HITS`,
   and `assert sorted(found) == sorted(KNOWN_CODE_HITS)` then could not tell real clean
