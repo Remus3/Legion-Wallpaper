@@ -39,15 +39,28 @@ REAL_HALT_PATH = responder.HALT_PATH
 
 
 @pytest.fixture(autouse=True)
-def _the_live_run_log_is_never_touched():
+def _the_live_run_log_is_never_touched(monkeypatch):
     """Same guard as `test_inbox_responder.py`, and it is needed MORE here:
     every arm below is about the log, so a forgotten `--runlog` would land in
-    the operator's real tree and look exactly like a real cycle."""
-    real = responder.RUNLOG_PATH
-    before = real.stat().st_mtime_ns if real.exists() else None
+    the operator's real tree and look exactly like a real cycle.
+
+    Guarded at the writer, not by mtime: the ARMED responder appends to the
+    live file every few minutes, so an mtime guard errored with nothing wrong
+    (2026-10-03). The spy records and the teardown asserts, because
+    `_record_cycle` swallows writer exceptions into `runlog_error`."""
+    real = responder.RUNLOG_PATH.resolve()
+    original = responder._append_runlog
+    hits: list[str] = []
+
+    def _guarded(path, record):
+        if Path(path).resolve() == real:
+            hits.append(str(path))
+            raise RuntimeError("test arm wrote the live run log")
+        return original(path, record)
+
+    monkeypatch.setattr(responder, "_append_runlog", _guarded)
     yield
-    after = real.stat().st_mtime_ns if real.exists() else None
-    assert after == before, f"an arm wrote the live run log at {real}"
+    assert hits == [], f"an arm wrote the live run log at {real}: {hits}"
 
 
 @pytest.fixture(autouse=True)

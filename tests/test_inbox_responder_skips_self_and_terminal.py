@@ -54,11 +54,21 @@ def _live_state_is_never_touched(monkeypatch, tmp_path):
     """Same isolation as the sibling responder files: the live kill switch is
     never read and the live run log is never written."""
     monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "never-created-HALT")
-    real = responder.RUNLOG_PATH
-    before = real.stat().st_mtime_ns if real.exists() else None
+    # Guarded at the writer, not by mtime: the ARMED responder appends to the
+    # live file every few minutes (see test_inbox_responder.py).
+    real = responder.RUNLOG_PATH.resolve()
+    original = responder._append_runlog
+    hits: list[str] = []
+
+    def _guarded(path, record):
+        if Path(path).resolve() == real:
+            hits.append(str(path))
+            raise RuntimeError("test arm wrote the live run log")
+        return original(path, record)
+
+    monkeypatch.setattr(responder, "_append_runlog", _guarded)
     yield
-    after = real.stat().st_mtime_ns if real.exists() else None
-    assert after == before, f"an arm wrote the live run log at {real}"
+    assert hits == [], f"an arm wrote the live run log at {real}: {hits}"
 
 
 @pytest.fixture
