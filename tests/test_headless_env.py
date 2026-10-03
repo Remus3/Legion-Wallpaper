@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 3
+    assert he.kit.KIT_VERSION == 4
 
 
 def test_the_refusal_class_is_the_kits():
@@ -91,8 +91,9 @@ def test_the_refusal_class_is_the_kits():
 
 
 def test_the_lean_flags_are_read_off_the_kits_argv_builder():
-    argv = he.kit.build_argv("x", "p", "m", "e")
+    argv = he.kit.build_argv("x", "p", "m", "e", setting_sources=he.SETTING_SOURCES)
     assert tuple(argv[-len(he.LEAN_ARGS):]) == he.LEAN_ARGS
+    assert he.LEAN_ARGS[he.LEAN_ARGS.index("--setting-sources") + 1] == "project"
     assert "--strict-mcp-config" in he.LEAN_ARGS
     assert "--bare" not in he.LEAN_ARGS, "LW's floors live in hooks"
 
@@ -389,7 +390,7 @@ def test_cli_spawn_refusal_exits_78(tmp_path):
 _PY_SPAWN = re.compile(
     r"""["']claude(?:\.cmd|\.exe)?["']\s*,\s*["']-p["']"""
     r"""|which\(\s*["']claude"""
-    r"""|lw_headless_env\.spawn\(|\bclaude_exe\(""")
+    r"""|\b(?:lw_headless_env|headless_env|he)\.spawn\(|\bclaude_exe\(""")
 _PS_SPAWN = re.compile(
     r"""(?i)&\s*claude\b|\bclaude(?:\.exe|\.cmd)?\s+-p\b|\$ClaudeExe\b|\$HeadlessEnv\s+spawn\b""")
 _SKIP_DIRS = {"__pycache__", "runtime", "models", "dwpose_onnx", "fleet_kit"}
@@ -439,6 +440,9 @@ def test_the_site_scan_finds_every_known_launcher():
     ('argv = ["claude", "-p", prompt]', ".py", True),
     ("exe = shutil.which('claude')", ".py", True),
     ("line = lw_headless_env.spawn(prompt)", ".py", True),
+    ("line = headless_env.spawn(prompt, stdin=True)", ".py", True),
+    ("line = he.spawn(prompt, cwd=wt)", ".py", True),
+    ("line = the.spawn(prompt)", ".py", False),
     ('"""a headless `claude -p` run"""', ".py", False),
     ("$out = & claude -p $prompt", ".ps1", True),
     ("# spawns `claude -p` with nobody watching", ".ps1", False),

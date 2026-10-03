@@ -88,12 +88,14 @@ def _headless_env_module():
     """Bind tools/lw_headless_env.py BY PATH (ops/loop is not a package and
     tools/ is not on sys.path), reusing a copy that is already loaded.
 
-    LW's binding of MAIN's fleet kit (kit v3): the sdk channel's child env, the
+    LW's binding of MAIN's fleet kit (kit v4): the sdk channel's child env, the
     lean flags and the run accounting all come from the kit, and a refusal
-    stops the cycle - no fallback. `kit.spawn` itself cannot carry this run: the
-    prompt goes on STDIN, the session is minted or resumed (`--session-id` /
-    `--resume`, which the kit's forced `--no-session-persistence` would defeat),
-    a `--json-schema` receipt is parsed, and a timeout kills the whole tree.
+    stops the cycle - no fallback. Kit v4 `spawn` now carries stdin, session
+    mint/resume, the tree kill and effort high, but it still returns only the
+    receipt's `result` text: this run needs `structured_output`, `is_error`,
+    `session_id` and `total_cost_usd` from the `--json-schema` receipt, so it
+    stays on the kit's primitives (gap reported to MAIN with the v4 ANSWER,
+    LEDGER 243) rather than parse the kit's stream log behind its back.
     """
     if "lw_headless_env" in sys.modules:
         return sys.modules["lw_headless_env"]

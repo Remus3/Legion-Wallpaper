@@ -19,6 +19,7 @@ Three rails the tests exist to hold:
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -275,11 +276,61 @@ def test_a_refusal_refunds_the_attempt_and_exits_nonzero(monkeypatch, tmp_path: 
     assert cw.read_state(tmp_path)["attempts"] == 0, "a refusal must not burn the budget"
 
 
-def test_the_fix_spawn_requires_the_gated_env():
-    """`env` has no default, so no caller can reach the spawn ungated."""
-    import inspect
-    param = inspect.signature(cw._fix_in_worktree).parameters["env"]
-    assert param.default is inspect.Parameter.empty
+def _kit_seams(seen: dict, *, url="http://127.0.0.1:4999/x", rc=0, stderr=""):
+    """kit.spawn's external edges, injected: URL, connect, runner, exe."""
+    def _run(argv, **kw):
+        seen["argv"], seen["kw"] = argv, kw
+
+        class _R:
+            returncode = rc
+            stdout = json.dumps({"result": "fixed", "usage": {}})
+        _R.stderr = stderr
+        return _R()
+
+    return {"url_source": lambda: url,
+            "connect": lambda *a, **k: type("C", (), {"close": lambda self: None})(),
+            "run": _run, "exe_source": lambda: r"C:\fake\npm\claude.CMD"}
+
+
+def test_the_fix_spawn_goes_through_the_kits_gate():
+    """kit v4: the fix run IS kit.spawn, so the proxy gate runs at the spawn
+    itself - an unset proxy launches nothing and is refunded as transient."""
+    seen = {}
+    seams = _kit_seams(seen, url=None)
+    ok, transient, out = cw._fix_in_worktree(Path("."), "a" * 40, "1", None, 60,
+                                             kit_seams=seams)
+    assert seen == {}
+    assert (ok, transient) == (False, True) and "refused" in out
+
+
+def test_the_fix_runs_in_the_worktree_at_high_effort_with_stderr(monkeypatch, tmp_path):
+    """The v4 parameters this path needed: cwd, return_stderr, effort high."""
+    seen = {}
+    ok, transient, out = cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60,
+                                             kit_seams=_kit_seams(seen, stderr="warn"))
+    assert (ok, transient) == (True, False)
+    assert seen["kw"]["cwd"] == str(tmp_path)
+    argv = seen["argv"]
+    assert argv[argv.index("--effort") + 1] == "high"
+    assert out == "fixedwarn", "the result text and the child's stderr both come back"
+
+
+def test_a_transient_in_stderr_is_still_refunded(tmp_path):
+    seen = {}
+    ok, transient, _out = cw._fix_in_worktree(
+        tmp_path, "a" * 40, "1", None, 60,
+        kit_seams=_kit_seams(seen, rc=1, stderr="API Error: 529 overloaded"))
+    assert (ok, transient) == (False, True)
+
+
+def test_a_timed_out_fix_is_a_plain_failure(tmp_path):
+    """kit v4 kills the tree and returns error "timeout"; never a raise."""
+    import subprocess
+    seams = _kit_seams({})
+    seams["run"] = lambda argv, **kw: (_ for _ in ()).throw(
+        subprocess.TimeoutExpired(argv, kw.get("timeout")))
+    assert cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60,
+                               kit_seams=seams) == (False, False, "timeout")
 
 
 def test_the_fix_run_launches_the_resolved_cli_not_the_bare_name(monkeypatch, tmp_path):
@@ -288,21 +339,10 @@ def test_the_fix_run_launches_the_resolved_cli_not_the_bare_name(monkeypatch, tm
     `claude.exe` and raise FileNotFoundError, so a red CI would have crashed
     the fix run instead of reaching the model."""
     seen = {}
-
-    def _fake_run(argv, **kwargs):
-        seen["argv"] = argv
-
-        class _R:
-            returncode = 0
-            stdout = ""
-            stderr = ""
-
-        return _R()
-
-    monkeypatch.setattr(cw.shutil, "which", lambda name, path=None: r"C:\fake\npm\claude.CMD")
-    monkeypatch.setattr(cw, "run", _fake_run)
-    cw._fix_in_worktree(tmp_path, "a" * 40, "1", "claude-sonnet-5", 60, {"PATH": ""})
+    cw._fix_in_worktree(tmp_path, "a" * 40, "1", "claude-sonnet-5", 60,
+                        kit_seams=_kit_seams(seen))
     assert seen["argv"][0] == r"C:\fake\npm\claude.CMD"
+    assert seen["argv"][seen["argv"].index("--model") + 1] == "claude-sonnet-5"
 
 
 def test_a_spent_fleet_kit_budget_attempts_nothing(monkeypatch, tmp_path: Path):

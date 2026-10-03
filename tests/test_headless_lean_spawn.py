@@ -7,15 +7,17 @@ input. Since fleet kit v3 the flag set is the kit's own (`build_argv`, non-bare:
 used anywhere: it skips every hook, and LW's floors live in hooks (PreToolUse
 precommit_gate, text_first_guard).
 
-KNOWN GAP, reported to MAIN rather than patched: LW measured `project` alone at
-47,026 input tokens against 53,143 for `project,local`, and in this tree the
-local scope re-enables three plugins and pins the `rc-main` model alias the
-proxy answers with 404. The kit cannot express `project` alone. Every LW path
-therefore passes an explicit --model (the kit's pick, or the loop config), so
-the alias never decides a run.
+SETTING SOURCES (kit v3 gap 4, closed by kit v4 `setting_sources=`): LW
+measured `project` alone at 47,026 input tokens against 53,143 for
+`project,local`, and in this tree the local scope re-enables three plugins and
+pins the `rc-main` model alias the proxy answers with 404. Every LW path runs
+`project` alone (`lw_headless_env.SETTING_SOURCES`) and still passes an
+explicit --model, so no alias ever decides a run.
 
-Model and effort on the responder are the kit's too (`pick_model(writes_code)`,
-`pick_effort(note)`); LW only maps the note's KIND token to writes_code.
+Model on the responder is the kit's (`pick_model(writes_code)`); effort is the
+kit's `pick_effort(note)` on a reply-only run and `high` on a code-writing run
+(kit v3 gap 6, closed by kit v4 `effort=`). LW maps the KIND token to
+writes_code.
 """
 from __future__ import annotations
 
@@ -76,12 +78,9 @@ def _carries_lean(argv: list) -> bool:
 def test_the_lean_set_is_the_kits_and_never_bare():
     lean = list(lw_headless_env.LEAN_ARGS)
     assert "--strict-mcp-config" in lean
-    assert lean[lean.index("--setting-sources") + 1] == "project,local"
     assert "--bare" not in lean
 
 
-@pytest.mark.xfail(strict=True, reason="kit v3 gap: --setting-sources project alone "
-                   "is not expressible; reported to MAIN, not patched")
 def test_the_lean_set_drops_the_local_scope():
     lean = list(lw_headless_env.LEAN_ARGS)
     assert lean[lean.index("--setting-sources") + 1] == "project"
@@ -116,28 +115,21 @@ def test_the_loop_executor_passes_only_the_mcp_config_it_is_given():
     assert named[named.index("--mcp-config") + 1] == "m.json"
 
 
-def test_the_oracle_spawn_is_lean_and_keeps_no_transcript():
-    argv = lc.claude_oracle_argv("Audit.", {"claude_cmd": "claude"})
+def test_the_oracle_spawn_is_lean_and_keeps_no_transcript(monkeypatch):
+    import functools
+    seen = {}
+    monkeypatch.setattr(lc.headless_env, "spawn",
+                        functools.partial(lc.headless_env.spawn, **_seams(seen)))
+    monkeypatch.setattr(lc, "CFG", {})
+    lc.claude_oracle("body", "Audit.")
+    argv = seen["argv"]
     assert _carries_lean(argv)
     assert "--no-session-persistence" in argv
 
 
 def test_the_ci_watchdog_spawn_is_the_kits_argv(monkeypatch, tmp_path):
     seen = {}
-
-    def _fake_run(argv, **_kwargs):
-        seen["argv"] = argv
-
-        class _R:
-            returncode = 0
-            stdout = ""
-            stderr = ""
-
-        return _R()
-
-    monkeypatch.setattr(cw.shutil, "which", lambda name, path=None: r"C:\fake\claude.CMD")
-    monkeypatch.setattr(cw, "run", _fake_run)
-    cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60, {"PATH": ""})
+    cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60, kit_seams=_seams(seen))
     argv = seen["argv"]
     assert _carries_lean(argv)
     assert argv[argv.index("--output-format") + 1] == "json"
@@ -164,8 +156,9 @@ def test_every_hand_built_claude_argv_in_the_tree_uses_the_kits_lean_set():
             if _PRINT_FLAG.search(text) and _CLAUDE.search(text):
                 sites.append((rel, "LEAN_ARGS" in text or "build_argv(" in text))
     print("hand-built sites:", sites)
-    # The loop executor and the oracle today. Fewer means the instrument went blind.
-    assert len(sites) >= 2, sites
+    # The loop executor today (the oracle moved onto kit.spawn with kit v4).
+    # Fewer means the instrument went blind.
+    assert len(sites) >= 1, sites
     assert all(lean for _rel, lean in sites), sites
 
 
@@ -206,8 +199,6 @@ def test_an_unknown_or_unparseable_kind_is_treated_as_code_writing():
     assert responder.writes_code(Path("note.md")) is True
 
 
-@pytest.mark.xfail(strict=True, reason="kit v3 gap: effort is low|medium only, the "
-                   "responder's opus runs used high; reported to MAIN, not patched")
 def test_a_code_writing_run_keeps_high_effort():
     assert _routed("2026-10-03-0912-from-MAIN-ORDER-ALL-x.md") == ("opus", "high")
 

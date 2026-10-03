@@ -1,6 +1,6 @@
 """FLEET-KIT conformance: MAIN's vendored kit and the embedded FLEET-COMMON block.
 
-MAIN 0955 section 2 step 2 (kit v3, MAIN 1016): every tree runs
+MAIN 0955 section 2 step 2 (kit v3 MAIN 1016, kit v4 MAIN 1204): every tree runs
 `assert fleet_headless.conformance(<repo root>) == []` on every run of its suite,
 so a local edit to a vendored kit file under ops/fleet_kit/, or to the
 FLEET-COMMON block between the markers in CLAUDE.md, fails CI here.
@@ -30,5 +30,5 @@ def test_fleet_kit_conformance():
 
 
 def test_fleet_kit_version_is_the_one_main_shipped():
-    """v3 per MAIN 1016; a new version lands only as a MAIN FLEET-KIT-vN note."""
-    assert _kit().KIT_VERSION == 3
+    """v4 per MAIN 1204; a new version lands only as a MAIN FLEET-KIT-vN note."""
+    assert _kit().KIT_VERSION == 4

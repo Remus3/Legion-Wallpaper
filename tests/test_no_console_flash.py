@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
@@ -46,6 +47,14 @@ def _load_guard():
 
 
 guard = _load_guard()
+
+# The ONE forwarding site LW cannot edit: MAIN's vendored fleet kit (kit v4,
+# byte-pinned) runs claude through `_run`, whose Popen takes `**kw` - the flag
+# arrives in that dict from `spawn` (`"creationflags": _NO_WINDOW`), so no
+# literal keyword sits at the call. The AST sweep cannot see through `**kw`;
+# the two runtime arms below prove the value instead (spawn puts it in kw,
+# _run forwards kw to Popen). Reported to MAIN as a kit gap with the v4 ANSWER.
+KIT_PATH = "ops/fleet_kit/fleet_headless.py"
 SCAN_DIRS = guard.SCAN_DIRS
 SPAWN_FUNCS = guard.SPAWN_FUNCS
 FLAG_NAME = guard.FLAG_NAME
@@ -94,6 +103,8 @@ def test_there_are_spawn_sites_to_check():
                          _spawn_sites(),
                          ids=lambda v: str(v) if isinstance(v, (str, int)) else "")
 def test_spawn_site_sets_create_no_window(path, lineno, flags, consts):
+    if path == KIT_PATH and flags is None and _forwards_kwargs(path, lineno):
+        pytest.skip("kit forwarding site: proved at runtime by the kit arms below")
     assert flags is not None, (
         f"{path}:{lineno} spawns a subprocess with no creationflags - under "
         f"pythonw.exe this flashes a console window on the operator's desktop")
@@ -101,6 +112,79 @@ def test_spawn_site_sets_create_no_window(path, lineno, flags, consts):
         f"{path}:{lineno} passes creationflags but it does not resolve to "
         f"{FLAG_NAME}. A typo'd getattr returns 0, spawns fine, and flashes "
         f"anyway - which is why the substring check could not see this.")
+
+
+def _forwards_kwargs(path, lineno):
+    tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
+    return any(isinstance(n, ast.Call) and n.lineno == lineno
+               and any(k.arg is None for k in n.keywords) for n in ast.walk(tree))
+
+
+def test_only_one_kit_site_is_proved_at_runtime_instead():
+    """Guard the exemption: a second flagless kit site must not hide behind it."""
+    sites = [(s[0], s[1]) for s in _spawn_sites() if s[0] == KIT_PATH and s[2] is None]
+    exempt = [s for s in sites if _forwards_kwargs(*s)]
+    flagless_kit = sites
+    assert len(exempt) == 1
+    assert flagless_kit == exempt
+
+
+def _kit():
+    spec = importlib.util.spec_from_file_location("fleet_headless_flash", ROOT / KIT_PATH)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_kit_spawn_hands_run_the_no_window_flag(tmp_path):
+    kit = _kit()
+    seen = {}
+
+    def run(argv, **kw):
+        seen.update(kw)
+        return subprocess.CompletedProcess(argv, 0, '{"result": "ok"}', "")
+
+    kit.spawn(tmp_path, "LW", "hi", run=run,
+              url_source=lambda: "http://127.0.0.1:9", connect=lambda *a, **k: _Conn(),
+              exe_source=lambda: "claude.exe")
+    assert seen["creationflags"] == kit._NO_WINDOW
+    if sys.platform == "win32":
+        assert seen["creationflags"] == subprocess.CREATE_NO_WINDOW
+
+
+def test_kit_run_forwards_the_flag_to_popen(monkeypatch):
+    kit = _kit()
+    seen = {}
+
+    class _P:
+        returncode = 0
+
+        def __init__(self, argv, **kw):
+            seen.update(kw)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def communicate(self, input=None, timeout=None):
+            return "", ""
+
+    monkeypatch.setattr(kit.subprocess, "Popen", _P)
+    kit._run(["x"], creationflags=0x08000000)
+    assert seen["creationflags"] == 0x08000000
+
+
+class _Conn:
+    def close(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
 
 
 # ---- teeth, proved by mutation rather than asserted -------------------------
