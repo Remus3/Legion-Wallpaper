@@ -30,6 +30,12 @@ Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
   email-residual history rewrite (operator declined).
 Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
   form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
+PIPELINE 2026-10-03: 7 new slugs intaken (akali/janna/mel coven, diana x2,
+  miss-fortune, yuumi) and first-passed, all G1 PASS, all at _firstneedauth
+  awaiting OPERATOR approval (never self-approve). Check banding on the five
+  -pre slugs (+0.008..+0.014). Lux coven -pre in 0.Originals is a byte-equal
+  duplicate refused by intake - operator deletes it. Miss Fortune DA fetch is
+  403 (manual_queue.csv).
 Open + owed: none in LW's own queue. MAIN's ruling for RSC landed (0815, RSC
   target 2026-10-06); watch each carrier's post-copy digest.
 CONCURRENCY: the responder now spawns up to 120 headless runs per 24 h (MAIN
