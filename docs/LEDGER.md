@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+236. DONE **2026-10-03 (one uniform responder budget at ten times the old figures; MAIN
+   0845, responder-authored).** MAIN relayed an operator order: every tree caps the same
+   five things, each value ten times the only existing figure. Provenance VERIFIED by this
+   child: inbox and MAIN-outbox copies byte-identical, sha256 `1fff7c5f...4d9e`, 3176 B.
+   LW now carries `MAX_SPAWNS_PER_CYCLE` 3 -> 30, `MAX_RUNS_PER_24H` none -> 120,
+   `MAX_TURNS_PER_RUN` none -> 300 (child argv gains `--max-turns 300`; parse acceptance
+   probed through `lw_headless_env.py exec` against a bogus-flag control), and
+   `MAX_SPAWNS_PER_SENDER_24H` none -> 30. Both 24 h knobs count AUTO spawns already in
+   `runs.jsonl` - no second store; an unreadable log spawns nothing (could-not-read is not
+   zero), an absent one is a real zero. HOP BUDGET 320 has NO constant: LW notes carry no
+   hop counter or thread id, so per MAIN section 2 the nearest equivalent is named instead
+   of invented - the per-sender cap bounds LW's side of any chain at 30 per 24 h, and the
+   self + terminal skips (ledger 233) still run first. New
+   `tests/test_inbox_responder_budget.py`: 8 of 11 arms red first; 4 responder files 140
+   passed / 0 skipped. Live log at landing: 30 runs in 24 h, busiest sender 7 - no cap
+   binds today. Also landed: the 0830 child's uncommitted writer-side run-log guard
+   (dbf067e). The burst arm now spreads senders and avoids the code `LW`, which a spread
+   alphabet hit on its first run (a self-skip).
+
 235. DONE **2026-10-03 (an unaudited loop cycle no longer advances the clean anchor;
    6e1da28).** Closes the open item "a refused loop oracle reads CLEAN" (ledger 230 FUTURE).
    Worse than stated: `auditor()` turned the oracle's None sentinel into CLEAN and the cycle

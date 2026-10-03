@@ -147,12 +147,30 @@ UNAVAILABLE = "UNAVAILABLE"
 
 TASK_NAME = "LW-InboxResponder"
 
-# Per-cycle spawn ceiling. Not a stop rule - RC's operator ruled to run a trial
-# and measure rather than adopt one, and this does not bound the conversation.
-# It bounds a BURST: a batch arrival must not become a batch of simultaneous
-# headless sessions on one box. Notes over the cap stay unseen for the next
-# cycle rather than being dropped.
-MAX_SPAWNS_PER_CYCLE = 3
+# THE UNIFORM BUDGET (MAIN 0845, 2026-10-03, digest-verified). The operator,
+# relayed by MAIN: "increase the budget to be the same to all siblings - and it
+# needs to be x10 of whatever amount it is now". Every tree carries the same
+# values, each ten times the only figure any tree had. Notes held back by ANY
+# of them stay unseen for a later cycle rather than being dropped.
+#
+# Per-cycle spawn ceiling (was 3, LW's own). It bounds a BURST: a batch arrival
+# must not become a batch of simultaneous headless sessions on one box.
+MAX_SPAWNS_PER_CYCLE = 30
+# Runs started per rolling 24 h (SS 12 x10), counted from AUTO spawns already in
+# the run log - the log is the ledger, no second store.
+MAX_RUNS_PER_24H = 120
+# Turns per run (RC 30 x10), passed to the child as --max-turns.
+MAX_TURNS_PER_RUN = 300
+# Replies per sender per rolling 24 h (RSC 3 x10). The parent cannot see a reply,
+# so the nearest equivalent is spawns on that sender's notes: one child answers
+# at most one note under A5.
+# HOP BUDGET (RC 32 x10 = 320) HAS NO CONSTANT HERE. LW's notes carry no hop
+# counter and no thread id, and MAIN said to name the nearest equivalent rather
+# than invent a mechanism: LW answers one hop per incoming note, so the
+# per-sender cap bounds LW's side of any chain at 30 per sender per 24 h, and
+# the self and terminal skips stop it answering itself.
+MAX_SPAWNS_PER_SENDER_24H = 30
+_DAY = dt.timedelta(hours=24)
 
 # A string, never an argv. See the module docstring and the arms.
 #
@@ -546,7 +564,7 @@ def spawn_argv(note_path: Path, provenance: str = "") -> list[str]:
     if provenance:
         prompt = f"{prompt} {provenance}"
     return ["claude", "-p", "--permission-mode", "bypassPermissions",
-            "--model", RESPONDER_MODEL, prompt]
+            "--model", RESPONDER_MODEL, "--max-turns", str(MAX_TURNS_PER_RUN), prompt]
 
 
 def spawn(note_path: Path, dry_run: bool = False, *,
@@ -690,6 +708,63 @@ def _record_cycle(path: Path, payload: dict, **record) -> None:
         payload["runlog_error"] = f"{type(exc).__name__}: {exc}"
 
 
+def spent_24h(runlog: Path, inbox: Path, now: dt.datetime | None = None) -> tuple[int, dict]:
+    """Runs started in the last 24 h, total and per sender, read off the run log.
+
+    Only AUTO spawns count: an UNAVAILABLE one started no run. An ABSENT log is a
+    real zero (the first non-idle cycle creates it). A torn line is skipped - the
+    append-only shape makes it detectable, see `_append_runlog`. A log that
+    exists but cannot be READ raises OSError, because could-not-read is not zero.
+    """
+    cutoff = (now or dt.datetime.now(dt.UTC)) - _DAY
+    try:
+        lines = runlog.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return 0, {}
+    total, by_sender = 0, {}
+    for line in lines:
+        try:
+            record = json.loads(line)
+            if dt.datetime.fromisoformat(record["ts"]) < cutoff:
+                continue
+            spawned = record.get("spawned") or []
+        except (ValueError, KeyError, TypeError, AttributeError):
+            continue
+        for entry in spawned:
+            if not isinstance(entry, dict) or entry.get("verdict") != AUTO:
+                continue
+            total += 1
+            who = sender_code(inbox / str(entry.get("note", "")))
+            by_sender[who] = by_sender.get(who, 0) + 1
+    return total, by_sender
+
+
+def within_budget(mail: list[Note], inbox: Path, runlog: Path) -> tuple[list[Note], dict]:
+    """The notes this cycle may spawn on, oldest first, and what bound it.
+
+    Per-tick cap, runs per 24 h and spawns per sender per 24 h all apply; the
+    rest stay unseen. An unreadable log answers NOTHING - the budget could not
+    be checked, so nothing is spent against it.
+    """
+    try:
+        runs, by_sender = spent_24h(runlog, inbox)
+    except OSError as exc:
+        return [], {"error": f"run log unreadable ({type(exc).__name__}) - "
+                             "could not check the budget, spawned nothing"}
+    room = min(MAX_SPAWNS_PER_CYCLE, max(0, MAX_RUNS_PER_24H - runs))
+    chosen, capped = [], set()
+    for note in mail:
+        if len(chosen) >= room:
+            break
+        who = sender_code(inbox / note.name)
+        if by_sender.get(who, 0) >= MAX_SPAWNS_PER_SENDER_24H:
+            capped.add(who or "?")
+            continue
+        by_sender[who] = by_sender.get(who, 0) + 1
+        chosen.append(note)
+    return chosen, {"runs_24h": runs, "sender_capped": sorted(capped)}
+
+
 def windowless_python() -> str:
     """`pythonw.exe` beside the pinned interpreter, else the plain one.
 
@@ -793,7 +868,7 @@ def main(argv: list[str] | None = None) -> int:
         else:
             skipped.append((note, why))
 
-    capped = mail[:MAX_SPAWNS_PER_CYCLE]
+    capped, budget = within_budget(mail, args.inbox, args.runlog)
     spawned = []
     for note in capped:
         outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
@@ -805,12 +880,13 @@ def main(argv: list[str] | None = None) -> int:
     skips = [{"note": n.name, "reason": why} for n, why in skipped]
     deferred = len(mail) - len(capped)
     payload = {"new_notes": len(notes), "dry_run": args.dry_run,
-               "deferred": deferred, "skipped": skips, "spawned": spawned}
+               "deferred": deferred, "skipped": skips, "spawned": spawned,
+               "budget": budget}
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
     # source, and 288 empty lines a day would bury the ones that matter.
     if notes and not args.dry_run:
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
-                      deferred=deferred, skipped=skips, spawned=spawned)
+                      deferred=deferred, skipped=skips, spawned=spawned, budget=budget)
     print(json.dumps(payload, indent=2))
     return 0
 
