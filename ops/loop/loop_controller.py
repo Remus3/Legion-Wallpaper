@@ -971,11 +971,33 @@ def auditor(prev_sha, new_sha, clean_sha=None):
                      "Audit. First line MUST be 'VERDICT: CLEAN' or 'VERDICT: REGRESS', then the reason.",
                      role="auditor")
     if verdict is None:
-        # N3: the auditor errored (timeout / CLI) - an un-auditable cycle is NOT a
-        # regression. Return a safe CLEAN so the controller's string ops never hit
-        # the None sentinel and a flaky auditor never falsely blocks a clean cycle.
-        return "VERDICT: CLEAN\n(auditor backend error - could not audit this cycle; treated as non-regress)"
+        # N3: the auditor errored (timeout / CLI / refused proxy) - an un-auditable
+        # cycle is NOT a regression, so it must not block. But it is not CLEAN
+        # either: CLEAN advances the clean anchor, which dropped these commits out
+        # of every later audit window (2026-10-03). UNAUDITED blocks nothing and
+        # keeps the anchor, so the next real audit covers them.
+        return "VERDICT: UNAUDITED\n(auditor backend error - could not audit this cycle; not blocking, clean anchor kept)"
     return verdict
+
+
+def verdict_kind(verdict):
+    """REGRESS, UNAUDITED or CLEAN, read from the verdict's first token."""
+    head = (verdict or "").strip().upper()
+    if head.startswith("VERDICT: REGRESS"):
+        return "REGRESS"
+    if head.startswith("VERDICT: UNAUDITED"):
+        return "UNAUDITED"
+    return "CLEAN"
+
+
+def next_clean_anchor(verdict, last_clean_sha, new_sha):
+    """R61: the clean anchor moves only on an audited CLEAN.
+
+    A REGRESS keeps the window open back to the last known-good sha so the fix
+    is audited WITH the commits it repairs; an UNAUDITED cycle keeps it so the
+    next real audit sees the commits nobody audited.
+    """
+    return new_sha if verdict_kind(verdict) == "CLEAN" else last_clean_sha
 
 # ---- budget meter: sum active-session JSONL usage since start_ts -------
 def _price(model, usage):
@@ -1270,13 +1292,9 @@ def main():
             verdict = ("VERDICT: REGRESS\nClaude self-reported it could NOT reach green this "
                        "cycle (regressions flag). Fix this before any new work.\n\n" + verdict)
         last_audit = verdict
-        regress = verdict.strip().upper().startswith("VERDICT: REGRESS")
-        # R61: advance the clean anchor only on a CLEAN verdict; a REGRESS keeps
-        # the window open back to the last known-good sha so the eventual fix is
-        # audited WITH the commits it repairs (never a lone docs-sync commit).
-        if not regress:
-            last_clean_sha = new_sha
-        log(f"cycle {cycle}: audit -> {'REGRESS' if regress else 'CLEAN'}")
+        kind = verdict_kind(verdict)
+        last_clean_sha = next_clean_anchor(verdict, last_clean_sha, new_sha)
+        log(f"cycle {cycle}: audit -> {kind}")
         # Persist the resolved directive to the chain so the NEXT director cycle
         # sees what was already issued + shipped and builds on it (continuity fix).
         record_directive_outcome(cycle, body, prev_sha, new_sha, done, verdict,
