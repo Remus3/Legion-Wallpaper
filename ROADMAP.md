@@ -507,14 +507,10 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   FLAG rows (leona-dm0rd6j 0.0574, miss-fortune 0.0505, sona-dmiu77x 0.0504) are
   all `band_delta` marginally over the 0.05 threshold and carry their report.
 
-- **LW carries a duplicate transcript key, and the checker that should have
-  caught it cannot - OPEN.** `.claude/projects/` under the user profile holds both
-  `C--Legion-Wallpaper` (270 files, 471.5 MB) and `C--LegionWallpaper`
-  (4 files, 12.8 MB). Deliberately NOT pruned: four transcript files are a
-  record of four real sessions, and age plus unfamiliarity is not a liveness
-  measure. Two pieces of work: decide the stray key's fate, and close the
-  enumerate-vs-compare gap in `drift_guard.check_claude_path_keys` so a
-  duplicate spelling is reported rather than silently satisfying agreement.
+- **LW's duplicate transcript key - CLOSED 2026-09-21 (LEDGER 225).** The
+  enumerate arm `drift_guard.check_transcript_store_keys` landed at `071541b`
+  and the stray `C--LegionWallpaper` key is gone (re-probed 2026-10-03: one
+  key on disk). Row was left OPEN here by mistake.
 
 - **Machine stray-work sweep, and the two defects it found in LW - DONE
   2026-09-19 (`c2a44c5`, `c9a02de`).** Read-only machine-wide inventory filed
