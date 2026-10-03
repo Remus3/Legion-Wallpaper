@@ -88,8 +88,12 @@ def _headless_env_module():
     """Bind tools/lw_headless_env.py BY PATH (ops/loop is not a package and
     tools/ is not on sys.path), reusing a copy that is already loaded.
 
-    The proxy gate (operator directive 2026-10-02): the sdk channel's child gets
-    ANTHROPIC_BASE_URL from it, and a refusal stops the cycle - no fallback.
+    LW's binding of MAIN's fleet kit (kit v3): the sdk channel's child env, the
+    lean flags and the run accounting all come from the kit, and a refusal
+    stops the cycle - no fallback. `kit.spawn` itself cannot carry this run: the
+    prompt goes on STDIN, the session is minted or resumed (`--session-id` /
+    `--resume`, which the kit's forced `--no-session-persistence` would defeat),
+    a `--json-schema` receipt is parsed, and a timeout kills the whole tree.
     """
     if "lw_headless_env" in sys.modules:
         return sys.modules["lw_headless_env"]
@@ -426,7 +430,7 @@ class SdkExecutor:
         # The proxy gate. Deliberately a constructor seam and NOT a cfg key: a
         # config value that could switch the gate off would be a bypass any
         # hand-edited json could flip. Tests inject a callable; production
-        # always resolves through tools/lw_headless_env.py.
+        # always resolves through tools/lw_headless_env.py (the fleet kit).
         self.headless_env = headless_env
         self.session_id: str | None = None
         self.session_in_play: str | None = None
@@ -444,8 +448,12 @@ class SdkExecutor:
             return list(cmd)
         if isinstance(cmd, str) and cmd:
             return [cmd]
-        import shutil
-        return [shutil.which("claude.cmd") or shutil.which("claude") or "claude"]
+        # kit.claude_exe: the real binary behind the npm shim when it exists.
+        he = _headless_env_module()
+        try:
+            return [he.claude_exe()]
+        except he.HeadlessRefused:
+            return ["claude"]  # not on PATH: the launch fails loudly as OSError
 
     def build_argv(self, cycle: int) -> list:
         import json as _json
@@ -493,6 +501,14 @@ class SdkExecutor:
         self.session_in_play = sid
         return argv
 
+    def _account(self, he, started, cycle, model, rc, out) -> None:
+        """The kit's usage line + idle status for this run; never the failure."""
+        try:
+            he.end_run(started, note=f"loop-executor cycle {cycle}", model=model,
+                       effort="", rc=rc, stdout=out)
+        except OSError as exc:
+            self.log(f"cycle {cycle}: usage line not written ({type(exc).__name__})")
+
     def run(self, cycle: int, body: str, src: str) -> DoneRecord:
         import json as _json
         import subprocess as _sp
@@ -518,6 +534,7 @@ class SdkExecutor:
         he = _headless_env_module()
         try:
             env = self._child_env()
+            started = he.start_run()
         except he.HeadlessRefused as exc:
             err = f"headless spawn refused: {exc}"
             he.log_refusal("loop executor (sdk)", str(exc))
@@ -543,9 +560,12 @@ class SdkExecutor:
                          cwd=str(self.cfg.get("repo_root", ".")), env=env,
                          creationflags=getattr(_sp, "CREATE_NO_WINDOW", 0),
                          **_spawn_group_kwargs())
+        model = str(self.cfg.get("executor_model") or "")
         try:
             out, err = proc.communicate(prompt, timeout=timeout)
+            self._account(he, started, cycle, model, proc.returncode, out)
         except _sp.TimeoutExpired:
+            self._account(he, started, cycle, model, None, None)
             self.log(f"cycle {cycle}: sdk timeout after {timeout:.0f}s "
                      f"(sid={self.session_in_play}) - killing the child tree")
             self.log(f"cycle {cycle}: {_kill_child_tree(proc)}")

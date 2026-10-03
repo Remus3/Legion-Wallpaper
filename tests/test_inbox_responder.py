@@ -384,137 +384,129 @@ def test_the_responder_state_file_is_not_the_watchers_seen_file():
 
 
 # --------------------------------------------------------------------------
-# The spawn: detached, headless, never the operator's window
+# The spawn: kit.spawn (fleet kit v3), headless, never the operator's window
 # --------------------------------------------------------------------------
 
-def test_the_spawn_argv_is_headless_and_carries_no_window_binding():
-    argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
+_PROXY_URL = "http://127.0.0.1:4999/tc-acct/fake-id"
+
+
+class _Conn:
+    def close(self):
+        pass
+
+
+def _kit_seams(seen: dict | None = None, *, url=_PROXY_URL, up=True, rc=0) -> dict:
+    """Every external edge of kit.spawn injected: URL, connect, runner, exe."""
+    seen = {} if seen is None else seen
+
+    def _connect(*_a, **_k):
+        if not up:
+            raise ConnectionRefusedError("down")
+        return _Conn()
+
+    def _run(argv, **kw):
+        seen["argv"], seen["kw"] = argv, kw
+
+        class _R:
+            returncode = rc
+            stdout = json.dumps({"result": "replied", "usage": {}})
+            stderr = ""
+        return _R()
+
+    return {"url_source": lambda: url, "connect": _connect, "run": _run,
+            "exe_source": lambda: "fake-claude.exe"}
+
+
+def test_the_spawn_goes_through_kit_spawn_with_no_window_binding():
+    seen = {}
+    out = responder.spawn(Path("moon_sync_inbox/2026-10-03-from-RC-REVIEW-x.md"),
+                          kit_seams=_kit_seams(seen))
+    assert out.verdict == responder.AUTO and out.checked is True
+    argv = seen["argv"]
     assert "-p" in argv
     joined = " ".join(argv).lower()
     assert "autohotkey" not in joined and ".ahk" not in joined
     assert "--title" not in joined
+    # The kit's own cwd and capture, not LW's.
+    assert seen["kw"]["cwd"] == str(responder.lw_headless_env.FLEET_ROOT)
+    assert seen["kw"]["capture_output"] is True
 
 
-def test_the_spawn_argv_pins_a_model_and_does_not_inherit_the_session_alias():
-    """Measured 2026-10-02: with no --model the child inherits the interactive
-    session's local alias, which the headless proxy answers with 404, so every
-    responder spawn would have failed after a clean launch."""
-    argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
-    assert "--model" in argv
-    assert argv[argv.index("--model") + 1] == responder.RESPONDER_MODEL
-    assert argv[-1].startswith("A new cross-repo note arrived")
+def test_the_spawn_pins_a_model_and_does_not_inherit_the_session_alias():
+    """Measured 2026-10-02: with no --model the child inherits the local alias,
+    which the headless proxy answers with 404. The kit always passes one."""
+    seen = {}
+    responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=_kit_seams(seen))
+    assert seen["argv"][seen["argv"].index("--model") + 1] in ("opus", "sonnet")
 
 
 def test_the_spawn_prompt_names_the_note_and_the_deny_set():
-    argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
-    prompt = argv[-1]
+    prompt = responder.spawn_prompt(Path("moon_sync_inbox/note.md"))
+    assert prompt.startswith("A new cross-repo note arrived")
     assert "note.md" in prompt
     assert "D8" in prompt and "default deny" in prompt.lower()
 
 
-def test_a_missing_claude_cli_reports_unavailable_and_never_success(monkeypatch):
-    """FALSE-RED direction. An absent binary is COULD-NOT-RUN, not a failure
-    and emphatically not a success - the same three-disposition rule the gate
-    uses, applied to this module's own external-binary call site."""
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: None)
-    outcome = responder.spawn(Path("moon_sync_inbox/note.md"))
+def test_a_missing_claude_cli_reports_unavailable_and_never_success():
+    """The kit refuses before launch when claude is not on PATH: not a success."""
+    seams = _kit_seams()
+
+    def _absent():
+        raise responder.lw_headless_env.HeadlessRefused("claude not found on PATH")
+
+    seams["exe_source"] = _absent
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=seams)
     assert outcome.verdict == responder.UNAVAILABLE
-    assert outcome.checked is False
 
 
-def test_dry_run_spawns_nothing(monkeypatch):
-    """MIRROR ARM for the spawn site: with the CLI present it still must not
-    launch under --dry-run."""
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
-
-    def _boom(*_a, **_k):  # pragma: no cover - the arm is that it is not called
-        raise AssertionError("dry run spawned a process")
-
-    monkeypatch.setattr(responder.subprocess, "Popen", _boom)
+def test_dry_run_spawns_nothing():
+    """MIRROR ARM: with the proxy up it still must not launch under --dry-run."""
+    seen = {}
     outcome = responder.spawn(Path("moon_sync_inbox/note.md"), dry_run=True,
-                              env_seams=_PROXY_UP)
+                              kit_seams=_kit_seams(seen))
     assert outcome.verdict == responder.AUTO
     assert outcome.checked is True
+    assert seen == {}
+    assert responder.lw_headless_env.budget().used() == 0
 
 
-def test_the_spawn_is_windowless_and_not_detached_process(monkeypatch):
+def test_the_child_and_only_the_child_carries_the_proxy_url():
     seen = {}
-
-    def _fake_popen(argv, **kwargs):
-        seen["argv"] = argv
-        seen["kwargs"] = kwargs
-
-        class _P:
-            pid = 4242
-
-        return _P()
-
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
-    monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
-    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=_PROXY_UP)
-    assert outcome.verdict == responder.AUTO
-    flags = seen["kwargs"]["creationflags"]
-    # Literal Win32 values, so this arm binds off Windows too where the
-    # subprocess constants read 0. Measured 2026-10-03 (MAIN 0055): with
-    # DETACHED_PROCESS (0x8) set, Windows IGNORES CREATE_NO_WINDOW (0x08000000),
-    # so claude.CMD's cmd.exe - launched from a console-less pythonw - got a NEW
-    # VISIBLE console per note on the operator's desktop.
-    assert flags == responder.NO_WINDOW | responder.NEW_GROUP
-    if os.name == "nt":  # the constants read 0 on a Linux runner
-        assert flags & 0x08000000, "CREATE_NO_WINDOW missing"
-        assert not flags & 0x00000008, "DETACHED_PROCESS disables CREATE_NO_WINDOW"
-        assert flags & 0x00000200, "CREATE_NEW_PROCESS_GROUP missing"
-    # The child, and only the child, carries the proxy URL.
-    child_has_it = seen["kwargs"]["env"].get("ANTHROPIC_BASE_URL") == _PROXY_URL
+    responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=_kit_seams(seen))
+    child_has_it = seen["kw"]["env"].get("ANTHROPIC_BASE_URL") == _PROXY_URL
     parent_untouched = os.environ.get("ANTHROPIC_BASE_URL") != _PROXY_URL
     assert child_has_it and parent_untouched
 
 
-def test_the_spawn_launches_the_resolved_cli_not_the_bare_name(monkeypatch):
-    """Measured 2026-10-03 on the first armed scheduler fires: every one exited
-    1. `shutil.which("claude")` finds `claude.CMD`, but Popen given the BARE
-    name asks CreateProcess for `claude.exe`, which does not exist, and raises
-    FileNotFoundError. The responder had never spawned once because of it."""
-    seen = {}
+def test_a_failed_run_still_counts_as_started_and_is_auto():
+    """A run that STARTED is marked seen whatever its exit code, so a failing
+    note is never re-spawned every five minutes."""
+    out = responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=_kit_seams(rc=1))
+    assert out.verdict == responder.AUTO and "rc 1" in out.reason
 
-    def _fake_popen(argv, **kwargs):
-        seen["argv"] = argv
 
-        class _P:
-            pid = 4242
+def test_a_timed_out_run_is_auto_not_retried():
+    seams = _kit_seams()
 
-        return _P()
+    def _slow(argv, **kw):
+        raise subprocess.TimeoutExpired(argv, kw.get("timeout"))
 
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\npm\claude.CMD")
-    monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
-    responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=_PROXY_UP)
-    assert seen["argv"][0] == r"C:\fake\npm\claude.CMD"
+    seams["run"] = _slow
+    out = responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=seams)
+    assert out.verdict == responder.AUTO and "timed out" in out.reason
 
 
 # --------------------------------------------------------------------------
-# The proxy gate (operator directive 2026-10-02): fail closed, never fall back
+# The proxy gate - the kit's: fail closed, never fall back
 # --------------------------------------------------------------------------
 
-_PROXY_URL = "http://127.0.0.1:4999/tc-acct/fake-id"
-_PROXY_UP = {"registry_reader": lambda: None,
-             "environ": {"CLAUDE_HEADLESS_BASE_URL": _PROXY_URL},
-             "probe": lambda _h, _p: True}
-_PROXY_UNSET = {"registry_reader": lambda: None, "environ": {}}
-_PROXY_DOWN = {"registry_reader": lambda: None,
-               "environ": {"CLAUDE_HEADLESS_BASE_URL": _PROXY_URL},
-               "probe": lambda _h, _p: False}
-
-
-@pytest.mark.parametrize("seams", [_PROXY_UNSET, _PROXY_DOWN], ids=["unset", "down"])
+@pytest.mark.parametrize("seams", [{"url": None}, {"up": False}], ids=["unset", "down"])
 def test_a_refused_proxy_launches_nothing(monkeypatch, tmp_path, seams):
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
     monkeypatch.setattr(responder.lw_headless_env, "LOG_DIR", tmp_path)
-
-    def _boom(*_a, **_k):  # pragma: no cover - the arm is that it is not called
-        raise AssertionError("a refused proxy still spawned")
-
-    monkeypatch.setattr(responder.subprocess, "Popen", _boom)
-    outcome = responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=seams)
+    seen = {}
+    outcome = responder.spawn(Path("moon_sync_inbox/note.md"),
+                              kit_seams=_kit_seams(seen, **seams))
+    assert seen == {}
     assert outcome.verdict == responder.UNAVAILABLE
     assert outcome.checked is True, "the gate RAN and refused - that is checked"
     assert "headless spawn refused" in outcome.reason
@@ -523,13 +515,22 @@ def test_a_refused_proxy_launches_nothing(monkeypatch, tmp_path, seams):
     assert "lw_inbox_responder" in logged and "fake-id" not in logged
 
 
-def test_a_dry_run_also_reports_a_refused_proxy(monkeypatch):
+def test_a_dry_run_also_reports_a_refused_proxy():
     """The gate runs BEFORE the dry-run return, so a dry run is not a false AUTO."""
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
     outcome = responder.spawn(Path("moon_sync_inbox/note.md"), dry_run=True,
-                              env_seams=_PROXY_UNSET)
+                              kit_seams=_kit_seams(url=None))
     assert outcome.verdict == responder.UNAVAILABLE
     assert "unset" in outcome.reason
+
+
+def test_a_spent_budget_launches_nothing():
+    b = responder.lw_headless_env.budget()
+    for _ in range(b.cap):
+        b.record()
+    seen = {}
+    out = responder.spawn(Path("moon_sync_inbox/note.md"), kit_seams=_kit_seams(seen))
+    assert seen == {} and out.verdict == responder.UNAVAILABLE
+    assert "budget" in out.reason
 
 
 def test_a_refused_note_stays_unseen(tmp_path, capsys, monkeypatch):
@@ -557,7 +558,7 @@ def test_the_prompt_carries_the_main_authority_clause_and_stays_ascii():
     assert prompt.isascii()
     assert "MAIN AUTHORITY" in prompt and "sha256" in prompt
     assert "moon_sync_outbox" in prompt
-    assert "tools/lw_headless_env.py exec" in prompt
+    assert "tools/lw_headless_env.py" in prompt and "fleet kit" in prompt
     # D1, D2 and D4 are floors MAIN cannot lift.
     assert "D1 history rewrites, D2 visibility" in prompt and "D4 deletions stay DRAFT" in prompt
 
@@ -801,8 +802,14 @@ def test_no_process_launch_in_this_module_mentions_schtasks():
     launch sites rather than over prose, which is where the two differ.
     """
     source = (ROOT / "tools" / "lw_inbox_responder.py").read_text(encoding="utf-8")
-    sites = _spawn_sites(source)
-    assert any("Popen" in text for _ln, text in sites), \
+    # Since fleet kit v3 the responder launches NOTHING itself: its one launch
+    # goes through lw_headless_env.spawn -> kit.spawn. So the launch sites are
+    # read in the responder AND in the binding; the binding must have one
+    # (positive control) and the responder must call the binding.
+    assert "lw_headless_env.spawn(" in source
+    binding = (ROOT / "tools" / "lw_headless_env.py").read_text(encoding="utf-8")
+    sites = _spawn_sites(source) + _spawn_sites(binding)
+    assert any("run" in text for _ln, text in _spawn_sites(binding)), \
         f"no launch site found - the arm would pass vacuously (saw {sites})"
     for lineno, text in sites:
         low = text.lower()
@@ -1096,17 +1103,15 @@ def _cli(args: list[str], *, halt_path: Path) -> subprocess.CompletedProcess:
         f"sys.path.insert(0, {str(ROOT / 'tools')!r})\n"
         "from pathlib import Path\n"
         "import lw_inbox_responder as r\n"
-        "import lw_inbox_status as s\n"
         f"r.HALT_PATH = Path({str(halt_path)!r})\n"
-        # The status file too: conftest's redirect cannot reach a child, and the
-        # widget reads the live file (MAIN 0915).
-        f"s.STATUS_PATH = Path({str(halt_path.with_name('inbox_status.json'))!r})\n"
-        f"s.STATE_PATH = Path({str(halt_path.with_name('status_state.json'))!r})\n"
+        # The kit's files too: conftest's redirect cannot reach a child, and the
+        # widget reads the live status file (MAIN 0915).
+        f"r.lw_headless_env.FLEET_ROOT = Path({str(halt_path.parent / 'fleet')!r})\n"
         "raise SystemExit(r.main(sys.argv[1:]))\n"
     )
     return subprocess.run([sys.executable, "-c", driver, *args],
                           capture_output=True, text=True, cwd=str(ROOT),
-                          creationflags=responder.NO_WINDOW)
+                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
 def test_cli_once_dry_run_reports_json_and_changes_no_state(tmp_path):
@@ -1187,11 +1192,9 @@ try:
         subprocess.run(["schtasks", "/Query"])
     else:
         import lw_inbox_responder as r
-        import lw_inbox_status as s
         from pathlib import Path
         # conftest's redirect cannot reach this child; cwd is the arm's tmp_path.
-        s.STATUS_PATH = Path("inbox_status.json").resolve()
-        s.STATE_PATH = Path("status_state.json").resolve()
+        r.lw_headless_env.FLEET_ROOT = Path(".").resolve()
         rc = r.main(argv)
 except BaseException as exc:
     rc = "raised: %r" % (exc,)
@@ -1242,7 +1245,8 @@ def test_dry_run_and_halted_cycles_launch_nothing_observed_by_audit_hook(tmp_pat
     # The child published into tmp_path, which proves it did NOT publish into
     # the operator's live widget file (measured 2026-10-03: before the redirect
     # this arm overwrote it).
-    published = json.loads((tmp_path / "inbox_status.json").read_text(encoding="utf-8"))
+    published = json.loads((tmp_path / "ops" / "loop" / "control" / "inbox_status.json")
+                           .read_text(encoding="utf-8"))
     assert published["task"] == "Halted"
 
 
@@ -1344,25 +1348,103 @@ def test_the_spawn_carries_the_parent_computed_digest_into_the_prompt(monkeypatc
     note, carriers = _main_channel(tmp_path)
     monkeypatch.setattr(responder, "CARRIERS_PATH", carriers)
     seen = {}
-
-    def _fake_popen(argv, **_kwargs):
-        seen["argv"] = argv
-
-        class _P:
-            pid = 4242
-
-        return _P()
-
-    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\claude.exe")
-    monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
-    outcome = responder.spawn(note, env_seams=_PROXY_UP)
+    outcome = responder.spawn(note, kit_seams=_kit_seams(seen))
     digest = _sha(b"same bytes\n")
-    assert digest in seen["argv"][-1] and "MATCH" in seen["argv"][-1]
+    prompt = seen["argv"][seen["argv"].index("-p") + 1]
+    assert digest in prompt and "MATCH" in prompt
     # The run log records the spawn's reason, so the digest is durable there too.
     assert digest in outcome.reason
+
+
+def test_main_provenance_reads_an_explicit_outbox_from_the_row(tmp_path):
+    note, carriers = _main_channel(tmp_path)
+    outbox = tmp_path / "elsewhere"
+    outbox.mkdir()
+    (outbox / _MAIN_NOTE).write_bytes(b"same bytes\n")
+    carriers.write_text(json.dumps({"MAIN": {"outbox": str(outbox)}}), encoding="utf-8")
+    assert ": MATCH" in responder.main_provenance(note, carriers)
 
 
 def test_the_prompt_names_main_by_role_not_by_location():
     """MAIN 0830: nothing tracked names a sibling's location."""
     assert "sibling tree" not in responder._PROMPT
     assert "carrier row" in responder._PROMPT
+
+
+# --------------------------------------------------------------------------
+# A DIRECTORY in the inbox is a bundle, never a note (MAIN 1029, 2026-10-03)
+# --------------------------------------------------------------------------
+# MAIN ships each kit version as a DIRECTORY `...-from-MAIN-FLEET-KIT-vN/` in the
+# inbox beside a normal ORDER note, which carries the instruction. The responder
+# took the directory for a note: hashing it raised PermissionError on Windows
+# ("UNAVAILABLE - a copy could not be read") and it was then handed to a spawn.
+# A bundle is skipped and marked seen; nothing about it may escape the cycle.
+
+_BUNDLE = "2026-10-03-1016-from-MAIN-FLEET-KIT-v3"
+
+
+def _bundle_inbox(tmp_path: Path) -> tuple[Path, Path]:
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    state = tmp_path / "seen.json"
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)])
+    bundle = inbox / _BUNDLE
+    bundle.mkdir()
+    (bundle / "fleet_headless.py").write_text("KIT_VERSION = 3\n", encoding="utf-8")
+    (bundle / "MANIFEST.json").write_text("{}", encoding="utf-8")
+    (inbox / "2026-10-03-1017-from-MAIN-ORDER-ALL-adopt-kit-v3.md").write_text(
+        "# From MAIN - ORDER\n", encoding="utf-8")
+    return inbox, state
+
+
+def test_a_bundle_directory_is_skipped_never_spawned(tmp_path, capsys, monkeypatch):
+    inbox, state = _bundle_inbox(tmp_path)
+    capsys.readouterr()
+    calls = []
+
+    def _spawn(path, dry_run=False):
+        calls.append(Path(path).name)
+        return responder._auto("spawn", "fake")
+
+    monkeypatch.setattr(responder, "spawn", _spawn)
+    rc = responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                         "--inbox", str(inbox), "--state", str(state)])
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert calls == ["2026-10-03-1017-from-MAIN-ORDER-ALL-adopt-kit-v3.md"]
+    bundle_skips = [s for s in payload["skipped"] if s["note"].startswith(_BUNDLE)]
+    assert len(bundle_skips) == 1 and bundle_skips[0]["reason"].startswith("bundle")
+    assert responder.new_notes(inbox, state) == [], "the bundle must be marked seen"
+
+
+def test_provenance_and_skip_helpers_never_raise_on_a_directory(tmp_path):
+    bundle = tmp_path / _BUNDLE
+    bundle.mkdir()
+    (bundle / "f.txt").write_text("x", encoding="utf-8")
+    carriers = tmp_path / "carriers.json"
+    outbox = tmp_path / "main" / "moon_sync_outbox"
+    (outbox / _BUNDLE).mkdir(parents=True)
+    carriers.write_text(json.dumps({"MAIN": {"outbox": str(outbox)}}), encoding="utf-8")
+    assert responder.skip_reason(bundle).startswith("bundle")
+    line = responder.main_provenance(bundle, carriers)
+    assert "MATCH" not in line.replace("MISMATCH", "")
+
+
+def test_an_unexpected_spawn_error_never_escapes_the_cycle(tmp_path, capsys, monkeypatch):
+    """A cycle that raises exits 1 under the scheduler and leaves no run log."""
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    state = tmp_path / "seen.json"
+    responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                    "--inbox", str(inbox), "--state", str(state)])
+    (inbox / "2026-10-03-1100-from-RC-REVIEW-x.md").write_text("x", encoding="utf-8")
+    capsys.readouterr()
+    monkeypatch.setattr(responder.lw_headless_env, "spawn",
+                        lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("boom")))
+    rc = responder.main(["--once", "--runlog", str(tmp_path / "runs.jsonl"),
+                         "--inbox", str(inbox), "--state", str(state)])
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    (entry,) = payload["spawned"]
+    assert entry["verdict"] == responder.UNAVAILABLE and "RuntimeError" in entry["reason"]

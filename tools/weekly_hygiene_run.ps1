@@ -13,13 +13,9 @@
 # Usage (manual):
 #   powershell -ExecutionPolicy Bypass -File "C:\Legion Wallpaper\tools\weekly_hygiene_run.ps1"
 
-param(
-    # 2026-08-02: was claude-sonnet-4-6, which is not a current model id - this
-    # task is now ARMED (LW-WeeklyHygiene registered), so a stale id would have
-    # failed weekly with nobody watching. Sonnet is deliberate over Opus: the
-    # pass is relocate-only trims + a staleness scan, not design work.
-    [string]$Model = "claude-sonnet-5"
-)
+# No -Model parameter since fleet kit v3 (2026-10-03): the kit picks the model
+# from writes_code, and this pass is relocate-only trims + a staleness scan,
+# not code, so it runs on the kit's sonnet.
 
 $ErrorActionPreference = "Continue"
 $repo = Split-Path -Parent $PSScriptRoot
@@ -56,27 +52,38 @@ make code changes and do NOT run /sync-all-md.
 
 $tools = "Edit,Read,Write,Bash,Grep,Glob,TaskCreate,TaskUpdate,TaskList"
 
-# Every headless claude goes through the proxy gate (operator directive
-# 2026-10-02): lw_headless_env.py exec reads CLAUDE_HEADLESS_BASE_URL from the
-# user environment store, sets it in the CHILD env only, and exits 78 without
-# starting claude when it is unset, non-loopback, or the port does not answer.
+# Every headless claude goes through MAIN's fleet kit (kit v3, 2026-10-03):
+# lw_headless_env.py spawn calls fleet_headless.spawn - proxy from the user
+# variable CLAUDE_HEADLESS_BASE_URL (registry first), fail closed, the rolling
+# 120-run budget, lean flags, no console, one usage line, the live status file.
+# It exits 78 without starting claude on any refusal. bare is NOT used: LW's
+# floors live in hooks. The prompt goes through a file, never the command line,
+# because PS 5.1 mangles embedded double quotes in a native argument.
 # Pinned interpreter resolved from LOCALAPPDATA, the same way headless_run.ps1
 # does it - never a literal account path in a tracked file.
 $pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
 $Python = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 $HeadlessEnv = Join-Path $repo "tools\lw_headless_env.py"
 $RefusedExit = 78
+$promptDir = Join-Path $repo "ops\runtime\weekly_hygiene"
+if (-not (Test-Path -LiteralPath $promptDir)) {
+    New-Item -ItemType Directory -Path $promptDir | Out-Null
+}
+$promptFile = Join-Path $promptDir "prompt.txt"
+$promptTmp = $promptFile + ".tmp"
+[System.IO.File]::WriteAllText($promptTmp, ($prompt -replace "`r`n", "`n"), (New-Object System.Text.UTF8Encoding($false)))
+Move-Item -LiteralPath $promptTmp -Destination $promptFile -Force
 
-Write-Host "[weekly_hygiene] $stamp start (model=$Model)"
-$out = & $Python $HeadlessEnv exec -- claude -p $prompt --model $Model --allowedTools $tools --dangerously-skip-permissions *>&1 |
+Write-Host "[weekly_hygiene] $stamp start (kit spawn)"
+$out = & $Python $HeadlessEnv spawn --note weekly-hygiene --prompt-file $promptFile -- --allowedTools $tools --dangerously-skip-permissions *>&1 |
     Tee-Object -FilePath $log
 $code = $LASTEXITCODE
 Write-Host "[weekly_hygiene] exit=$code log=$log"
 
-# FAIL CLOSED: a refused gate is not a transient and is never retried another
+# FAIL CLOSED: a refused spawn is not a transient and is never retried another
 # way. It exits 78 so the scheduled task reads red until the proxy is back.
 if ($code -eq $RefusedExit) {
-    Write-Host "[weekly_hygiene] REFUSED: headless spawn refused by the proxy gate - claude was not started."
+    Write-Host "[weekly_hygiene] REFUSED: headless spawn refused by the fleet kit - claude was not started."
     exit $RefusedExit
 }
 

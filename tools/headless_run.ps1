@@ -28,10 +28,13 @@ $Root = Split-Path -Parent $PSScriptRoot
 $pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
 $Python = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 $Orchestrator = Join-Path $Root "tools\slice_orchestrator.py"
-# Every headless claude goes through the proxy gate (operator directive
-# 2026-10-02): lw_headless_env.py exec reads CLAUDE_HEADLESS_BASE_URL from the
-# user environment store, sets it in the CHILD env only, and exits 78 without
-# starting claude when it is unset, non-loopback, or the port does not answer.
+# Every headless claude goes through MAIN's fleet kit (kit v3, 2026-10-03).
+# This run is hours long with a live console, which the kit's synchronous,
+# output-capturing spawn cannot carry, so it uses lw_headless_env.py exec: the
+# kit's gate (CLAUDE_HEADLESS_BASE_URL, registry first, loopback, port probed),
+# the kit's child env, its 120-run budget, status file and usage line, and
+# kit.claude_exe for a bare "claude". Exit 78 without starting claude on any
+# refusal. bare is NOT used: LW's floors live in hooks.
 $HeadlessEnv = Join-Path $Root "tools\lw_headless_env.py"
 $RefusedExit = 78
 $LogDir = Join-Path $Root "logs"

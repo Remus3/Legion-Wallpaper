@@ -19,10 +19,13 @@ seen and logging the skip:
   * TERMINAL - the filename carries a `terminal` or `no-reply` token, or the
     title line says TERMINAL or no reply, from any sender.
 
-THE SET IS THE TIGHT ONE. The body-level "answered: n/a (FYI, no reply
-requested)" line is NOT a terminal marker here, and neither is a token that
-merely contains the word. Widening is a deliberate act with a failing arm, not
-a drift.
+SINCE FLEET KIT v3 THE RULE IS THE KIT'S: `should_skip(name, "LW", head)`, a
+SUBSTRING match of TERMINAL / NO-REPLY / NO REPLY over the name and the note's
+first few hundred chars. That is WIDER than LW's old tight set (a `terminals`
+token and a body line "no reply requested" now skip too - latency only, since
+`lw_facts` still reports every note at SessionStart) and in one place NARROWER:
+a bare `noreply` token is no longer a terminal marker. The narrowing is a kit
+gap, reported to MAIN and pinned xfail(strict) here, not patched locally.
 """
 from __future__ import annotations
 
@@ -143,7 +146,11 @@ def test_lws_own_note_produces_zero_spawns(tmp_path, inbox, spawns, name):
 @pytest.mark.parametrize("name", [LL_TERMINAL,
                                   "2026-10-03-0900-from-RC-ANSWER-closed-TERMINAL.md",
                                   "2026-10-03-0901-from-CS-ACK-received-no-reply.md",
-                                  "2026-10-03-0902-from-SS-ACK-received-noreply.md"])
+                                  pytest.param(
+                                      "2026-10-03-0902-from-SS-ACK-received-noreply.md",
+                                      marks=pytest.mark.xfail(strict=True, reason=(
+                                          "kit v3 gap: a bare noreply token is not "
+                                          "terminal to should_skip; reported to MAIN")))])
 def test_a_terminal_filename_produces_zero_spawns_from_any_sender(tmp_path, inbox, spawns, name):
     _write(inbox, name)
 
@@ -214,21 +221,34 @@ def test_skips_never_consume_the_per_cycle_spawn_cap(tmp_path, inbox, spawns):
 
 
 @pytest.mark.parametrize("name,body", [
-    # A body-level reply clause is not the header.
-    ("2026-10-03-0950-from-RC-FYI-tally.md",
-     "# From RC - FYI: tally\n\nanswered: n/a (FYI, no reply requested)\n"),
-    # A token that merely CONTAINS the word is not the token.
-    ("2026-10-03-0951-from-CS-REVIEW-the-terminals-list.md", None),
-    ("2026-10-03-0952-from-SS-REVIEW-terminally-slow-suite.md", None),
     # A sender code that merely starts with LW is not LW.
     ("2026-10-03-0953-from-LWX-REVIEW-ask.md", None),
+    ("2026-10-03-0954-from-RC-REVIEW-ordinary.md", "# From RC - REVIEW\n\nplease measure\n"),
 ])
-def test_the_tight_set_excludes_lookalikes(tmp_path, inbox, spawns, name, body):
+def test_lookalikes_the_kit_still_lets_through(tmp_path, inbox, spawns, name, body):
     _write(inbox, name, body)
 
     _run(tmp_path, inbox)
 
     assert spawns == [name]
+
+
+@pytest.mark.parametrize("name,body", [
+    ("2026-10-03-0950-from-RC-FYI-tally.md",
+     "# From RC - FYI: tally\n\nanswered: n/a (FYI, no reply requested)\n"),
+    ("2026-10-03-0951-from-CS-REVIEW-the-terminals-list.md", None),
+    ("2026-10-03-0952-from-SS-REVIEW-terminally-slow-suite.md", None),
+])
+def test_the_kits_substring_rule_is_wider_than_the_old_tight_set(
+        tmp_path, inbox, spawns, name, body):
+    """PINNED TRADE-OFF of kit v3: these skip now. Latency only - the note is
+    still shown at every SessionStart - and the rule is MAIN's, not LW's."""
+    _write(inbox, name, body)
+
+    record = _run(tmp_path, inbox)
+
+    assert spawns == []
+    assert record["skipped"][0]["reason"].startswith("terminal")
 
 
 def test_a_note_mentioning_LW_after_another_sender_is_not_self(tmp_path, inbox, spawns):

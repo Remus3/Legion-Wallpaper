@@ -393,3 +393,36 @@ def test_sdk_channel_holds_no_window_title(tmp_path: Path):
     _build(cfg, tmp_path).run(1, "b", "fixed")
     argv = json.loads((tmp_path / "argv.json").read_text(encoding="utf-8"))
     assert not any("Image" in str(a) for a in argv)
+
+
+# ---- fleet kit v3: every sdk run is counted in the kit's budget + usage ------
+
+def test_each_sdk_run_is_accounted_by_the_fleet_kit(tmp_path: Path):
+    """kit.spawn cannot carry this channel (stdin prompt, --session-id/--resume,
+    --json-schema, tree kill), so it brackets the run with the kit's own
+    start_run / end_run: one budget start, one usage line, status back to idle."""
+    he = executor._headless_env_module()
+    out = json.dumps({"is_error": False, "structured_output": OK_STRUCT,
+                      "usage": {"output_tokens": 7}})
+    ex = _build(_cfg(tmp_path, _shim(tmp_path, stdout=out)), tmp_path)
+    assert ex.run(1, "body", "fixed").error is None
+    assert he.budget().used() == 1
+    usage = (Path(he.FLEET_ROOT) / he.kit.USAGE_REL).read_text(encoding="ascii")
+    line = json.loads(usage.splitlines()[-1])
+    assert (line["code"], line["note"], line["output_tokens"]) == (
+        "LW", "loop-executor cycle 1", 7)
+    status = json.loads((Path(he.FLEET_ROOT) / he.kit.STATUS_REL).read_text(encoding="ascii"))
+    assert status["state"] == "idle"
+
+
+def test_a_spent_kit_budget_stops_the_cycle_and_spawns_nothing(tmp_path: Path):
+    he = executor._headless_env_module()
+    b = he.budget()
+    for _ in range(b.cap):
+        b.record()
+    stops = []
+    ex = _build(_cfg(tmp_path, _shim(tmp_path)), tmp_path, stop=stops.append)
+    rec = ex.run(1, "body", "fixed")
+    assert rec.error and "budget" in rec.error
+    assert not (tmp_path / "argv.json").exists(), "the shim must never have run"
+    assert stops
