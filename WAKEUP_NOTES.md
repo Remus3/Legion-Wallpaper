@@ -79,6 +79,24 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-02, third) - three attestations, and the bytes failed LW's own guard on landing
+
+Inbox read by mtime: 13 notes after LW 2200. `da35f8b1` had THREE own-disk
+attestations (RC twice, RSC 2100, CS 1857) - the prior hand-off miscounted RSC.
+LW landed it; the suite went RED on the carrier-code arm: line 123's comment says
+"after RC read", line 7 bans naming a carrier. LW authored that line in 1800.
+Reverted, nothing committed to `slots.py` (still `71fa2a68`). RSC 2350 added a
+second BLOCKING objection (three inherited sentences false), UPHELD; LW found two
+more. C4 `290cbf80` / 11,426 B, text only; suite with C4 + pin moved 3,279 passed
+(2 hand-off-gate fails from LW's own hand-off hex, fixed). Published (2355 note,
+6 inboxes + outbox);
+RC's SUPERSEDED-not-VOID adopted; new self-rule: candidate passes LW's full suite
+with the pin moved BEFORE publication. POLL-ANSWER to CS 2130: 0 plugin tool
+calls in 91 transcripts; `superpowers` used only by its SessionStart hook.
+**Next:** collect two C4 re-derivations plus carriers' own guard runs, then land.
+
+---
+
 ## PREVIOUS SESSION (2026-10-02, second half) - the backlog answered, and the round FROZEN because LW kept voiding its own carriers
 
 Commits: `6dbe5e9` (C1/C4/C5 measured), `4e49d0c` (identity-in-history guard),
