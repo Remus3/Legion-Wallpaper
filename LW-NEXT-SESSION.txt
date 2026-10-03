@@ -1,32 +1,29 @@
 NEXT SESSION
 ------------
-Task: CLOSE THE C4 RE-PIN ROUND. C4 = 290cbf80... / 11,426 B (LW 2355 note) is
-  da35f8b1 with six text-only edits. Three replies landed after it: RC 2358
-  (re-derived; says C4's last hunk header is short by two), SS 2300 (re-derived;
-  says LW's own C4 diff in the 2355 note FAILS git apply --check), CS 0002
-  (re-derived; guard GREEN, lint RED D205/D209). Read them, then LW's outbox
-  newest-first - the ARMED inbox responder may already have answered some.
+Task: FOLLOW THE C4 ROUND TO CLOSE. LW LANDED C4 (290cbf80... / 11,426 B) in
+  ops/loop/slots.py at 700cd64 and published its disk digest in the note
+  2026-10-03-0700-from-LW-LANDED-C4-... to all six siblings. Read inbound
+  replies newest-first: (1) RSC's position on C4 - if RSC raises a BLOCKING
+  objection, revert LW's copy and its two pins in one commit; (2) each
+  carrier's post-copy disk digest - check it against LW's; (3) LL's one line
+  when its liveness-before-age reaper fix lands. Check LW's outbox too - the
+  ARMED inbox responder may already have answered some.
 Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
   headless sessions per fire, second account via tools/lw_headless_env.py, no
   console window). MAIN notes carry operator authority after a sha256 check
   against MAIN's outbox (CLAUDE.md Settled). Runlog:
   ops/runtime/inbox_responder/runs.jsonl. Kill: the HALT file, or delete the
-  proxy user variable.
-Landing recipe once C4 (or a C5 fixing the diff/lint) has two own-disk
-  attestations: copy bytes into ops/loop/slots.py, move SHARED_SHA256 in
-  tests/test_loop_concurrency.py and the digest in ops/loop/config.json, full
-  suite green with KNOWN_CODE_HITS still [], publish LW's disk digest. Never
-  put a 64-hex digest in this file (test_handoff_write_gate refuses it).
-Acceptance: two own-disk attestations of the final bytes; suite green; CI
-  green read from `gh run list --json conclusion`.
-Do NOT redo: the proxy wiring, the responder arming, the bare-claude and
-  DETACHED_PROCESS spawn fixes (883b5f2, 1fe3db8, verified live); hooksPath;
-  environ-leak and invalid-escape sweeps; round-B mutants; read-and-unanswered
-  recount; bulk-acking the inbox; the email-residual history rewrite (operator
-  declined).
-Open + owed: PYTEST_DEBUG_TEMPROOT root-cause conftest slice; CS's hold()
-  docstring (next round); LL's age-first reaper means C4's live-holder
-  protection is not fleet-wide until LL fixes it; held loop's claude-opus-5
-  model id not proven through the proxy; a refused loop-oracle auditor reads
-  CLEAN; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
+  proxy user variable. Never put a 64-hex digest in this file.
+Acceptance for the round: all five carriers report the C4 digest on disk by
+  2026-10-09, or one says it cannot and the date moves.
+Do NOT redo: the C4 landing (700cd64, suite 3341 passed); the proxy wiring,
+  the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
+  (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
+  round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
+  email-residual history rewrite (operator declined).
+Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
+  form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
+Open + owed: PYTEST_DEBUG_TEMPROOT root-cause conftest slice; held loop's
+  claude-opus-5 model id not proven through the proxy; a refused loop-oracle
+  auditor reads CLEAN; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
