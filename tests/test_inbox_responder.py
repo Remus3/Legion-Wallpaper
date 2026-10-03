@@ -920,8 +920,8 @@ def test_a_burst_is_capped_and_the_remainder_is_deferred_not_dropped(tmp_path, c
                     "--inbox", str(inbox), "--state", str(state)])
     capsys.readouterr()
 
-    # Senders spread across codes so the per-SENDER cap (MAIN 0845) never binds
-    # first and this arm grades the per-cycle cap alone.
+    # Senders spread across codes so this arm grades the per-cycle cap alone,
+    # whatever per-sender rule a later change might add.
     burst = responder.MAX_SPAWNS_PER_CYCLE + 2
     for i in range(burst):
         sender = f"X{chr(65 + i % 26)}"  # never LW: an LW note is a self-skip

@@ -1,31 +1,29 @@
-"""Arms for the responder's UNIFORM budget (MAIN 0845, 2026-10-03).
+"""Arms for the responder's UNIFORM budget: ONE number (MAIN 0855, 2026-10-03).
 
-WHY. MAIN measured the six responders capping six DIFFERENT things and relayed
-the operator's order, verbatim: "increase the budget to be the same to all
-siblings - and it needs to be x10 of whatever amount it is now". Every tree
-carries the same five values, each ten times the only existing figure:
+WHY. The operator, relayed by MAIN 0855 (digest-verified), verbatim: "have all
+tree's / siblings at the same amount; IE: 120". Every tree carries ONE budget:
+at most 120 headless runs started per rolling 24 hours (SS's 12, x10).
 
-    runs started per 24 h        120   (SS 12)
-    spawns per tick               30   (LW 3)
-    turns per run                300   (RC 30, passed as --max-turns)
-    hop budget (reply chain)     320   (RC 32) - NOT expressible here, see below
-    replies per sender per 24 h   30   (RSC 3)
+MAIN 0845 had also set four other knobs (spawns per tick 30, turns per run 300,
+hop budget 320, replies per sender per 24 h 30). 0855 RETRACTED them as MAIN's
+reading, not the operator's, and ordered each restored to its pre-0845 value:
 
-THE LEDGER IS THE RUN LOG. Both 24-hour knobs count AUTO spawns already
+    runs started per 24 h        none -> 120   KEPT
+    spawns per tick              3              restored (0845 had made it 30)
+    turns per run                none           restored (no --max-turns)
+    hop budget                   none           never had a constant here
+    replies per sender per 24 h  none           restored (no per-sender cap)
+
+The arms below pin both halves: the one number, and the absence of the four.
+
+THE LEDGER IS THE RUN LOG. The 24-hour budget counts AUTO spawns already
 recorded in `runs.jsonl`; no second store was invented. A spawn that came back
-UNAVAILABLE started no run and costs nothing. A note held back by a budget
+UNAVAILABLE started no run and costs nothing. A note held back by the budget
 stays UNSEEN, exactly like a note over the per-tick cap: deferred, not dropped.
 
 COULD-NOT-READ IS NOT ZERO. A log that exists but cannot be read is not an
 empty one, so the cycle spawns NOTHING and says why. An ABSENT log is a real
 zero - the file is created by the first non-idle cycle.
-
-HOP BUDGET. LW's notes carry no hop counter and no thread id, so a reply-chain
-depth cannot be read off the channel. MAIN section 2 says to name the nearest
-equivalent rather than invent a second mechanism: LW answers one hop per
-incoming note, so the per-sender cap bounds LW's side of any chain at 30 hops
-per sender per 24 h, below 320, and the self and terminal skips stop LW
-answering itself. No HOP constant exists to be decorative.
 """
 from __future__ import annotations
 
@@ -126,16 +124,23 @@ def _history(tmp_path: Path, sender: str, count: int, *, hours_ago: float = 1.0,
 # The values
 # --------------------------------------------------------------------------
 
-def test_the_uniform_values_are_ten_times_the_measured_figures():
-    assert responder.MAX_SPAWNS_PER_CYCLE == 30
+def test_the_budget_is_one_number_120_runs_per_24h():
     assert responder.MAX_RUNS_PER_24H == 120
-    assert responder.MAX_TURNS_PER_RUN == 300
-    assert responder.MAX_SPAWNS_PER_SENDER_24H == 30
 
 
-def test_the_spawn_argv_caps_turns_per_run():
+def test_the_per_tick_cap_is_back_at_its_pre_0845_value():
+    assert responder.MAX_SPAWNS_PER_CYCLE == 3, "MAIN 0855 restored 30 -> 3"
+
+
+@pytest.mark.parametrize("retracted", ["MAX_TURNS_PER_RUN", "MAX_SPAWNS_PER_SENDER_24H"])
+def test_the_retracted_0845_knobs_do_not_exist(retracted):
+    """None before 0845, so restoring them means there is no such knob at all."""
+    assert not hasattr(responder, retracted)
+
+
+def test_the_spawn_argv_carries_no_turn_cap():
     argv = responder.spawn_argv(Path("moon_sync_inbox/note.md"))
-    assert argv[argv.index("--max-turns") + 1] == str(responder.MAX_TURNS_PER_RUN)
+    assert "--max-turns" not in argv, "MAIN 0855 retracted turns per run"
     assert argv[-1].startswith("A new cross-repo note arrived"), "prompt stays last"
 
 
@@ -145,8 +150,8 @@ def test_the_spawn_argv_caps_turns_per_run():
 
 def test_the_daily_run_budget_holds_back_what_it_cannot_afford(tmp_path, inbox, spawns):
     for i in range(4):
-        _history(tmp_path, f"S{chr(65 + i)}", 29)        # 116 runs, no sender over its cap
-    _history(tmp_path, "RSC", 3)                 # 119
+        _history(tmp_path, f"S{chr(65 + i)}", 29)        # 116 runs
+    _history(tmp_path, "RSC", 3)                         # 119
     for i in range(3):
         _write(inbox, f"2026-10-03-010{i}-from-RC-ask-{i}.md")
 
@@ -204,47 +209,47 @@ def test_an_unreadable_log_spawns_nothing_and_says_so(tmp_path, inbox, spawns):
     assert len(responder.new_notes(inbox, tmp_path / "seen.json")) == 1
 
 
-# --------------------------------------------------------------------------
-# Replies per sender per 24 h (one spawn answers at most one note, under A5)
-# --------------------------------------------------------------------------
-
-def test_a_sender_at_its_cap_waits_while_another_sender_is_answered(tmp_path, inbox, spawns):
-    _history(tmp_path, "CS", 30)
-    _write(inbox, "2026-10-03-0100-from-CS-again.md")
-    _write(inbox, "2026-10-03-0101-from-RC-ask.md")
-
-    payload = _run(tmp_path, inbox)
-
-    assert spawns == ["2026-10-03-0101-from-RC-ask.md"]
-    assert payload["deferred"] == 1
-    assert payload["budget"]["sender_capped"] == ["CS"]
-
-
-def test_one_cycle_cannot_overrun_a_senders_cap(tmp_path, inbox, spawns):
-    _history(tmp_path, "LL", 28)
-    for i in range(4):
-        _write(inbox, f"2026-10-03-010{i}-from-LL-burst-{i}.md")
+def test_one_cycle_cannot_overrun_the_daily_budget(tmp_path, inbox, spawns):
+    _history(tmp_path, "CS", 118)
+    for i in range(3):
+        _write(inbox, f"2026-10-03-010{i}-from-RC-ask-{i}.md")
 
     payload = _run(tmp_path, inbox)
 
     assert len(spawns) == 2
-    assert payload["deferred"] == 2
+    assert payload["deferred"] == 1
 
 
-def test_an_unconstrained_cycle_reports_no_budget_block(tmp_path, inbox, spawns):
+# --------------------------------------------------------------------------
+# No per-sender cap (MAIN 0855 retracted 0845's replies-per-sender knob)
+# --------------------------------------------------------------------------
+
+def test_one_senders_volume_never_binds_below_the_daily_budget(tmp_path, inbox, spawns):
+    """100 runs on CS's notes in a day: only the ONE number may hold CS back."""
+    _history(tmp_path, "CS", 100)
+    for i in range(3):
+        _write(inbox, f"2026-10-03-010{i}-from-CS-again-{i}.md")
+
+    payload = _run(tmp_path, inbox)
+
+    assert len(spawns) == 3
+    assert payload["deferred"] == 0
+
+
+def test_an_unconstrained_cycle_reports_only_the_run_count(tmp_path, inbox, spawns):
     _write(inbox, "2026-10-03-0100-from-RC-ask.md")
 
     payload = _run(tmp_path, inbox)
 
     assert spawns == ["2026-10-03-0100-from-RC-ask.md"]
-    assert payload["budget"] == {"runs_24h": 0, "sender_capped": []}
+    assert payload["budget"] == {"runs_24h": 0}
 
 
 # --------------------------------------------------------------------------
-# The loop dampers MAIN says a 10x budget makes MORE important
+# The loop dampers MAIN 0845 s3 (kept by 0855 s3) says every tree must carry
 # --------------------------------------------------------------------------
 
-def test_self_and_terminal_notes_still_never_spawn_under_the_larger_budget(
+def test_self_and_terminal_notes_still_never_spawn_under_the_daily_budget(
         tmp_path, inbox, spawns):
     _write(inbox, "2026-10-03-0100-from-LW-RESPONDER-ACK-record.md")
     _write(inbox, "2026-10-03-0101-from-RC-ANSWER-done-TERMINAL-no-reply.md")
