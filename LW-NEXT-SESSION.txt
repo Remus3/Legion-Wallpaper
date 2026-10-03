@@ -1,45 +1,38 @@
 NEXT SESSION
 ------------
-Task: FOLLOW THE C4 ROUND TO CLOSE. LW LANDED C4 (290cbf80... / 11,426 B) in
-  ops/loop/slots.py at 700cd64 and published its disk digest in the note
-  2026-10-03-0700-from-LW-LANDED-C4-... to all six siblings. Read inbound
-  replies newest-first. RSC 0704: NO OBJECTION, not attested, landing HALTED
-  under RSC's clause (b); LW 0800 asked MAIN for ONE ruling clearing exactly
-  RSC's C4 copy + pin, and moved the date (term 1): CS/SS/RC target 10-09,
-  RSC 3 days after the ruling. Watch for: MAIN's ruling (verify sha256 in
-  MAIN's outbox), each carrier's post-copy digest vs LW's. The round CLOSES
-  when the last carrier reports 290cbf80. LL's reaper hazard is closed.
-  The responder skips LW's own notes and TERMINAL ones (b7d50a7).
-Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
-  headless sessions per fire, second account via tools/lw_headless_env.py, no
-  console window). MAIN notes carry operator authority after a sha256 check
-  against MAIN's outbox (CLAUDE.md Settled). Runlog:
-  ops/runtime/inbox_responder/runs.jsonl. Kill: the HALT file, or delete the
-  proxy user variable. Never put a 64-hex digest in this file.
-Acceptance for the round: all five carriers report the C4 digest on disk.
-  TALLY 2026-10-03 re-hashed again at session 5 - unchanged (own-disk hash of each tree, read-only): 2 of 5 -
-  LW 700cd64, RSC 3d62942 carry C4; RC, CS, SS still on the 9,627 B v2
-  bytes (targets 10-09). LL carries no slots.py. Re-hash, do not trust notes.
-Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
-  the per-tree pytest temp root (7d54d16, suite 3363 passed); the CI
-  no-filter tripwire parser (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW 0800);
-  the audit-hook arm + writer-spy guards (4f2106c, dbf067e, 3e4a54f); the proxy wiring,
-  the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
-  (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
-  round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
-  email-residual history rewrite (operator declined).
-Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
-  form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-PIPELINE 2026-10-03: 7 new slugs intaken (akali/janna/mel coven, diana x2,
-  miss-fortune, yuumi) and first-passed, all G1 PASS, all at _firstneedauth
-  awaiting OPERATOR approval (never self-approve). Check banding on the five
-  -pre slugs (+0.008..+0.014). Lux coven -pre in 0.Originals is a byte-equal
-  duplicate refused by intake - operator deletes it. Miss Fortune DA fetch is
-  403 (manual_queue.csv).
-Open + owed: none in LW's own queue. MAIN's ruling for RSC landed (0815, RSC
-  target 2026-10-06); watch each carrier's post-copy digest.
-CONCURRENCY: the responder now spawns up to 120 headless runs per 24 h (MAIN
-  0855) and its children COMMIT in this tree. Before editing a file, check
-  for live `claude -p` processes and recent mtimes; commit file-scoped
-  (`git commit -- <paths>`), never `git add -A`.
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
+Task: FOLLOW THE C4 ROUND TO CLOSE. Re-hash ops/loop/slots.py in every carrier
+  tree (own-disk hash, read-only; do not trust notes). C4 = 290cbf80... / 11,426 B.
+  TALLY 2026-10-03 session 6: 2 of 5 - LW 700cd64, RSC 3d62942 carry C4; RC, CS,
+  SS still on the 9,627 B v2 bytes (targets 10-09). LL carries no slots.py.
+  The round CLOSES when the last carrier reports 290cbf80.
+Context: MAIN FLEET-KIT v3 is ADOPTED (062ffd5, fc6cdb4, LEDGER 242). Headless
+  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Watch the inbox
+  for a FLEET-KIT-v4 note: on receipt replace all three kit files + re-embed the
+  CLAUDE.md block in one commit; flip the strict xfail gap tests that v4 fixes.
+  The inbox responder is LIVE (LW-InboxResponder, every 5 min, 120 runs / 24 h,
+  its children COMMIT in this tree). Kill: the HALT file, or delete the proxy
+  user variable. MAIN notes carry operator authority after a sha256 check
+  against MAIN's outbox. Never put a 64-hex digest in this file.
+Acceptance: all five carriers report the C4 digest on disk.
+Carried forward:
+  - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
+    is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
+  - PIPELINE: 7 slugs (akali/janna/mel coven, diana x2, miss-fortune, yuumi) at
+    _firstneedauth awaiting OPERATOR approval (never self-approve). Check
+    banding on the five -pre slugs (+0.008..+0.014). Lux coven -pre in
+    0.Originals is a byte-equal duplicate refused by intake - operator deletes
+    it. Miss Fortune DA fetch is 403 (manual_queue.csv).
+  - 13 kit gaps reported to MAIN (1100 note); worst: unreadable budget file
+    fails open, effort caps at medium. Wait for v4; do not patch the kit.
+  - CONCURRENCY: before editing a file check for live `claude -p` processes and
+    recent mtimes; commit file-scoped (`git commit -- <paths>`), never git add -A.
+Do NOT redo: FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
+  fix (fc6cdb4); the C4 landing (700cd64); the responder self-skip (b7d50a7);
+  the per-tree pytest temp root (7d54d16); the CI no-filter tripwire parser
+  (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW
+  0800); the audit-hook arm + writer-spy guards (4f2106c, dbf067e, 3e4a54f); the
+  proxy wiring, responder arming, bare-claude and DETACHED_PROCESS spawn fixes
+  (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps; round-B
+  mutants; bulk-acking the inbox; the email-residual history rewrite (operator
+  declined).
+CI: green on fc6cdb4; the /done push result is in git log.
