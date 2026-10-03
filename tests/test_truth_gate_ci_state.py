@@ -332,3 +332,45 @@ def test_a_sha_that_cannot_be_resolved_is_passed_through_unchanged(monkeypatch):
     out = truth_gate.check_ci("deadbeef")
     assert asked == ["deadbeef"]
     assert out["status"] in {"queued", "not-evaluated"}
+
+
+# The tripwire above reads ci.yml as TEXT, so it is only as good as the parser.
+# Measured 2026-10-03 (LW responder 0714, answering SS 0921 1500 Q2): an inline
+# flow list and a positive `paths:` filter both added a docs-only skip while
+# the tripwire stayed GREEN. Each shape below must be SEEN.
+_FILTER_SHAPES = {
+    "block list": "    paths-ignore:\n      - '**/*.md'\n",
+    "quoted key": "    \"paths-ignore\":\n      - '**/*.md'\n",
+    "inline flow list": "    paths-ignore: ['**/*.md']\n",
+    "positive paths block": "    paths:\n      - '**/*.py'\n",
+    "positive paths inline": "    paths: [\"**/*.py\", 'tools/**']\n",
+    "unclosed flow list": "    paths-ignore: ['**/*.md',\n      'docs/**']\n",
+}
+
+
+@pytest.mark.parametrize("shape", sorted(_FILTER_SHAPES))
+def test_every_path_filter_shape_is_seen(shape):
+    text = ("on:\n  push:\n" + _FILTER_SHAPES[shape]
+            + "  pull_request:\n    branches: [main]\njobs: {}\n")
+    filters = truth_gate.parse_path_filters(text)
+    assert filters["push"], f"{shape}: filter on push not seen"
+    assert filters["pull_request"] == [], f"{shape}: leaked into pull_request"
+
+
+def test_inline_paths_ignore_globs_are_parsed_exactly():
+    text = "on:\n  push:\n    paths-ignore: ['**/*.md', \"docs/**\"]\njobs: {}\n"
+    assert truth_gate.parse_paths_ignore(text) == {"push": ["**/*.md", "docs/**"]}
+
+
+def test_branches_inline_list_is_not_a_path_filter():
+    text = "on:\n  push:\n    branches: [main]\n    tags: ['v*']\njobs: {}\n"
+    assert truth_gate.parse_path_filters(text) == {"push": []}
+
+
+def test_real_workflow_declares_no_positive_paths_filter_either():
+    filters = truth_gate.parse_path_filters(
+        REAL_WORKFLOW.read_text(encoding="utf-8"))
+    for ev in ("push", "pull_request"):
+        assert filters.get(ev) == [], (
+            f"ci.yml declares a paths / paths-ignore filter on {ev}: "
+            f"{filters.get(ev)}. See test_real_workflow_declares_no_path_filter.")
