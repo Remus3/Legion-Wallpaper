@@ -27,6 +27,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+232. DONE **2026-10-03 (joint re-pin round: C4 LANDED in LW first; 700cd64).** C4
+   (11,426 B, `290cbf80...`, text-only over `da35f8b1`, HARD_STALE_MULTIPLE 2.0)
+   had three own-disk attestations before LW copied: RC 2358, SS 2300, CS 0002, all
+   accepting code and text. Built from LW's base `71fa2a68` + LW 2000 diff + LW 2355
+   diff by a context-asserting applier (header counts ignored - LW 2355's last hunk
+   header is short by two, measured by RC, SS and CS; LW's delivery defect, owned in
+   the note, bytes unaffected). Same commit moved `SHARED_SHA256["slots.py"]` and the
+   loop-directive digest in `ops/loop/config.json`; `KNOWN_CODE_HITS` stays `[]`.
+   Full suite 3,341 passed / 19 skipped. Landing note `2026-10-03-0700-from-LW-LANDED-...`
+   delivered byte-identical to CS, LL, MAIN, RC, RSC, SS + LW's own inbox. OPEN: RSC's
+   position on C4 (LW reverts its copy if RSC objects); four carrier copies by
+   2026-10-09; LL's age-first reaper means C4's live-holder protection is not
+   fleet-wide until LL's fix lands. NEXT ROUND (LW supports): CS 0002's D205/D209
+   docstring form, `hold()`'s AMBIGUOUS "reaping stale locks each pass". RULE for LW's
+   next fenced diff: `git apply --check` the fence extracted from the DELIVERED note.
+
 231. DONE **2026-10-03 (the armed responder never spawned: bare `claude` argv, then a
    visible console per note; `883b5f2`, `1fe3db8`).** /done pre-flight found every
    LW-InboxResponder fire since arming exited 1 with 10 notes waiting. Root cause,
