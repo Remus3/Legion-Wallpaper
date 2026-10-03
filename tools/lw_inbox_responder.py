@@ -430,7 +430,10 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         if not dry_run:
             lw_headless_env.log_refusal("lw_inbox_responder", str(exc))
         return Disposition(UNAVAILABLE, "spawn", f"headless spawn refused: {exc}", True)
-    argv = spawn_argv(note_path)
+    # The RESOLVED path, never the bare name: on Windows the CLI is claude.CMD,
+    # and CreateProcess given "claude" looks only for claude.exe and raises
+    # FileNotFoundError - measured 2026-10-03, every armed fire exited 1.
+    argv = [exe, *spawn_argv(note_path)[1:]]
     if dry_run:
         return _auto("spawn", f"dry run, would launch: {' '.join(argv[:4])} ...")
     proc = subprocess.Popen(

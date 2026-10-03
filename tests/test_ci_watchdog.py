@@ -280,3 +280,26 @@ def test_the_fix_spawn_requires_the_gated_env():
     import inspect
     param = inspect.signature(cw._fix_in_worktree).parameters["env"]
     assert param.default is inspect.Parameter.empty
+
+
+def test_the_fix_run_launches_the_resolved_cli_not_the_bare_name(monkeypatch, tmp_path):
+    """Sibling of the responder defect measured 2026-10-03: on Windows the CLI
+    is `claude.CMD`, and a bare "claude" argv makes CreateProcess look for
+    `claude.exe` and raise FileNotFoundError, so a red CI would have crashed
+    the fix run instead of reaching the model."""
+    seen = {}
+
+    def _fake_run(argv, **kwargs):
+        seen["argv"] = argv
+
+        class _R:
+            returncode = 0
+            stdout = ""
+            stderr = ""
+
+        return _R()
+
+    monkeypatch.setattr(cw.shutil, "which", lambda name, path=None: r"C:\fake\npm\claude.CMD")
+    monkeypatch.setattr(cw, "run", _fake_run)
+    cw._fix_in_worktree(tmp_path, "a" * 40, "1", "claude-sonnet-5", 60, {"PATH": ""})
+    assert seen["argv"][0] == r"C:\fake\npm\claude.CMD"
