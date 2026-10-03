@@ -454,6 +454,27 @@ def test_the_spawn_is_detached_and_windowless(monkeypatch):
     assert child_has_it and parent_untouched
 
 
+def test_the_spawn_launches_the_resolved_cli_not_the_bare_name(monkeypatch):
+    """Measured 2026-10-03 on the first armed scheduler fires: every one exited
+    1. `shutil.which("claude")` finds `claude.CMD`, but Popen given the BARE
+    name asks CreateProcess for `claude.exe`, which does not exist, and raises
+    FileNotFoundError. The responder had never spawned once because of it."""
+    seen = {}
+
+    def _fake_popen(argv, **kwargs):
+        seen["argv"] = argv
+
+        class _P:
+            pid = 4242
+
+        return _P()
+
+    monkeypatch.setattr(responder.shutil, "which", lambda _name: r"C:\fake\npm\claude.CMD")
+    monkeypatch.setattr(responder.subprocess, "Popen", _fake_popen)
+    responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=_PROXY_UP)
+    assert seen["argv"][0] == r"C:\fake\npm\claude.CMD"
+
+
 # --------------------------------------------------------------------------
 # The proxy gate (operator directive 2026-10-02): fail closed, never fall back
 # --------------------------------------------------------------------------

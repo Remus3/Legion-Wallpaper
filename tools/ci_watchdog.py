@@ -45,6 +45,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -282,7 +283,12 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, env):
     caller can reach the spawn without having passed the proxy gate first.
     """
     prompt = FIX_PROMPT.format(base=BASE_BRANCH, sha=sha, runs=runs)
-    argv = ["claude", "-p", prompt, "--model", model,
+    # Resolved, not bare: on Windows the CLI is claude.CMD and CreateProcess
+    # given "claude" raises FileNotFoundError (measured 2026-10-03).
+    exe = shutil.which("claude", path=env.get("PATH"))
+    if exe is None:
+        return False, False, "claude CLI is not on PATH"
+    argv = [exe, "-p", prompt, "--model", model,
             "--permission-mode", "bypassPermissions",
             "--add-dir", str(wt)]
     try:
