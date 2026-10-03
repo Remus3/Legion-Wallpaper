@@ -79,6 +79,22 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-03, seventh) - MAIN FLEET-KIT v4 adopted
+
+- Shipped: 62442fc (MAIN 1204 order; 5 kit files vendored, MANIFEST v4, spawn
+  paths on v4 params, v3 strict-xfail gap pins dropped), LEDGER 243. CI run
+  37142252994 success on 62442fc. Suite 3487 passed / 0 failed / 20 skipped.
+- ADOPTED answer delivered to MAIN (1258 note). Two kit gaps for v5: (a) the loop
+  executor stays on kit primitives - v4 spawn() returns only result text, the
+  executor needs the structured result + session id; (b) the kit should pass
+  CREATE_NO_WINDOW as a literal keyword at its own launch call so the
+  console-flash test exemption can be removed.
+- The first v4 attempt STALLED at 72 pct (progress file stopped 12:16); a
+  takeover agent finished it.
+- /done: drift_guard RED, pre-existing - ops/loop/slots.py 290cbf80 (C4) vs RC
+  71fa2a68 (v2). Binding gate refuses the push until RC carries C4.
+- Do NOT redo: the v4 adoption.
+
 ## PREVIOUS SESSION (2026-10-03, sixth) - MAIN FLEET-KIT v3 adopted
 
 - Shipped: 062ffd5 (kit vendored to ops/fleet_kit/, conformance test
