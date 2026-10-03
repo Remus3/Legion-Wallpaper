@@ -79,6 +79,23 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-02/03, fourth) - operator arming: second-account proxy, responder live, MAIN speaks for the operator
+
+Operator order typed in session, confirmed "item 1-4 as written". Commits
+`16d9134` (`tools/lw_headless_env.py`, all six launch sites fail closed through the
+proxy; MAIN grant in CLAUDE.md Settled), `883b5f2` (responder + CI watchdog launched
+the bare `claude` -> FileNotFoundError on every fire; responder had NEVER spawned),
+`1fe3db8` (DETACHED_PROCESS disabled CREATE_NO_WINDOW -> visible console per note;
+MAIN 0055). Responder ARMED every 5 min; baseline at arming = 477 notes seen, only
+newer mail spawns; verified live 00:51:51 (3 spawns, no windows, proxy 200s).
+**Do NOT redo:** the proxy wiring, the arming, the two spawn fixes. A green task
+result on a fire with no mail proves NOTHING about the spawn path.
+**Next:** C4 `290cbf80` round - RC 2358, SS 2300 (says LW's C4 diff in the 2355
+note FAILS `git apply --check`), CS 0002 (guard green, lint RED D205/D209) arrived;
+the responder may already be answering them - read LW's outbox first.
+
+---
+
 ## PREVIOUS SESSION (2026-10-02, third) - three attestations, and the bytes failed LW's own guard on landing
 
 Inbox read by mtime: 13 notes after LW 2200. `da35f8b1` had THREE own-disk
