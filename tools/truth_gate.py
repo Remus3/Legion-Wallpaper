@@ -132,6 +132,33 @@ def parse_paths_ignore(text):
     and a gate whose job is to read six lines of its own workflow must not be
     able to fail on a third-party import.
     """
+    return _parse_event_lists(text, ("paths-ignore",))
+
+
+def parse_path_filters(text):
+    """Map every `on:` trigger to ALL its path-filter globs, ignore or positive.
+
+    A positive `paths:` filter suppresses docs-only runs just as surely as
+    `paths-ignore:` does, so an absence check must read both. Not used by
+    check_ci, whose skip logic models paths-ignore only.
+    """
+    return _parse_event_lists(text, ("paths-ignore", "paths"))
+
+
+def _flow_items(value):
+    """Items of a one-line YAML flow list `[a, 'b', "c"]`.
+
+    An unclosed list (continued on later lines) returns one sentinel item, so a
+    caller asking "is there a filter" gets yes rather than a silent empty.
+    """
+    value = value.strip()
+    if not value.endswith("]"):
+        return ["<unparsed multi-line flow list>"]
+    inner = value[1:-1]
+    return [p.strip().strip("\"'") for p in inner.split(",") if p.strip()]
+
+
+def _parse_event_lists(text, keys):
     events = {}
     on_indent = None
     trigger_indent = None
@@ -161,7 +188,11 @@ def parse_paths_ignore(text):
             if collecting:
                 events[event].append(stripped[1:].strip().strip("\"'"))
         else:
-            collecting = key == "paths-ignore"
+            collecting = key in keys
+            value = stripped.split(":", 1)[1].strip() if ":" in stripped else ""
+            if collecting and value.startswith("["):
+                events[event].extend(_flow_items(value))
+                collecting = False
     return events
 
 
