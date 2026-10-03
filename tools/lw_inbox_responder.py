@@ -114,7 +114,12 @@ RUNLOG_PATH = HALT_PATH.parent / "runs.jsonl"
 
 # 0 off Windows so the module still imports and tests on a CI runner.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-DETACHED = getattr(subprocess, "DETACHED_PROCESS", 0)
+# NOT DETACHED_PROCESS: Windows ignores CREATE_NO_WINDOW when it is set, and
+# claude.CMD then runs under a cmd.exe that, with a console-less pythonw
+# parent, gets a NEW VISIBLE console per note (MAIN 0055, measured on the
+# operator desktop 2026-10-03). A new process group keeps the child off the
+# parent's Ctrl+C without detaching it from the no-window flag.
+NEW_GROUP = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
 
 AUTO = "AUTO"
 DRAFT = "DRAFT"
@@ -438,7 +443,7 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         return _auto("spawn", f"dry run, would launch: {' '.join(argv[:4])} ...")
     proc = subprocess.Popen(
         argv, cwd=str(ROOT), env=env,
-        creationflags=NO_WINDOW | DETACHED,
+        creationflags=NO_WINDOW | NEW_GROUP,
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         close_fds=True,
     )
