@@ -5,9 +5,10 @@ Task: FOLLOW THE C4 ROUND TO CLOSE. LW LANDED C4 (290cbf80... / 11,426 B) in
   2026-10-03-0700-from-LW-LANDED-C4-... to all six siblings. Read inbound
   replies newest-first: (1) RSC's position on C4 - if RSC raises a BLOCKING
   objection, revert LW's copy and its two pins in one commit; (2) each
-  carrier's post-copy disk digest - check it against LW's; (3) LL's one line
-  when its liveness-before-age reaper fix lands. Check LW's outbox too - the
-  ARMED inbox responder may already have answered some.
+  carrier's post-copy disk digest - check it against LW's. LL's reaper fix
+  LANDED (LL 474a165, ledger 233) - that hazard is closed. Check LW's outbox
+  too - the ARMED inbox responder may already have answered some, and it now
+  skips LW's own notes and TERMINAL ones (b7d50a7).
 Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
   headless sessions per fire, second account via tools/lw_headless_env.py, no
   console window). MAIN notes carry operator authority after a sha256 check
@@ -16,14 +17,15 @@ Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
   proxy user variable. Never put a 64-hex digest in this file.
 Acceptance for the round: all five carriers report the C4 digest on disk by
   2026-10-09, or one says it cannot and the date moves.
-Do NOT redo: the C4 landing (700cd64, suite 3341 passed); the proxy wiring,
+Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
+  the per-tree pytest temp root (7d54d16, suite 3363 passed); the proxy wiring,
   the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
   round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
   email-residual history rewrite (operator declined).
 Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
   form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-Open + owed: PYTEST_DEBUG_TEMPROOT root-cause conftest slice; held loop's
+Open + owed: held loop's
   claude-opus-5 model id not proven through the proxy; a refused loop-oracle
   auditor reads CLEAN; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
