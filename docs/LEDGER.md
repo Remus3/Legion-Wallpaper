@@ -35,7 +35,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    (unclosed -> sentinel, never a silent empty); new `parse_path_filters` reads both keys;
    `check_ci` semantics unchanged. 9 arms red first; 183 truth_gate-adjacent tests green. Not
    covered: a job-level `if:` or changed-files step. C4: RSC 0704 = NO OBJECTION, not
-   attested, landing HALTED under RSC `CLAUDE.md:298` clause (b) pending operator or a
+   attested, landing HALTED under clause (b) of RSC's rules file pending operator or a
    verified MAIN note. Term 1 fired; note `2026-10-03-0800-from-LW-ACTION-to-MAIN-...` (7/7
    delivered) asks MAIN for one ruling naming one act (RSC's C4 copy + pin) and moves the
    date: CS/SS/RC target 10-09, RSC 3 days after the ruling, round closes when the last
