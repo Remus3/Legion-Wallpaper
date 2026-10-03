@@ -8,7 +8,9 @@ description: End-of-session ritual - auto-commit any pending changes, push, do t
 > 3. **Act via subagents:** worktree-isolated build agents on disjoint files (sole merger) + a read-only `verifier` subagent gate before any merge or "done".
 > 4. Trivial one-line cosmetic edits may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol" + memory `feedback_subagent_first_protocol`.
 
-The user wants to end the session cleanly so the next one starts with a fresh context window. This is /wrap, but with auto-commit instead of "stop and ask". Run all sections in order; surface a tight final banner.
+The user wants to end the session cleanly so the next one starts with a fresh context window. This is /wrap, but with auto-commit instead of "stop and ask". Run all sections in order, quietly.
+
+**Chat output (FLEET-COMMON item 5, MAIN FLEET-KIT v3, 2026-10-03):** /done prints ONE line and nothing else: `Done ritual complete, safe to clear` - or, if a step failed, the single failure that stopped it. No banner, no review, no recap, and NEVER the hand-off or a next-session prompt. Everything the old banner carried goes into the hand-off file and the commit.
 
 **The order of this document is load-bearing (2026-09-07).** The gate that licenses the push is section 7, and it is the LAST act before the push. Everything authored - code, ROADMAP, LEDGER, WAKEUP_NOTES, the hand-off file - is committed BEFORE it. The old order ran the gate first and then authored the living-doc edits, so every session shipped doc edits no suite had ever graded. That was not a race; it was the written order. `tests/test_done_gate.py` pins this ordering, so a re-shuffle of these sections goes red instead of quiet.
 
@@ -27,7 +29,7 @@ This run is a PRE-FLIGHT: it exists so a broken suite is found before you spend 
   - `python tools/drift_guard.py` - per-session drift guard (doc budgets / command-doc SUBAGENT-FIRST parity / memory-index integrity / counted claims / untracked authored docs / cited-SHA resolvability). Exit 0 = clean. Adopted 2026-07-26 from `DONE_RITUAL_OPTIMIZED.md` sec 3. After a version bump pass the OLD version as argv[1] to sweep stale anchors.
 - Ground truth, not memory (per CLAUDE.md Verification Discipline): run the gate FRESH this turn, read the pass/fail counts you observe now, and `ls` any test file you cite as added - never carry forward a prior or subagent-reported green. If the work came from parallel slices, the `verifier` subagent's CONFIRM is the gate, not the slice agent's claim.
 - GREEN: proceed to commit (section 1).
-- RED: fix and re-run. If the failure is pre-existing and unrelated to this session's work, note it ABOVE the banner and commit only the green-verified authored files - never commit over a regression you introduced.
+- RED: fix and re-run. If the failure is pre-existing and unrelated to this session's work, record it in the hand-off file and commit only the green-verified authored files - never commit over a regression you introduced.
 
 ### 0b. External review package sync (TBD - product not yet defined)
 
@@ -58,8 +60,8 @@ Do NOT push here. The push is section 7, after everything else this session auth
 
 ### 2. Background tasks started this session
 
-- TaskList - show anything still running.
-- Each one: TaskStop. DO NOT leave monitors armed; they're useless after /clear.
+- List anything still running (background commands, agents, monitors).
+- Stop only a monitor or watcher THIS session armed for itself (useless after /clear). NEVER stop, kill or restart a running agent or task to wrap up (FLEET-COMMON banner): record it, with its progress file `ops/loop/control/progress/<task>.json`, as an open item in the hand-off instead.
 
 ### 3. LW restart pending
 
@@ -118,35 +120,31 @@ Manual follow-ups (only if needed):
 
 ### 6. Next-session prompt - compose it and persist it (ALWAYS - never skip)
 
-Every /done hands the next session a running start. Compose it HERE, before the gate, because the file it goes into is tracked and must be graded with everything else. Source it from ground truth this turn, not memory:
+The hand-off file `LW-NEXT-SESSION.txt` (repo root, with its Desktop shortcut) is the ONLY continuity (FLEET-COMMON item 5). Rewrite it HERE, before the gate, because it is tracked and must be graded with everything else.
 
-- The "what's next" line you just wrote into `WAKEUP_NOTES.md` (section 4).
-- The top open item in `ROADMAP.md` (the next open / NEXT).
-- Any blocker or do-NOT-redo you flagged this session.
+**CARRY FORWARD - never drop un-acted work.** Read the CURRENT `LW-NEXT-SESSION.txt` first. Every item in it that this session did NOT act on goes into the new file, verbatim or tighter - including when this session started on a different ask and never touched them. Drop an item only when it was DONE this session (and name what was read back to prove it) or explicitly retracted. Then add what this session opened. Source the rest from ground truth this turn, not memory: the `WAKEUP_NOTES.md` "what's next" line (section 4), the top open `ROADMAP.md` item, any blocker or do-NOT-redo, and any running agent/task from section 2 with its progress file.
 
-Keep it self-contained - the next session boots with zero context: name the single next task, the key file paths / endpoints / live-state it touches, the acceptance check, and any "already shipped - don't re-investigate" note. One tight block, no preamble:
+Keep it self-contained - the next session boots with zero context and starts from "continue" (work the file's next action) or from whatever the operator asks; either way it reads this file first. One tight block, no preamble:
 
 ```
 NEXT SESSION
 ------------
-Task: <one-line next task from ROADMAP/WAKEUP>
+Task: <the single next action>
 Context: <key files / endpoints / live-state to probe first>
 Acceptance: <how the next session knows it is done>
+Carried forward: <every un-acted item from the previous hand-off, one line each>
 Do NOT redo: <anything shipped this session that still looks open>
-Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
 ```
 
-Printing it in chat is not enough - chat dies at `/clear`. Write the SAME block to `LW-NEXT-SESSION.txt` in the REPO ROOT, which is what a fresh session re-feeds verbatim:
+Write it with the tool - never hand-write the path:
 
 ```
 python tools/lw_next_session.py --write -
 ```
 
-Pipe the prompt block in on stdin (or `--write <file>`). Do NOT hand-write the path. Writing is UNCONDITIONAL - every session, green or red. The file is tracked in git, so commit it with the section 4/4b docs: that is the whole point of the move off the Desktop on 2026-09-06 (operator-directed, mirrored from RC). An untracked Desktop file could go stale for days with nothing able to notice and no diff showing what the last session handed over. The Desktop keeps a SHORTCUT (`Desktop\LW-NEXT-SESSION.lnk`) to the repo file, so operator access is unchanged.
+Pipe the block in on stdin (or `--write <file>`). Writing is UNCONDITIONAL - every session, green or red. The file is tracked, so commit it with the section 4/4b docs (moved off the Desktop 2026-09-06; the Desktop keeps a SHORTCUT `Desktop\LW-NEXT-SESSION.lnk`). The `LW-` prefix stays: the tool resolves and guards the target - an optional `ops/runtime/next_session_intent.json` may name a different file, but anything that is not a bare `LW-`-prefixed filename in the repo root falls back to `LW-NEXT-SESSION.txt`. Content must be 7-bit ASCII; the tool refuses non-ASCII.
 
-The `LW-` prefix stays on the filename even though it is redundant in-repo: the Desktop shortcuts are still a shared surface, and the prefix is what stops a doctored intent document naming an arbitrary target. The target is resolved and guarded by the tool: an optional `ops/runtime/next_session_intent.json` may name a different file, but anything that is not a bare `LW-`-prefixed filename in the repo root - absolute path, drive letter, `..`, any separator, empty, non-string, malformed document - falls back to `LW-NEXT-SESSION.txt` instead of being honoured. The content must be 7-bit ASCII; the tool refuses non-ASCII rather than writing mojibake.
-
-Confirm the write in the banner (`hand-off file`) with the path the tool printed - not an assumed one. The block is printed to chat again under the banner in section 9.
+NEVER print the block, or any next-session prompt, into chat. The file and its commit are the hand-off.
 
 ### 7. Binding gate - grade the tree that ships, then push
 
@@ -170,15 +168,15 @@ python tools/done_gate.py verify-push
 ```
 
   It asks the REMOTE (`git ls-remote`, never the remote-tracking cache a failed push leaves stale) and refuses unless remote == HEAD == the graded sha.
-- Surface the push range (e.g. `23854e1..b56f247 main -> main`) plus `bound <sha12>` and `verified` in the banner. A refusal here is never cosmetic: it means something shipped ungraded.
+- A refusal here is never cosmetic: it means something shipped ungraded - it is the one failure line /done prints.
 
 ### 7b. GitHub CI verification
 
 - After the push lands, confirm CI goes green for the pushed SHA:
   - `gh run list --branch <branch> --limit 1` to find the run id (gh = `C:/Program Files/GitHub CLI/gh.exe`; use the absolute path in older shells).
   - `gh run watch <run-id> --exit-status` - blocks until the run finishes; exit 0 = green.
-- Report the CI result in the banner: `green | red | pending`.
-- If CI goes RED on a real test/lint failure: surface the failing job ABOVE the banner and add "resolve CI <job> before /clear" to the bottom line. The binding gate (section 7) should have caught it, so a red here usually means an env-only delta - investigate before declaring the session cleanly wrapped.
+- Record the CI result (`green | red | pending`) in the hand-off file, not in chat.
+- If CI goes RED on a real test/lint failure: the single failure line is `CI red: <job> - resolve before /clear`. The binding gate (section 7) should have caught it, so a red here usually means an env-only delta - investigate before declaring the session cleanly wrapped.
 - Do NOT block /clear on flaky-infra red, but do NOT silently ignore a genuine failure either.
 
 ### 8. Live-state safety check (TBD - product not yet defined)
@@ -189,42 +187,22 @@ python tools/done_gate.py verify-push
 ### 8b. Session-size check (folded from /wrap)
 
 - Find the active session jsonl: `Get-ChildItem "%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/" -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 Name, @{N='MB';E={[math]::Round($_.Length/1MB,1)}}`
-- > 10 MB: add "session file > 10 MB - /clear overdue" to the banner.
-- > 20 MB: escalate ABOVE the banner - at this size compaction is lossy and the model is already degraded.
+- > 10 MB: record "session file > 10 MB - /clear overdue" in the hand-off file.
+- > 20 MB: record it in the hand-off file as urgent - at this size compaction is lossy and the model is already degraded.
 
-### 9. Final banner, then the next-session prompt
+### 9. Final line - nothing else
 
-Print a tight banner - exactly this format:
+Print exactly one line:
 
 ```
-==================================================================
-  /done complete - context ready for /clear
-==================================================================
-  - commits this session : <count> (pushed: <push range>)
-  - pre-flight gate      : green | red (<failing>)
-  - binding gate         : bound <sha12> + verified | REFUSED (<why>)
-  - github CI            : green | red (<job>) | pending
-  - background tasks     : stopped <count>
-  - LW health            : pid=<pid> alive=<bool> reload_ok=<bool> | n/a (no runtime yet)
-  - WAKEUP_NOTES         : updated (+<N> lines)
-  - living docs          : roadmap/ledger/claude.md/readme - <N items updated | skipped>
-  - review package       : n/a (TBD - product not yet defined)
-  - session file         : <N> MB <ok | /clear overdue>
-  - live-state risk      : no | YES - wait until safe to /clear
-  - next-session prompt  : printed below
-  - hand-off file        : <path written by tools/lw_next_session.py>
-==================================================================
-  Type /clear to start a fresh session with reset token budget.
-==================================================================
+Done ritual complete, safe to clear
 ```
 
-If anything failed (commit blocked, push failed, gate refused, live-state risk, etc.), surface the issue ABOVE the banner and substitute "WARNING: resolve <X> before /clear" on the bottom line.
-
-Then print the section-6 next-session block verbatim, fenced and copy-pasteable. This is mandatory. Never end /done without it - even when the only next task is "pick the next ROADMAP item".
+If a step failed (commit blocked, gate refused, push failed, CI red on a real failure, live-state risk), print instead ONE line naming the failure that stopped it, and record the detail in the hand-off file. Never print a banner, a session review, the hand-off, or a next-session prompt.
 
 ### Safety rails
 
 - NEVER force-push, NEVER use `--amend`, NEVER skip hooks (`--no-verify`).
 - NEVER auto-commit secrets, frozen files, or runtime junk.
-- NEVER run `/clear` from inside the skill - it's a Claude Code built-in handled by the harness, not the model. Just print the banner and let the operator type it.
+- NEVER run `/clear` from inside the skill - it's a Claude Code built-in handled by the harness, not the model. Just print the final line and let the operator type it.
 - If git push needs auth (gh CLI prompt, etc.): stop and ask. Don't keep retrying.
