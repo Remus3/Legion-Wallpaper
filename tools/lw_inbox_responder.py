@@ -93,6 +93,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import lw_facts  # noqa: E402  - flat tools/ directory, imported by bare name
 import lw_headless_env  # noqa: E402
+import lw_inbox_status  # noqa: E402
 import lw_paths  # noqa: E402
 import split_scan  # noqa: E402
 
@@ -228,6 +229,8 @@ class Disposition:
     rule: str
     reason: str
     checked: bool
+    # The launched child's PID, AUTO spawns only, so the status file can probe it.
+    pid: int | None = None
 
 
 def _draft(rule: str, reason: str, *, checked: bool = True) -> Disposition:
@@ -599,7 +602,8 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         close_fds=True,
     )
-    return _auto("spawn", f"detached headless session pid {proc.pid}{tail}")
+    return Disposition(AUTO, "spawn", f"detached headless session pid {proc.pid}{tail}",
+                       True, proc.pid)
 
 
 def halted(halt_path: Path) -> str | None:
@@ -701,8 +705,8 @@ def _record_cycle(path: Path, payload: dict, **record) -> None:
         payload["runlog_error"] = f"{type(exc).__name__}: {exc}"
 
 
-def spent_24h(runlog: Path, now: dt.datetime | None = None) -> int:
-    """Runs started in the last 24 h, read off the run log.
+def spawn_times_24h(runlog: Path, now: dt.datetime | None = None) -> list[dt.datetime]:
+    """The start time of every run in the last 24 h, read off the run log.
 
     Only AUTO spawns count: an UNAVAILABLE one started no run. An ABSENT log is a
     real zero (the first non-idle cycle creates it). A torn line is skipped - the
@@ -713,19 +717,25 @@ def spent_24h(runlog: Path, now: dt.datetime | None = None) -> int:
     try:
         lines = runlog.read_text(encoding="utf-8").splitlines()
     except FileNotFoundError:
-        return 0
-    total = 0
+        return []
+    times: list[dt.datetime] = []
     for line in lines:
         try:
             record = json.loads(line)
-            if dt.datetime.fromisoformat(record["ts"]) < cutoff:
+            stamp = dt.datetime.fromisoformat(record["ts"])
+            if stamp < cutoff:
                 continue
             spawned = record.get("spawned") or []
         except (ValueError, KeyError, TypeError, AttributeError):
             continue
-        total += sum(1 for entry in spawned
-                     if isinstance(entry, dict) and entry.get("verdict") == AUTO)
-    return total
+        times += [stamp] * sum(1 for entry in spawned
+                               if isinstance(entry, dict) and entry.get("verdict") == AUTO)
+    return times
+
+
+def spent_24h(runlog: Path, now: dt.datetime | None = None) -> int:
+    """Runs started in the last 24 h - see `spawn_times_24h`."""
+    return len(spawn_times_24h(runlog, now))
 
 
 def within_budget(mail: list[Note], runlog: Path) -> tuple[list[Note], dict]:
@@ -742,6 +752,39 @@ def within_budget(mail: list[Note], runlog: Path) -> tuple[list[Note], dict]:
                              "could not check the budget, spawned nothing"}
     room = min(MAX_SPAWNS_PER_CYCLE, max(0, MAX_RUNS_PER_24H - runs))
     return mail[:room], {"runs_24h": runs}
+
+
+# The registered repetition (`-Minutes 5` in REGISTER_COMMAND), so the status
+# file's `next_tick` is the scheduler's next fire, measured from this tick's start.
+TICK = dt.timedelta(minutes=5)
+
+
+def _publish(payload: dict, runlog: Path, tick_start: dt.datetime, *,
+             transient: str | None = None, halted: bool = False,
+             refused: bool = False, children=()) -> None:
+    """Write the lane widget's status file (MAIN 0915); never let it be the failure.
+
+    The file is ADVISORY - the widget's view of this lane - so any error lands
+    in the printed payload as `status_error` and the tick carries on, the same
+    contract as `_record_cycle`. Read AFTER the run log is appended, so this
+    tick's spawns are already counted. An unreadable log publishes a null
+    count, never zero.
+    """
+    try:
+        try:
+            times = spawn_times_24h(runlog)
+        except OSError:
+            times = None
+        common = {"now": dt.datetime.now(dt.UTC), "next_tick": tick_start + TICK,
+                  "spawn_times": times, "cap": MAX_RUNS_PER_24H,
+                  "window_s": int(_DAY.total_seconds())}
+        if transient is not None:
+            lw_inbox_status.announce(transient, **common)
+        else:
+            lw_inbox_status.record(halted=halted, refused=refused,
+                                   new_children=children, **common)
+    except Exception as exc:  # noqa: BLE001 - advisory output, see docstring
+        payload["status_error"] = f"{type(exc).__name__}: {exc}"
 
 
 def windowless_python() -> str:
@@ -811,13 +854,19 @@ def main(argv: list[str] | None = None) -> int:
     # FIRST, before the inbox is even read. The baseline write below is a state
     # change, so a switch checked after it would already have acted. The DEFAULT
     # switch is consulted whatever the argv said - `halt_reason` carries why.
+    tick_start = dt.datetime.now(dt.UTC)
     stop = halt_reason(args.halt)
     if stop is not None:
         payload = {"halted": stop, "spawned": []}
         if not args.dry_run:
             _record_cycle(args.runlog, payload, event="halted", halted=stop, spawned=[])
+            _publish(payload, args.runlog, tick_start, halted=True)
         print(json.dumps(payload, indent=2))
         return 0
+
+    announced: dict = {}
+    if not args.dry_run:
+        _publish(announced, args.runlog, tick_start, transient="Checking Inbox")
 
     notes = new_notes(args.inbox, args.state)
 
@@ -834,7 +883,8 @@ def main(argv: list[str] | None = None) -> int:
             record_seen(args.inbox, args.state, notes)
             _record_cycle(args.runlog, payload, event="cold_start",
                           baselined=len(notes), spawned=[])
-        print(json.dumps(payload, indent=2))
+            _publish(payload, args.runlog, tick_start)
+        print(json.dumps({**announced, **payload}, indent=2))
         return 0
 
     # Self and terminal notes are sorted out BEFORE the cap, so a burst of them
@@ -848,11 +898,13 @@ def main(argv: list[str] | None = None) -> int:
             skipped.append((note, why))
 
     capped, budget = within_budget(mail, args.runlog)
-    spawned = []
+    spawned, children = [], []
     for note in capped:
         outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
         spawned.append({"note": note.name, "verdict": outcome.verdict,
                         "reason": outcome.reason, "checked": outcome.checked})
+        if outcome.verdict == AUTO and outcome.pid:
+            children.append((outcome.pid, tick_start.timestamp()))
     if not args.dry_run:
         handled = [n for n, s in zip(capped, spawned, strict=True) if s["verdict"] == AUTO]
         record_seen(args.inbox, args.state, handled + [n for n, _why in skipped])
@@ -866,7 +918,11 @@ def main(argv: list[str] | None = None) -> int:
     if notes and not args.dry_run:
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
                       deferred=deferred, skipped=skips, spawned=spawned, budget=budget)
-    print(json.dumps(payload, indent=2))
+    if not args.dry_run:
+        # Refused = this tick tried and launched nothing; the notes stay unseen.
+        refused = bool(spawned) and not any(s["verdict"] == AUTO for s in spawned)
+        _publish(payload, args.runlog, tick_start, refused=refused, children=children)
+    print(json.dumps({**announced, **payload}, indent=2))
     return 0
 
 
