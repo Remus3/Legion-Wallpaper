@@ -189,6 +189,7 @@ def test_the_claude_oracle_hands_the_child_the_gated_env(monkeypatch):
     monkeypatch.setattr(lc, "CFG", {"claude_cmd": ["shim"]})
 
     class _R:
+        returncode = 0
         stdout = "answer"
         stderr = ""
 
@@ -199,3 +200,25 @@ def test_the_claude_oracle_hands_the_child_the_gated_env(monkeypatch):
     monkeypatch.setattr(lc.subprocess, "run", _run)
     assert lc.claude_oracle("body", "inst") == "answer"
     assert seen["env"] == {"ANTHROPIC_BASE_URL": "u"}
+
+
+def test_each_oracle_try_is_accounted_by_the_fleet_kit(monkeypatch):
+    """kit.spawn cannot carry the oracle (prompt on stdin, plain text out), so
+    each try is bracketed by the kit's start_run / end_run."""
+    import json as _json
+    from pathlib import Path as _Path
+    he = lc.headless_env
+    monkeypatch.setattr(he, "child_env", lambda *a, **k: {"ANTHROPIC_BASE_URL": "u"})
+    monkeypatch.setattr(lc, "CFG", {"claude_cmd": ["shim"], "oracle_model": "m1"})
+
+    class _R:
+        returncode = 0
+        stdout = "answer"
+        stderr = ""
+
+    monkeypatch.setattr(lc.subprocess, "run", lambda argv, **kw: _R())
+    assert lc.claude_oracle("body", "inst") == "answer"
+    assert he.budget().used() == 1
+    line = _json.loads((_Path(he.FLEET_ROOT) / he.kit.USAGE_REL)
+                       .read_text(encoding="ascii").splitlines()[-1])
+    assert (line["note"], line["model"], line["rc"]) == ("loop-oracle", "m1", 0)

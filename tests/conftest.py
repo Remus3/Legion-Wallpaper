@@ -74,35 +74,39 @@ def _unpatch_pil_image_open():
 
 
 @pytest.fixture(autouse=True)
-def _the_live_inbox_status_is_never_written(request, monkeypatch):
-    """Redirect the responder's status file for EVERY test, once it is loaded.
+def _the_live_fleet_files_are_never_written(request, monkeypatch):
+    """Redirect the fleet kit's files for EVERY test: status, budget, usage.
 
-    Suite-wide rather than per file because five test files drive the
-    responder's `main`, and every tick now publishes
-    `ops/loop/control/inbox_status.json` (MAIN 0915). The widget reads that
-    file live, so one forgotten redirect would show the operator a test's
-    fake state as LW's. Guarded at the WRITER, the same shape as the run-log
-    spy: the ARMED responder rewrites the live file every five minutes, so an
-    mtime guard would error with nothing wrong.
+    Suite-wide because every headless path - responder, CI watchdog, loop
+    executor, oracle, the `exec` / `spawn` CLI - now goes through MAIN's kit
+    (kit v3), which writes `ops/loop/control/inbox_status.json`,
+    `headless_budget.json` and `headless_usage.jsonl` under
+    `lw_headless_env.FLEET_ROOT`. The widget reads the status file live and the
+    budget gates real runs, so one forgotten redirect would show the operator a
+    test's fake state as LW's, or spend LW's real budget. The adapter is imported
+    HERE so it is always loaded, and so always redirected, before an arm runs.
+    Guarded at the kit's writer, never by mtime: the armed lanes rewrite these
+    files on their own schedule.
     """
     import sys
-    mod = sys.modules.get("lw_inbox_status")
-    if mod is None:
-        yield
-        return
-    real = {mod.STATUS_PATH.resolve(), mod.STATE_PATH.resolve()}
+    tools = str(Path(__file__).resolve().parents[1] / "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    import lw_headless_env as he
+
+    real = (Path(he.ROOT) / "ops" / "loop" / "control").resolve()
     tmp = request.getfixturevalue("tmp_path")
-    monkeypatch.setattr(mod, "STATUS_PATH", tmp / "control" / "inbox_status.json")
-    monkeypatch.setattr(mod, "STATE_PATH", tmp / "status_state.json")
-    original = mod.write_atomic
+    monkeypatch.setattr(he, "FLEET_ROOT", tmp / "fleet_root")
+    kit = he.kit
+    original = kit._atomic_write
     hits: list[str] = []
 
-    def _guarded(path, doc):
-        if Path(path).resolve() in real:
+    def _guarded(path, text):
+        if Path(path).resolve().parent == real:
             hits.append(str(path))
-            raise RuntimeError("test arm wrote the live inbox status")
-        return original(path, doc)
+            raise RuntimeError("test arm wrote a live fleet-kit file")
+        return original(path, text)
 
-    monkeypatch.setattr(mod, "write_atomic", _guarded)
+    monkeypatch.setattr(kit, "_atomic_write", _guarded)
     yield
-    assert hits == [], f"an arm wrote the live inbox status: {hits}"
+    assert hits == [], f"an arm wrote a live fleet-kit file: {hits}"

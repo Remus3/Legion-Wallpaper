@@ -1,19 +1,22 @@
-"""Every headless `claude` spawn in this tree runs through the local proxy.
+"""Every headless `claude` spawn in this tree runs through MAIN's fleet kit.
 
-Operator directive, confirmed in session 2026-10-02: at spawn time read the USER
-environment variable `CLAUDE_HEADLESS_BASE_URL` (registry first, because a
-process started before the variable was set never inherits it), hand it to the
-CHILD as `ANTHROPIC_BASE_URL`, and FAIL CLOSED - unset, non-loopback, or a port
-nobody answers on all REFUSE the spawn. Deleting the variable is the operator's
-kill switch for every tree, so it has to stop every spawn site, which is what the
-site-coverage arm at the bottom pins.
+Operator order via MAIN (kit v3, 2026-10-03): every headless `claude` this tree
+starts goes through `fleet_headless.spawn`, and LW's own proxy-env, probe,
+budget, skip, status and console code is deleted. `tools/lw_headless_env.py` is
+now a thin binding of the vendored kit: `kit.spawn` where it fits, the kit's
+PRIMITIVES (base_url, check_url, probe, child_env, claude_exe, RunBudget,
+write_status, usage_line) where it does not. These arms pin the binding, the
+fail-closed gate as the kit now answers it, the accounting, the CLI, and the
+site coverage over every launcher in tools/ and ops/.
 
-Hermetic by construction: the registry reader, the environment and the probe are
-all injected. Nothing here reads the operator's real variable, and nothing here
+Hermetic by construction: the URL source, the connector, the runner and the
+executable are all injected, and `conftest.py` points `FLEET_ROOT` at a tmp dir
+for every arm. Nothing here reads the operator's real variable, and nothing here
 starts `claude`.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import socket
@@ -30,15 +33,33 @@ import lw_headless_env as he  # noqa: E402
 # A fake path segment standing in for whatever account routing the real URL
 # carries. The arms assert it never reaches a reason or a log line.
 SECRET = "fake-id"
+_URL = f"http://127.0.0.1:4999/tc-acct/{SECRET}"
 
 
 def _url(port: int, host: str = "127.0.0.1") -> str:
     return f"http://{host}:{port}/tc-acct/{SECRET}"
 
 
-def _no_registry():
-    """The registry could not be read at all - env is the fallback."""
-    return None
+class _Conn:
+    def close(self):
+        pass
+
+
+def _up(*_a, **_k):
+    return _Conn()
+
+
+def _down(*_a, **_k):
+    raise ConnectionRefusedError("refused")
+
+
+@pytest.fixture()
+def closed_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
 
 @pytest.fixture()
@@ -52,149 +73,193 @@ def open_port():
         srv.close()
 
 
-@pytest.fixture()
-def closed_port():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("127.0.0.1", 0))
-    port = s.getsockname()[1]
-    s.close()
-    return port
+# ---------------------------------------------------------------------------
+# The binding: the vendored kit, by path, one module object
+# ---------------------------------------------------------------------------
+
+def test_the_kit_is_bound_from_the_vendored_copy():
+    assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
+                                               "fleet_headless.py").resolve()
+    assert sys.modules["fleet_headless"] is he.kit
+    assert he.kit.KIT_VERSION == 3
+
+
+def test_the_refusal_class_is_the_kits():
+    assert he.HeadlessRefused is he.kit.Refused
+    assert he.VAR == he.kit.VAR == "CLAUDE_HEADLESS_BASE_URL"
+    assert he.CODE == "LW"
+
+
+def test_the_lean_flags_are_read_off_the_kits_argv_builder():
+    argv = he.kit.build_argv("x", "p", "m", "e")
+    assert tuple(argv[-len(he.LEAN_ARGS):]) == he.LEAN_ARGS
+    assert "--strict-mcp-config" in he.LEAN_ARGS
+    assert "--bare" not in he.LEAN_ARGS, "LW's floors live in hooks"
+
+
+def test_rebinding_reuses_the_loaded_kit():
+    assert he._bind_kit() is he.kit
 
 
 # ---------------------------------------------------------------------------
-# Fail closed
+# Fail closed - the kit's answers
 # ---------------------------------------------------------------------------
 
 def test_unset_is_refused():
     with pytest.raises(he.HeadlessRefused) as exc:
-        he.resolve(registry_reader=_no_registry, environ={})
+        he.resolve(lambda: None, _up)
     assert "unset" in str(exc.value)
-
-
-def test_blank_is_refused():
-    with pytest.raises(he.HeadlessRefused):
-        he.resolve(registry_reader=_no_registry, environ={he.VAR: "   "})
 
 
 @pytest.mark.parametrize("host", ["10.1.2.3", "example.com", "127.0.0.2.example.com",
                                   "0.0.0.0"])
-def test_a_non_loopback_host_is_refused(host):
-    url = f"http://{host}:8080/tc-acct/{SECRET}"
+def test_a_non_loopback_host_is_refused_before_any_connect(host):
     probed = []
     with pytest.raises(he.HeadlessRefused) as exc:
-        he.resolve(registry_reader=_no_registry, environ={he.VAR: url},
-                   probe=lambda h, p: probed.append((h, p)) or True)
+        he.resolve(lambda: f"http://{host}:8080/tc-acct/{SECRET}",
+                   lambda *a, **k: probed.append(a) or _Conn())
     assert "loopback" in str(exc.value)
-    assert probed == [], "a non-loopback URL must be refused BEFORE any connect"
+    assert probed == []
     assert SECRET not in str(exc.value)
 
 
 def test_a_closed_port_is_refused(closed_port):
     with pytest.raises(he.HeadlessRefused) as exc:
-        he.resolve(registry_reader=_no_registry,
-                   environ={he.VAR: _url(closed_port)})
+        he.resolve(lambda: _url(closed_port))
     reason = str(exc.value)
-    assert "connect refused" in reason
-    assert f"127.0.0.1:{closed_port}" in reason
+    assert "unreachable" in reason
     assert SECRET not in reason and "tc-acct" not in reason
 
 
-def test_an_unparseable_port_is_refused():
+@pytest.mark.parametrize("url", [f"ftp://127.0.0.1:21/{SECRET}",
+                                 f"https://127.0.0.1:443/{SECRET}",
+                                 "http://127.0.0.1/no-port",
+                                 f"http://user@127.0.0.1:80/{SECRET}"])
+def test_the_kit_refuses_what_is_not_plain_http_to_an_explicit_loopback_port(url):
+    """Kit v3 is stricter than LW's old gate: https and a defaulted port are
+    refused now. Behaviour moved to the kit on purpose - one path, the kit's."""
     with pytest.raises(he.HeadlessRefused) as exc:
-        he.resolve(registry_reader=_no_registry,
-                   environ={he.VAR: f"http://127.0.0.1:notaport/{SECRET}"})
+        he.resolve(lambda: url, _up)
     assert SECRET not in str(exc.value)
 
 
-def test_a_non_http_scheme_is_refused():
-    with pytest.raises(he.HeadlessRefused):
-        he.resolve(registry_reader=_no_registry,
-                   environ={he.VAR: f"ftp://127.0.0.1:21/{SECRET}"},
-                   probe=lambda h, p: True)
+@pytest.mark.parametrize("host", ["localhost", "127.0.0.1"])
+def test_a_loopback_url_passes(host):
+    seen = []
+    url = he.resolve(lambda: f"http://{host}:4567/x",
+                     lambda addr, timeout=0: seen.append(addr) or _Conn())
+    assert url.endswith(":4567/x")
+    assert seen == [(host, 4567)]
+
+
+def test_the_registry_wins_and_its_absence_is_the_kill_switch():
+    """THE KILL SWITCH, as the kit implements it: a READABLE registry with no
+    value answers None even while a stale inherited copy sits in the env."""
+    stale = {he.VAR: "http://127.0.0.1:2222/stale"}
+    assert he.kit.base_url(registry=lambda: (True, None), environ=stale) is None
+    assert he.kit.base_url(registry=lambda: (True, "http://127.0.0.1:1/r"),
+                           environ=stale) == "http://127.0.0.1:1/r"
+    assert he.kit.base_url(registry=lambda: (False, None),
+                           environ=stale) == stale[he.VAR]
 
 
 # ---------------------------------------------------------------------------
-# The open path
+# The child env - the kit's, a copy
 # ---------------------------------------------------------------------------
 
-def test_an_open_port_sets_the_child_env_only(open_port):
-    url = _url(open_port)
+def test_the_child_env_is_the_kits_and_a_copy():
     before = dict(os.environ)
-    base = {"PATH": "x", "KEEP": "1"}
-    env = he.child_env(base, registry_reader=_no_registry, environ={he.VAR: url})
-    assert env["ANTHROPIC_BASE_URL"] == url
+    base = {"PATH": "x", "KEEP": "1", "CLAUDE_CODE_USE_BEDROCK": "1"}
+    # The credential names come from the kit, so no name-to-literal pair is
+    # written here (tests/test_no_secret_literals.py scans tracked files).
+    base.update(dict.fromkeys(he.kit.STRIP_EXACT, "placeholder"))
+    env = he.child_env(base, url_source=lambda: _URL, connect=_up)
+    assert env["ANTHROPIC_BASE_URL"] == _URL
     assert env["KEEP"] == "1"
-    assert "ANTHROPIC_BASE_URL" not in base, "the base dict must be copied, not mutated"
-    # Booleans bound FIRST: an assert over os.environ would render the whole
-    # process environment into a failure (tests/test_assert_never_renders_the_environ.py).
+    assert not set(he.kit.STRIP_EXACT) & set(env)
+    assert "CLAUDE_CODE_USE_BEDROCK" not in env
+    assert "ANTHROPIC_BASE_URL" not in base, "the base dict must be copied"
     unchanged = dict(os.environ) == before
     assert unchanged, "os.environ must never be mutated"
 
 
-def test_child_env_defaults_to_a_copy_of_os_environ(open_port):
-    env = he.child_env(registry_reader=_no_registry, environ={he.VAR: _url(open_port)})
-    is_copy = env is not os.environ
-    same_path = env.get("PATH") == os.environ.get("PATH")
-    parent_untouched = os.environ.get("ANTHROPIC_BASE_URL") != env.get("ANTHROPIC_BASE_URL")
-    assert is_copy and same_path and parent_untouched
-
-
-@pytest.mark.parametrize("host", ["localhost", "LOCALHOST"])
-def test_localhost_is_loopback(host):
-    seen = []
-    url = he.resolve(registry_reader=_no_registry,
-                     environ={he.VAR: f"http://{host}:4567/x"},
-                     probe=lambda h, p: seen.append((h, p)) or True)
-    assert url.endswith(":4567/x")
-    assert seen == [("localhost", 4567)]
-
-
-def test_ipv6_loopback_is_accepted():
-    seen = []
-    he.resolve(registry_reader=_no_registry, environ={he.VAR: "http://[::1]:4567/"},
-               probe=lambda h, p: seen.append((h, p)) or True)
-    assert seen == [("::1", 4567)]
-
-
-def test_a_missing_port_takes_the_scheme_default():
-    seen = []
-    he.resolve(registry_reader=_no_registry, environ={he.VAR: "http://127.0.0.1/"},
-               probe=lambda h, p: seen.append(p) or True)
-    assert seen == [80]
-
-
-# ---------------------------------------------------------------------------
-# Registry before env - and the kill switch beats a stale inherited env
-# ---------------------------------------------------------------------------
-
-def test_the_registry_is_read_before_the_environment():
-    got = he.read_base_url(registry_reader=lambda: "http://127.0.0.1:1111/reg",
-                           environ={he.VAR: "http://127.0.0.1:2222/env"})
-    assert got == "http://127.0.0.1:1111/reg"
-
-
-def test_an_unreadable_registry_falls_back_to_the_environment():
-    got = he.read_base_url(registry_reader=_no_registry,
-                           environ={he.VAR: "http://127.0.0.1:2222/env"})
-    assert got == "http://127.0.0.1:2222/env"
-
-
-def test_a_deleted_registry_value_beats_a_stale_inherited_env():
-    """THE KILL SWITCH. A process started while the variable existed still
-    carries it in its own environment after the operator deletes it. If the env
-    fallback answered here, deleting the variable would stop nothing that was
-    already running - so a READABLE registry with no value means unset."""
-    got = he.read_base_url(registry_reader=lambda: "",
-                           environ={he.VAR: "http://127.0.0.1:2222/stale"})
-    assert got is None
+def test_a_refused_gate_builds_no_env():
     with pytest.raises(he.HeadlessRefused):
-        he.resolve(registry_reader=lambda: "",
-                   environ={he.VAR: "http://127.0.0.1:2222/stale"},
-                   probe=lambda h, p: True)
+        he.child_env({}, url_source=lambda: _URL, connect=_down)
 
 
-def test_the_default_registry_reader_is_inert_off_windows():
-    assert he._registry_value(os_name="posix") is None
+# ---------------------------------------------------------------------------
+# kit.spawn through the adapter: FLEET_ROOT, code LW, bare False
+# ---------------------------------------------------------------------------
+
+def _fake_run(seen):
+    def run(argv, **kw):
+        seen["argv"], seen["kw"] = argv, kw
+
+        class _R:
+            returncode = 0
+            stdout = json.dumps({"result": "done", "usage": {"input_tokens": 5}})
+            stderr = ""
+        return _R()
+    return run
+
+
+def test_spawn_is_kit_spawn_at_fleet_root_with_lw_code():
+    seen = {}
+    line = he.spawn("hello", note="2026-10-03-from-RC-ACK-x.md", url_source=lambda: _URL,
+                    connect=_up, run=_fake_run(seen), exe_source=lambda: "claude.exe")
+    assert line["code"] == "LW" and line["result"] == "done"
+    assert line["bare"] is False
+    assert seen["kw"]["cwd"] == str(he.FLEET_ROOT)
+    assert seen["kw"]["env"]["ANTHROPIC_BASE_URL"] == _URL
+    status = json.loads((Path(he.FLEET_ROOT) / he.kit.STATUS_REL).read_text(encoding="ascii"))
+    assert status["code"] == "LW" and status["state"] == "idle"
+    assert he.budget().used() == 1
+
+
+def test_spawn_refuses_before_launch_when_the_budget_is_spent():
+    b = he.budget()
+    for _ in range(b.cap):
+        b.record()
+    seen = {}
+    with pytest.raises(he.HeadlessRefused):
+        he.spawn("x", url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
+                 exe_source=lambda: "claude.exe")
+    assert seen == {}
+
+
+# ---------------------------------------------------------------------------
+# start_run / end_run - kit.spawn's own accounting for the paths it cannot carry
+# ---------------------------------------------------------------------------
+
+def test_start_and_end_run_follow_kit_spawns_sequence():
+    started = he.start_run()
+    status = Path(he.FLEET_ROOT) / he.kit.STATUS_REL
+    assert json.loads(status.read_text(encoding="ascii"))["state"] == "running"
+    assert he.budget().used() == 1
+    line = he.end_run(started, note="unit", model="opus", effort="", rc=0,
+                      stdout=json.dumps({"usage": {"output_tokens": 3}}))
+    assert line["output_tokens"] == 3 and line["code"] == "LW"
+    assert json.loads(status.read_text(encoding="ascii"))["state"] == "idle"
+    usage = (Path(he.FLEET_ROOT) / he.kit.USAGE_REL).read_text(encoding="ascii")
+    assert usage.count("\n") == 1
+
+
+def test_start_run_refuses_and_publishes_limit_when_spent():
+    b = he.budget()
+    for _ in range(b.cap):
+        b.record()
+    assert he.can_start() is False
+    with pytest.raises(he.HeadlessRefused) as exc:
+        he.start_run()
+    assert "budget" in str(exc.value)
+    status = json.loads((Path(he.FLEET_ROOT) / he.kit.STATUS_REL).read_text(encoding="ascii"))
+    assert status["state"] == "limit"
+
+
+def test_end_run_tolerates_non_json_output():
+    line = he.end_run(he.start_run(), note="n", model="", effort="", rc=1, stdout="text")
+    assert line["input_tokens"] is None and line["rc"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -203,7 +268,7 @@ def test_the_default_registry_reader_is_inert_off_windows():
 
 def test_log_refusal_writes_one_line_without_the_url(tmp_path, closed_port):
     try:
-        he.resolve(registry_reader=_no_registry, environ={he.VAR: _url(closed_port)})
+        he.resolve(lambda: _url(closed_port))
     except he.HeadlessRefused as exc:
         reason = str(exc)
     else:  # pragma: no cover
@@ -228,47 +293,52 @@ def test_log_refusal_scrubs_a_url_handed_to_it_by_mistake(tmp_path):
 # CLI
 # ---------------------------------------------------------------------------
 
+def test_cli_check_reports_refused(capsys):
+    assert he.main(["check"], url_source=lambda: None) == 78
+    assert capsys.readouterr().out.startswith("REFUSED")
+
+
+def test_cli_check_reports_ok_host_port_only(capsys):
+    assert he.main(["check"], url_source=lambda: _URL, connect=_up) == 0
+    out = capsys.readouterr().out
+    assert out.strip() == "OK 127.0.0.1:4999"
+    assert SECRET not in out
+
+
 def test_cli_exec_refusal_exits_78_and_runs_nothing(tmp_path, capsys, monkeypatch):
     ran = []
     monkeypatch.setattr(he.subprocess, "run", lambda *a, **k: ran.append(a))
     rc = he.main(["exec", "--", "claude", "-p", "hi"], log_dir=tmp_path,
-                 registry_reader=_no_registry, environ={})
+                 url_source=lambda: None)
     assert rc == he.REFUSED_EXIT == 78
     assert ran == []
     assert "unset" in capsys.readouterr().err
     assert list(tmp_path.glob("*.log")), "the refusal must be logged"
+    assert he.budget().used() == 0, "a refused exec spends no budget"
 
 
-def test_cli_check_reports_refused(capsys):
-    rc = he.main(["check"], registry_reader=_no_registry, environ={})
-    assert rc == 78
-    assert capsys.readouterr().out.startswith("REFUSED")
-
-
-def test_cli_check_reports_ok_host_port_only(open_port, capsys):
-    rc = he.main(["check"], registry_reader=_no_registry,
-                 environ={he.VAR: _url(open_port)})
-    out = capsys.readouterr().out
-    assert rc == 0
-    assert out.strip() == f"OK 127.0.0.1:{open_port}"
-    assert SECRET not in out
-
-
-def test_cli_exec_hands_the_child_the_base_url(open_port, tmp_path):
-    url = _url(open_port)
+def test_cli_exec_hands_the_child_the_base_url_and_accounts_the_run(tmp_path):
     probe = ("import os, sys; "
-             f"sys.exit(0 if os.environ.get('ANTHROPIC_BASE_URL') == {url!r} else 3)")
+             f"sys.exit(0 if os.environ.get('ANTHROPIC_BASE_URL') == {_URL!r} else 3)")
     rc = he.main(["exec", "--", sys.executable, "-c", probe], log_dir=tmp_path,
-                 registry_reader=_no_registry, environ={he.VAR: url})
+                 url_source=lambda: _URL, connect=_up)
     assert rc == 0
+    assert he.budget().used() == 1
+    usage = (Path(he.FLEET_ROOT) / he.kit.USAGE_REL).read_text(encoding="ascii")
+    assert json.loads(usage.splitlines()[-1])["rc"] == 0
+
+
+def test_cli_exec_resolves_a_bare_claude_through_the_kit(monkeypatch, tmp_path):
+    seen = {}
+    monkeypatch.setattr(he, "_exec", lambda argv, env: seen.setdefault("argv", argv) and 0)
+    he.main(["exec", "--", "claude", "-p", "hi", "--model", "opus"], log_dir=tmp_path,
+            url_source=lambda: _URL, connect=_up, exe_source=lambda: r"C:\real\claude.exe")
+    assert seen["argv"][0] == r"C:\real\claude.exe"
 
 
 def test_exec_hands_the_child_this_process_stdio():
-    """REGRESSION, measured 2026-10-02. CREATE_NO_WINDOW gives the child a hidden
-    console of its own, so with IMPLICIT inheritance its output went there and a
-    caller capturing it (weekly_hygiene_run.ps1 tees it to a log and greps it
-    for transient errors) got nothing. Run in a subprocess so the stdio really
-    is a pipe, as it is under PowerShell."""
+    """REGRESSION, measured 2026-10-02: with IMPLICIT inheritance under
+    CREATE_NO_WINDOW the child's output went to a hidden console."""
     import subprocess
     tools_dir = str(ROOT / "tools")
     code = (
@@ -285,27 +355,51 @@ def test_exec_hands_the_child_this_process_stdio():
     assert "ERR-MARK" in r.stderr
 
 
-def test_cli_exec_without_argv_is_a_usage_error(capsys):
-    assert he.main(["exec", "--"], registry_reader=_no_registry, environ={}) == 2
+def test_cli_exec_without_argv_is_a_usage_error():
+    assert he.main(["exec", "--"], url_source=lambda: None) == 2
+
+
+def test_cli_spawn_runs_kit_spawn_with_extra_flags(tmp_path, capsys):
+    prompt = tmp_path / "p.txt"
+    prompt.write_text('say "hi"\nline two', encoding="utf-8")
+    seen = {}
+    rc = he.main(["spawn", "--note", "weekly-hygiene", "--prompt-file", str(prompt),
+                  "--", "--allowedTools", "Edit,Read", "--dangerously-skip-permissions"],
+                 url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
+                 exe_source=lambda: "claude.exe")
+    assert rc == 0
+    argv = seen["argv"]
+    assert argv[:3] == ["claude.exe", "-p", 'say "hi"\nline two']
+    assert argv[-3:] == ["--allowedTools", "Edit,Read", "--dangerously-skip-permissions"]
+    assert argv[argv.index("--model") + 1] == "sonnet"
+    assert json.loads(capsys.readouterr().out)["result"] == "done"
+
+
+def test_cli_spawn_refusal_exits_78(tmp_path):
+    prompt = tmp_path / "p.txt"
+    prompt.write_text("x", encoding="utf-8")
+    assert he.main(["spawn", "--prompt-file", str(prompt)], log_dir=tmp_path,
+                   url_source=lambda: None) == 78
 
 
 # ---------------------------------------------------------------------------
-# SITE COVERAGE - every headless claude launcher goes through this module
+# SITE COVERAGE - every headless claude launcher goes through the kit
 # ---------------------------------------------------------------------------
 
 _PY_SPAWN = re.compile(
     r"""["']claude(?:\.cmd|\.exe)?["']\s*,\s*["']-p["']"""
-    r"""|which\(\s*["']claude""")
+    r"""|which\(\s*["']claude"""
+    r"""|lw_headless_env\.spawn\(|\bclaude_exe\(""")
 _PS_SPAWN = re.compile(
-    r"""(?i)&\s*claude\b|\bclaude(?:\.exe|\.cmd)?\s+-p\b|\$ClaudeExe\b""")
-_SKIP_DIRS = {"__pycache__", "runtime", "models", "dwpose_onnx"}
+    r"""(?i)&\s*claude\b|\bclaude(?:\.exe|\.cmd)?\s+-p\b|\$ClaudeExe\b|\$HeadlessEnv\s+spawn\b""")
+_SKIP_DIRS = {"__pycache__", "runtime", "models", "dwpose_onnx", "fleet_kit"}
+_ADAPTER = "tools/lw_headless_env.py"
 
 
 def _launches_claude(path: Path, text: str) -> bool:
-    if path.suffix == ".py":
-        return bool(_PY_SPAWN.search(text))
     code = [ln for ln in text.splitlines() if not ln.lstrip().startswith("#")]
-    return any(_PS_SPAWN.search(ln) for ln in code)
+    pattern = _PY_SPAWN if path.suffix == ".py" else _PS_SPAWN
+    return any(pattern.search(ln) for ln in code)
 
 
 def _spawn_files() -> list[Path]:
@@ -316,7 +410,7 @@ def _spawn_files() -> list[Path]:
                 continue
             if _SKIP_DIRS & set(path.relative_to(ROOT).parts):
                 continue
-            if path.name == "lw_headless_env.py":
+            if path.relative_to(ROOT).as_posix() == _ADAPTER:
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")
             if _launches_claude(path, text):
@@ -335,8 +429,7 @@ KNOWN_SITES = {
 
 
 def test_the_site_scan_finds_every_known_launcher():
-    """POSITIVE CONTROL. A scan that finds nothing makes the arm below pass
-    vacuously, so the known launchers must all be detected."""
+    """POSITIVE CONTROL. A scan that finds nothing passes the arm below vacuously."""
     found = {p.relative_to(ROOT).as_posix() for p in _spawn_files()}
     missing = KNOWN_SITES - found
     assert not missing, f"the detector no longer sees {sorted(missing)}"
@@ -345,10 +438,12 @@ def test_the_site_scan_finds_every_known_launcher():
 @pytest.mark.parametrize("text,suffix,expect", [
     ('argv = ["claude", "-p", prompt]', ".py", True),
     ("exe = shutil.which('claude')", ".py", True),
+    ("line = lw_headless_env.spawn(prompt)", ".py", True),
     ('"""a headless `claude -p` run"""', ".py", False),
     ("$out = & claude -p $prompt", ".ps1", True),
     ("# spawns `claude -p` with nobody watching", ".ps1", False),
     ("Start-Process -FilePath $ClaudeExe", ".ps1", True),
+    ("$out = & $Python $HeadlessEnv spawn --note x", ".ps1", True),
     ('$x = gemini -p "hi"', ".ps1", False),
 ])
 def test_the_site_detector_shapes(text, suffix, expect):
@@ -360,20 +455,27 @@ def _code_lines(text: str) -> list[str]:
 
 
 @pytest.mark.parametrize("path", _spawn_files(), ids=lambda p: p.name)
-def test_every_headless_claude_launcher_goes_through_the_proxy_gate(path):
-    """A mention in a comment does not count: the gate must be CALLED in code."""
+def test_every_headless_claude_launcher_goes_through_the_fleet_kit(path):
+    """A mention in a comment does not count: the kit's path must be CALLED."""
     rel = path.relative_to(ROOT).as_posix()
-    text = path.read_text(encoding="utf-8", errors="replace")
-    code = _code_lines(text)
-    assert "lw_headless_env" in text, (
-        f"{rel} launches claude headless without tools/lw_headless_env.py - "
-        "deleting CLAUDE_HEADLESS_BASE_URL would not stop it")
+    code = _code_lines(path.read_text(encoding="utf-8", errors="replace"))
     if path.suffix == ".py":
-        assert any("child_env(" in ln for ln in code), \
-            f"{rel} names the gate but never calls child_env()"
+        assert any("headless_env" in ln for ln in code), \
+            f"{rel} launches claude without tools/lw_headless_env.py (the kit binding)"
+        assert any(re.search(r"\.spawn\(|child_env\(", ln) for ln in code), \
+            f"{rel} names the binding but never calls kit.spawn or the kit's child_env"
+        assert not any(re.search(r"""which\(\s*["']claude""", ln) for ln in code), \
+            f"{rel} resolves claude itself instead of kit.claude_exe"
     else:
         assert any("lw_headless_env.py" in ln for ln in code), \
-            f"{rel} names the gate only in a comment"
-        assert any(("$HeadlessEnv" in ln or "lw_headless_env" in ln)
-                   and re.search(r"\bexec\b", ln) for ln in code), \
-            f"{rel} never runs the gate's exec"
+            f"{rel} names the binding only in a comment"
+        assert any("$HeadlessEnv" in ln and re.search(r"\b(spawn|exec)\b", ln)
+                   for ln in code), f"{rel} never runs the binding's spawn or exec"
+
+
+@pytest.mark.parametrize("path", _spawn_files(), ids=lambda p: p.name)
+def test_no_launcher_passes_bare(path):
+    """bare=False on every LW path: the floors live in hooks, --bare skips them."""
+    code = _code_lines(path.read_text(encoding="utf-8", errors="replace"))
+    hits = [ln for ln in code if re.search(r"""["']--bare["']|\bbare\s*=\s*True""", ln)]
+    assert hits == [], f"{path.name}: {hits}"

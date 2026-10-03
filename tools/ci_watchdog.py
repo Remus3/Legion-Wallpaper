@@ -89,9 +89,12 @@ def _bind_truth_gate():
 def _bind_headless_env():
     """Bind tools/lw_headless_env.py BY PATH, reusing an already-loaded copy.
 
-    The proxy gate (operator directive 2026-10-02): every headless claude this
-    tool starts goes through it, and a refusal means NO fix attempt - never a
-    plain `claude` in its place.
+    LW's binding of MAIN's fleet kit (kit v3): every headless claude this tool
+    starts goes through the kit's gate and accounting, and a refusal means NO
+    fix attempt - never a plain `claude` in its place. `kit.spawn` itself cannot
+    carry this run: it runs with `cwd` = the tree whose ops/loop/control holds
+    the budget and status files, and the fix must run in a throwaway worktree;
+    it also returns no stderr, which the transient check reads.
     """
     if "lw_headless_env" in sys.modules:
         return sys.modules["lw_headless_env"]
@@ -281,25 +284,46 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, env):
 
     `env` is the child env from `lw_headless_env.child_env` - REQUIRED, so no
     caller can reach the spawn without having passed the proxy gate first.
+    argv is the kit's `build_argv` (lean flags, json receipt, no transcript),
+    `bare=False` because LW's floors live in hooks; the run is bracketed by the
+    kit's budget/status/usage accounting (`start_run` / `end_run`).
     """
+    he = _bind_headless_env()
+    kit = he.kit
     prompt = FIX_PROMPT.format(base=BASE_BRANCH, sha=sha, runs=runs)
-    # Resolved, not bare: on Windows the CLI is claude.CMD and CreateProcess
-    # given "claude" raises FileNotFoundError (measured 2026-10-03).
-    exe = shutil.which("claude", path=env.get("PATH"))
-    if exe is None:
+    # kit.claude_exe, searched on the CHILD's PATH: resolved, never bare - on
+    # Windows the CLI is claude.CMD and CreateProcess given "claude" raises
+    # FileNotFoundError (measured 2026-10-03).
+    try:
+        exe = he.claude_exe(which=lambda name: shutil.which(name, path=env.get("PATH")))
+    except he.HeadlessRefused:
         return False, False, "claude CLI is not on PATH"
-    argv = [exe, "-p", prompt, "--model", model,
-            "--permission-mode", "bypassPermissions",
-            *_bind_headless_env().LEAN_ARGS,
-            "--add-dir", str(wt)]
+    model = model or kit.pick_model(True)
+    effort = kit.pick_effort(FIX_NOTE)
+    argv = kit.build_argv(exe, prompt, model, effort, bare=False,
+                          extra=("--permission-mode", "bypassPermissions",
+                                 "--add-dir", str(wt)))
+    try:
+        started = he.start_run()
+    except he.HeadlessRefused as exc:
+        # The budget filled between the gate and here: not a repo fault, so it
+        # is refunded like a transient and retried on a later pass.
+        return False, True, f"headless spawn refused: {exc}"
     try:
         r = run(argv, cwd=wt, timeout=timeout, env=env)
     except subprocess.TimeoutExpired:
+        he.end_run(started, note=FIX_NOTE, model=model, effort=effort, rc=None)
         return False, False, "timeout"
+    he.end_run(started, note=FIX_NOTE, model=model, effort=effort, rc=r.returncode,
+               stdout=r.stdout)
     out = (r.stdout or "") + (r.stderr or "")
     if r.returncode != 0 and is_transient(out):
         return False, True, out[-2000:]
     return r.returncode == 0, False, out[-2000:]
+
+
+# The kit's `note` for this run: names it in the usage log and picks its effort.
+FIX_NOTE = "ci-watchdog-fix"
 
 
 def _head_of(wt):
@@ -324,7 +348,10 @@ def headless_gate(**seams):
     """
     he = _bind_headless_env()
     try:
-        return he.child_env(**seams), None
+        env = he.child_env(**seams)
+        if not he.can_start():
+            raise he.HeadlessRefused("run budget exhausted")
+        return env, None
     except he.HeadlessRefused as exc:
         log(f"headless spawn refused: {exc} - no fix attempted, no fallback")
         he.log_refusal("ci_watchdog", str(exc))
@@ -548,8 +575,9 @@ def uninstall():
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--model", default="claude-sonnet-5",
-                    help="model for the fix pass (a CI fix is diagnosis, not design)")
+    ap.add_argument("--model", default=None,
+                    help="model override for the fix pass; default is the fleet "
+                         "kit's pick for a code-writing run")
     ap.add_argument("--dry-run", action="store_true",
                     help="decide and log, but never create a worktree or push")
     ap.add_argument("--max-attempts", type=int, default=MAX_ATTEMPTS,

@@ -229,9 +229,9 @@ def test_task_xml_has_exactly_one_repeating_trigger():
     assert "<Repetition>" not in boot, "the boot trigger must not repeat"
 
 
-# ---- 8. the headless proxy gate (operator directive 2026-10-02) -------------
+# ---- 8. the fleet kit's gate (kit v3; operator directive 2026-10-02) ------
 
-_UNSET = {"registry_reader": lambda: None, "environ": {}}
+_UNSET = {"url_source": lambda: None}
 
 
 def _isolate_logs(monkeypatch, tmp_path: Path):
@@ -303,3 +303,20 @@ def test_the_fix_run_launches_the_resolved_cli_not_the_bare_name(monkeypatch, tm
     monkeypatch.setattr(cw, "run", _fake_run)
     cw._fix_in_worktree(tmp_path, "a" * 40, "1", "claude-sonnet-5", 60, {"PATH": ""})
     assert seen["argv"][0] == r"C:\fake\npm\claude.CMD"
+
+
+def test_a_spent_fleet_kit_budget_attempts_nothing(monkeypatch, tmp_path: Path):
+    """Kit v3: the 120-run rolling budget is checked at the gate, before any
+    worktree exists, and refunds the attempt like any refusal."""
+    _isolate_logs(monkeypatch, tmp_path)
+    he = cw._bind_headless_env()
+    b = he.budget()
+    for _ in range(b.cap):
+        b.record()
+    calls = []
+    monkeypatch.setattr(cw, "run", lambda *a, **k: calls.append(a))
+    up = {"url_source": lambda: "http://127.0.0.1:4999/x",
+          "connect": lambda *a, **k: type("C", (), {"close": lambda self: None})()}
+    assert cw.do_fix_pass("a" * 40, "ci", 1, None, model=None, dry_run=False,
+                          fix_timeout=1, env_seams=up) == "refused"
+    assert calls == []

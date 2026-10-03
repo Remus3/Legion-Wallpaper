@@ -45,10 +45,10 @@ def _bind(modname, filename):
 
 
 executor = _bind("lw_loop_executor", "executor.py")
-# tools/ is not on sys.path either. The headless proxy gate, tools/
-# lw_headless_env.py (operator directive 2026-10-02), is bound through the
-# executor's own by-path binder so the two share ONE module object and one
-# HeadlessRefused class.
+# tools/ is not on sys.path either. The headless gate, tools/lw_headless_env.py
+# (LW's binding of MAIN's fleet kit, kit v3), is bound through the executor's
+# own by-path binder so the two share ONE module object and one HeadlessRefused
+# class (the kit's Refused).
 headless_env = executor._headless_env_module()
 # slots.py + winmutex.py are BYTE-IDENTICAL across LW and RC by contract - they
 # coordinate the two repos' runs with each other through ProgramData and the OS
@@ -824,8 +824,11 @@ def claude_oracle_argv(instruction, cfg):
     elif isinstance(cmd, str) and cmd:
         argv = [cmd]
     else:
-        import shutil
-        argv = [shutil.which("claude.cmd") or shutil.which("claude") or "claude"]
+        # kit.claude_exe: the real binary behind the npm shim when it exists.
+        try:
+            argv = [headless_env.claude_exe()]
+        except headless_env.HeadlessRefused:
+            argv = ["claude"]  # not on PATH: the call fails and returns None
     argv += [
         "-p", instruction,
         "--output-format", "text",
@@ -856,9 +859,13 @@ def claude_oracle(prompt_body, instruction):
     to spend. `ceiling_usd` stays a real rail for gemini alone.
     """
     prompt_body = cap_stdin(prompt_body)
-    # The headless proxy gate. A refusal fails THIS call with the None sentinel
-    # at once: no retry (a retry against a refused gate is the same refusal),
-    # and never a plain `claude` in its place.
+    # The fleet kit's gate. A refusal fails THIS call with the None sentinel at
+    # once: no retry (a retry against a refused gate is the same refusal), and
+    # never a plain `claude` in its place. `kit.spawn` cannot carry this call:
+    # the prompt body goes on STDIN (it can exceed a Windows command line) and
+    # the answer is plain text. Each try is one run against the kit's budget,
+    # with the kit's status and usage line around it. bare=False: LW's floors
+    # live in hooks.
     try:
         env = headless_env.child_env()
     except headless_env.HeadlessRefused as exc:
@@ -867,12 +874,21 @@ def claude_oracle(prompt_body, instruction):
         return None
     argv = claude_oracle_argv(instruction, CFG)
     timeout = float(CFG.get("oracle_timeout_sec", 900))
+    model = str(CFG.get("oracle_model") or "")
     out = ""
     for tryn in range(1, 4):
+        try:
+            started = headless_env.start_run()
+        except headless_env.HeadlessRefused as exc:
+            log(f"claude oracle: headless spawn refused: {exc} - call fails, no fallback")
+            headless_env.log_refusal("loop oracle (claude)", str(exc))
+            return out or None
+        rc = None
         try:
             r = subprocess.run(argv, input=prompt_body, capture_output=True,
                                text=True, encoding="utf-8", errors="replace",
                                timeout=timeout, creationflags=NO_WINDOW, env=env)
+            rc = r.returncode
             out = (r.stdout or "").strip()
             if not out and (r.stderr or "").strip():
                 log(f"claude oracle try {tryn} empty stdout; stderr: "
@@ -880,6 +896,11 @@ def claude_oracle(prompt_body, instruction):
         except Exception as e:  # noqa: BLE001
             out = ""
             log(f"claude oracle try {tryn} error: {e}")
+        try:
+            headless_env.end_run(started, note="loop-oracle", model=model, effort="",
+                                 rc=rc)
+        except OSError as e:
+            log(f"claude oracle: usage line not written ({type(e).__name__})")
         if out:
             break
         time.sleep(8 * tryn)
