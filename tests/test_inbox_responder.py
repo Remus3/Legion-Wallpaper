@@ -1096,7 +1096,12 @@ def _cli(args: list[str], *, halt_path: Path) -> subprocess.CompletedProcess:
         f"sys.path.insert(0, {str(ROOT / 'tools')!r})\n"
         "from pathlib import Path\n"
         "import lw_inbox_responder as r\n"
+        "import lw_inbox_status as s\n"
         f"r.HALT_PATH = Path({str(halt_path)!r})\n"
+        # The status file too: conftest's redirect cannot reach a child, and the
+        # widget reads the live file (MAIN 0915).
+        f"s.STATUS_PATH = Path({str(halt_path.with_name('inbox_status.json'))!r})\n"
+        f"s.STATE_PATH = Path({str(halt_path.with_name('status_state.json'))!r})\n"
         "raise SystemExit(r.main(sys.argv[1:]))\n"
     )
     return subprocess.run([sys.executable, "-c", driver, *args],
@@ -1182,6 +1187,11 @@ try:
         subprocess.run(["schtasks", "/Query"])
     else:
         import lw_inbox_responder as r
+        import lw_inbox_status as s
+        from pathlib import Path
+        # conftest's redirect cannot reach this child; cwd is the arm's tmp_path.
+        s.STATUS_PATH = Path("inbox_status.json").resolve()
+        s.STATE_PATH = Path("status_state.json").resolve()
         rc = r.main(argv)
 except BaseException as exc:
     rc = "raised: %r" % (exc,)
@@ -1229,6 +1239,11 @@ def test_dry_run_and_halted_cycles_launch_nothing_observed_by_audit_hook(tmp_pat
     halt.write_text("stop", encoding="utf-8")
     halted = _audited("main", common + ["--halt", str(halt)], tmp_path)
     assert halted["seen"] == [] and halted["rc"] == "0", halted
+    # The child published into tmp_path, which proves it did NOT publish into
+    # the operator's live widget file (measured 2026-10-03: before the redirect
+    # this arm overwrote it).
+    published = json.loads((tmp_path / "inbox_status.json").read_text(encoding="utf-8"))
+    assert published["task"] == "Halted"
 
 
 def test_a_live_cycle_never_launches_the_scheduler_observed_by_audit_hook(tmp_path):

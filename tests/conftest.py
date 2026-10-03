@@ -71,3 +71,38 @@ def _unpatch_pil_image_open():
     if _PILImage is not None and _PRISTINE_IMAGE_OPEN is not None:
         _PILImage.open = _PRISTINE_IMAGE_OPEN
     yield
+
+
+@pytest.fixture(autouse=True)
+def _the_live_inbox_status_is_never_written(request, monkeypatch):
+    """Redirect the responder's status file for EVERY test, once it is loaded.
+
+    Suite-wide rather than per file because five test files drive the
+    responder's `main`, and every tick now publishes
+    `ops/loop/control/inbox_status.json` (MAIN 0915). The widget reads that
+    file live, so one forgotten redirect would show the operator a test's
+    fake state as LW's. Guarded at the WRITER, the same shape as the run-log
+    spy: the ARMED responder rewrites the live file every five minutes, so an
+    mtime guard would error with nothing wrong.
+    """
+    import sys
+    mod = sys.modules.get("lw_inbox_status")
+    if mod is None:
+        yield
+        return
+    real = {mod.STATUS_PATH.resolve(), mod.STATE_PATH.resolve()}
+    tmp = request.getfixturevalue("tmp_path")
+    monkeypatch.setattr(mod, "STATUS_PATH", tmp / "control" / "inbox_status.json")
+    monkeypatch.setattr(mod, "STATE_PATH", tmp / "status_state.json")
+    original = mod.write_atomic
+    hits: list[str] = []
+
+    def _guarded(path, doc):
+        if Path(path).resolve() in real:
+            hits.append(str(path))
+            raise RuntimeError("test arm wrote the live inbox status")
+        return original(path, doc)
+
+    monkeypatch.setattr(mod, "write_atomic", _guarded)
+    yield
+    assert hits == [], f"an arm wrote the live inbox status: {hits}"
