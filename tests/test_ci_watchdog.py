@@ -227,3 +227,56 @@ def test_task_xml_has_exactly_one_repeating_trigger():
     assert xml.count("<Interval>PT2M</Interval>") == 1
     boot = xml.split("<BootTrigger>")[1].split("</BootTrigger>")[0]
     assert "<Repetition>" not in boot, "the boot trigger must not repeat"
+
+
+# ---- 8. the headless proxy gate (operator directive 2026-10-02) -------------
+
+_UNSET = {"registry_reader": lambda: None, "environ": {}}
+
+
+def _isolate_logs(monkeypatch, tmp_path: Path):
+    """Keep the gate's two log writes out of the live runtime + logs trees."""
+    monkeypatch.setattr(cw, "STATE_DIR", tmp_path / "state")
+    he = cw._bind_headless_env()
+    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+
+
+def test_a_refused_proxy_attempts_nothing(monkeypatch, tmp_path: Path):
+    """No worktree, no model, no plain-claude fallback: `run` is never called."""
+    _isolate_logs(monkeypatch, tmp_path)
+    calls = []
+    monkeypatch.setattr(cw, "run", lambda *a, **k: calls.append(a))
+    result = cw.do_fix_pass("a" * 40, "ci", 1, None, model="m", dry_run=False,
+                            fix_timeout=1, env_seams=_UNSET)
+    assert result == "refused"
+    assert calls == []
+    assert "unset" in (tmp_path / "state" / "watchdog.log").read_text(encoding="utf-8")
+
+
+def test_a_dry_run_also_reports_the_refusal(monkeypatch, tmp_path: Path):
+    _isolate_logs(monkeypatch, tmp_path)
+    assert cw.do_fix_pass("a" * 40, "ci", 1, None, model="m", dry_run=True,
+                          fix_timeout=1, env_seams=_UNSET) == "refused"
+
+
+def test_a_refusal_refunds_the_attempt_and_exits_nonzero(monkeypatch, tmp_path: Path):
+    _isolate_logs(monkeypatch, tmp_path)
+
+    class _TG:
+        @staticmethod
+        def check_ci(_ref):
+            return RED
+
+    monkeypatch.setattr(cw, "_bind_truth_gate", lambda: _TG)
+    monkeypatch.setattr(cw, "do_fix_pass", lambda *a, **k: "refused")
+    rc = cw.one_pass(model="m", dry_run=False, max_attempts=2, fix_timeout=1,
+                     state_dir=tmp_path)
+    assert rc == 1
+    assert cw.read_state(tmp_path)["attempts"] == 0, "a refusal must not burn the budget"
+
+
+def test_the_fix_spawn_requires_the_gated_env():
+    """`env` has no default, so no caller can reach the spawn ungated."""
+    import inspect
+    param = inspect.signature(cw._fix_in_worktree).parameters["env"]
+    assert param.default is inspect.Parameter.empty

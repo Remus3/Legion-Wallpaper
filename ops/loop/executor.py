@@ -84,6 +84,24 @@ def _kill_child_tree(proc) -> str:
         return f"killpg failed ({type(e).__name__}) - proc.kill() instead"
 
 
+def _headless_env_module():
+    """Bind tools/lw_headless_env.py BY PATH (ops/loop is not a package and
+    tools/ is not on sys.path), reusing a copy that is already loaded.
+
+    The proxy gate (operator directive 2026-10-02): the sdk channel's child gets
+    ANTHROPIC_BASE_URL from it, and a refusal stops the cycle - no fallback.
+    """
+    if "lw_headless_env" in sys.modules:
+        return sys.modules["lw_headless_env"]
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "lw_headless_env", Path(__file__).resolve().parents[2] / "tools" / "lw_headless_env.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
 @dataclass
 class DoneRecord:
     """What one executed cycle produced.
@@ -399,14 +417,25 @@ class SdkExecutor:
     name = "sdk"
     premise: list = []
 
-    def __init__(self, cfg, ctl, *, log, stop, awrite, **_ignored):
+    def __init__(self, cfg, ctl, *, log, stop, awrite, headless_env=None, **_ignored):
         self.cfg = cfg
         self.ctl = ctl
         self.log = log
         self.stop = stop
         self.awrite = awrite
+        # The proxy gate. Deliberately a constructor seam and NOT a cfg key: a
+        # config value that could switch the gate off would be a bypass any
+        # hand-edited json could flip. Tests inject a callable; production
+        # always resolves through tools/lw_headless_env.py.
+        self.headless_env = headless_env
         self.session_id: str | None = None
         self.session_in_play: str | None = None
+
+    def _child_env(self) -> dict:
+        """The child's env, or raise the gate module's HeadlessRefused."""
+        if self.headless_env is not None:
+            return self.headless_env()
+        return _headless_env_module().child_env()
 
     def _argv_prefix(self) -> list:
         """`claude_cmd` may be a string or an argv list (tests inject a shim)."""
@@ -473,6 +502,23 @@ class SdkExecutor:
             self.log(f"cycle {cycle}: premise {f['kind']}: {f['claim'][:120]}")
         prompt = premise_correction(findings) + sdk_prompt(cycle, body, src)
         timeout = float(self.cfg.get("cycle_deadline_sec", 5400))
+
+        # The proxy gate, before anything is spawned. A refusal stops the cycle
+        # with the reason and never falls back to a plain `claude`. stop() exits
+        # in production; if an injected stop returns, the cycle still records as
+        # FAILED - with the premise findings, like every other failure path -
+        # and never as a result. No session ran, so no session id is carried.
+        he = _headless_env_module()
+        try:
+            env = self._child_env()
+        except he.HeadlessRefused as exc:
+            err = f"headless spawn refused: {exc}"
+            he.log_refusal("loop executor (sdk)", str(exc))
+            self.log(f"cycle {cycle}: {err}")
+            self.stop(f"cycle {cycle}: {err}")
+            return DoneRecord(cycle=cycle, error=err,
+                              raw=failure_raw(cycle, err, None, self.premise))
+
         self.log(f"cycle {cycle}: sdk executor starting ({len(body)} chars, timeout {timeout:.0f}s)")
 
         # start_new_session is POSIX-only and load-bearing, not tidiness: it
@@ -487,7 +533,7 @@ class SdkExecutor:
         # protection it could no longer see. Convention from RC 8333cbd3.
         proc = _sp.Popen(argv, stdin=_sp.PIPE, stdout=_sp.PIPE, stderr=_sp.PIPE,
                          text=True, encoding="utf-8", errors="replace",
-                         cwd=str(self.cfg.get("repo_root", ".")),
+                         cwd=str(self.cfg.get("repo_root", ".")), env=env,
                          creationflags=getattr(_sp, "CREATE_NO_WINDOW", 0),
                          **_spawn_group_kwargs())
         try:

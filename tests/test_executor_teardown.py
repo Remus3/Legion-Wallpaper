@@ -182,7 +182,8 @@ def test_a_timeout_never_raises_out_of_the_run(monkeypatch, survives):
     ex_obj = ex.SdkExecutor({"cycle_deadline_sec": 1, "repo_root": str(ROOT)},
                             ROOT / "ops" / "loop" / "control",
                             log=logged.append, stop=lambda *a, **k: None,
-                            awrite=lambda *a, **k: None)
+                            awrite=lambda *a, **k: None,
+                            headless_env=lambda: dict(os.environ))
     rec = ex_obj.run(1, "body", "src")
 
     assert calls["waited"], "the reap must be attempted"

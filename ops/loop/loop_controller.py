@@ -45,6 +45,11 @@ def _bind(modname, filename):
 
 
 executor = _bind("lw_loop_executor", "executor.py")
+# tools/ is not on sys.path either. The headless proxy gate, tools/
+# lw_headless_env.py (operator directive 2026-10-02), is bound through the
+# executor's own by-path binder so the two share ONE module object and one
+# HeadlessRefused class.
+headless_env = executor._headless_env_module()
 # slots.py + winmutex.py are BYTE-IDENTICAL across LW and RC by contract - they
 # coordinate the two repos' runs with each other through ProgramData and the OS
 # mutex namespace, so a divergence is a silent concurrency bug, not a conflict.
@@ -847,6 +852,15 @@ def claude_oracle(prompt_body, instruction):
     to spend. `ceiling_usd` stays a real rail for gemini alone.
     """
     prompt_body = cap_stdin(prompt_body)
+    # The headless proxy gate. A refusal fails THIS call with the None sentinel
+    # at once: no retry (a retry against a refused gate is the same refusal),
+    # and never a plain `claude` in its place.
+    try:
+        env = headless_env.child_env()
+    except headless_env.HeadlessRefused as exc:
+        log(f"claude oracle: headless spawn refused: {exc} - call fails, no fallback")
+        headless_env.log_refusal("loop oracle (claude)", str(exc))
+        return None
     argv = claude_oracle_argv(instruction, CFG)
     timeout = float(CFG.get("oracle_timeout_sec", 900))
     out = ""
@@ -854,7 +868,7 @@ def claude_oracle(prompt_body, instruction):
         try:
             r = subprocess.run(argv, input=prompt_body, capture_output=True,
                                text=True, encoding="utf-8", errors="replace",
-                               timeout=timeout, creationflags=NO_WINDOW)
+                               timeout=timeout, creationflags=NO_WINDOW, env=env)
             out = (r.stdout or "").strip()
             if not out and (r.stderr or "").strip():
                 log(f"claude oracle try {tryn} empty stdout; stderr: "

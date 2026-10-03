@@ -28,6 +28,12 @@ $Root = Split-Path -Parent $PSScriptRoot
 $pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
 $Python = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 $Orchestrator = Join-Path $Root "tools\slice_orchestrator.py"
+# Every headless claude goes through the proxy gate (operator directive
+# 2026-10-02): lw_headless_env.py exec reads CLAUDE_HEADLESS_BASE_URL from the
+# user environment store, sets it in the CHILD env only, and exits 78 without
+# starting claude when it is unset, non-loopback, or the port does not answer.
+$HeadlessEnv = Join-Path $Root "tools\lw_headless_env.py"
+$RefusedExit = 78
 $LogDir = Join-Path $Root "logs"
 
 # A caller-supplied retry count is still bounded here: an unattended wrapper that
@@ -51,14 +57,32 @@ function Get-OwedSlices {
     return @($lines | Where-Object { $_ -and $_.ToString().Trim() -ne "" })
 }
 
+function Format-NativeArg([string]$a) {
+    # Start-Process joins -ArgumentList with bare spaces and quotes nothing, so
+    # the repo root (it contains a space) would split into two arguments.
+    # Standard Windows argv quoting: double backslashes that precede a quote or
+    # the closing quote, escape the quote itself.
+    if ($a -ne "" -and $a -notmatch '[\s"]') { return $a }
+    $escaped = $a -replace '(\\*)"', '$1$1\"'
+    $escaped = $escaped -replace '(\\+)$', '$1$1'
+    return '"' + $escaped + '"'
+}
+
 function Invoke-HeadlessRun {
-    # Returns "" on a clean exit, otherwise the crash reason to log.
+    # Returns "" on a clean exit, "REFUSED" when the proxy gate refused the
+    # spawn, otherwise the crash reason to log.
     $claudeArgs = @("-p", $Prompt, "--permission-mode", "bypassPermissions")
-    $proc = Start-Process -FilePath $ClaudeExe -ArgumentList $claudeArgs `
+    $gateArgs = @($HeadlessEnv, "exec", "--", $ClaudeExe) + $claudeArgs
+    $argLine = ($gateArgs | ForEach-Object { Format-NativeArg $_ }) -join " "
+    $proc = Start-Process -FilePath $Python -ArgumentList $argLine `
         -WorkingDirectory $Root -NoNewWindow -PassThru
     if (-not $proc.WaitForExit($TimeoutMinutes * 60 * 1000)) {
-        & taskkill /F /PID $proc.Id | Out-Null
+        # /T: the gate is the parent now, so the claude under it dies too.
+        & taskkill /F /T /PID $proc.Id | Out-Null
         return "timeout after $TimeoutMinutes min (pid $($proc.Id) taskkilled)"
+    }
+    if ($proc.ExitCode -eq $RefusedExit) {
+        return "REFUSED"
     }
     if ($proc.ExitCode -ne 0) {
         return "exit code $($proc.ExitCode)"
@@ -86,6 +110,13 @@ while ($true) {
     if ($reason -eq "") {
         Write-RunLog "clean exit on attempt $attempt"
         exit 0
+    }
+    if ($reason -eq "REFUSED") {
+        # FAIL CLOSED and never retried: a relaunch would hit the same refusal,
+        # and a plain claude in its place is exactly what the gate forbids. The
+        # gate already logged why (unset / host:port / connect refused).
+        Write-RunLog "headless spawn REFUSED by the proxy gate - not relaunching"
+        exit $RefusedExit
     }
     if ($attempt -gt $MaxRetries) {
         Write-RunLog "GIVING UP after $attempt attempt(s) - last reason=$reason"

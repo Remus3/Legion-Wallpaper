@@ -61,9 +61,9 @@ def test_a_missing_session_id_is_omitted_not_nulled():
 
 
 def test_every_failure_path_passes_the_premise_findings_through():
-    """Item 10: the fix is only real if EVERY instance carries it. Four sdk
-    failure paths exist - timeout, unparseable stdout, is_error/returncode, and
-    missing structured_output.
+    """Item 10: the fix is only real if EVERY instance carries it. Five sdk
+    failure paths exist - a refused headless proxy gate (2026-10-02), timeout,
+    unparseable stdout, is_error/returncode, and missing structured_output.
 
     Asserts the ARGUMENT is threaded, not an exact call string. The first cut
     pinned two verbatim call sites and broke the moment failure_raw gained a
@@ -74,7 +74,7 @@ def test_every_failure_path_passes_the_premise_findings_through():
     src = (ROOT / "ops" / "loop" / "executor.py").read_text(encoding="utf-8")
     calls = _re.findall(r"failure_raw\((?:[^()]|\([^()]*\))*\)", src)
     calls = [c for c in calls if not c.startswith("failure_raw(cycle: ")]
-    assert len(calls) == 4, f"expected 4 failure_raw call sites, found {len(calls)}"
+    assert len(calls) == 5, f"expected 5 failure_raw call sites, found {len(calls)}"
     for c in calls:
         assert "self.premise" in c, (
             f"a failure path drops the premise findings, so a cycle that "
@@ -88,7 +88,7 @@ def test_every_sdk_failure_return_carries_a_raw():
     sdk = src[src.index("class SdkExecutor"):]
     error_returns = sdk.count("error=err")
     with_raw = sdk.count("raw=failure_raw(")
-    assert error_returns == with_raw == 4, (
+    assert error_returns == with_raw == 5, (
         f"{error_returns} error returns but {with_raw} carry a raw payload - "
         f"a failure path without one is invisible to the director")
 

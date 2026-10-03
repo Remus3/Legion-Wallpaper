@@ -56,11 +56,29 @@ make code changes and do NOT run /sync-all-md.
 
 $tools = "Edit,Read,Write,Bash,Grep,Glob,TaskCreate,TaskUpdate,TaskList"
 
+# Every headless claude goes through the proxy gate (operator directive
+# 2026-10-02): lw_headless_env.py exec reads CLAUDE_HEADLESS_BASE_URL from the
+# user environment store, sets it in the CHILD env only, and exits 78 without
+# starting claude when it is unset, non-loopback, or the port does not answer.
+# Pinned interpreter resolved from LOCALAPPDATA, the same way headless_run.ps1
+# does it - never a literal account path in a tracked file.
+$pinned = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
+$Python = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
+$HeadlessEnv = Join-Path $repo "tools\lw_headless_env.py"
+$RefusedExit = 78
+
 Write-Host "[weekly_hygiene] $stamp start (model=$Model)"
-$out = & claude -p $prompt --model $Model --allowedTools $tools --dangerously-skip-permissions *>&1 |
+$out = & $Python $HeadlessEnv exec -- claude -p $prompt --model $Model --allowedTools $tools --dangerously-skip-permissions *>&1 |
     Tee-Object -FilePath $log
 $code = $LASTEXITCODE
 Write-Host "[weekly_hygiene] exit=$code log=$log"
+
+# FAIL CLOSED: a refused gate is not a transient and is never retried another
+# way. It exits 78 so the scheduled task reads red until the proxy is back.
+if ($code -eq $RefusedExit) {
+    Write-Host "[weekly_hygiene] REFUSED: headless spawn refused by the proxy gate - claude was not started."
+    exit $RefusedExit
+}
 
 # A weekly maintenance pass that fails ONLY because the Anthropic account hit a
 # transient billing / availability limit (credit exhausted, rate limit, 429 /

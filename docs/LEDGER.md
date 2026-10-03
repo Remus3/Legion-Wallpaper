@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+230. DONE **2026-10-02 (headless spawns go through the operator's second account,
+   fail closed; inbox responder RE-ARMED; MAIN speaks for the operator).** Operator
+   directive typed in session and confirmed ("confirmed item 1-4 as written"). New
+   `tools/lw_headless_env.py`: reads the user-scope proxy variable from HKCU at spawn
+   time (a deleted registry value beats a stale inherited copy, so the kill switch
+   works on already-running schedulers), sets ANTHROPIC_BASE_URL in the CHILD env
+   only, refuses on unset / non-loopback / port refused, logs the reason without the
+   URL. Wired into all six launch sites (responder, CI watchdog, loop executor sdk,
+   loop oracle, `headless_run.ps1`, `weekly_hygiene_run.ps1`); site-coverage guard
+   with a positive control; 4 mutants on the helper killed, restored byte-exact. Built
+   by a subagent; suite re-run independently 3337 passed / 19 skipped. Defect found at
+   proof time and fixed RED-first: the responder sent no `--model`, so its child took
+   the local session alias from untracked `.claude/settings.local.json`, which the
+   proxy 404s; now pinned to `opus`. PROOF: `lw_headless_env.py exec -- claude -p
+   "reply ok" --model opus` -> `ok`, exit 0, proxy log `POST /v1/messages
+   (claude-opus-5-5) -> <second account> [pin] (200)`. MAIN grant quoted into
+   CLAUDE.md Settled. FUTURE: the held loop's `claude-opus-5` model ids were not
+   proven through the proxy; a refused loop oracle reads as CLEAN for the auditor
+   (pre-existing error behaviour).
+
 229. DONE **2026-10-02 (the frozen candidate failed on landing: a carrier code + false text;
    docs-only + outbox notes).** Inbox read by mtime (13 notes since LW 2200).
    `da35f8b1` had THREE own-disk attestations (RC 2100 + 2300 post-freeze, RSC 2100,
