@@ -143,7 +143,6 @@ When a task is "see what can be lifted from competitor X" (or a competitor-lift 
 
 **Tooling allowance** - research agents may use the full MCP/scraping toolbelt freely. This tool spend is NOT subject to the section 4 budget (that budget governs LW RUNTIME spend, not one-off research). Load any deferred MCP tool via ToolSearch first (`select:<name>` or keyword search) - they are not pre-loaded. Use the agentType `general-purpose` (tools: *) so the agent can reach these and Write the report:
 - Chrome DevTools MCP (`mcp__plugin_chrome-devtools-mcp_chrome-devtools__*`) or Claude-in-Chrome - render the LIVE page, `evaluate_script` against the DOM, and capture the network/XHR (`list_network_requests` + `get_network_request`) to see the ACTUAL API shapes + payloads powering the UX.
-- Firecrawl (`firecrawl-scrape` / `firecrawl-crawl` / `firecrawl-agent`) - bulk structured extraction + crawl doc/feature sections.
 - nimble `competitor-intel` / `competitor-positioning` / `company-deep-dive` - purpose-built teardown with before/after tracking.
 - Playwright MCP - interaction-driven pages (click through tiers, trigger a calc, capture the result).
 - Windows MCP / computer-use - a competitor DESKTOP app; screenshot + inspect what the live tool actually renders.
