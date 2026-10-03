@@ -27,6 +27,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+240. DONE **2026-10-03 (responder-authored: MAIN 0912 headless overhead cut; d1a8566).** MAIN 0912
+   (operator order, sha256 a59494ae...0f21 MATCH against MAIN's outbox, 4652 B) ordered every tree
+   to trim headless setup tokens. Measured from LW's checkout through the proxy, one trivial prompt,
+   input tokens: no flags 58,510; `--strict-mcp-config --setting-sources project,local` 53,143;
+   `--setting-sources project` 47,026 (-19.6 pct). `lw_headless_env.LEAN_ARGS` now rides on all
+   four spawn paths (responder, ci_watchdog, loop executor, loop oracle); an enumeration arm finds
+   the sites by shape and was mutation-proved. Local scope dropped as well: in LW it re-enables
+   three plugins and pins the `rc-main` alias the proxy 404s, and holds no hook or deny rule.
+   `--bare` REJECTED: it skips every hook and LW's floors live in PreToolUse/Stop hooks. Responder
+   routes by kind: ANSWER sonnet/medium, ACK/INFORMATION/FYI sonnet/low, all else (unknown kinds
+   too) opus/high; each run's json receipt lands in `ops/runtime/inbox_responder/usage/`
+   (gitignored; cost there is notional per LEDGER 40, never summed). Oracle gets
+   `--no-session-persistence`. TDD 15 red then green; full suite 3459 passed, 19 skipped, exit 0.
+   FUTURE: the remaining ~47k is CLAUDE.md + project SessionStart hook output + the base prompt; a
+   short responder brief would only help under `--bare`, which stays off while floors live in hooks.
+
 239. DONE **2026-10-03 (attended: Stop-gate false "no-verify" fixed; MAIN 0850 plugin order;
    c8b0c6c 68aaf57).** The Stop hook blocked on "no-verify" though no commit bypassed a hook:
    `claimed_green_gate._is_commit_bypass` tokenised a whole compound line, so `grep -n` in
