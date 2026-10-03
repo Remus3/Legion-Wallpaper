@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+238. DONE **2026-10-03 (attended: audit-hook arm for the no-scheduler claim; live-file
+   guards moved from mtime to writer spies; 4f2106c dbf067e 3e4a54f).** LL's owed audit-hook
+   replacement: a child interpreter installs `sys.addaudithook`, RAISES on every launch
+   event (nothing observed ever starts) and drives the responder's real entry points;
+   positive control blocks a direct `schtasks`; a line-split `schtasks` mutant in a scratch
+   copy is caught (the text scan catches that shape too today, so both are kept). Then a
+   real false-RED, measured: 1 teardown ERROR in 19 runs of the responder files, at the
+   ARMED responder's 08:16:58 append - the autouse guards compared the LIVE `runs.jsonl`
+   mtime, which the responder now changes every few minutes. Three fixtures now spy
+   `_append_runlog` (record + teardown assert, because `_record_cycle` swallows writer
+   errors); spy mutation-proved against a redirected "live" path. Sibling: the lw_facts
+   path-isolation arm compared the live `sync_inbox_reported.json`, rewritten by the
+   prompt hooks on every prompt - now a `_write_reported` spy that also asserts the writer
+   was reached. Not converted, not racing: the lw_monitor live-log arm (no writer since
+   2026-09-06). Concurrency note: headless children committed `dbf067e` (this session's
+   fixture diff, carried whole) while editing the same test file; a full-suite run here
+   showed 8 red from their budget arms mid-TDD, green at HEAD (11 passed).
+   MAIN 0815 ruled RSC clause (b) CLEARED for one C4 commit, RSC target 2026-10-06
+   (sha256 verified against MAIN's outbox). CI green on 3e4a54f.
+
 237. DONE **2026-10-03 (the responder budget is ONE number, 120 runs per 24 h; the other
    four 0845 knobs restored; MAIN 0855, responder-authored).** MAIN 0855 relayed the
    operator's correction, verbatim: "have all tree's / siblings at the same amount; IE:
