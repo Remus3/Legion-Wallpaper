@@ -61,6 +61,11 @@ anything else, dry run included. A refusal (variable unset, non-loopback, or
 the proxy port not answering) is UNAVAILABLE with `checked=True` - the gate
 ran and said no - and the note stays UNSEEN for a later cycle, because `main`
 records only AUTO. There is no fallback to a plain spawn.
+
+NEVER ON SELF OR TERMINAL (MAIN 0640, 2026-10-03). A note from LW, or one
+marked TERMINAL / no-reply, is marked seen and logged as a skip, never spawned
+- see `skip_reason`. Measured: the responder spawned on LW's own record, then
+on its own child's ack of it, a self-feeding loop with no gate in the parent.
 """
 from __future__ import annotations
 
@@ -356,6 +361,68 @@ def new_notes(inbox: Path, state_path: Path) -> list[Note]:
     return [n for n in _entries(inbox) if n.key not in seen]
 
 
+# ---------------------------------------------------------------------------
+# Notes that are never mail: LW's own, and TERMINAL ones
+# ---------------------------------------------------------------------------
+
+# MEASURED 2026-10-03 (MAIN 0640, digest-verified): the responder spawned on
+# LW's own LANDED note, that child acked it into LW's own inbox, and the next
+# cycle spawned AGAIN on the ack - whose filename says TERMINAL no-reply. A
+# self-feeding loop held back only by the child's judgement. Both rules run in
+# the PARENT, before any spawn, and a skipped note is marked seen.
+SELF_CODE = "LW"
+
+# The FIRST `from-<CODE>-` in the name: `from-RC-FIX-to-LW` is RC's mail to LW.
+_FILENAME_SENDER = re.compile(r"(?:^|-)from-([A-Za-z]+)-")
+_TITLE_SENDER = re.compile(r"^#\s*From\s+([A-Za-z]+)\b")
+_TITLE_TERMINAL = re.compile(r"\bterminal\b|\bno[- ]reply\b", re.IGNORECASE)
+_TITLE_BYTES = 4096
+
+
+def note_title(path: Path) -> str:
+    """The first `#` heading line, or "" when the note cannot be read."""
+    try:
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            head = fh.read(_TITLE_BYTES)
+    except OSError:
+        return ""
+    for line in head.splitlines():
+        if line.startswith("#"):
+            return line
+    return ""
+
+
+def skip_reason(path: Path) -> str | None:
+    """Why this note must never spawn a session, or None if it may.
+
+    THE TIGHT SET, on purpose (Feature conventions: start narrow, widen only on
+    a failing arm). Terminal means a hyphen TOKEN `terminal` / `no-reply` /
+    `noreply` in the filename, or TERMINAL / no reply in the TITLE line. A body
+    line such as "answered: n/a (FYI, no reply requested)" does not count, and
+    neither does `terminals`.
+
+    KNOWN FALSE SKIP: a note ABOUT terminal notes - MAIN 0640 itself - carries
+    the marker in its own name. That costs latency only, since `lw_facts` still
+    reports it at every SessionStart; the opposite error costs a headless
+    session per note and is the loop that was measured.
+
+    COULD-NOT-READ is not CLEAN: an unreadable note still answers to its
+    filename, which carries both the sender code and the marker on this channel.
+    """
+    name = path.name
+    title = note_title(path)
+    m = _FILENAME_SENDER.search(name) or _TITLE_SENDER.match(title)
+    if m and m.group(1).upper() == SELF_CODE:
+        return f"self: sender code {SELF_CODE} - a record in LW's own inbox, not mail"
+    tokens = [t.lower() for t in re.split(r"[-_.]", path.stem)]
+    pairs = set(zip(tokens, tokens[1:], strict=False))
+    if "terminal" in tokens or "noreply" in tokens or ("no", "reply") in pairs:
+        return "terminal: the filename marks it terminal or no-reply"
+    if _TITLE_TERMINAL.search(title):
+        return "terminal: the title marks it terminal or no-reply"
+    return None
+
+
 def record_seen(inbox: Path, state_path: Path, notes: list[Note]) -> None:
     """Record ONLY the notes handed in, and prune keys no longer in the inbox."""
     live = {n.key for n in _entries(inbox)}
@@ -642,7 +709,17 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(payload, indent=2))
         return 0
 
-    capped = notes[:MAX_SPAWNS_PER_CYCLE]
+    # Self and terminal notes are sorted out BEFORE the cap, so a burst of them
+    # never takes a slot from real mail. They are marked seen, never spawned.
+    skipped, mail = [], []
+    for note in notes:
+        why = skip_reason(args.inbox / note.name)
+        if why is None:
+            mail.append(note)
+        else:
+            skipped.append((note, why))
+
+    capped = mail[:MAX_SPAWNS_PER_CYCLE]
     spawned = []
     for note in capped:
         outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
@@ -650,14 +727,16 @@ def main(argv: list[str] | None = None) -> int:
                         "reason": outcome.reason, "checked": outcome.checked})
     if not args.dry_run:
         handled = [n for n, s in zip(capped, spawned, strict=True) if s["verdict"] == AUTO]
-        record_seen(args.inbox, args.state, handled)
+        record_seen(args.inbox, args.state, handled + [n for n, _why in skipped])
+    skips = [{"note": n.name, "reason": why} for n, why in skipped]
+    deferred = len(mail) - len(capped)
     payload = {"new_notes": len(notes), "dry_run": args.dry_run,
-               "deferred": len(notes) - len(capped), "spawned": spawned}
+               "deferred": deferred, "skipped": skips, "spawned": spawned}
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
     # source, and 288 empty lines a day would bury the ones that matter.
     if notes and not args.dry_run:
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
-                      deferred=len(notes) - len(capped), spawned=spawned)
+                      deferred=deferred, skipped=skips, spawned=spawned)
     print(json.dumps(payload, indent=2))
     return 0
 
