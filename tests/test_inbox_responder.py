@@ -429,7 +429,7 @@ def test_dry_run_spawns_nothing(monkeypatch):
     assert outcome.checked is True
 
 
-def test_the_spawn_is_detached_and_windowless(monkeypatch):
+def test_the_spawn_is_windowless_and_not_detached_process(monkeypatch):
     seen = {}
 
     def _fake_popen(argv, **kwargs):
@@ -446,8 +446,16 @@ def test_the_spawn_is_detached_and_windowless(monkeypatch):
     outcome = responder.spawn(Path("moon_sync_inbox/note.md"), env_seams=_PROXY_UP)
     assert outcome.verdict == responder.AUTO
     flags = seen["kwargs"]["creationflags"]
-    assert flags & responder.NO_WINDOW == responder.NO_WINDOW
-    assert flags & responder.DETACHED == responder.DETACHED
+    # Literal Win32 values, so this arm binds off Windows too where the
+    # subprocess constants read 0. Measured 2026-10-03 (MAIN 0055): with
+    # DETACHED_PROCESS (0x8) set, Windows IGNORES CREATE_NO_WINDOW (0x08000000),
+    # so claude.CMD's cmd.exe - launched from a console-less pythonw - got a NEW
+    # VISIBLE console per note on the operator's desktop.
+    assert flags == responder.NO_WINDOW | responder.NEW_GROUP
+    if os.name == "nt":  # the constants read 0 on a Linux runner
+        assert flags & 0x08000000, "CREATE_NO_WINDOW missing"
+        assert not flags & 0x00000008, "DETACHED_PROCESS disables CREATE_NO_WINDOW"
+        assert flags & 0x00000200, "CREATE_NEW_PROCESS_GROUP missing"
     # The child, and only the child, carries the proxy URL.
     child_has_it = seen["kwargs"]["env"].get("ANTHROPIC_BASE_URL") == _PROXY_URL
     parent_untouched = os.environ.get("ANTHROPIC_BASE_URL") != _PROXY_URL
@@ -1112,3 +1120,16 @@ def test_cli_once_halts_when_the_default_switch_exists_and_an_override_is_absent
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert json.loads(proc.stdout)["halted"] == "operator stopped the trial"
     assert not state.exists()
+
+
+def test_no_spawn_site_in_tools_or_ops_uses_detached_process():
+    """DETACHED_PROCESS silently disables CREATE_NO_WINDOW, and a .CMD child
+    of a console-less parent then opens a visible console (MAIN 0055,
+    2026-10-03). Positive control: the scan reads real files."""
+    root = Path(__file__).resolve().parents[1]
+    files = [p for d in ("tools", "ops") for p in (root / d).rglob("*.py")]
+    assert len(files) > 20
+    hits = [f"{p.relative_to(root)}:{i}" for p in files
+            for i, ln in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1)
+            if "DETACHED_PROCESS" in ln.split("#", 1)[0]]
+    assert hits == []
