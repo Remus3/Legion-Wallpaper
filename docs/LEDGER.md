@@ -9701,7 +9701,7 @@ sc-first-run` accepted on its referrer
       shelling `lw_gen_qa` into `.venv-metrics` from inside its fix loop.
       Wiring both naively would have deadlocked the generator.
     - **I contradicted a settled decision in my own ROADMAP entry.** The item
-      listed DWPose among the CUDA consumers. It is onnx-CPU (CLAUDE.md:199,
+      listed DWPose among the CUDA consumers. It is onnx-CPU (CLAUDE.md line 199 pre-condense,
       LEDGER 19), zero cuda references, `InferenceSession` with no provider
       list. Wiring it would have been worse than useless - serializing CPU work
       across three repos. Corrected in `95fc63b` with each real consumer cited

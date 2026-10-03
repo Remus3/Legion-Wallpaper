@@ -27,3 +27,8 @@ data/**                           linguist-generated=true
 # that has nothing to do with the doc's content. Pinning *.md to LF makes
 # the zero-CR arm of that test a valid assertion instead of a checkout quiz.
 *.md text eol=lf
+
+# MAIN fleet kit, vendored byte-for-byte and sha256-pinned by its MANIFEST.json
+# (tests/test_fleet_kit_conformance.py). -text: no EOL conversion on any
+# checkout, so core.autocrlf can never turn a pinned file into a CRLF copy.
+ops/fleet_kit/** -text

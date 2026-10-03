@@ -2421,7 +2421,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   RECORDS the deviation. (9) POSIX `winmutex` branch must emit `UNSERIALIZED` -
   today it is unserialized AND untraced, so every guard we built passes vacuously
   off-Windows; joint edit + re-sync. (10) enumerate every instance of a defect class
-  IN THE FILE before committing the fix, then across the codebase - CLAUDE.md:171
+  IN THE FILE before committing the fix, then across the codebase - CLAUDE.md line 171 (pre-condense, now in docs/claude-md-history.md)
   says this but points outward, and it was missed twice in one function. (11) a
   claim heavy enough to justify a schema change ships as a TEST, not a transcript.
   (12) when asserting CI state, distinguish `not evaluated` (docs-only path filter)

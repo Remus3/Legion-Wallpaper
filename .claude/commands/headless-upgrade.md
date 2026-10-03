@@ -205,7 +205,7 @@ A long headless run is context-bound, not just time-bound. The run must stay res
 
 ### 11. The /done ritual at run end
 
-Run `/done` (existing skill). It handles the local check gate, auto-commit + push, GitHub CI verification, background-task stop, bridge-loop liveness, WAKEUP_NOTES update + prune, living-doc sync, incoming-lessons drain, session-size check, and the final banner. DO NOT skip; the WAKEUP_NOTES update is what unblocks the next session's bootstrap. Finish by emitting the next-session prompt described in section 10b - the run is not handed off until a fresh session could resume it from disk alone.
+Run `/done` (existing skill). It handles the local check gate, auto-commit + push, GitHub CI verification, background-task stop, bridge-loop liveness, WAKEUP_NOTES update + prune, living-doc sync, incoming-lessons drain, session-size check, and the single final line `Done ritual complete, safe to clear`. DO NOT skip; the WAKEUP_NOTES update is what unblocks the next session's bootstrap. The next-session prompt described in section 10b goes into `LW-NEXT-SESSION.txt` (carrying forward every un-acted item), never into chat (FLEET-COMMON item 5) - the run is not handed off until a fresh session could resume it from disk alone.
 
 ### 12. Anti-patterns (caught from past runs - do NOT repeat)
 
