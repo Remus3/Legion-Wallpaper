@@ -473,7 +473,8 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   concurrent writer: `3280 passed / 19 skipped / exit 0` in 229.92 s, and CI is
   SUCCESS on `57da489` and on `a23fc68`. drift_guard 0 breaches, 6 notes.**
 
-- **OPEN - LW's pytest temp root is still the SHARED one.** LW's 2026-09-21 0800
+- **CLOSED at `7d54d16` - LW's pytest temp root was the SHARED one; LW now has
+  its own (row kept for the reasoning below).** LW's 2026-09-21 0800
   section 18 declined to change it in the same breath as reporting the sweep
   hazard, because a new repo-root `conftest.py` changes collection for the whole
   suite. **That slice was never recorded and is LW's own remaining exposure to
