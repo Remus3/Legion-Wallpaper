@@ -357,6 +357,44 @@ def test_git_push_dash_n_is_not_a_commit_bypass(tmp_path):
     assert decision_of(proc) == {}
 
 
+@pytest.mark.parametrize("command", [
+    # The live false positive, 2026-10-03: `grep -n` in the SAME chain as a
+    # file-scoped commit read as `git commit -n`.
+    'git commit -q -F m.txt -- LW-NEXT-SESSION.txt && grep -n "X" LW-NEXT-SESSION.txt',
+    'grep -n "X" f && git commit -q -F m.txt -- f',
+    'git commit -m x; sed -n 1,5p f',
+    'git commit -m x | head -n 3',
+    'python w.py\ngrep -n x f && git commit -m y',
+])
+def test_a_dash_n_owned_by_another_command_is_not_a_bypass(tmp_path, command):
+    transcript = _transcript(
+        tmp_path,
+        _assistant_bash("git commit -m x", stdout="pre-commit hook failed", code=1),
+        _assistant_bash(command, stdout="[main abc123]", code=0),
+    )
+    proc = run_gate({"stop_hook_active": False, "last_assistant_message": "Committed.",
+                     "transcript_path": str(transcript)})
+    assert decision_of(proc) == {}
+
+
+@pytest.mark.parametrize("command", [
+    "git add f && git commit -n -m x",
+    "git commit --no-verify -m x && git push",
+    "grep -n x f; git commit -n -m y",
+    "git -C /repo commit -n -m x",
+    "git -c core.hooksPath=x commit --no-verify -m x",
+])
+def test_a_real_bypass_inside_a_chain_still_blocks(tmp_path, command):
+    transcript = _transcript(
+        tmp_path,
+        _assistant_bash("git commit -m x", stdout="pre-commit hook failed", code=1),
+        _assistant_bash(command, stdout="[main abc123]", code=0),
+    )
+    proc = run_gate({"stop_hook_active": False, "last_assistant_message": "Committed.",
+                     "transcript_path": str(transcript)})
+    assert decision_of(proc).get("decision") == "block"
+
+
 # --- never wedge the session ------------------------------------------------
 
 

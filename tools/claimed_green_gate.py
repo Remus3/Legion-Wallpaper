@@ -128,14 +128,53 @@ def _is_commit_bypass(command: str) -> bool:
     """
     if BYPASS_ENV.search(command):
         return True
-    tokens = _tokens(command)
+    return any(_segment_is_commit_bypass(seg) for seg in _segments(command))
+
+
+# Shell separators that end one simple command and start the next.
+_SEPARATORS = {"&&", "||", ";", "|", "&"}
+
+
+def _segments(command: str) -> list:
+    """Token lists, one per simple command in a compound line.
+
+    Before 2026-10-03 the whole line was ONE token list, which failed both
+    ways: `git commit -F m -- f && grep -n X f` blocked a session that bypassed
+    nothing (the `-n` was grep's), and `git add f && git commit -n` passed,
+    because only the word after the FIRST `git` was read as the verb.
+    """
+    segments = []
+    for line in command.splitlines():
+        current = []
+        for tok in _tokens(line):
+            core = tok.rstrip(";")
+            if tok in _SEPARATORS:
+                segments.append(current)
+                current = []
+                continue
+            if core:
+                current.append(core)
+            if core != tok:                      # `x;` ends a command too
+                segments.append(current)
+                current = []
+        segments.append(current)
+    return [s for s in segments if s]
+
+
+def _segment_is_commit_bypass(tokens: list) -> bool:
     lowered = [t.lower() for t in tokens]
     if "git" not in lowered:
         return False
-    try:
-        verb = lowered[lowered.index("git") + 1]
-    except IndexError:
+    # The verb is the first word after git's own global options: `-C <dir>`
+    # and `-c <key=val>` take an argument, other options (`--no-pager`,
+    # `--git-dir=x`) do not. Reading the next word blindly missed
+    # `git -C repo commit -n`.
+    i = lowered.index("git") + 1
+    while i < len(lowered) and lowered[i].startswith("-"):
+        i += 2 if lowered[i] == "-c" else 1
+    if i >= len(lowered):
         return False
+    verb = lowered[i]
     if verb != "commit":
         return False
     return any(t in ("--no-verify", "-n") for t in lowered)
