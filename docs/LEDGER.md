@@ -27,6 +27,24 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+242. DONE **2026-10-03 (fleet: MAIN FLEET-KIT v3 adopted + MAIN 1029 bundle-dir fix; 062ffd5, fc6cdb4).**
+   Operator order via MAIN 0955/1014/1016 (+1029), all four sha256 MATCH MAIN's outbox. Kit v3
+   vendored byte-for-byte to `ops/fleet_kit/` (hashes read back), marked `-text` in
+   `.gitattributes`, excluded from ruff. `tests/test_fleet_kit_conformance.py` RED first with
+   `['CLAUDE.md lacks the FLEET-COMMON markers']`, green after the condense. CLAUDE.md 37980 ->
+   15219 bytes (est. ~9495 -> ~3805 start-up tokens, bytes/4); full pre-condense text verbatim in
+   `docs/claude-md-history.md`; every Settled entry one line + what reverses it; responder state
+   line corrected to ENABLED (schtasks read back). `/done` now carries every un-acted hand-off
+   item forward and prints only `Done ritual complete, safe to clear`. Every headless spawn
+   routed via the kit: `kit.spawn` for the inbox responder + weekly hygiene .ps1, kit primitives
+   for ci_watchdog / loop executor / oracle / headless_run.ps1; `tools/lw_inbox_status.py`
+   deleted; bare=False everywhere (floors live in hooks). 13 kit gaps reported to MAIN, not
+   patched; gaps 4/6/8/9 pinned strict-xfail. MAIN 1029: inbox bundle directories skipped,
+   per-note spawn errors no longer exit 1 (3 fail-first tests); LW-InboxResponder Last Result 0
+   at 10:56:56 and 11:01:56. Suite 3466 passed / 0 failed / 19 skipped / 4 xfailed; CI success on
+   fc6cdb4. Reply delivered to MAIN, 1 of 1 reached (sha256 re-hashed). Pre-existing, untouched:
+   drift_guard reports `ops/loop/slots.py` diverged from RC (byte-pinned; needs every carrier).
+
 241. DONE **2026-10-03 (pipeline: 7 slugs intaken + first-passed; e50866d, 864a173, data-only).**
    Operator away. Intake of the 8 loose files in `images/0.Originals` via `lw_pipeline intake`
    (dry-run then execute): 7 intaken, 1 refused (lux coven -pre, byte-equal duplicate of a slug
