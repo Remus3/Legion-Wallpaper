@@ -19,12 +19,18 @@ Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
 Acceptance for the round: all five carriers report the C4 digest on disk.
 Do NOT redo: the C4 landing (700cd64); the responder self-skip (b7d50a7);
   the per-tree pytest temp root (7d54d16, suite 3363 passed); the CI
-  no-filter tripwire parser (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW 0800); the proxy wiring,
+  no-filter tripwire parser (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW 0800);
+  the audit-hook arm + writer-spy guards (4f2106c, dbf067e, 3e4a54f); the proxy wiring,
   the responder arming, the bare-claude and DETACHED_PROCESS spawn fixes
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps;
   round-B mutants; read-and-unanswered recount; bulk-acking the inbox; the
   email-residual history rewrite (operator declined).
 Next round (LW supports, do not put into C4): CS 0002's D205/D209 docstring
   form for is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-Open + owed: LL's audit-hook replacement at tests/test_lw_rundash.py:399.
+Open + owed: none in LW's own queue. MAIN's ruling for RSC landed (0815, RSC
+  target 2026-10-06); watch each carrier's post-copy digest.
+CONCURRENCY: the responder now spawns up to 120 headless runs per 24 h (MAIN
+  0855) and its children COMMIT in this tree. Before editing a file, check
+  for live `claude -p` processes and recent mtimes; commit file-scoped
+  (`git commit -- <paths>`), never `git add -A`.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.
