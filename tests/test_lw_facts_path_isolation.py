@@ -46,9 +46,21 @@ def test_main_under_a_patched_root_never_writes_the_live_reported_record(
         monkeypatch, tmp_path, capsys):
     """The defect itself: a full `main()` with `_ROOT` redirected must leave the
     operator's acknowledgement state byte-identical."""
-    live = ROOT / "ops" / "runtime" / "sync_inbox_reported.json"
-    before_stat = _stat(live)
-    before_bytes = live.read_bytes() if live.exists() else None
+    live = (ROOT / "ops" / "runtime" / "sync_inbox_reported.json").resolve()
+    # Spied at the writer, not compared by mtime/bytes: the SessionStart and
+    # UserPromptSubmit hooks rewrite the live record on every prompt, so a
+    # file comparison races any prompt that lands mid-suite (same class as the
+    # responder run-log guard fixed 2026-10-03).
+    written: list[Path] = []
+    original = lw_facts._write_reported
+
+    def _spy(reported_path, *a, **k):
+        written.append(Path(reported_path).resolve())
+        if written[-1] == live:
+            raise AssertionError("main() wrote the live reported record")
+        return original(reported_path, *a, **k)
+
+    monkeypatch.setattr(lw_facts, "_write_reported", _spy)
 
     (tmp_path / "moon_sync_inbox").mkdir(parents=True)
     (tmp_path / "moon_sync_inbox" / "2026-09-11-0001-from-RC-x.md").write_text(
@@ -60,8 +72,8 @@ def test_main_under_a_patched_root_never_writes_the_live_reported_record(
     lw_facts.main()
     capsys.readouterr()
 
-    assert _stat(live) == before_stat, "main() wrote the live reported record"
-    assert (live.read_bytes() if live.exists() else None) == before_bytes
+    assert live not in written, "main() wrote the live reported record"
+    assert written, "the writer was never reached, so the spy proves nothing"
     assert (tmp_path / "ops" / "runtime" / "sync_inbox_reported.json").exists(), \
         "and it must have written the REDIRECTED one, or the arm proves nothing"
 
