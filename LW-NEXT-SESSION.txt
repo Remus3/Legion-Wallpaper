@@ -1,48 +1,32 @@
 NEXT SESSION
 ------------
-Task: COLLECT TWO RE-DERIVATIONS OF C4 AND CLOSE THE JOINT ROUND.
-  The candidate is now C4 = 290cbf80... / 11,426 B (LW 2150 note, full digest
-  in the note). It is da35f8b1 with SIX text-only edits (comments, docstrings,
-  one log string; code tokens identical): LW's own guard found the carrier
-  code RC in a comment at line 123 on landing, RSC 2350 found three inherited
-  sentences false under the new behaviour, and LW's own scan found two more.
-  da35f8b1 had THREE attestations (RC 2100+2300, RSC 2100 and 2350, CS 1857).
-Context: C4 is FROZEN under the 2200 freeze terms. Attestations are now
-  SUPERSEDED, not VOID (RC's rule, adopted 2150); only positions void. LW asked
-  each carrier for (1) re-derivation of C4 and (2) a run of THEIR OWN
-  shared-file guards against C4 with their pin moved. Read moon_sync_outbox/
-  newest-first, then the inbox BY MTIME.
-Landing recipe once two C4 attestations exist (measured this session):
-  - rebuild in scratch: LW 2000 diff via `git -c core.autocrlf=false apply
-    --recount`, then the 2150 note's C4 diff; or copy the attested bytes.
-  - shutil.copyfile into ops/loop/slots.py; move SHARED_SHA256["slots.py"] in
-    tests/test_loop_concurrency.py (add a Previous: line + rationale) and the
-    digest in ops/loop/config.json directive_suffix (one occurrence).
-  - full suite must be green: KNOWN_CODE_HITS stays [].
-  - publish LW's disk digest after the write; the other four check their own.
-  - loop_controller.py comments cite slots.py line numbers (:220 :224 :105);
-    they drift on landing - fix in the same commit.
-  - NEVER put a 64-hex digest in this file: test_handoff_write_gate refuses it.
-Acceptance: two own-disk re-derivations of C4; suite green; drift_guard
-  divergence on slots.py is the EXPECTED red window after LW lands first; CI
+Task: CLOSE THE C4 RE-PIN ROUND. C4 = 290cbf80... / 11,426 B (LW 2355 note) is
+  da35f8b1 with six text-only edits. Three replies landed after it: RC 2358
+  (re-derived; says C4's last hunk header is short by two), SS 2300 (re-derived;
+  says LW's own C4 diff in the 2355 note FAILS git apply --check), CS 0002
+  (re-derived; guard GREEN, lint RED D205/D209). Read them, then LW's outbox
+  newest-first - the ARMED inbox responder may already have answered some.
+Context: the inbox responder is LIVE (LW-InboxResponder, every 5 min, max 3
+  headless sessions per fire, second account via tools/lw_headless_env.py, no
+  console window). MAIN notes carry operator authority after a sha256 check
+  against MAIN's outbox (CLAUDE.md Settled). Runlog:
+  ops/runtime/inbox_responder/runs.jsonl. Kill: the HALT file, or delete the
+  proxy user variable.
+Landing recipe once C4 (or a C5 fixing the diff/lint) has two own-disk
+  attestations: copy bytes into ops/loop/slots.py, move SHARED_SHA256 in
+  tests/test_loop_concurrency.py and the digest in ops/loop/config.json, full
+  suite green with KNOWN_CODE_HITS still [], publish LW's disk digest. Never
+  put a 64-hex digest in this file (test_handoff_write_gate refuses it).
+Acceptance: two own-disk attestations of the final bytes; suite green; CI
   green read from `gh run list --json conclusion`.
-Do NOT redo: hooksPath measurement; environ-leak and invalid-escape sweeps;
-  re-grading round-B mutants; re-counting the read-and-unanswered backlog;
-  bulk-acking the inbox; history rewrite for the email residual (operator
-  declined 2026-10-02).
-ARMED 2026-10-02 by the operator: LW-InboxResponder every 5 min, every
-  headless claude via tools/lw_headless_env.py (fail closed), MAIN notes carry
-  operator authority after a digest check (CLAUDE.md Settled). Kill: HALT file
-  or delete the proxy user variable. Do not re-disable without a reason.
-Open + owed:
-  - PYTEST_DEBUG_TEMPROOT root-cause fix (new repo-root conftest.py), own slice.
-  - CS's hold() docstring "reaping stale locks each pass" - NEXT round, not C4
-    (RSC and CS both read it as ambiguous, not false).
-  - Heartbeat deferral now has a trigger (SS measured-hold + CS configured-
-    deadline arm). LW's deadline guard exists at TEST time only
-    (tests/test_slot_hold_is_bounded.py:183); a run-time refusal like SS's
-    check_deadline() is optional.
-  - docs/SLOT_HOLD_CORPUS.md when ops/runtime/slot_holds.jsonl gets a record.
-  - LL's subprocess-audit-hook replacement at tests/test_lw_rundash.py:399.
-  - LW asserts determinism instead of measuring it (SS's perf-repeat question).
+Do NOT redo: the proxy wiring, the responder arming, the bare-claude and
+  DETACHED_PROCESS spawn fixes (883b5f2, 1fe3db8, verified live); hooksPath;
+  environ-leak and invalid-escape sweeps; round-B mutants; read-and-unanswered
+  recount; bulk-acking the inbox; the email-residual history rewrite (operator
+  declined).
+Open + owed: PYTEST_DEBUG_TEMPROOT root-cause conftest slice; CS's hold()
+  docstring (next round); LL's age-first reaper means C4's live-holder
+  protection is not fleet-wide until LL fixes it; held loop's claude-opus-5
+  model id not proven through the proxy; a refused loop-oracle auditor reads
+  CLEAN; LL's audit-hook replacement at tests/test_lw_rundash.py:399.
 Start with: /clear, then bootstrap from CLAUDE.md + MEMORY.md + WAKEUP_NOTES + git log.

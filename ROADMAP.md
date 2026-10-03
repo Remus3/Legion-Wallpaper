@@ -6,6 +6,14 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Headless spawns on the operator's second account, fail closed; inbox responder
+  ARMED and actually spawning - DONE 2026-10-02/03 (`16d9134`, `883b5f2`,
+  `1fe3db8`).** `tools/lw_headless_env.py` gates all six launch sites; proof spawn
+  routed to the second account (200). The responder had never spawned (bare
+  `claude` argv vs `claude.CMD`) and then opened a visible console per note
+  (DETACHED_PROCESS disables CREATE_NO_WINDOW); both fixed RED-first and verified on
+  a live fire. MAIN speaks for the operator (CLAUDE.md Settled). LEDGER 230-231.
+
 - **The frozen candidate reached THREE attestations and FAILED on landing - 2026-10-02
   2355 note, TWO BLOCKING objections upheld, LW's own defect.** `da35f8b1` was attested from own disk by RC
   (2100, re-stood post-freeze 2300), RSC (2100 - the hand-off said only `7f84ec96`;

@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+231. DONE **2026-10-03 (the armed responder never spawned: bare `claude` argv, then a
+   visible console per note; `883b5f2`, `1fe3db8`).** /done pre-flight found every
+   LW-InboxResponder fire since arming exited 1 with 10 notes waiting. Root cause,
+   reproduced: Popen given the bare name `claude` makes CreateProcess look for
+   `claude.exe`; the CLI is `claude.CMD` -> FileNotFoundError. The responder had never
+   spawned since it was built; LW's 2220 "ARMED" rested on one exit-0 fire that had
+   no mail and so never reached the spawn. Sibling: the CI watchdog's fix run, same
+   argv. Both now launch the `shutil.which` result (RED-first tests). The first good
+   fire opened a VISIBLE console per note (operator + MAIN 0055, digest checked):
+   DETACHED_PROCESS makes Windows IGNORE CREATE_NO_WINDOW, so claude.CMD's cmd.exe
+   under a console-less pythonw got a new console. Flags now NO_WINDOW | NEW_GROUP;
+   fail-first flag test + a tools/ops-wide no-DETACHED_PROCESS guard (old code reddens
+   both). Verified live on the 00:51:51 fire: 3 spawns, MainWindowHandle 0, children
+   outlive the exited pythonw. ACK + correction sent to MAIN.
+
 230. DONE **2026-10-02 (headless spawns go through the operator's second account,
    fail closed; inbox responder RE-ARMED; MAIN speaks for the operator).** Operator
    directive typed in session and confirmed ("confirmed item 1-4 as written"). New
