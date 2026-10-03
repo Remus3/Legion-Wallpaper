@@ -79,6 +79,21 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-03, sixth) - MAIN FLEET-KIT v3 adopted
+
+- Shipped: 062ffd5 (kit vendored to ops/fleet_kit/, conformance test
+  tests/test_fleet_kit_conformance.py, CLAUDE.md 37,980 -> 15,219 B with the
+  old text verbatim in docs/claude-md-history.md, quiet /done), fc6cdb4 (every
+  headless claude spawn routed through the kit; responder skips kit bundle
+  DIRECTORIES - MAIN 1029 fix, 3 fail-first tests), 4c7d729 (LEDGER 242).
+- Suite 3466 passed / 0 failed / 19 skipped / 4 xfailed; CI green on fc6cdb4.
+- Provenance: MAIN 0955/1014/1016 orders + v3 kit, 6 of 6 sha256 MATCH MAIN outbox.
+- Reply to MAIN delivered (1100 note). 13 kit gaps reported for v4, NOT patched;
+  gaps 4/6/8/9 pinned as strict xfail. Worst two: unreadable budget file counts
+  as zero (fails open); effort caps at medium.
+- Do NOT redo: the kit adoption, the bundle-dir fix, the spawn routing.
+- C4 tally re-hashed at session start: still 2 of 5 (LW, RSC).
+
 ## PREVIOUS SESSION (2026-10-03, fifth) - pipeline intake + first pass while operator away
 
 Commits: e50866d (ROADMAP temp-root row closed), 864a173 (hand-off), plus the /done docs.
