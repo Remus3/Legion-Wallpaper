@@ -5,16 +5,26 @@ Task: FOLLOW THE C4 ROUND TO CLOSE. Re-hash ops/loop/slots.py in every carrier
   TALLY 2026-10-03 session 6: 2 of 5 - LW 700cd64, RSC 3d62942 carry C4; RC, CS,
   SS still on the 9,627 B v2 bytes (targets 10-09). LL carries no slots.py.
   The round CLOSES when the last carrier reports 290cbf80.
-Context: MAIN FLEET-KIT v3 is ADOPTED (062ffd5, fc6cdb4, LEDGER 242). Headless
-  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Watch the inbox
-  for a FLEET-KIT-v4 note: on receipt replace all three kit files + re-embed the
-  CLAUDE.md block in one commit; flip the strict xfail gap tests that v4 fixes.
+Context: MAIN FLEET-KIT v4 is ADOPTED (62442fc, LEDGER 243; CI run 37142252994
+  success). Headless spawns go through ops/fleet_kit/ via tools/lw_headless_env.py.
+  Watch the inbox for a FLEET-KIT-v5 note: on receipt vendor the kit files
+  byte-for-byte, re-check the CLAUDE.md block, and act on the two v5 gaps below.
   The inbox responder is LIVE (LW-InboxResponder, every 5 min, 120 runs / 24 h,
   its children COMMIT in this tree). Kill: the HALT file, or delete the proxy
   user variable. MAIN notes carry operator authority after a sha256 check
   against MAIN's outbox. Never put a 64-hex digest in this file.
 Acceptance: all five carriers report the C4 digest on disk.
 Carried forward:
+  - /done GATE RED (pre-existing, not this session's work): drift_guard BREACH
+    ops/loop/slots.py 290cbf80 (LW, C4) vs RC 71fa2a68 (v2) -> done_gate bind
+    exits 1, verify-push refuses. Session 7 hand-off + WAKEUP commit is LOCAL,
+    NOT PUSHED. Clears when RC lands C4; then bind + push + verify-push.
+    Session 6 pushed a4a8f4d over a RED receipt - do not repeat.
+  - Two kit gaps reported to MAIN for v5 (1258 ADOPTED note): (a) loop executor
+    stays on kit primitives - v4 spawn() returns only result text, executor
+    needs structured result + session id; (b) kit should pass CREATE_NO_WINDOW
+    as a literal keyword at its own launch call so the console-flash test
+    exemption can be removed. Wait for v5; do not patch the kit.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 7 slugs (akali/janna/mel coven, diana x2, miss-fortune, yuumi) at
@@ -22,11 +32,13 @@ Carried forward:
     banding on the five -pre slugs (+0.008..+0.014). Lux coven -pre in
     0.Originals is a byte-equal duplicate refused by intake - operator deletes
     it. Miss Fortune DA fetch is 403 (manual_queue.csv).
-  - 13 kit gaps reported to MAIN (1100 note); worst: unreadable budget file
-    fails open, effort caps at medium. Wait for v4; do not patch the kit.
+  - SYNC INBOX: ~289 unread notes remain. Do NOT bulk-ack (--mark-inbox-seen);
+    read by mtime.
   - CONCURRENCY: before editing a file check for live `claude -p` processes and
     recent mtimes; commit file-scoped (`git commit -- <paths>`), never git add -A.
-Do NOT redo: FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
+Do NOT redo: FLEET-KIT v4 adoption + ADOPTED answer to MAIN (62442fc, LEDGER
+  243; the first attempt stalled at 72 pct, a takeover agent finished it);
+  FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
   fix (fc6cdb4); the C4 landing (700cd64); the responder self-skip (b7d50a7);
   the per-tree pytest temp root (7d54d16); the CI no-filter tripwire parser
   (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW
@@ -35,4 +47,4 @@ Do NOT redo: FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps; round-B
   mutants; bulk-acking the inbox; the email-residual history rewrite (operator
   declined).
-CI: green on fc6cdb4; the /done push result is in git log.
+CI: green on 62442fc (run 37142252994). Session 7 /done commit not pushed (gate RED above).
