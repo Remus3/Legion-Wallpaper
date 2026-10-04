@@ -40,7 +40,7 @@ Contract references: `docs/research/CLEANING_INPAINT.md` (stack + install), `doc
 2. **Inpaint:** LaMa via simple-lama-inpainting (primary batch engine) - masked region ONLY. LaMa does not hallucinate new content, which keeps the audit story simple. Large reconstructions (missing content) are NOT this stage - defer to /final-pass masked repair.
 3. **Verify (G2 gate, hard):**
    - OUTSIDE the dilated mask: SSIM >= 0.995 AND mean abs diff <= 1/255 - the identity assertion. Any violation = pipeline bug (full-image pass slipped through) - HARD FAIL, discard the output.
-   - INSIDE the mask: change-happened check (SSIM vs original patch <= 0.90, else the inpaint no-opped - fail); text-residue check (MSER/morphological-gradient text detection inside the old bbox - any text-like components = residual watermark - fail); seam check (boundary-ring SSIM + texture-statistics mismatch inside vs outside = flag).
+   - INSIDE the mask: change-happened check (SSIM vs original patch <= 0.90, else the inpaint no-opped - fail); text-residue check = re-inpaint matched filter `residue_mf` (strokes from the pre-clean image inside each detected box; |median| > 3.0 levels = flag `residue_mf`, failed probe = flag `residue_mf_error`; the OCR+MSER fail arm was retired in R2b, LEDGER 270); seam check (`seam_step` contour-normal step > bar = flag; ring SSIM is info only since R3b).
 4. Verify pass -> register: `... lw_pipeline.py save-working <slug> --from <path> --tool lama --params <json-with-mask-bbox>`.
 5. Verify fail -> human QA queue (ONE attempt: `max_attempts` defaults to 1, and
    a repeat attempt recomputes bit-identical pixels).
