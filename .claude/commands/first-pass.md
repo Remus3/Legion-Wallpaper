@@ -61,3 +61,20 @@ Hard fail -> do NOT submit; save the evidence, adjust (different model/params) a
 ```
 LW FIRST PASS | processed=<n> submitted=<k> gate-fail=<f> flagged=<g> | upscaler=<janai|realesrgan> | awaiting-auth=<q> | next: approve/reject via lw_pipeline
 ```
+
+## Failure catalogue
+
+Every rule above traces to a real failure. Each row cites the LEDGER item that recorded it; `drift_guard` checks this table exists and that every cited item is real (`tools/lw_failure_catalogue.py`). Add a row when a new failure teaches a rule.
+
+| Symptom | Cause | How it was caught | Fix | LEDGER |
+|---|---|---|---|---|
+| The better upscaler hard-failed G1 on 8 of 10 images. | A band_delta greater-than-0 rule failed on about 0.004 of noise. | IJN vs fallback A/B with identical gate code. | band_delta demoted to an advisory flag above 0.05. | LEDGER 3 |
+| Downscale-only outputs passed or failed G1 at random. | The lap_ratio floor swung 0.75 to 1.20 on near-identical clean downscales. | A non-mutating probe on three 4K sources. | ADR-006 drops only the lap floor for downscale-only. | LEDGER 11 |
+| 63 of 230 manifests were missing DISTS. | At 8K common scale DISTS ran out of memory on both the GPU and system RAM. | A live probe plus a blast-radius count of failed manifests. | MAX_COMMON_PIXELS cap in lw_g1_gate, plus empty_cache between metrics. | LEDGER 32 |
+| The backfill produced garbage DISTS of 0.75 on fullview slugs. | PIL crop() zero-pads a box larger than the image. | Cross-checked against the recorded MS-SSIM of 0.99. | Redone through production condition_source with an asserted src_dims. | LEDGER 32 |
+| An at-target source showed halo_pct 0.0711. | A no-op resize still applied USM, which manufactured the halo. | The G1 halo flag during the refs-46 escalation. | _usm_applies() skips USM only when the input already equals the target size. | LEDGER 46 |
+| The pixel-identity test passed against the bug. | A saturated 0/255 step edge is a fixed point of UnsharpMask. | It was the one required test that never went red. | Fixture re-cut on a mid-tone edge, with the reason in the docstring. | LEDGER 46 |
+| Alpha was flattened with no trace in the audit. | first_pass discarded RGBA and P+tRNS alpha silently. | Four investigation cycles over the refs-46 sources. | Audit now records source_mode and alpha_flattened. | LEDGER 56 |
+| A slug died with a SyntaxError, not a quality failure. | An apostrophe in a filename closed a hand-built r'...' literal. | The batch lost kai-sa during /first-pass. | _pylit() via json.dumps at both call sites and in run_fr_metrics. | LEDGER 143 |
+| A crop offset override would have been silently lost. | list(crop_sides) on a dict records only its keys. | Found while adding the --crop-overrides offset grammar under TDD. | The recording call site was fixed in the same commit. | LEDGER 173 |
+| Posterized (banded) output does not raise band_delta. | The metric counts isolated 1-px steps after a LANCZOS downscale that smears every step. | The fault-proven gate board: posterize step 8 and 32 lower it, BROKEN 0/12. | Acknowledged research item (config/gate_board_ack.json); do not trust band_delta on output-scale banding. | LEDGER 244 |
