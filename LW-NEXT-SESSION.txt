@@ -45,11 +45,14 @@ Carried forward:
     noise), G2.text_residue BROKEN 0/12 (OCR+MSER fires on restored busy art
     and misses +4-level residue; needs a new detector). Re-prove after any gate
     change: python tools/lw_gate_board.py prove --golden --env all (~4 min).
-  - OPERATOR VALIDATION (only the operator can judge): open
-    http://127.0.0.1:8901/review on the phone and the desktop, mark three real
-    spots on one slug, publish once (P1-2 acceptance). Gate-board validation
-    rows "reads like the original art" and "no ghost/band/faint residue at 1:1"
-    never count toward done.
+  - Gate-board validation rows "reads like the original art" and "no
+    ghost/band/faint residue at 1:1" stay with the operator and never count
+    toward done. (P1-2 bench acceptance MET 2026-10-04, LEDGER 259.)
+  - yuumi-by-narumicsibe-dmax7wo-fullview: 3 operator residue seeds (credit
+    line wording x2, veil) filed for its next /cleaning-pass at
+    ops/runtime/clean/<slug>/<slug>_review_seeds.json; slug is still at
+    _firstneedauth awaiting operator approval. Answer each thread with the
+    after crop once cleaned.
   - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The
     first real finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
     Locks are operator-initiated: python tools/lw_stage_ledger.py lock ...

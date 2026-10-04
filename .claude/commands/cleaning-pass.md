@@ -26,7 +26,8 @@ Contract references: `docs/research/CLEANING_INPAINT.md` (stack + install), `doc
 - Run the watermark detector (YOLO, imgsz=1024) + EasyOCR text detection over the FULL image - never assume fixed watermark positions (the corpus's confirmed class is baked-in artist-credit strips, e.g. bottom-edge text, mixed latin + CJK).
 - Corner/center-bottom template sweep against the known wallpaper-site watermark library.
 - Cheap high-pass pre-filter (deviation from 9px median) as a hint layer only - it fires on fine art detail; it is a pre-filter, not a decider.
-- No detections -> record "clean scan" in the manifest and skip to section 5 (an image can legitimately need zero cleaning).
+- OPERATOR REVIEW SEEDS come first: if `ops/runtime/clean/<slug>/<slug>_review_seeds.json` exists (written by `python tools/lw_review_threads.py seed-mask <slug>` from marks the operator placed on the review bench and promoted), every seed box is a confirmed residue ROI - the operator's eye found it, so it is never down-ranked by a detector score and "no detections" is NOT a valid outcome for that slug. A seed is a locator: build the complete mask around it (dark outline included), then answer the mark's thread with the after crop (`lw_review_threads.py answer`).
+- No detections (and no review seeds) -> record "clean scan" in the manifest and skip to section 5 (an image can legitimately need zero cleaning).
 
 ### 2. GATE the detections
 

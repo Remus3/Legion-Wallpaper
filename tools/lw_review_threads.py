@@ -24,6 +24,7 @@ Served by tools/lw_monitor.py (127.0.0.1 only) at /review.
   python tools/lw_review_threads.py answer <slug> <id> --said "..."
   python tools/lw_review_threads.py state <slug> <id> fixed|wont
   python tools/lw_review_threads.py promote <slug> <id>
+  python tools/lw_review_threads.py seed-mask <slug>    # -> ops/runtime/clean/<slug>/
 """
 from __future__ import annotations
 
@@ -324,6 +325,39 @@ def promote(slug, mid, review_root=REVIEW_ROOT):
     return seed
 
 
+CLEAN_RUNTIME = ROOT / "ops" / "runtime" / "clean"
+
+
+def seed_mask(slug, review_root=REVIEW_ROOT, clean_root=CLEAN_RUNTIME):
+    """Union every promoted seed of `slug` into a white-on-black mask PNG (white =
+    the mark, the cleaning lane's --mask convention) under
+    <clean_root>/<slug>/<slug>_review_seed_mask.png, plus a JSON listing the
+    marks. A seed is a LOCATOR from the operator's eye: the lane still builds
+    its complete mask around it. Edits no image."""
+    from PIL import Image, ImageDraw
+    d = Path(review_root) / _check_slug(slug)
+    seeds = [json.loads(p.read_text(encoding="ascii")) for p in sorted(d.glob("m*_seed.json"))]
+    if not seeds:
+        raise ReviewError("no promoted seeds for slug")
+    w, h = load(slug, seeds[0]["from_mark"], review_root)["image"]["size"]
+    mask = Image.new("L", (w, h), 0)
+    draw = ImageDraw.Draw(mask)
+    for sd in seeds:
+        x0, y0, x1, y1 = sd["box"]
+        draw.rectangle([x0, y0, x1 - 1, y1 - 1], fill=255)
+    out_dir = Path(clean_root) / slug
+    out_dir.mkdir(parents=True, exist_ok=True)
+    mpath = out_dir / f"{slug}_review_seed_mask.png"
+    tmp = mpath.with_name(mpath.name + ".part")
+    mask.save(tmp, format="PNG")
+    os.replace(tmp, mpath)
+    rec = {"slug": slug, "mask": str(mpath), "from_marks": [sd["from_mark"] for sd in seeds],
+           "boxes": [sd["box"] for sd in seeds], "said": [sd["said"] for sd in seeds],
+           "created": _now()}
+    _atomic_json(out_dir / f"{slug}_review_seeds.json", rec)
+    return rec
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(prog="lw_review_threads")
@@ -342,6 +376,8 @@ def main(argv=None):
     pr = sub.add_parser("promote")
     pr.add_argument("slug")
     pr.add_argument("id")
+    sm = sub.add_parser("seed-mask", help="union promoted seeds into a cleaning-lane mask")
+    sm.add_argument("slug")
     a = ap.parse_args(argv)
     try:
         if a.cmd == "list":
@@ -360,6 +396,8 @@ def main(argv=None):
             print(f"{a.slug}/{a.id} -> {a.state}")
         elif a.cmd == "promote":
             print(json.dumps(promote(a.slug, a.id)))
+        elif a.cmd == "seed-mask":
+            print(json.dumps(seed_mask(a.slug)))
     except ReviewError as exc:
         print(f"refused: {exc}")
         return 2

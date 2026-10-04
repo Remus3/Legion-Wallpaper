@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+259. DONE **2026-10-04 (review bench: P1-2 acceptance MET by the operator; three residue marks answered and seeded for cleaning).**
+   OPERATOR ACT, READ BACK from ops/runtime/review: three marks on yuumi-by-narumicsibe-dmax7wo-fullview
+   (r=13): [1353,996] and [1447,998] "watermark line wording still present", [1142,585] "watermark
+   veil still present"; ONE publish -> batch b20261004T065035-460e, ONE review_batch notification,
+   count 3. P1-2 acceptance ("operator marks three spots, publishes once, the agent receives one
+   notification listing three ids and answers each with a crop") is MET. Each thread answered: state
+   -> answered, reply crop rendered from the stored view - read back 1098x1316 for all three,
+   pixel-identical to the before shot (aligned; no clean has run on this slug yet, so identical is
+   the honest after). Operator-authorized promotion of all three to seeds; new `lw_review_threads.py
+   seed-mask` (TDD, mutation-proven) unioned them into the cleaning lane's --mask convention: READ
+   BACK ops/runtime/clean/<slug>/<slug>_review_seed_mask.png + _review_seeds.json, boxes
+   [1340,983,1366,1009] [1129,572,1155,598] [1434,985,1460,1011]. `.claude/commands/cleaning-pass.md`
+   DETECT now works review seeds first and never accepts "no detections" for a seeded slug. No GPU
+   clean was run unattended. PREMISE CORRECTED: no residue detector has run on this slug - it is
+   still at first pass (_firstneedauth, awaiting operator approval), with no cleaning triage or
+   verify record. Cross-reference LEDGER 244: when it reaches cleaning, the live OCR+MSER residue
+   arm is BROKEN on faint residue (misses +4-level marks, fires on busy art) and a DA-style veil
+   sits near that amplitude, so the operator's seeds - not the detector - decide that slug.
+
 258. DONE **2026-10-04 (review bench: image never shown in operator test - slug picker + auto-load; tailnet Host allowlist for phone access).**
    OPERATOR TEST (2026-10-04): /review loaded but no image showed, and the phone could not reach
    127.0.0.1. CAUSE (read from logs/lw_monitor.log): three `GET /review`, ZERO image requests - the
