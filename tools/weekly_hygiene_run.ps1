@@ -51,6 +51,17 @@ if (Test-Path -LiteralPath $halt) {
 $stamp = Get-Date -Format "yyyy-MM-dd"
 $log   = Join-Path $repo "logs\weekly_hygiene_$stamp.log"
 
+# PROMISE WATCH (ingest P1-3): keep the CLAUDE.md "Reverse if" promises
+# without anyone remembering. Posts once per marker to
+# ops\runtime\promises\posts.jsonl; exit 2 means a probe could not decide and is
+# logged, never read as "nothing changed". Runs before claude so the pass below
+# can list new posts in its WAKEUP entry. Argv only, no shell, no stdin.
+$pwPin = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
+$pwPy = if (Test-Path $pwPin) { $pwPin } else { (Get-Command python).Source }
+$pwOut = & $pwPy (Join-Path $repo "tools\lw_promise_watch.py") --post 2>&1
+$pwRc = $LASTEXITCODE
+Add-Content -LiteralPath $log -Value ("[promise_watch] rc=" + $pwRc + " " + ($pwOut -join " ")) -Encoding ASCII
+
 $prompt = @'
 Run /weekly-hygiene. This is an UNATTENDED scheduled run - no operator is
 watching the chat. After the pass, append a short dated "weekly-hygiene"
@@ -58,7 +69,10 @@ entry to WAKEUP_NOTES.md listing (a) what you relocated and committed and
 (b) every judgment call you flagged (memory suspects, actionable anomalies),
 so I see them at next session start. Commit + push the relocate-only doc
 trims and the WAKEUP entry when local checks are green, then exit. Do NOT
-make code changes and do NOT run /sync-all-md.
+make code changes and do NOT run /sync-all-md. Also list, in that entry, every
+line added this week to ops/runtime/promises/posts.jsonl (a CLAUDE.md
+"Reverse if" condition came true) and any "[promise_watch] rc=2" line in
+today's weekly_hygiene log (a promise could not be checked).
 '@
 
 $tools = "Edit,Read,Write,Bash,Grep,Glob,TaskCreate,TaskUpdate,TaskList"

@@ -103,6 +103,14 @@ tools\lw_review_threads.py           spatial review bench (P1-2): a mark (xy +
                                      from the stored view. Page web\review.html
                                      on the monitor (127.0.0.1:8901/review).
 
+tools\lw_promise_watch.py            promise watch (P1-3): ops\promises.json
+                                     maps every CLAUDE.md "Reverse if" to an
+                                     argv probe (tools\lw_promise_probes.py)
+                                     or a not-machine-checkable reason; a true
+                                     condition posts ONCE per marker to
+                                     ops\runtime\promises\posts.jsonl; run
+                                     weekly by LW-WeeklyHygiene (--post).
+
 ops\runtime\pipeline_state.json      machine state twin, written atomically by
                                      lw_pipeline.py; monitor reads tolerantly
                                      (unknown fields ignored, stale-cache belt).
