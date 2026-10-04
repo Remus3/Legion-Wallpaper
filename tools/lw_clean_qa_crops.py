@@ -27,6 +27,9 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lw_reviewability as R  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CENSUS = os.path.join(ROOT, "ops", "runtime", "clean_recall_census_gatev4.json")
 TEMPLATE = os.path.join(ROOT, "ops", "runtime", "clean", "overlay_template.npz")
@@ -97,13 +100,43 @@ def _region(row: dict, sup_rel) -> tuple[int, int, int, int]:
     )
 
 
-def _cell(row: dict, sup_rel, boost: bool):
-    path = _firstdone(row["slug"])
-    if not path:
-        return None
-    im = Image.open(path).convert("RGB")
+def _roi(row: dict, sup_rel, reg):
+    """The region the flag is ABOUT (the crop adds context around it)."""
+    if row["reason"] == "centre_overlay" and sup_rel is not None:
+        w, h = int(row["w"]), int(row["h"])
+        x0, y0, x1, y1 = sup_rel
+        return (int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h))
+    boxes = row.get("boxes") or []
+    if row["reason"] == "faint_mark" or not boxes:
+        boxes = [m["box"] for m in (row.get("faint_marks") or [])] or boxes
+    if not boxes:
+        return reg
+    return (min(b[0] for b in boxes), min(b[1] for b in boxes),
+            max(b[2] for b in boxes), max(b[3] for b in boxes))
+
+
+def build_cell(im: Image.Image, row: dict, sup_rel, boost: bool):
+    """One sheet cell at 1:1 plus its reviewability record (directive P1-7).
+
+    The crop is NEVER resized: this used to scale every crop to a 760px cell,
+    a downscale for any crop wider than that - the exact case where a vision
+    reviewer's residue judgement is unreliable. The ROI is re-cut with a margin
+    when it would touch the crop edge.
+    """
+    row = dict(row)
+    row.setdefault("w", im.width)
+    row.setdefault("h", im.height)
+    frame = (im.width, im.height)
     reg = _region(row, sup_rel)
+    roi = _roi(row, sup_rel, reg)
+    probe = R.check_crop(frame, reg, roi, (reg[2] - reg[0], reg[3] - reg[1]),
+                         np.zeros((1, 1)) + 128.0)
+    if probe["action"] == "recut":
+        r2 = R.recut(frame, roi)
+        reg = (min(reg[0], r2[0]), min(reg[1], r2[1]), max(reg[2], r2[2]), max(reg[3], r2[3]))
     crop = im.crop(reg)
+    gray = np.asarray(im.convert("L").crop(roi), dtype=np.float64)
+    rec = R.check_crop(frame, reg, roi, crop.size, gray)
     if row["reason"] != "centre_overlay":
         d = ImageDraw.Draw(crop)
         boxes = row.get("boxes") or []
@@ -114,21 +147,31 @@ def _cell(row: dict, sup_rel, boost: bool):
                 [b[0] - reg[0], b[1] - reg[1], b[2] - reg[0], b[3] - reg[1]],
                 outline=(255, 0, 0), width=3,
             )
-    scale = CELL_W / crop.width
-    crop = crop.resize((CELL_W, max(1, int(crop.height * scale))), Image.LANCZOS)
     tiles = [crop]
     if boost and row["reason"] == "centre_overlay":
         tiles.append(_boost(crop).convert("RGB"))
+    width = max(CELL_W, max(t.width for t in tiles))
     height = sum(t.height for t in tiles) + LABEL_H
-    cell = Image.new("RGB", (CELL_W, height), (20, 20, 20))
+    cell = Image.new("RGB", (width, height), (20, 20, 20))
     y = LABEL_H
     for t in tiles:
         cell.paste(t, (0, y))
         y += t.height
-    lab = "{} | ov={:.3f} nb={} cmax={:.2f}".format(
-        row["slug"][:52], row["overlay_score"], row["n_boxes"], row["conf_max"])
+    lab = "{} | ov={:.3f} nb={} cmax={:.2f} | 1:1 {}".format(
+        row["slug"][:52], row.get("overlay_score", 0.0), row.get("n_boxes", 0),
+        row.get("conf_max", 0.0), "judge" if rec["judgeable"] else rec["action"])
     ImageDraw.Draw(cell).text((6, 7), lab, fill=(255, 255, 0))
-    return cell
+    rec["slug"] = row["slug"]
+    rec["reason_flag"] = row["reason"]
+    return cell, rec
+
+
+def _cell(row: dict, sup_rel, boost: bool):
+    path = _firstdone(row["slug"])
+    if not path:
+        return None
+    with Image.open(path) as im:
+        return build_cell(im.convert("RGB"), row, sup_rel, boost)
 
 
 def main() -> int:
@@ -152,11 +195,12 @@ def main() -> int:
 
     sheet, n = [], 0
     for row in rows:
-        cell = _cell(row, sup_rel, not args.no_boost)
-        if cell is None:
+        built = _cell(row, sup_rel, not args.no_boost)
+        if built is None:
             print("MISSING firstdone:", row["slug"])
             continue
-        sheet.append((row, cell))
+        cell, rec = built
+        sheet.append((row, cell, rec))
         if len(sheet) == args.per_sheet:
             n += 1
             _write(sheet, args.outdir, n)
@@ -168,17 +212,25 @@ def main() -> int:
 
 
 def _write(sheet, outdir, n):
-    w = max(c.width for _, c in sheet)
-    h = sum(c.height + 8 for _, c in sheet)
+    """Sheet PNG plus its reviewability records (one per cell) as JSON - a
+    reviewer input without a record is not admissible (P1-7)."""
+    w = max(c.width for _, c, _ in sheet)
+    h = sum(c.height + 8 for _, c, _ in sheet)
     im = Image.new("RGB", (w, h), (0, 0, 0))
     y = 0
-    for _, c in sheet:
+    for _, c, _ in sheet:
         im.paste(c, (0, y))
         y += c.height + 8
     tag = sheet[0][0]["reason"]
     out = os.path.join(outdir, f"sheet_{tag}_{n:02d}.png")
     im.save(out)
-    print(out, "|", ", ".join(r["slug"] for r, _ in sheet))
+    recs = [r for _, _, r in sheet]
+    tmp = out[:-4] + ".json.part"
+    with open(tmp, "w", encoding="ascii", newline="\n") as f:
+        json.dump({"sheet": os.path.basename(out), "reviewability": recs}, f, indent=1)
+    os.replace(tmp, out[:-4] + ".json")
+    print(out, "|", ", ".join(r["slug"] for r, _, _ in sheet),
+          "| downscaled:", sum(1 for r in recs if r["scale"] < 1.0))
 
 
 if __name__ == "__main__":

@@ -36,6 +36,16 @@ Per AUDIT_GATES.md section 4 - LMMs are reliable at pairwise comparison, weak at
 - Forced-JSON rubric (10 categories, 0-3 each + verdict), temperature 0, model ID + prompt hash pinned to the ledger. Haiku is the workhorse; escalate to a high-res-tier model only for flagged categories. Borderline -> 3-call self-consistency majority + A/B-swap position-bias check.
 - Pass rule (auto-computable): no category 0; at most one category 1; eyes_and_irises >= 2; watermark_or_text_residue == 3; candidate must win or tie vs the original.
 
+#### Picture-judging doctrine (binding on every vision reviewer; directive P1-7)
+
+A model judging pictures is reliable about shape and absence and unreliable about faint, small or contact-level properties. The zero-watermark bar is about faint marks, so:
+
+1. **Say what the pixels show.** Describe what is visible; do not infer what "should" be there.
+2. **Measure before acting.** Read the reviewability record and the metrics first. When a measurement disagrees with the picture, say so in the verdict instead of dropping either observation.
+3. **Picture size decides what a picture can answer.** A whole-scene thumbnail answers layout questions only. A residue, ghost, band or edge question is answered only from one region at 1:1 - never from a downscaled sheet. Before claiming a defect in a region, open that region at 1:1.
+4. **Do not trust the eye on dim or clipped views.** The record carries the ROI's measured brightness, clipped fraction and contrast and whether the ROI touches the frame edge; a crop flagged dim, clipped or flat is answered "not judgeable from pixels", never PASS.
+5. **Every residue crop carries a reviewability record** (`tools/lw_reviewability.py`): scale must be 1.0, the ROI must sit inside the crop with a margin. A crop that fails is re-cut; if it still fails, or the item needs more than `MAX_CROPS_PER_ITEM` crops, the item is "not judgeable from pixels" and goes to the operator. Crops per item are capped - more crops are more vision calls.
+
 ### 3. Verdict: PASS -> finalize
 
 1. `... lw_pipeline.py finalize <slug> --audit-json <path>` (dry-run first) - copies `_lastdone` to `images\9.Image Backup\<slug>\` (hash-idempotent, never overwrite), snapshots the manifest to backup, logs FINALIZE.

@@ -89,6 +89,12 @@ tools\lw_stage_ledger.py             per-stage region ledger (P1-1): which
                                      lw_pipeline finalize refuses a pass when a
                                      lock changed unasserted.
 
+tools\lw_reviewability.py            reviewability record for every crop a
+                                     vision reviewer judges residue on (P1-7):
+                                     1:1 only, ROI margin, dim/clipped/flat
+                                     floors; lw_clean_qa_crops emits one per
+                                     cell; doctrine in end-review.md.
+
 ops\runtime\pipeline_state.json      machine state twin, written atomically by
                                      lw_pipeline.py; monitor reads tolerantly
                                      (unknown fields ignored, stale-cache belt).
