@@ -37,7 +37,6 @@ wherever the golden set is on disk; on CI (no golden set) absence is a note.
 | G0.aspect | PROVEN | 12/12 | letterbox to 16:10 |
 | G1.lap_ratio | PROVEN | 11/11 (+1 NA) | down-up x2 bicubic |
 | G1.halo_pct | PROVEN | 12/12 | USM r2 p150 t0 |
-| G1.band_delta | BROKEN | 0/12 | posterize step 8 |
 | G1.cambi_delta | PROVEN | 12/12 | posterize step 8 (added 2026-10-04, LEDGER 263) |
 | G1.msssim | PROVEN | 12/12 | 16 px shift |
 | G1.lpips | BROKEN | 11/12 | down-up x4 |
@@ -49,7 +48,7 @@ wherever the golden set is on disk; on CI (no golden set) absence is a note.
 | V.reads_like_original | VALIDATION | - | operator only |
 | V.zero_watermark_eye | VALIDATION | - | operator only |
 
-**P0-3 acceptance ("every gate PROVEN") is NOT MET.** Four rows are
+**P0-3 acceptance ("every gate PROVEN") is NOT MET.** Three rows are
 acknowledged (below), which is a record of a measured hole, not a pass.
 
 ## What the board found
@@ -69,8 +68,11 @@ acknowledged (below), which is a record of a measured hole, not a pass.
    PROVEN (R1, LEDGER 263): G1.cambi_delta = CAMBI (libvmaf, max_log_contrast=5)
    of the output at 2560x1440 minus CAMBI of the source resized to that size;
    clean -0.51..1.21, posterize_8 3.00..14.17, flag > 2.0, PROVEN 12/12; 0/131
-   live needauth frames flag. Not yet computed in the live first pass, so
-   band_delta stays pinned until that wiring retires it.
+   live needauth frames flag. LIVE since R1b (LEDGER 265):
+   `lw_first_pass.compute_cambi_delta` feeds `assemble_metrics`, None (not
+   gated, logged) without ffmpeg. The G1.band_delta row and its ack entry are
+   RETIRED; band_delta is recorded under the annotate payload's `info_metrics`
+   only, and stays a verdict rule solely for `lw_clean_fr` (same-scale audit).
 4. **G1.lpips misses a 4x detail loss on a soft low-res source** (coven-ashe,
    0.037 -> 0.059 vs a 0.12 bar). lap_ratio catches it there (1.514 -> 0.198).
 5. **G2.seam measures ring texture, not a seam.** A perfect fill reads < 0.92 on
@@ -99,7 +101,6 @@ acknowledged (below), which is a record of a measured hole, not a pass.
 | G2.outside_identity | 32x32 block, +16 levels | a localized composite bug, far below what the mean arms can see |
 | G1.lap_ratio | down-up x2 | the historic double-resample softness bug (AUDIT_GATES 3.1) |
 | G1.halo_pct | USM r2 p150 t0 | a second USM at the `_clamp_usm` ceiling; the fallback upscaler measured 0.049-0.145 (QA Session 2) |
-| G1.band_delta | posterize step 8 | 5-bit quantization, classic gradient banding |
 | G1.cambi_delta | posterize step 8 | same fault; clean max 1.21 vs banded min 3.00 on the golden set |
 | G1.msssim | 16 px shift | measured 2026-09-08 (tests/test_g1_msssim_arm_binds.py) |
 | G1.lpips | down-up x4 | blur r8 measured lpips 0.157 (same file) |
@@ -115,8 +116,9 @@ the row, its pinned measured state (state, n_proven, failing subjects), a
 LEDGER item that exists and a checkable `clears_when` downgrades exactly that
 row to a note. A re-run that is WORSE breaches; a row that becomes PROVEN asks
 for its entry to be removed. Entries are added only through a recorded
-adjudication; removing one is always allowed. Current entries: G1.band_delta,
-G1.lpips, G2.seam, G2.text_residue (LEDGER 244).
+adjudication; removing one is always allowed. Current entries: G1.lpips,
+G2.seam, G2.text_residue (LEDGER 244); G1.band_delta removed with its row in
+R1b (LEDGER 265).
 
 ## Operator validation rows
 

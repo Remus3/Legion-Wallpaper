@@ -651,7 +651,15 @@ def _common(subject: dict):
     return cache["common"]
 
 
+_G1_NUMPY_METRICS = ("lap_ratio", "halo_pct")
+
+
 def _g1_value(metric: str):
+    # band_delta retired from the board with its live arm (R1b, LEDGER 265):
+    # G1.cambi_delta (_cambi_value) carries the banding fault.
+    if metric not in _G1_NUMPY_METRICS:
+        raise KeyError(metric)
+
     def measure(subject):
         g1 = _g1()
         src_g, out_g = _common(subject)
@@ -659,8 +667,6 @@ def _g1_value(metric: str):
             return g1.laplacian_ratio(src_g, out_g)
         if metric == "halo_pct":
             return g1.overshoot_halo(src_g, out_g)["halo_pct"]
-        if metric == "band_delta":
-            return g1.banding_delta(src_g, out_g)
         raise KeyError(metric)
     return measure
 
@@ -908,12 +914,9 @@ FAULT_EVIDENCE = {
                     "realistic over-sharpen: a second USM pass at the clamp ceiling "
                     "lw_upscale._clamp_usm allows (percent <= 150); the fallback "
                     "upscaler measured halo 0.049-0.145 (QA Session 2)"),
-    "G1.band_delta": ("posterize step 8 levels",
-                      "8-level plateaus = a 5-bit-per-channel quantization, the "
-                      "classic 8-bit gradient banding; band_delta bound 8 times in "
-                      "719 audits (tests/test_g1_msssim_arm_binds.py census)"),
     "G1.cambi_delta": ("posterize step 8 levels",
-                       "same fault as G1.band_delta (5-bit quantization); research R1 "
+                       "8-level plateaus = 5-bit quantization, classic gradient banding "
+                       "(the retired G1.band_delta row's fault); research R1 "
                        "measured CAMBI mlc=5 delta clean max 1.21 vs posterize_8 min "
                        "3.00 on the 12 golden frames (LEDGER 263)"),
     "G1.msssim": ("16 px horizontal shift",
@@ -949,8 +952,7 @@ FAULT_EVIDENCE = {
 
 FAULT_NAME = {
     "G0.aspect": "letterbox_16x10", "G1.lap_ratio": "downup_x2",
-    "G1.halo_pct": "usm_r2_p150", "G1.band_delta": "posterize_8",
-    "G1.cambi_delta": "posterize_8",
+    "G1.halo_pct": "usm_r2_p150", "G1.cambi_delta": "posterize_8",
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
     "G2.seam": "seam_offset_24lv", "G2.seam_step": "seam_offset_24lv",
@@ -1020,11 +1022,6 @@ def lw_board(envs=ENVS) -> Board:
             unit="frac of near-edge px", where="strong source edges",
             judge=_g1_judge("halo_pct"), applies=_g1_gated("halo_pct"), gate="G1"),
         on_output(lambda a: fault_usm(a, *HALO_USM)))
-    add(Row("G1.band_delta", "no banding added to smooth gradients",
-            _g1_value("band_delta"), _g1_bar("band_delta", "at_most", "flag"),
-            unit="density delta", where="smooth regions",
-            judge=_g1_judge("band_delta"), applies=_g1_gated("band_delta"), gate="G1"),
-        on_output(lambda a: fault_posterize(a, BAND_STEP)))
     add(Row("G1.cambi_delta", "no banding added to smooth gradients",
             _cambi_value, _g1_bar("cambi_delta", "at_most", "flag"),
             unit="CAMBI mlc5 delta", where="whole frame at output scale",
