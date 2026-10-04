@@ -339,7 +339,7 @@ def test_assemble_metrics_and_verdict_pass():
     """Clean values -> PASS through the real verdict + DEFAULT thresholds."""
     fr = {"ms_ssim": 0.99, "lpips": 0.05}
     metrics = fp.assemble_metrics(fr, lap_ratio=1.5, halo_pct=0.01,
-                                  band_delta=0.0)
+                                  cambi_delta=0.0)
     assert metrics["msssim"] == 0.99
     v = fp.verdict(metrics, DEFAULT_G1_THRESHOLDS)
     assert v["verdict"] == "PASS"
@@ -350,7 +350,7 @@ def test_assemble_metrics_and_verdict_flag():
     """MS-SSIM in the flag band (0.96-0.98) -> FLAG, not FAIL."""
     fr = {"ms_ssim": 0.97, "lpips": 0.05}
     metrics = fp.assemble_metrics(fr, lap_ratio=1.2, halo_pct=0.01,
-                                  band_delta=0.0)
+                                  cambi_delta=0.0)
     v = fp.verdict(metrics, DEFAULT_G1_THRESHOLDS)
     assert v["verdict"] == "FLAG"
     assert any("msssim" in r for r in v["reasons"])
@@ -360,7 +360,7 @@ def test_assemble_metrics_and_verdict_fail_on_lpips():
     """LPIPS above the fail ceiling (> 0.20) -> hard FAIL."""
     fr = {"ms_ssim": 0.99, "lpips": 0.30}
     metrics = fp.assemble_metrics(fr, lap_ratio=1.2, halo_pct=0.01,
-                                  band_delta=0.0)
+                                  cambi_delta=0.0)
     v = fp.verdict(metrics, DEFAULT_G1_THRESHOLDS)
     assert v["verdict"] == "FAIL"
 
@@ -369,7 +369,7 @@ def test_assemble_metrics_and_verdict_fail_on_softening():
     """lap_ratio below 1.0 floor -> hard FAIL (the softness bug)."""
     fr = {"ms_ssim": 0.99, "lpips": 0.05}
     metrics = fp.assemble_metrics(fr, lap_ratio=0.8, halo_pct=0.01,
-                                  band_delta=0.0)
+                                  cambi_delta=0.0)
     v = fp.verdict(metrics, DEFAULT_G1_THRESHOLDS)
     assert v["verdict"] == "FAIL"
 
@@ -522,29 +522,29 @@ def test_source_url_map_missing_file_is_empty(tmp_path: Path):
 
 # ---------------------------------------------------------------------------
 # downscale-only gate policy (ADR-006): drop the lap_ratio floor for a
-# no-upscale path; keep msssim/lpips + halo/band.
+# no-upscale path; keep msssim/lpips + halo/cambi.
 # ---------------------------------------------------------------------------
 def test_gate_metrics_drops_lap_ratio_for_downscale_only():
     """backend 'downscale-only' removes lap_ratio from the gated set only."""
-    metrics = {"lap_ratio": 0.75, "halo_pct": 0.01, "band_delta": 0.0,
+    metrics = {"lap_ratio": 0.75, "halo_pct": 0.01, "cambi_delta": 0.0,
                "msssim": 0.998, "lpips": 0.02}
     gated = fp.gate_metrics(metrics, "downscale-only")
     assert "lap_ratio" not in gated
     assert gated["msssim"] == 0.998
     assert gated["lpips"] == 0.02
-    assert "halo_pct" in gated and "band_delta" in gated
+    assert "halo_pct" in gated and "cambi_delta" in gated
 
 
 def test_gate_metrics_keeps_full_set_for_spandrel():
     """A real AI upscale gates on the full metric set (lap_ratio retained)."""
     metrics = {"lap_ratio": 0.8, "msssim": 0.99, "lpips": 0.05,
-               "halo_pct": 0.01, "band_delta": 0.0}
+               "halo_pct": 0.01, "cambi_delta": 0.0}
     assert fp.gate_metrics(metrics, "spandrel") == metrics
 
 
 def test_downscale_only_soft_lap_ratio_passes_via_gate():
     """lap_ratio 0.75 but healthy others -> PASS for downscale-only (ADR-006)."""
-    metrics = {"lap_ratio": 0.75, "halo_pct": 0.01, "band_delta": 0.0,
+    metrics = {"lap_ratio": 0.75, "halo_pct": 0.01, "cambi_delta": 0.0,
                "msssim": 0.998, "lpips": 0.02}
     v = fp.verdict(fp.gate_metrics(metrics, "downscale-only"),
                    DEFAULT_G1_THRESHOLDS)
@@ -553,7 +553,7 @@ def test_downscale_only_soft_lap_ratio_passes_via_gate():
 
 def test_downscale_only_still_flags_halo():
     """Dropping lap_ratio does NOT disable halo/band flags for downscale-only."""
-    metrics = {"lap_ratio": 0.75, "halo_pct": 0.06, "band_delta": 0.0,
+    metrics = {"lap_ratio": 0.75, "halo_pct": 0.06, "cambi_delta": 0.0,
                "msssim": 0.998, "lpips": 0.02}
     v = fp.verdict(fp.gate_metrics(metrics, "downscale-only"),
                    DEFAULT_G1_THRESHOLDS)
@@ -563,7 +563,7 @@ def test_downscale_only_still_flags_halo():
 
 def test_downscale_only_still_fails_corrupt_msssim():
     """A genuinely corrupt downscale (msssim < 0.96) still FAILS downscale-only."""
-    metrics = {"lap_ratio": 1.5, "halo_pct": 0.01, "band_delta": 0.0,
+    metrics = {"lap_ratio": 1.5, "halo_pct": 0.01, "cambi_delta": 0.0,
                "msssim": 0.90, "lpips": 0.02}
     v = fp.verdict(fp.gate_metrics(metrics, "downscale-only"),
                    DEFAULT_G1_THRESHOLDS)
@@ -616,6 +616,8 @@ def _drive_process_slug(monkeypatch, tmp_path, audit):
                         lambda out, srcp: {"ms_ssim": 0.99, "lpips": 0.05})
     monkeypatch.setattr(fp, "compute_numpy_metrics",
                         lambda srcp, out: (1.5, 0.01, 0.0))
+    monkeypatch.setattr(fp, "compute_cambi_delta",
+                        lambda srcp, out: audit.get("_cambi", 0.4))
 
     def fake_save_working(s, from_png, params):
         captured["params"] = params
@@ -713,3 +715,85 @@ def test_save_working_params_carry_usm_applied(monkeypatch, tmp_path):
                 "crop_box"):
         assert key in params
     assert params["backend"] == "downscale-only"
+
+
+# ---------------------------------------------------------------------------
+# R1b: G1.cambi_delta live in the first pass; the blind band_delta arm retired
+# from the first-pass gate (LEDGER 265). band_delta survives only as an
+# informational field (USM census continuity) - never gated here.
+# ---------------------------------------------------------------------------
+def test_assemble_metrics_gates_cambi_not_band():
+    """assemble_metrics carries cambi_delta and never band_delta."""
+    m = fp.assemble_metrics({"ms_ssim": 0.99, "lpips": 0.05}, lap_ratio=1.5,
+                            halo_pct=0.01, cambi_delta=0.7)
+    assert m["cambi_delta"] == 0.7
+    assert "band_delta" not in m
+
+
+def test_assemble_metrics_cambi_defaults_to_none():
+    """No cambi value (ffmpeg absent) records None, which verdict does not gate."""
+    m = fp.assemble_metrics({"ms_ssim": 0.99, "lpips": 0.05}, lap_ratio=1.5,
+                            halo_pct=0.01)
+    assert "cambi_delta" in m and m["cambi_delta"] is None
+    assert fp.verdict(m, DEFAULT_G1_THRESHOLDS)["verdict"] == "PASS"
+
+
+def test_process_slug_flags_added_banding_via_cambi(monkeypatch, tmp_path):
+    """A cambi_delta over the 2.0 bar reaches the live verdict as a FLAG."""
+    audit = dict(_spandrel_audit(), _cambi=3.5)
+    cap = _drive_process_slug(monkeypatch, tmp_path, audit)
+    payload = cap["payload"]
+    assert payload["metrics"]["cambi_delta"] == 3.5
+    assert payload["verdict"] == "FLAG"
+    assert any(r.startswith("cambi_delta") for r in payload["reasons"])
+
+
+def test_process_slug_records_none_cambi_without_gating(monkeypatch, tmp_path):
+    """ffmpeg absent -> cambi_delta None recorded, verdict unaffected."""
+    audit = dict(_spandrel_audit(), _cambi=None)
+    cap = _drive_process_slug(monkeypatch, tmp_path, audit)
+    payload = cap["payload"]
+    assert payload["metrics"]["cambi_delta"] is None
+    assert payload["verdict"] == "PASS"
+    assert payload["reasons"] == []
+
+
+def test_process_slug_band_delta_is_informational_only(monkeypatch, tmp_path):
+    """band_delta is out of the gated metrics and kept under info_metrics."""
+    cap = _drive_process_slug(monkeypatch, tmp_path, _spandrel_audit())
+    payload = cap["payload"]
+    assert "band_delta" not in payload["metrics"]
+    assert payload["info_metrics"]["band_delta"] == 0.0
+
+
+def test_compute_cambi_delta_none_when_ffmpeg_absent(monkeypatch, tmp_path):
+    """Degraded, never raised: no ffmpeg on PATH -> None."""
+    from PIL import Image
+
+    import lw_g1_gate
+    sp, op = tmp_path / "s.png", tmp_path / "o.png"
+    Image.new("RGB", (64, 36), (10, 20, 30)).save(sp)
+    Image.new("RGB", (128, 72), (10, 20, 30)).save(op)
+    monkeypatch.setattr(lw_g1_gate, "_ffmpeg_exe", lambda: None)
+    assert fp.compute_cambi_delta(str(sp), str(op)) is None
+
+
+def test_compute_cambi_delta_measures_output_at_its_own_scale(monkeypatch,
+                                                              tmp_path):
+    """The output reaches cambi_delta at full resolution (no common-scale
+    downscale - that resample is what blinded band_delta)."""
+    from PIL import Image
+
+    import lw_g1_gate
+    sp, op = tmp_path / "s.png", tmp_path / "o.png"
+    Image.new("RGB", (64, 36), (10, 20, 30)).save(sp)
+    Image.new("RGB", (128, 72), (10, 20, 30)).save(op)
+    seen = {}
+
+    def fake(src, out):
+        seen["src"], seen["out"] = src.shape, out.shape
+        return 1.25
+    monkeypatch.setattr(lw_g1_gate, "cambi_delta", fake)
+    assert fp.compute_cambi_delta(str(sp), str(op)) == 1.25
+    assert seen["out"] == (72, 128, 3)
+    assert seen["src"] == (36, 64, 3)

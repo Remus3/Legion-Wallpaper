@@ -251,6 +251,23 @@ fails 12/12) AND the live flag rate on the 41 recorded verifies falls from
 22/41 to a rate the operator's verdicts support. Cost ~0.5 day, numpy only.
 ZITS++ line maps are an optional add-on for line-continuity seams.
 
+RESULT 2026-10-04 (R3, LEDGER 264): ACCEPTED. Measured on the 12 golden G2
+subjects (Coons fill, clean vs seam_offset_24lv), the 26 real LaMa clean
+pairs (`4.Cleaning Done` cleandone + the saved `_mask.png`, else the exact
+changed-pixel set; same pair filter as `lw_stage_ledger.calibrate`) and those
+26 pairs offset +24, plus the 37 recorded live verifies whose mask and
+candidate are on disk (41 recorded). Eight variants (signed / abs median,
+mean, MAD-normalized, minus the 8 px-shifted null) all separated 12/12 with
+0/26 real FP; the simplest won the widest gap: score = |median over 16 px
+contour cells of median(inner 1-3 px band) - median(outer 1-3 px band)| in
+luma levels. Golden clean 0.01..2.36, seam_offset_24lv 21.64..24.83; real
+clean 0.00..2.06 (0/26 over the bar), real offset copies 14.35..; flag bar
+SEAM_STEP_MAX = 6.0 (about the geometric middle of 2.36 and 14.35). The null
+added no separation and was dropped. Live: 1/37 flagged
+(spirit-blossom-ahri-mono-01 6.28, unreviewed) vs 22/37 under ring SSIM.
+Shipped as `lw_clean_pass.seam_step` + `verify_verdict(seam_step=...)` flag +
+board row G2.seam_step; the live verify does not compute it yet (R3b).
+
 ## 4. Family 3 - ExPLoRA and PEFT domain adaptation
 
 ### 4.1 ExPLoRA
@@ -400,7 +417,7 @@ with a measured negative rather than a guess.
 |---|---|---|---|---|
 | 1 | E-BAND-1: CAMBI with max_log_contrast=5 at 2560x1440 as the banding row | G1.band_delta | ~0.5 day, CPU, tool already on disk | DONE 2026-10-04 (LEDGER 263): delta vs source separates 12/12; G1.cambi_delta PROVEN 12/12; live wiring = R1b |
 | 2 | E-MIM-1: re-inpaint + stroke-aligned matched filter with shifted-mask null (+ DRAEM-style synthetic segmenter if needed) | G2.text_residue | ~1-2 days, GPU minutes per prove | HIGH if it works - the only row tied to the zero-watermark bar; medium probability |
-| 3 | E-SEAM-1: contour-normal signed step vs 8 px-shifted null, calibrated on the 26 real clean pairs | G2.seam | ~0.5 day, numpy | MEDIUM-HIGH - should clear UNKNOWN 3/12 and kill a flag that is noise on 22/41 live verifies |
+| 3 | E-SEAM-1: contour-normal signed step vs 8 px-shifted null, calibrated on the 26 real clean pairs | G2.seam | ~0.5 day, numpy | DONE 2026-10-04 (LEDGER 264): golden 12/12, 0/26 real FP at 6.0 levels; G2.seam_step row; live wiring = R3b |
 | 4 | E-LAMA-1: anime-lama (already in the operator's IOPaint) vs current LaMa, golden cleaning A/B on slugs where `_01` was approved; operator blind 2AFC; outside identity must stay exact | clean engine (ADR-009 swap, not ladder) | ~0.5 day + operator review; ~1 GB weights, GPU minutes | MEDIUM - domain-matched fill for the busy-art regions that drive the manual IOPaint lane |
 | 5 | E-PEFT-1: stock-DINOv2 AnomalyDINO zero-shot residue map; ExPLoRA-MAE ViT-B only if the miss is diagnosed as domain gap | G2.text_residue (second signal) | ~0.5 day; +2-6 GPU-h EST if step 2 runs | LOW - expected to miss +4 levels; buys a measured close of the ExPLoRA question |
 

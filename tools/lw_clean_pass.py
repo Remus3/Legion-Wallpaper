@@ -156,6 +156,11 @@ MAD_MAX = 1.0                # outside mean-abs-diff ceiling, in 0..255 levels
 OUTSIDE_MAX_ABS = 0.0        # max per-channel |diff| allowed outside the mask
 CHANGE_SSIM_MAX = 0.90       # inside change must drop SSIM to <= this
 SEAM_SSIM_MIN = 0.92         # seam-ring floor; below -> FLAG (not discard)
+# Contour-normal seam step (research R3 / E-SEAM-1, LEDGER 264): |median over
+# 16 px contour cells of median(inner 1-3 px band) - median(outer 1-3 px band)|
+# in luma levels. Calibrated 2026-10-04: golden clean max 2.36, the 26 real
+# LaMa clean pairs max 2.06; fill offset +24 min 14.35. Above -> FLAG.
+SEAM_STEP_MAX = 6.0
 
 _WATERMARK_TOKENS = (
     ".com", ".net", ".org", ".io", "www", "http", "://",
@@ -591,8 +596,63 @@ def seam_ring_ssim(image, ring_mask, blur_win: int = 7) -> float:
     return float(np.mean(smap[ring]))
 
 
+def _erode3(m):
+    """3x3 binary erosion; pixels beyond the array edge count as set."""
+    p = np.pad(m, 1, constant_values=True)
+    h, w = m.shape
+    out = m.copy()
+    for dy in range(3):
+        for dx in range(3):
+            out &= p[dy:dy + h, dx:dx + w]
+    return out
+
+
+def seam_step(image, mask, band: int = 3, cell: int = 16, min_px: int = 8) -> float:
+    """Contour-normal seam step, in luma levels (research R3, LEDGER 264).
+
+    Bands are the `band` px just inside and just outside the mask contour
+    (3x3 erosion / dilation layers). Per `cell` x `cell` tile holding >= min_px
+    pixels of both bands: step = median(inner) - median(outer). The score is
+    |median of the signed steps|: a fill offset against its surround is a
+    coherent signed step, texture across the contour has random sign. Unlike
+    seam_ring_ssim it reads the boundary itself, not the ring's texture.
+    Empty mask (or no usable cell) -> 0.0.
+    """
+    m = np.asarray(mask, dtype=bool)
+    if not m.any():
+        return 0.0
+    g = _to_gray(np.asarray(image))
+    ys, xs = np.nonzero(m)
+    pad = band + 1
+    y0, y1 = max(0, ys.min() - pad), min(m.shape[0], ys.max() + pad + 1)
+    x0, x1 = max(0, xs.min() - pad), min(m.shape[1], xs.max() + pad + 1)
+    # tile-align the crop so cells match full-frame cells
+    y0, x0 = y0 - y0 % cell, x0 - x0 % cell
+    m, g = m[y0:y1, x0:x1], g[y0:y1, x0:x1]
+    inner = m & ~_erode3_n(m, band)
+    outer = ~_erode3_n(~m, band) & ~m
+    h, w = m.shape
+    steps = []
+    for cy in range(0, h, cell):
+        for cx in range(0, w, cell):
+            gi = g[cy:cy + cell, cx:cx + cell]
+            a = gi[inner[cy:cy + cell, cx:cx + cell]]
+            b = gi[outer[cy:cy + cell, cx:cx + cell]]
+            if a.size >= min_px and b.size >= min_px:
+                steps.append(float(np.median(a)) - float(np.median(b)))
+    if not steps:
+        return 0.0
+    return abs(float(np.median(steps)))
+
+
+def _erode3_n(m, n):
+    for _ in range(n):
+        m = _erode3(m)
+    return m
+
+
 def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
-                   seam_ssim, outside_max_abs=0.0):
+                   seam_ssim, outside_max_abs=0.0, seam_step=None):
     """Combine the G2 checks into {"verdict", "reasons", "flags"}.
 
     Precedence:
@@ -601,7 +661,8 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
          (hard: a pipeline bug, halt - never retry blindly).
       2. inside did not change (change_ssim > 0.90) -> FAIL (inpaint no-op).
       3. text residue detected inside the old bbox -> FAIL.
-      4. otherwise PASS, flagging the seam (seam_ssim < 0.92) and an unknown
+      4. otherwise PASS, flagging the seam (seam_ssim < 0.92; seam_step >
+         SEAM_STEP_MAX when a step was measured) and an unknown
          residue (text_residue None: the probe crashed) for a QA/vision look
          without discarding.
     """
@@ -627,6 +688,10 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
         flags.append("residue_probe_error")
     if seam_ssim < SEAM_SSIM_MIN:
         flags.append("seam")
+    if seam_step is not None and seam_step > SEAM_STEP_MAX:
+        # contour-normal step (R3); None = not computed -> no flag (live path
+        # does not compute it yet, ROADMAP R3b)
+        flags.append("seam_step")
     return {"verdict": "pass", "reasons": [], "flags": flags}
 
 
