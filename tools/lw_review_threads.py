@@ -84,6 +84,39 @@ def _ascii_text(text):
 
 
 # ---------------------------------------------------------------- the image
+_MILESTONE_TAIL = re.compile(r"_(first|clean|final|last)(initial|done|needauth|working_[0-9]+)$")
+
+
+def normalize_slug(raw):
+    """A slug from what an operator pastes: a slug, a milestone file name, or a
+    path ending in one (operator test 2026-10-04 - nobody types a slug from
+    memory). Returns the bare slug string (validated later by _check_slug)."""
+    text = str(raw or "").strip().replace("\\", "/")
+    text = text.rsplit("/", 1)[-1]
+    stem, dot, ext = text.rpartition(".")
+    if dot and ext.lower() in ("png", "jpg", "jpeg", "webp"):
+        text = stem
+    return _MILESTONE_TAIL.sub("", text)
+
+
+def reviewable_slugs(images_root=IMAGES_ROOT, cap=500):
+    """Slugs that have a milestone image the bench can show, newest first."""
+    import lw_pipeline
+    root = Path(images_root)
+    seen = {}
+    for s in lw_pipeline.STAGES:
+        for d in (root / lw_pipeline.SCRATCH_DIR[s], root / lw_pipeline.DONE_DIR[s]):
+            if not d.is_dir():
+                continue
+            for sub in d.iterdir():
+                if not sub.is_dir() or not SLUG_RE.match(sub.name) or sub.name in seen:
+                    continue
+                img = latest_image(sub.name, root)
+                if img is not None:
+                    seen[sub.name] = img.stat().st_mtime
+    return [k for k, _ in sorted(seen.items(), key=lambda kv: -kv[1])][:cap]
+
+
 def latest_image(slug, images_root=IMAGES_ROOT):
     """The slug's newest milestone image anywhere in the stage folders (the
     working the operator is reviewing), or None."""

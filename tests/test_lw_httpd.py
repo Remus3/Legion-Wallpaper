@@ -449,3 +449,70 @@ def test_serve_or_defer_serves_then_closes_cleanly():
     t.join(timeout=5)
     assert rcs == [0]
     assert opened == ["http://127.0.0.1:0/"]
+
+
+# ---------------------------------------------------------------- tailnet host allowlist
+# Phone access (operator 2026-10-04) goes through `tailscale serve`, which keeps
+# the server bound to 127.0.0.1 and proxies tailnet requests with the machine's
+# tailnet DNS name as Host. That name is allowed ONLY when it is listed in the
+# gitignored local/httpd_allowed_hosts.json; nothing else widens the guard.
+TAILNET = "box.tail0000.ts.net"
+
+
+def test_load_allowed_hosts_defaults_and_file(tmp_path):
+    assert lw_httpd.load_allowed_hosts(tmp_path / "absent.json") == {"127.0.0.1", "localhost"}
+    p = tmp_path / "hosts.json"
+    p.write_text(json.dumps({"hosts": [TAILNET.upper() + ".", "evil.example.com",
+                                       "a b.ts.net", "../x.ts.net"]}), encoding="ascii")
+    assert lw_httpd.load_allowed_hosts(p) == {"127.0.0.1", "localhost", TAILNET}
+
+
+def test_unreadable_hosts_file_keeps_loopback_only(tmp_path):
+    p = tmp_path / "hosts.json"
+    p.write_text("{nope", encoding="ascii")
+    assert lw_httpd.load_allowed_hosts(p) == {"127.0.0.1", "localhost"}
+
+
+def test_tailnet_host_rejected_by_default_and_accepted_when_listed(tmp_path):
+    p = tmp_path / "hosts.json"
+    srv = lw_httpd.LWServer(("127.0.0.1", 0), EchoHandler, hosts_path=p)
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+    try:
+        port = srv.server_address[1]
+        assert _get(port, "/x", host=TAILNET)[0] == 403
+    finally:
+        srv.shutdown()
+        srv.server_close()
+    p.write_text(json.dumps({"hosts": [TAILNET]}), encoding="ascii")
+    srv = lw_httpd.LWServer(("127.0.0.1", 0), EchoHandler, hosts_path=p)
+    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t.start()
+    try:
+        port = srv.server_address[1]
+        assert _get(port, "/x", host=TAILNET)[0] == 200
+        assert _get(port, "/x", host=TAILNET + ":443")[0] == 200
+        assert _get(port, "/x", host="evil.example.com")[0] == 403
+        assert _get(port, "/x", host="localhost")[0] == 200
+    finally:
+        srv.shutdown()
+        srv.server_close()
+
+
+def test_tailnet_host_tool_reads_dnsname_and_writes_the_allowlist(tmp_path):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+    import lw_tailnet_host as T
+    st = json.dumps({"Self": {"DNSName": "Box.tail0000.ts.net."}})
+    assert T.tailnet_name(st) == TAILNET
+    assert T.tailnet_name(json.dumps({"Self": {"DNSName": "evil.example.com."}})) is None
+    assert T.tailnet_name("{not json") is None
+    p = T.write_allowlist(TAILNET, tmp_path / "local" / "hosts.json")
+    assert lw_httpd.load_allowed_hosts(p) == {"127.0.0.1", "localhost", TAILNET}
+
+
+def test_allowlist_file_is_gitignored():
+    import subprocess as sp
+    root = Path(lw_httpd.__file__).resolve().parents[1]
+    r = sp.run(["git", "-C", str(root), "check-ignore", "-q", "local/httpd_allowed_hosts.json"],
+               creationflags=getattr(sp, "CREATE_NO_WINDOW", 0))
+    assert r.returncode == 0, "the tailnet name must never be tracked"
