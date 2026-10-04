@@ -164,6 +164,15 @@ SEAM_SSIM_MIN = 0.92
 # in luma levels. Calibrated 2026-10-04: golden clean max 2.36, the 26 real
 # LaMa clean pairs max 2.06; fill offset +24 min 14.35. Above -> FLAG.
 SEAM_STEP_MAX = 6.0
+# Re-inpaint matched filter for faint text residue (research R2 / E-MIM-1,
+# LEDGER 267): signed median over the old mark's stroke pixels of
+# luma(cleaned) - luma(LaMa re-inpaint of the strokes dilated 3 px). Calibrated
+# 2026-10-04 (shipped function): golden clean |.| max 2.00 vs credit_line_4lv
+# min 4.00; 26 real LaMa clean pairs max 1.94, +4 lv copies min 3.89.
+# |value| above -> FLAG.
+RESIDUE_MF_MAX = 3.0
+RESIDUE_MF_DILATE = 3        # px; the reconstructor never sees residue pixels
+RESIDUE_MF_MARGIN = 96       # px of context around the strokes for the crop
 
 _WATERMARK_TOKENS = (
     ".com", ".net", ".org", ".io", "www", "http", "://",
@@ -654,8 +663,58 @@ def _erode3_n(m, n):
     return m
 
 
+def _dilate_disk(m, r):
+    """Binary dilation by a disk of radius r (dx*dx + dy*dy <= r*r + r)."""
+    m = np.asarray(m, dtype=bool)
+    h, w = m.shape
+    p = np.pad(m, r, constant_values=False)
+    out = np.zeros_like(m)
+    for dy in range(-r, r + 1):
+        for dx in range(-r, r + 1):
+            if dx * dx + dy * dy <= r * r + r:
+                out |= p[r + dy:r + dy + h, r + dx:r + dx + w]
+    return out
+
+
+def _luma(a):
+    a = np.asarray(a, dtype=np.float64)
+    if a.ndim == 2:
+        return a
+    return 0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2]
+
+
+def residue_mf(image, strokes, lama, dilate: int = RESIDUE_MF_DILATE,
+               margin: int = RESIDUE_MF_MARGIN) -> float:
+    """Re-inpaint matched filter (research R2 / E-MIM-1, LEDGER 267), luma levels.
+
+    `strokes` is the old mark's glyph/stroke mask (bool, full frame). The
+    strokes dilated `dilate` px are re-inpainted on the CLEANED `image` with
+    `lama` (the same engine; a crop of `margin` px context around them), so
+    the reconstructor never sees a residue pixel. Returns the SIGNED median
+    over the stroke pixels of luma(image) - luma(re-inpaint): a faint residue
+    is a coherent same-sign offset along the strokes, LaMa's own error is
+    not. Empty strokes -> 0.0.
+    """
+    s = np.asarray(strokes, dtype=bool)
+    if not s.any():
+        return 0.0
+    img = np.asarray(image)
+    if img.ndim == 2:
+        img = np.stack([img] * 3, axis=2)
+    h, w = s.shape
+    ys, xs = np.nonzero(s)
+    y0, y1 = max(0, ys.min() - margin), min(h, ys.max() + margin + 1)
+    x0, x1 = max(0, xs.min() - margin), min(w, xs.max() + margin + 1)
+    crop = np.ascontiguousarray(img[y0:y1, x0:x1])
+    sc = s[y0:y1, x0:x1]
+    hole = _dilate_disk(sc, dilate)
+    rebuilt = np.asarray(inpaint_lama(crop, hole.astype(np.uint8) * 255, lama))
+    return float(np.median((_luma(crop) - _luma(rebuilt))[sc]))
+
+
 def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
-                   seam_ssim, outside_max_abs=0.0, seam_step=None):
+                   seam_ssim, outside_max_abs=0.0, seam_step=None,
+                   residue_mf=None):
     """Combine the G2 checks into {"verdict", "reasons", "flags"}.
 
     Precedence:
@@ -695,6 +754,10 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
         # contour-normal step (R3, LEDGER 264); live since R3b (LEDGER 266).
         # None = not computed -> no flag.
         flags.append("seam_step")
+    if residue_mf is not None and abs(residue_mf) > RESIDUE_MF_MAX:
+        # re-inpaint matched filter (R2, LEDGER 267); None = not computed ->
+        # no flag (the live path does not compute it yet, ROADMAP R2b)
+        flags.append("residue_mf")
     return {"verdict": "pass", "reasons": [], "flags": flags}
 
 

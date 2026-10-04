@@ -198,6 +198,24 @@ matched filter.
   false positives on the 12 clean restored regions; plus no new fire on the
   operator-approved `_cleandone` set. Cost ~1-2 days, GPU minutes per prove.
 
+RESULT 2026-10-04 (R2, LEDGER 267): ACCEPTED; the DRAEM fallback was not
+needed. Stroke mask = the board's credit-line glyphs in the mark box, dilated
+3 px, re-inpainted with SimpleLama on a crop with 96 px context. Measured on
+the 12 golden G2 subjects (restored region vs credit_line_4lv) and the 26 real
+LaMa clean pairs (cleandone; a glyph box centred on the changed pixels; also
++4 lv copies). Statistics tried: mean / median of the stroke residual, each
+raw, minus the null mean, and as a z-score against 40 random-offset nulls
+beside the box. All six separate the golden set 12/12; the raw signed MEDIAN
+has the widest gap and needs one LaMa call: golden clean |.| max 2.00 vs
++4 lv min 4.00; real clean max 1.94 (0/26 FP), real +4 lv min 3.89 (26/26).
+Bar RESIDUE_MF_MAX = 3.0 levels. The null added cost (41x calls) and no
+margin; dropped. Caveat: the real-pair FP check re-inpaints a LaMa fill with
+LaMa (a near-identity case) at a stand-in glyph box, so it bounds FP on LaMa
+fills, not on hand/IOPaint fills. Shipped as `lw_clean_pass.residue_mf` +
+`verify_verdict(residue_mf=...)` flag + board row G2.text_residue_mf; the live
+verify does not compute it yet (R2b: needs a stroke mask from the pre-clean
+detection).
+
 **G1.band_delta - CAMBI (E-BAND-1).** CAMBI (Netflix, contrast-aware
 multiscale banding index, arxiv.org/abs/2102.00079) ships in libvmaf
 (BSD-2-Clause-Patent), no-reference, CPU, runs on the 2560x1440 output with
@@ -417,7 +435,7 @@ with a measured negative rather than a guess.
 | rank | experiment | gate / stage | cost | expected gain |
 |---|---|---|---|---|
 | 1 | E-BAND-1: CAMBI with max_log_contrast=5 at 2560x1440 as the banding row | G1.band_delta | ~0.5 day, CPU, tool already on disk | DONE 2026-10-04 (LEDGER 263): delta vs source separates 12/12; G1.cambi_delta PROVEN 12/12; live wiring = R1b |
-| 2 | E-MIM-1: re-inpaint + stroke-aligned matched filter with shifted-mask null (+ DRAEM-style synthetic segmenter if needed) | G2.text_residue | ~1-2 days, GPU minutes per prove | HIGH if it works - the only row tied to the zero-watermark bar; medium probability |
+| 2 | E-MIM-1: re-inpaint + stroke-aligned matched filter with shifted-mask null (+ DRAEM-style synthetic segmenter if needed) | G2.text_residue | ~1-2 days, GPU minutes per prove | DONE 2026-10-04 (LEDGER 267): median stroke residual separates 12/12, 0/26 real FP at 3.0 levels; G2.text_residue_mf row; live wiring = R2b |
 | 3 | E-SEAM-1: contour-normal signed step vs 8 px-shifted null, calibrated on the 26 real clean pairs | G2.seam | ~0.5 day, numpy | DONE 2026-10-04 (LEDGER 264): golden 12/12, 0/26 real FP at 6.0 levels; G2.seam_step row; live wiring = R3b |
 | 4 | E-LAMA-1: anime-lama (already in the operator's IOPaint) vs current LaMa, golden cleaning A/B on slugs where `_01` was approved; operator blind 2AFC; outside identity must stay exact | clean engine (ADR-009 swap, not ladder) | ~0.5 day + operator review; ~1 GB weights, GPU minutes | MEDIUM - domain-matched fill for the busy-art regions that drive the manual IOPaint lane |
 | 5 | E-PEFT-1: stock-DINOv2 AnomalyDINO zero-shot residue map; ExPLoRA-MAE ViT-B only if the miss is diagnosed as domain gap | G2.text_residue (second signal) | ~0.5 day; +2-6 GPU-h EST if step 2 runs | LOW - expected to miss +4 levels; buys a measured close of the ExPLoRA question |
