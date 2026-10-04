@@ -204,6 +204,15 @@ def test_a_never_baselined_flat_source_that_fails_still_baselines_later(tmp_path
     assert res["outcome"] == "baseline" and box.delivered_calls == []
 
 
+def test_failures_before_any_success_reset_on_a_no_baseline_source(tmp_path):
+    st = w.WatchState(tmp_path / "s.json")
+    for _ in range(3):
+        w.run_source(st, "src", lambda: None, str, lambda i, c: True, baseline=False)
+    assert st.get("src")["failures"] == 3
+    res = w.run_source(st, "src", lambda: [], str, lambda i, c: True, baseline=False)
+    assert res["outcome"] == "nothing-new" and st.get("src")["failures"] == 0
+
+
 def test_dry_run_persists_nothing(tmp_path):
     path = tmp_path / "s.json"
     box = Box(["a"])

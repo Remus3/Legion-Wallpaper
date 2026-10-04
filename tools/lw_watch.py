@@ -263,7 +263,10 @@ def run_source(state, source: str, fetch, describe, deliver, *, alert=None,
             save({"seen": list(dict.fromkeys(items)), "failures": 0, "alerted": False})
             out.update(outcome="baseline", baselined=len(live))
             return out
-        rec = {"seen": [], "failures": 0, "alerted": False}
+        # An unbaselined record may still carry failure counters: mark it
+        # recovered so the reset below is written.
+        rec = {"seen": [], "failures": int((rec or {}).get("failures") or 0),
+               "alerted": bool((rec or {}).get("alerted"))}
 
     seen_list = list(rec.get("seen") or [])
     seen = set(seen_list)

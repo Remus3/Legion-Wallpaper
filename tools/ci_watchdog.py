@@ -436,16 +436,60 @@ def one_pass(*, model, dry_run, max_attempts, fix_timeout, state_dir=STATE_DIR):
         log("another pass holds the lock - exiting")
         return 0
     try:
-        tg = _bind_truth_gate()
+        return _watched_pass(state_dir, model=model, dry_run=dry_run,
+                             max_attempts=max_attempts, fix_timeout=fix_timeout)
+    finally:
+        release(state_dir)
+
+
+# The watch over "is main red" (ingest P0-2 retrofit 2/2). A failing sha is an
+# item; it is DELIVERED - stops being offered - only when a fix pass merged or
+# the per-sha budget gave up (left for the operator, logged once). An
+# `unavailable` CI read is a FETCH FAILURE, never "nothing owed": five in a row
+# (ten minutes at PT2M) append exactly one line to ALERTS_FILE, and the counter
+# resets on the next good read. baseline=False: this source is a STATE ("main
+# is red now"), not an event feed - the red already on main when the watch was
+# first created is the work, not history.
+WATCH_FILE = "watch.json"
+ALERTS_FILE = "alerts.jsonl"
+WATCH_SOURCE = "ci-main"
+ALERT_AFTER = 5
+
+
+def _bind_watch():
+    if "lw_watch" in sys.modules:
+        return sys.modules["lw_watch"]
+    spec = importlib.util.spec_from_file_location("lw_watch", ROOT / "tools" / "lw_watch.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout):
+    lw_watch = _bind_watch()
+    tg = _bind_truth_gate()
+    ctx = {"rc": 0}
+
+    def fetch():
         ci = tg.check_ci("HEAD")
-        state = read_state(state_dir)
-        d = decide(ci, state, max_attempts=max_attempts)
+        ctx["ci"] = ci
+        if (ci or {}).get("status") == "unavailable":
+            log(f"wait: CI 'unavailable' is not settled - not acting "
+                f"({str((ci or {}).get('detail') or '')[:120]})")
+            raise lw_watch.FetchFailed("CI status unavailable")
+        d = decide(ci, read_state(state_dir), max_attempts=max_attempts)
+        ctx["d"] = d
         log(f"{d['action']}: {d['reason']}")
-        if d["action"] != "fix":
-            return 0
-        state = bump_attempt(state, d["sha"])
+        return [d["sha"]] if d["action"] in ("fix", "give-up") and d["sha"] else []
+
+    def deliver(items, confirm):
+        d = ctx["d"]
+        if d["action"] == "give-up":
+            return True                      # handled: left for the operator
+        state = bump_attempt(read_state(state_dir), d["sha"])
         write_state(state_dir, state)
-        runs = ", ".join(x.get("name", "?") for x in (ci.get("runs") or []))
+        runs = ", ".join(x.get("name", "?") for x in (ctx["ci"].get("runs") or []))
         result = do_fix_pass(d["sha"], runs, state["attempts"], tg,
                              model=model, dry_run=dry_run, fix_timeout=fix_timeout)
         if result in ("transient", "refused"):
@@ -455,10 +499,27 @@ def one_pass(*, model, dry_run, max_attempts, fix_timeout, state_dir=STATE_DIR):
             # (which did run and will self-resolve) exits 0.
             write_state(state_dir, {"sha": d["sha"],
                                     "attempts": max(0, state["attempts"] - 1)})
-            return 1 if result == "refused" else 0
-        return 0 if result else 1
-    finally:
-        release(state_dir)
+            ctx["rc"] = 1 if result == "refused" else 0
+            return False
+        ctx["rc"] = 0 if result else 1
+        # A dry run proves nothing was fixed, so it never retires the sha.
+        return bool(result) and not dry_run
+
+    def alert(source, count, detail):
+        line = json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "source": source,
+                           "consecutive_failures": count, "detail": detail})
+        log(f"ALERT: {source} unreadable {count} passes in a row - {detail}")
+        try:
+            with open(Path(state_dir) / ALERTS_FILE, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except OSError:
+            return False, "alerts file unwritable"
+        return True, "alerts file"
+
+    lw_watch.run_source(lw_watch.WatchState(Path(state_dir) / WATCH_FILE), WATCH_SOURCE,
+                        fetch, lambda sha: sha[:8], deliver, alert=alert,
+                        alert_after=ALERT_AFTER, baseline=False, persist=not dry_run)
+    return ctx["rc"]
 
 
 # ==========================================================================
