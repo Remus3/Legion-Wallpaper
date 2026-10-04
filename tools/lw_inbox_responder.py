@@ -845,6 +845,8 @@ def job_status(payload: dict) -> tuple[str, str]:
     """
     if "halted" in payload:
         return "skipped", "halted"
+    if "state_corrupt" in payload:
+        return "failed", f"seen-state corrupt: {payload['state_corrupt']}"
     if "fetch_failed" in payload:
         return "partial", f"inbox unreadable: {payload['fetch_failed']}"
     for key in ("deliver_error", "operator_tasks_error", "status_error", "runlog_error"):
@@ -945,16 +947,26 @@ def _main(argv: list[str] | None = None) -> int:
             # re-spawn it. A dry run confirms too, but persists nothing.
             if outcome.verdict == AUTO:
                 confirm([note.key])
-        return []
+        return {"delivered": []}            # every advance went through confirm()
 
     def alert(source: str, count: int, detail: str):
         _record_cycle(args.runlog, ctx, event="source_alert", source=source,
                       consecutive_failures=count, detail=detail)
         return "runlog_error" not in ctx, "run log"
 
-    res = lw_watch.run_source(lw_watch.FlatSeenState(args.state), "inbox", fetch,
-                              lambda k: k.split("#")[0], deliver, alert=alert,
-                              persist=not args.dry_run)
+    try:
+        res = lw_watch.run_source(lw_watch.FlatSeenState(args.state), "inbox", fetch,
+                                  deliver, alert, describe=lambda k: k.split("#")[0],
+                                  confirm_arg=True, persist=not args.dry_run)
+    except lw_watch.WatchStateCorrupt as exc:
+        # Raised, never rewritten (MAIN 0020): a corrupt seen-file must not be
+        # read as empty (every note re-spawns) or re-baselined over a backlog.
+        payload = {"state_corrupt": str(exc), "dry_run": args.dry_run, "spawned": []}
+        if not args.dry_run:
+            _record_cycle(args.runlog, payload, event="state_corrupt", detail=str(exc))
+            _publish(payload, tick_start, *_end_state(refused=True))
+        _emit({**announced, **payload})
+        return 0
 
     # COLD START. Measured on the live inbox before this branch existed: a first
     # run with no state file reported 139 new notes and would have launched a

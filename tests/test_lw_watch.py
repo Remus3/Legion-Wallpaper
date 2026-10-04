@@ -33,7 +33,7 @@ class Box:
 
     def deliver(self, items, confirm):
         self.delivered_calls.append(list(items))
-        return {"delivered": list(items)} if self.deliver_ok else {"delivered": []}
+        return {"delivered": True} if self.deliver_ok else {"delivered": []}
 
     def alert(self, source, count, detail):
         self.alerts.append((source, count, detail))
@@ -41,7 +41,8 @@ class Box:
 
 
 def _run(state, box, **kw):
-    return w.run_source(state, "src", box.fetch, str, box.deliver, alert=box.alert, **kw)
+    return w.run_source(state, "src", box.fetch, describe=str, confirm_arg=True,
+                        deliver=box.deliver, alert=box.alert, **kw)
 
 
 def test_the_first_run_baselines_and_sends_nothing(tmp_path):
@@ -81,7 +82,7 @@ def test_a_raising_deliver_is_a_failed_delivery_not_a_crash(tmp_path):
 
     def boom(items, confirm):
         raise RuntimeError("target closed")
-    res = w.run_source(st, "src", box.fetch, str, boom)
+    res = w.run_source(st, "src", box.fetch, describe=str, confirm_arg=True, deliver=boom)
     assert res["outcome"] == "deliver-failed" and "RuntimeError" in res["detail"]
     assert "b" not in st.get("src")["seen"]
 
@@ -95,7 +96,7 @@ def test_partial_delivery_advances_only_the_confirmed_items(tmp_path):
     def some(items, confirm):
         confirm(["a"])            # persisted at once, like a per-item spawn
         return {"delivered": ["b"]}
-    res = w.run_source(st, "src", box.fetch, str, some)
+    res = w.run_source(st, "src", box.fetch, describe=str, confirm_arg=True, deliver=some)
     assert res["outcome"] == "delivered" and sorted(res["delivered"]) == ["a", "b"]
     assert sorted(w.WatchState(tmp_path / "s.json").get("src")["seen"]) == ["a", "b"]
 
@@ -111,7 +112,7 @@ def test_confirm_persists_before_deliver_returns(tmp_path):
         confirm(["x"])
         on_disk.append(json.loads(path.read_text(encoding="utf-8"))["sources"]["src"]["seen"])
         raise RuntimeError("died mid-batch")
-    w.run_source(st, "src", lambda: ["x", "y"], str, crash_after_confirm)
+    w.run_source(st, "src", lambda: ["x", "y"], describe=str, confirm_arg=True, deliver=crash_after_confirm)
     assert on_disk == [["x"]], "confirm must persist before deliver returns"
     seen = w.WatchState(path).get("src")["seen"]
     assert "x" in seen and "y" not in seen
@@ -146,14 +147,13 @@ def test_a_failed_alert_send_is_retried_next_run(tmp_path):
         calls.append(count)
         return len(calls) > 1, "x"
     for _ in range(3):
-        w.run_source(st, "src", lambda: (_ for _ in ()).throw(OSError("x")), str,
-                     lambda i, c: True, alert=flaky, alert_after=2)
+        w.run_source(st, "src", lambda: (_ for _ in ()).throw(OSError("x")), describe=str, confirm_arg=True, deliver=lambda i, c: {"delivered": True}, alert=flaky, alert_after=2)
     assert calls == [2, 3]
 
 
 def test_none_from_fetch_is_a_failure_not_an_empty_source(tmp_path):
     st = w.WatchState(tmp_path / "s.json")
-    res = w.run_source(st, "src", lambda: None, str, lambda i, c: True)
+    res = w.run_source(st, "src", lambda: None, describe=str, confirm_arg=True, deliver=lambda i, c: {"delivered": True})
     assert res["outcome"] == "fetch-failed"
 
 
@@ -189,7 +189,7 @@ def test_flat_state_keeps_the_legacy_seen_shape(tmp_path):
     st = w.FlatSeenState(path)
     assert st.get("any") is None
     box = Box(["a"])
-    w.run_source(st, "any", box.fetch, str, box.deliver)
+    w.run_source(st, "any", box.fetch, describe=str, confirm_arg=True, deliver=box.deliver)
     assert json.loads(path.read_text(encoding="utf-8"))["seen"] == ["a"]
     path.write_text(json.dumps({"seen": ["a"]}), encoding="utf-8")   # legacy file
     assert w.FlatSeenState(path).get("any")["seen"] == ["a"]
@@ -198,18 +198,18 @@ def test_flat_state_keeps_the_legacy_seen_shape(tmp_path):
 def test_a_never_baselined_flat_source_that_fails_still_baselines_later(tmp_path):
     path = tmp_path / "seen.json"
     box = Box(["a", "b"], fail=True)
-    w.run_source(w.FlatSeenState(path), "any", box.fetch, str, box.deliver)
+    w.run_source(w.FlatSeenState(path), "any", box.fetch, describe=str, confirm_arg=True, deliver=box.deliver)
     box.fail = False
-    res = w.run_source(w.FlatSeenState(path), "any", box.fetch, str, box.deliver)
+    res = w.run_source(w.FlatSeenState(path), "any", box.fetch, describe=str, confirm_arg=True, deliver=box.deliver)
     assert res["outcome"] == "baseline" and box.delivered_calls == []
 
 
 def test_failures_before_any_success_reset_on_a_no_baseline_source(tmp_path):
     st = w.WatchState(tmp_path / "s.json")
     for _ in range(3):
-        w.run_source(st, "src", lambda: None, str, lambda i, c: True, baseline=False)
+        w.run_source(st, "src", lambda: None, describe=str, confirm_arg=True, deliver=lambda i, c: {"delivered": True}, baseline=False)
     assert st.get("src")["failures"] == 3
-    res = w.run_source(st, "src", lambda: [], str, lambda i, c: True, baseline=False)
+    res = w.run_source(st, "src", lambda: [], describe=str, confirm_arg=True, deliver=lambda i, c: {"delivered": True}, baseline=False)
     assert res["outcome"] == "nothing-new" and st.get("src")["failures"] == 0
 
 
@@ -252,3 +252,59 @@ def test_liveness_is_never_judged_by_mtime(tmp_path):
 def test_pid_alive_reads_the_real_process_table():
     assert w.pid_alive(os.getpid()) is True
     assert w.pid_alive(0) is False
+
+
+# -- MAIN 0020 section 4 contract arms ------------------------------------------
+
+def test_main_contract_positional_order_and_single_arg_deliver(tmp_path):
+    st = w.WatchState(tmp_path / "s.json")
+    w.run_source(st, "src", lambda: ["a"], lambda items: {"delivered": True})
+    seen = []
+    res = w.run_source(st, "src", lambda: ["a", "b"],
+                       lambda items: seen.append(items) or {"delivered": True})
+    assert res["outcome"] == "delivered" and seen == [["b"]]
+    assert {"source", "outcome", "new", "detail"} <= set(res)
+
+
+def test_only_a_dict_with_delivered_exactly_true_advances(tmp_path):
+    st = w.WatchState(tmp_path / "s.json")
+    w.run_source(st, "src", lambda: [], lambda items: {"delivered": True})
+    for verdict in (True, ["x"], {"delivered": 1}, {"delivered": "yes"}, None):
+        res = w.run_source(st, "src", lambda: ["x"], lambda items, v=verdict: v)
+        assert res["outcome"] == "deliver-failed", verdict
+    assert w.run_source(st, "src", lambda: ["x"],
+                        lambda items: {"delivered": True})["outcome"] == "delivered"
+
+
+@pytest.mark.parametrize("cls", [w.WatchState, w.FlatSeenState])
+@pytest.mark.parametrize("body", ["{not json", "[1, 2]"])
+def test_a_corrupt_state_file_raises_and_is_never_rewritten(tmp_path, cls, body):
+    path = tmp_path / "s.json"
+    path.write_text(body, encoding="utf-8")
+    with pytest.raises(w.WatchStateCorrupt):
+        w.run_source(cls(path), "src", lambda: ["a"], lambda items: {"delivered": True})
+    assert path.read_text(encoding="utf-8") == body
+
+
+def test_the_lock_is_released_only_while_it_holds_our_pid(tmp_path):
+    lock = tmp_path / "lk"
+    with w.watch_lock(lock):
+        (lock / "pid").write_text("424242", encoding="ascii")   # someone took it over
+    assert lock.exists() and (lock / "pid").read_text(encoding="ascii") == "424242"
+
+
+def test_a_dead_holder_is_renamed_aside_not_reused_in_place(tmp_path):
+    lock = tmp_path / "lk"
+    lock.mkdir()
+    (lock / "pid").write_text("999999", encoding="ascii")
+    (lock / "marker").write_text("old", encoding="ascii")   # rmdir in place would fail
+    with w.watch_lock(lock, pid_alive=lambda p: False):
+        assert not (lock / "marker").exists()
+        assert (lock / "pid").read_text(encoding="ascii") == str(os.getpid())
+
+
+def test_a_pidless_holder_is_taken_over(tmp_path):
+    lock = tmp_path / "lk"
+    lock.mkdir()
+    with w.watch_lock(lock, pid_alive=lambda p: True):
+        assert (lock / "pid").read_text(encoding="ascii") == str(os.getpid())
