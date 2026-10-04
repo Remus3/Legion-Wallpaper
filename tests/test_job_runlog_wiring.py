@@ -66,7 +66,7 @@ def test_a_halted_responder_records_skipped(tmp_path, monkeypatch, capsys):
     halt.write_text("", encoding="ascii")
     monkeypatch.setattr(responder, "HALT_PATH", halt)
     responder.main(argv)
-    assert [r["status"] for r in _rows("LW-InboxResponder")] == ["skipped"]
+    assert [r["status"] for r in _rows("LW-InboxResponder")] == ["halted"]
 
 
 def test_a_dry_run_responder_records_nothing(tmp_path, monkeypatch, capsys):
@@ -123,7 +123,7 @@ def test_a_refused_fix_records_failed(tmp_path, monkeypatch):
 def test_a_halted_watchdog_records_skipped(tmp_path, monkeypatch):
     (tmp_path / "HALT").write_text("", encoding="ascii")
     _cw_pass(monkeypatch, tmp_path, RED)
-    assert [r["status"] for r in _rows("LW-CIWatchdog")] == ["skipped"]
+    assert [r["status"] for r in _rows("LW-CIWatchdog")] == ["halted"]
 
 
 def test_a_dry_run_watchdog_records_nothing(tmp_path, monkeypatch):

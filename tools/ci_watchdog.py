@@ -457,7 +457,7 @@ def _one_pass(status, *, model, dry_run, max_attempts, fix_timeout, state_dir):
     reason = halted(state_dir)
     if reason:
         log(f"HALT: {reason}")
-        status.update(status="skipped", detail="halted")
+        status.update(status="halted", detail=str(reason)[:120])
         return 0
     if not acquire(state_dir):
         log("another pass holds the lock - exiting")

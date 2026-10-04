@@ -161,7 +161,8 @@ class LWServer(ThreadingHTTPServer):
         # (tools/lw_served_probe.py). Commit sha and timestamps only: no path,
         # no account name (the repo is public; answers get screenshotted).
         self.version_info = {"commit": git_head(), "started": self.started_iso,
-                             "pid": os.getpid(), "config_hash": config_hash(config_paths)}
+                             "pid": os.getpid(), "config_hash": config_hash(config_paths),
+                             "schema": 1}
 
 
 class BaseLWHandler(BaseHTTPRequestHandler):
