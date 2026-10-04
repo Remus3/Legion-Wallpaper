@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+265. DONE **2026-10-04 (research R1b: G1.cambi_delta LIVE in the first pass; blind G1.band_delta row + ack entry RETIRED together).**
+   SHIPPED (TDD; 14 tests RED first in tests/test_lw_first_pass.py + tests/test_lw_gate_board.py):
+   `lw_first_pass.compute_cambi_delta(source, out)` loads both RGB at their OWN scale (no common-scale
+   downscale) and calls `lw_g1_gate.cambi_delta`; None on ffmpeg/libvmaf absent or an image-load error,
+   logged to logs/ (degraded; never a raw error surfaced). `assemble_metrics(fr, lap_ratio, halo_pct,
+   cambi_delta=None)` - band_delta parameter removed, cambi_delta recorded (None not gated). process_slug
+   feeds it (+~2.6 s/frame) and records band_delta under the annotate payload's `info_metrics` only.
+   Board: row G1.band_delta, its FAULT_EVIDENCE/FAULT_NAME and `_g1_value("band_delta")` removed;
+   config/gate_board_ack.json entry G1.band_delta removed (3 entries left).
+   CONSUMER SWEEP (grep, every band_delta reader): lw_clean_fr.clean_fr_audit GATES band_delta through
+   the same `verdict()` at SAME scale (reference vs neutralized candidate, no resample - the blinding
+   cause does not apply there); lw_golden + data/golden/golden_set.json record it as a baseline;
+   lw_usm_halo_probe reads it from `compute_numpy_metrics` for the USM census; the board basis test
+   reads the tuple. No review bench / dashboard / monitor reads it.
+   DECISION: retire band_delta from the FIRST PASS and the board, keep it elsewhere. Kept:
+   `banding_delta()`, the `band_delta` threshold + `_METRIC_RULES` entry (for lw_clean_fr), the
+   3-tuple of `compute_numpy_metrics` (probe + basis test), `info_metrics.band_delta` (census
+   continuity). Alternatives: (a) delete band_delta from the verdict table - silently ungates the
+   cleaning FR audit, a behaviour change in another stage with no evidence; (b) keep it gated in the
+   first pass beside cambi - keeps a proven-blind flag live; (c) drop the value from the manifest too -
+   breaks the census series for no gain. Guard: test_registry_covers_every_live_g1_metric_rule now
+   ENUMERATES the first pass's assembled metrics (every fed rule needs a board row) with an explicit
+   NOT_FIRST_PASS_RULES = {band_delta} exemption naming this entry.
+   READ BACK: full tests/ 3847 passed, 20 skipped, 1 failed (test_lw_failure_catalogue: first-pass.md
+   cited LEDGER 265 before this entry existed; green after). `prove --golden --env all`: G1.cambi_delta
+   PROVEN 12/12, no G1.band_delta row; NOT GREEN only on the acked G1.lpips 11/12, G2.seam 3/12,
+   G2.text_residue 0/12 (run included the concurrent R3 G2.seam_step row, PROVEN 12/12).
+
 264. DONE **2026-10-04 (research R3 / E-SEAM-1: contour-normal seam step ACCEPTED; G2.seam_step PROVEN 12/12; commit in this push).**
    MEASURED first (scratch prototype, no product code): eight variants of a contour-normal step
    (signed / abs median, mean, MAD-normalized, each also minus the spec's 8 px-shifted null) on
