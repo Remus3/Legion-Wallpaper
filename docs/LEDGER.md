@@ -27,6 +27,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+261. DONE **2026-10-04 (/done session close: live state read back for the yuumi QA lane and the open operator ask; docs-only).**
+   READ BACK at close, not run-and-assumed: `lw_pipeline.py status` -> yuumi-by-narumicsibe-dmax7wo-fullview
+   CLEAN_SCRATCH / EDITING, w0 (no working saved yet; the operator's IOPaint hand clean is pending -
+   targets: credit line x1138-1490 y983-1011, veil ~[1142,585]); its seed mask + seeds json are present under
+   ops/runtime/clean/<slug>/. IOPaint QA lane 127.0.0.1:8080 -> HTTP 200; monitor 127.0.0.1:8901/review -> HTTP
+   200. `tailscale serve status` -> "No serve config": the phone path (`tailscale serve --bg
+   http://127.0.0.1:8901`, then https://<tailnet host>/review) is NOT live at close and must be re-run before
+   phone use; the hostname stays out of tracked files. `lw_ops_tasks.py render` ->
+   physical.lux-coven-pre-duplicate still open (last check: not done, 90 tries); the -pre.jpg is still in
+   images/0.Originals; MAIN's v5 P0-1 gate needs this real task closed. CI: run 37184510298 (31604ac) success,
+   scheduled run 37206860359 success. A cloud kit exists outside this repo (not tracked here). Nothing else was
+   acted on; every carried item in LW-NEXT-SESSION.txt is kept.
+
 260. DONE **2026-10-04 (pipeline: yuumi first pass approved by the operator; cleaning started and parked in the QA lane per the gate).**
    AUTHORITY: operator, own words relayed 2026-10-04: "first pass approved for the yuumi". Not yet
    recorded (state FIRST_SCRATCH / NEEDAUTH), so recorded through LW's own path:
