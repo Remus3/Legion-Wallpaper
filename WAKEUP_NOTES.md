@@ -79,6 +79,24 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-04, third) - research R1-R5 run, hriful clean-damage incident fixed
+
+- Shipped: R1 G1.cambi_delta (14a11be, L263); R3 G2.seam_step (L264); R1b cambi live,
+  band_delta row retired (b6484a1/bac788f, L265); R3b seam_step live, ring-SSIM seam
+  retired (9989ca0, L266); R2 G2.text_residue_mf (bdc0486, L267); R2b residue_mf live,
+  OCR+MSER residue retired (6ff360d, L270); R5 DINOv2 kNN NOT accepted, no domain gap,
+  ExPLoRA not justified (0aa78f0, L271); R4 blind A/B ready at 127.0.0.1:8901/ab,
+  19 slugs (082cd18, L272) + UI-audit MUST-FIX (04fe420).
+- Incident (operator report): hriful Ahri cleandone was an operator-REJECTED candidate
+  re-shipped by lw_clean_dispose as clean-scan + auto-approved; 14 slugs reopened,
+  13 to manual IOPaint lane, caitlyn original in needauth (82ae760, L268). Follow-up:
+  select_working_image skips rejected; SUBMIT actor; 486 08-22 approvals backfilled
+  to tool:auto-approve via appended CORRECT_ACTOR lines (672c2e9, L269).
+- Board: only G1.lpips 11/12 remains pinned. Do NOT redo any of the above.
+- Concurrency lesson: two agents staging in one tree mixed commits (bac788f msg);
+  shared scratchpad clobbered a progress helper (L271). Give parallel agents
+  private scratch subfolders and disjoint files.
+
 ## PREVIOUS SESSION (2026-10-04, second) - C4 closed, research filed
 
 - C4 round CLOSED: slots.py 290cbf80 on all 5 carriers (own-disk + HEAD read
