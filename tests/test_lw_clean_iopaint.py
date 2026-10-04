@@ -198,7 +198,8 @@ def test_build_save_working_cmd_emits_tool_iopaint():
 
 def test_build_submit_cmd():
     argv = io.build_submit_cmd("myslug", sys_py="py", pipeline="p.py")
-    assert argv == ["py", "p.py", "submit", "myslug"]
+    assert argv == ["py", "p.py", "submit", "myslug",
+                    "--actor", "tool:lw_clean_iopaint"]
 
 
 # ===========================================================================

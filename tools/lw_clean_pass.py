@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import hashlib
 import json
 import math
 import os
@@ -799,12 +800,17 @@ def build_save_working_cmd(slug, from_path, params, sys_py=SYS_PY,
             "--tool", "lama", "--params", json.dumps(params)]
 
 
-def build_submit_cmd(slug, sys_py=SYS_PY, pipeline=PIPELINE):
-    """argv for `submit <slug>`."""
-    return [sys_py, pipeline, "submit", slug]
+SUBMIT_ACTOR = "tool:lw_clean_pass"
 
 
-def build_cleanscan_cmds(slug, initial_path, sys_py=SYS_PY, pipeline=PIPELINE):
+def build_submit_cmd(slug, sys_py=SYS_PY, pipeline=PIPELINE,
+                     actor=SUBMIT_ACTOR):
+    """argv for `submit <slug> --actor <actor>` (the tool names itself)."""
+    return [sys_py, pipeline, "submit", slug, "--actor", actor]
+
+
+def build_cleanscan_cmds(slug, initial_path, sys_py=SYS_PY, pipeline=PIPELINE,
+                         actor=SUBMIT_ACTOR):
     """Two argvs for a zero-detection clean scan: save-working THEN submit.
 
     cmd_submit raises "has no working file" without a _working_## and the
@@ -813,7 +819,7 @@ def build_cleanscan_cmds(slug, initial_path, sys_py=SYS_PY, pipeline=PIPELINE):
     """
     save = [sys_py, pipeline, "save-working", slug, "--from", str(initial_path),
             "--tool", "clean-scan", "--params", json.dumps({"clean_scan": True})]
-    return [save, build_submit_cmd(slug, sys_py, pipeline)]
+    return [save, build_submit_cmd(slug, sys_py, pipeline, actor=actor)]
 
 
 # ==========================================================================
@@ -856,11 +862,36 @@ def atomic_write_png(path, image):
     os.replace(part, path)
 
 
+def _sha256_path(p):
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _rejected_shas(d):
+    """sha256s the manifest in `d` records as operator-REJECTED (may be empty)."""
+    try:
+        man = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    return {t.get("sha256_in") for t in man.get("transitions") or []
+            if t.get("op") == "REJECT" and t.get("sha256_in")}
+
+
 def select_working_image(scratch_dir, slug):
-    """Highest <slug>_cleanworking_##.png, else <slug>_cleaninitial.*, else None."""
+    """Highest NON-REJECTED <slug>_cleanworking_##.png, else the initial, else None.
+
+    A REJECT moves the needauth back to its _cleanworking_NN name, so the
+    highest working can be a candidate the operator already refused. Picking it
+    stacked iopaint on a rejected SDXL block and fed 14 rejected candidates to
+    the 2026-08-22 clean-scan dispose (incident 2026-10-04).
+    """
     d = Path(scratch_dir)
     if not d.is_dir():
         return None
+    rejected = _rejected_shas(d)
     best = None
     best_n = -1
     initial = None
@@ -872,6 +903,8 @@ def select_working_image(scratch_dir, slug):
             m = _WORKING_RE.search(name)
             if m:
                 n = int(m.group(1))
+                if rejected and _sha256_path(p) in rejected:
+                    continue
                 if n > best_n:
                     best_n = n
                     best = p

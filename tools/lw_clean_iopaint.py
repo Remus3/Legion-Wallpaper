@@ -530,7 +530,8 @@ def build_save_working_cmd(slug, from_path, params, tool="iopaint",
 
 def build_submit_cmd(slug, sys_py=SYS_PY, pipeline=PIPELINE):
     """argv for `submit <slug>` (reuses the lw_clean_pass builder)."""
-    return C.build_submit_cmd(slug, sys_py, pipeline)
+    return C.build_submit_cmd(slug, sys_py, pipeline,
+                              actor="tool:lw_clean_iopaint")
 
 
 def _quote(tok):
