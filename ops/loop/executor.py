@@ -272,6 +272,55 @@ def directive_payload(cycle: int, body: str, src: str, clear_each_cycle: bool = 
     )
 
 
+# ---- send journal (ingest P1-6) ---------------------------------------------
+
+JOURNAL_ENV = "LW_BRIDGE_JOURNAL"
+
+
+def default_journal_path() -> Path:
+    env = os.environ.get(JOURNAL_ENV, "").strip()
+    if env:
+        return Path(env)
+    return Path(__file__).resolve().parents[2] / "ops" / "runtime" / "bridge" / "sends.jsonl"
+
+
+class SendJournal:
+    """Attempt / result lines around every GUI send, sharing a correlation id.
+
+    The ATTEMPT is written BEFORE the text is handed to the bridge and the
+    RESULT after the bridge acknowledged (or failed to), so an attempt with no
+    result is a sender that died mid-send. Stores the length and sha256 of the
+    text, never the text. Never back-fill a line for a message sent another
+    way: a false record is worse than a gap. Never raises.
+    """
+
+    def __init__(self, path=None):
+        self.path = Path(path) if path is not None else default_journal_path()
+
+    def _append(self, row: dict) -> None:
+        import json as _json
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with self.path.open("a", encoding="utf-8", newline="\n") as fh:
+                fh.write(_json.dumps(row, sort_keys=True) + "\n")
+        except OSError:
+            pass
+
+    def attempt(self, text: str, *, target: str = "ahk") -> str:
+        import hashlib
+        import uuid
+        jid = uuid.uuid4().hex[:12]
+        data = text.encode("utf-8")
+        self._append({"kind": "attempt", "id": jid, "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                      "target": target, "len": len(text),
+                      "sha256": hashlib.sha256(data).hexdigest()})
+        return jid
+
+    def result(self, jid: str, *, ok: bool, detail: str = "") -> None:
+        self._append({"kind": "result", "id": jid, "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                      "ok": bool(ok), "detail": str(detail)[:200]})
+
+
 class AhkExecutor:
     """The legacy GUI channel: write gemini.ready, wait for AHK to type it, wait
     for the done sentinel. Verbatim lift - see the module docstring.
@@ -284,7 +333,8 @@ class AhkExecutor:
     name = "ahk"
 
     def __init__(self, cfg, ctl, *, log, stop, awrite, wait_for, wait_gone, rjson,
-                 stall_action, stall_recovery_directive):
+                 stall_action, stall_recovery_directive, journal=None):
+        self.journal = journal if journal is not None else SendJournal()
         self.cfg = cfg
         self.ctl = ctl
         self.log = log
@@ -296,16 +346,26 @@ class AhkExecutor:
         self.stall_action = stall_action
         self.stall_recovery_directive = stall_recovery_directive
 
+    def _send(self, text: str) -> bool:
+        """Hand `text` to the bridge, journalled: attempt, send, result.
+
+        AHK/stub deletes gemini.ready after typing; its disappearance IS the
+        typed signal. A bridge that REFUSES (target is not a Claude window)
+        leaves the file in place, so it reads as not consumed.
+        """
+        jid = self.journal.attempt(text, target="ahk")
+        self.awrite(self.ctl / "gemini.ready", text)
+        ok = bool(self.wait_gone(self.ctl / "gemini.ready", time.time() + 120))
+        self.journal.result(jid, ok=ok, detail="consumed by the bridge" if ok
+                            else "not consumed in 120s (bridge down or refused the target)")
+        return ok
+
     def run(self, cycle: int, body: str, src: str) -> DoneRecord:
         ctl = self.ctl
-        self.awrite(ctl / "gemini.ready",
-                    directive_payload(cycle, body, src,
-                                      self.cfg.get("clear_each_cycle", True)))
-        self.log(f"cycle {cycle}: directive written ({len(body)} chars), gemini.ready set")
-
-        # AHK/stub deletes gemini.ready after typing; its disappearance IS the typed signal
-        if not self.wait_gone(ctl / "gemini.ready", time.time() + 120):
+        payload = directive_payload(cycle, body, src, self.cfg.get("clear_each_cycle", True))
+        if not self._send(payload):
             self.stop(f"cycle {cycle}: AHK never typed (gemini.ready not consumed in 120s)")
+        self.log(f"cycle {cycle}: directive written ({len(body)} chars), gemini.ready set")
         deadline = time.time() + self.cfg["cycle_deadline_sec"]
         self.log(f"cycle {cycle}: typed (ready consumed); deadline in {self.cfg['cycle_deadline_sec']}s")
 
@@ -321,8 +381,7 @@ class AhkExecutor:
             if self.stall_action(breach) == "stop":
                 self.stop(f"cycle {cycle}: claude.done not seen after stall recovery (hard hang)")
             self.log(f"cycle {cycle}: deadline breach {breach} - injecting stall recovery, extending once")
-            self.awrite(ctl / "gemini.ready", self.stall_recovery_directive(cycle))
-            if not self.wait_gone(ctl / "gemini.ready", time.time() + 120):
+            if not self._send(self.stall_recovery_directive(cycle)):
                 self.stop(f"cycle {cycle}: AHK never typed the stall-recovery directive")
             deadline = time.time() + self.cfg["cycle_deadline_sec"]
 
