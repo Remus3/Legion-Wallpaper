@@ -657,7 +657,7 @@ class RunDashServer(LWServer):
                  mirror_path=MIRROR_PATH, pipeline_state_path=PIPELINE_STATE_PATH,
                  roadmap_path=ROADMAP_PATH, job_health_path=JOB_HEALTH_PATH,
                  job_health_refresh=refresh_job_health):
-        super().__init__(addr, handler)
+        super().__init__(addr, handler, config_paths=(config_path,))
         self.job_health_path = Path(job_health_path)
         self.job_health_refresh = job_health_refresh
         self.job_health_lock = threading.Lock()

@@ -12,9 +12,11 @@ _route(method). tools/lw_monitor.py is the reference consumer.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
+import subprocess
 import time
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -115,15 +117,51 @@ def read_json_tolerant(path, cache, *, now_ts=None):
 # -------------------------------------------------------------- the server
 
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+VERSION_PATH = "/api/version"
+
+
+def git_head(cwd=None):
+    """The repo HEAD sha, or None. Never raises (ingest P0-5)."""
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(cwd or REPO_ROOT),
+                           capture_output=True, text=True, timeout=10,
+                           creationflags=NO_WINDOW, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    sha = (r.stdout or "").strip()
+    return sha if r.returncode == 0 and len(sha) == 40 else None
+
+
+def config_hash(paths):
+    """First 12 hex of sha256 over the existing config files' bytes, or None."""
+    h, seen = hashlib.sha256(), False
+    for p in paths or ():
+        try:
+            h.update(Path(p).read_bytes())
+            seen = True
+        except OSError:
+            continue
+    return h.hexdigest()[:12] if seen else None
+
+
 class LWServer(ThreadingHTTPServer):
     daemon_threads = True
     # Windows SO_REUSEADDR would let a second server steal the port; a hard
     # bind failure is what makes the bind-first single-instance guard work.
     allow_reuse_address = False
 
-    def __init__(self, addr, handler):
+    def __init__(self, addr, handler, *, config_paths=()):
         super().__init__(addr, handler)
         self.started_iso = iso_from_epoch(time.time())
+        # SERVED VERSION (ingest P0-5): captured ONCE, after the bind, so
+        # GET /api/version reports what this process is RUNNING - a commit
+        # landed later without a restart reads as stale to the probe
+        # (tools/lw_served_probe.py). Commit sha and timestamps only: no path,
+        # no account name (the repo is public; answers get screenshotted).
+        self.version_info = {"commit": git_head(), "started": self.started_iso,
+                             "pid": os.getpid(), "config_hash": config_hash(config_paths)}
 
 
 class BaseLWHandler(BaseHTTPRequestHandler):
@@ -169,6 +207,11 @@ class BaseLWHandler(BaseHTTPRequestHandler):
         try:
             if not self._host_ok():
                 self._send_json(403, {"ok": False, "error": "forbidden"})
+                return
+            # Every LW server answers this, so no service can forget it.
+            if method == "GET" and self.path.split("?", 1)[0] == VERSION_PATH:
+                self._send_json(200, getattr(self.server, "version_info", {"commit": None}),
+                                {"Cache-Control": "no-store"})
                 return
             self._route(method)
         except Exception:  # noqa: BLE001 - top-level request guard, fail-soft

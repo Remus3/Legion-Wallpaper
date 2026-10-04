@@ -359,3 +359,12 @@ when no image was set, weekly hygiene via `Write-RunRecord` before every `exit`.
 3 consecutive failed runs are unhealthy at once, a HALT file or a disabled task reads
 HALTED. It writes `ops/runtime/job_health.json`; the rundash (8900) "Scheduled Jobs" card
 reads it through `/api/jobs` and recomputes it when older than 10 minutes.
+
+## Served-version probe (ingest P0-5, 2026-10-04)
+
+Every `tools/lw_httpd.py` server (rundash 8900, monitor 8901) answers `GET /api/version`
+with {commit, started, pid, config_hash} captured ONCE at bind, behind the Host guard
+(sha and timestamps only - no path, no account name). `python tools/lw_served_probe.py`
+asks each `lw_ports` allocation and compares with the repo HEAD: current / stale (served
+commit + since + `stale_first_seen`, carried across runs) / no-commit-reported (HTML, a
+missing route or non-JSON - never a guess) / down. Writes `ops/runtime/served_versions.json`.
