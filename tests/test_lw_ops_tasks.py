@@ -15,6 +15,7 @@ the hand-off block renders from the pending list and passes the hand-off gate.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -321,3 +322,66 @@ def test_cli_request_list_and_done_round_trip(tmp_path, capsys):
     flag.write_text("x", encoding="ascii")
     assert ot.main(["--root", str(root), "verify-pending"]) == 0
     assert json.loads(capsys.readouterr().out)["closed"] == [tid]
+
+
+# -- MAIN 0020 section 4 contract arms ------------------------------------------
+
+def test_the_task_id_comes_from_capability_and_subject(tmp_path):
+    flag = tmp_path / "flag"
+    eng = _engine(tmp_path)
+    a = eng.request("oauth", "gmail read", reason="r", steps=["s"],
+                    verify_argv=_exists_argv(flag))
+    assert a == "oauth.gmail-read"
+    flag.write_text("x", encoding="ascii")
+    eng.verify_pending()
+    flag.unlink()
+    b = eng.request("oauth", "gmail read", reason="r", steps=["s"],
+                    verify_argv=_exists_argv(flag))
+    assert b == "oauth.gmail-read-2"
+
+
+def test_argv0_is_resolved_on_path_never_from_the_working_directory(tmp_path, monkeypatch):
+    planted = tmp_path / "git.exe"
+    planted.write_bytes(b"MZ")                  # a trap in the cwd
+    monkeypatch.chdir(tmp_path)
+    # an empty entry and "." both MEAN the cwd to a naive search
+    monkeypatch.setenv("PATH", os.pathsep.join(["", ".", str(tmp_path / "empty-dir")]))
+    assert ot.resolve_executable("git.exe") is None
+    assert ot.resolve_executable("git") is None
+    r = ot.run_verify(["git", "--version"], timeout_s=5)
+    assert r["passed"] is False and "PATH" in r["error"]
+    assert ot.resolve_executable(str(planted)) == str(planted)   # absolute: as given
+
+
+def test_the_allowlist_is_the_one_the_owning_tree_passes(tmp_path):
+    store = ot.JsonlTaskStore(tmp_path / "events.jsonl")
+    eng = ot.TaskEngine(store, sink=RecordingSink(), allowlist={"git.exe"})
+    with pytest.raises(ot.TaskRefused, match="allowlist"):
+        eng.request("c", "s", reason="r", steps=["s"], verify_argv=["python", "-c", "0"])
+    eng.request("c", "s", reason="r", steps=["s"], verify_argv=["git.exe", "status"])
+
+
+def test_the_owner_is_the_engines_own_tree(tmp_path):
+    store = ot.JsonlTaskStore(tmp_path / "events.jsonl")
+    eng = ot.TaskEngine(store, sink=RecordingSink(), owner="RC")
+    with pytest.raises(ot.TaskRefused, match="owner"):
+        eng.request("c", "s", reason="r", steps=["s"], verify_argv=_exists_argv(tmp_path),
+                    owner="LW")
+
+
+def test_the_writer_lock_is_an_open_handle_and_never_unlinked(tmp_path):
+    lock = tmp_path / "events.jsonl.lock"
+    with ot.handle_lock(lock):
+        with pytest.raises(ot.LockBusy):
+            with ot.handle_lock(lock, wait_s=0.2):
+                pass
+    assert lock.exists()
+    with ot.handle_lock(lock, wait_s=0.2):      # released: free again
+        pass
+    assert lock.exists()
+
+
+def test_render_asks_is_the_engine_method(tmp_path):
+    eng = _engine(tmp_path)
+    tid = _req(eng, _exists_argv(tmp_path / "f"))
+    assert tid in eng.render_asks() and eng.render_asks().startswith(ot.ASKS_BEGIN)

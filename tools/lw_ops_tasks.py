@@ -29,7 +29,8 @@ This module is the source the hand-off renders from, not a second hand-off.
 SAFETY. A verify argv is arbitrary code run unattended:
   * argv must be a non-empty list/tuple of str - a string is refused at the
     API boundary (no shell, ever: `shell=False`);
-  * its executable must be on `ALLOWED_EXECUTABLES` (by basename) or be this
+  * its executable must be on the allowlist the OWNING tree passes (LW_ALLOWLIST,
+    by basename), resolved on PATH and never from the working directory, or be this
     interpreter;
   * only the owning tree (`OWNER`, LW) registers a check - a note from another
     tree never reaches `request()`; the CLI is the only registration path;
@@ -47,21 +48,24 @@ CLI:
     python tools/lw_ops_tasks.py request --cap physical --subject dac \\
         --reason "..." --step "..." [--handoff "..."] --verify-json '["python","-c","..."]'
     python tools/lw_ops_tasks.py pending | list | render
-    python tools/lw_ops_tasks.py done T0001          # exit 0 only if it closed
-    python tools/lw_ops_tasks.py comment T0001 "text"
-    python tools/lw_ops_tasks.py withdraw T0001 "reason"
+    python tools/lw_ops_tasks.py done physical.dac          # exit 0 only if it closed
+    python tools/lw_ops_tasks.py comment physical.dac "text"
+    python tools/lw_ops_tasks.py withdraw physical.dac "reason"
     python tools/lw_ops_tasks.py verify-pending
 Coverage: tests/test_lw_ops_tasks.py.
 """
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -76,7 +80,7 @@ VERIFY_TIMEOUT_S = 60.0
 # By lower-cased basename. Interpreters and read-only probes this tree already
 # runs; a shell (cmd, powershell, bash) is deliberately absent - a verify that
 # needs one is a script file run by python.
-ALLOWED_EXECUTABLES = frozenset({
+LW_ALLOWLIST = frozenset({
     "python", "python.exe", "python3", "python3.exe", "pythonw.exe", "py.exe",
     "git", "git.exe", "gh", "gh.exe", "schtasks", "schtasks.exe",
     "where.exe", "reg.exe", "sc.exe",
@@ -111,12 +115,50 @@ def _digest(event: dict) -> str:
     return hashlib.sha256(json.dumps(body, sort_keys=True).encode("utf-8")).hexdigest()
 
 
-# Single-writer lock: lw_watch's pid-stamped lock dir (liveness by pid, never mtime)
-try:
-    from lw_watch import LockBusy, pid_alive, watch_lock as pid_lock  # noqa: F401
-except ImportError:  # running with tools/ off sys.path
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from lw_watch import LockBusy, pid_alive, watch_lock as pid_lock  # noqa: F401
+class LockBusy(RuntimeError):
+    """Another writer holds the event-log lock past the wait."""
+
+
+@contextlib.contextmanager
+def handle_lock(path: Path, wait_s: float = LOCK_WAIT_S):
+    """Single-writer lock on an OPEN HANDLE (MAIN 0020 section 4).
+
+    msvcrt.locking on Windows, fcntl.flock elsewhere, over byte 0 of a lock
+    file that is never unlinked - the OS drops the lock when the holder dies,
+    so there is no stale lock to judge and no pid to trust.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(path, "a+b")  # noqa: SIM115 - held for the body
+    try:
+        deadline = time.monotonic() + wait_s
+        while True:
+            try:
+                if os.name == "nt":
+                    import msvcrt
+                    fh.seek(0)
+                    msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise LockBusy(f"{path.name} held by another writer") from None
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            if os.name == "nt":
+                import msvcrt
+                fh.seek(0)
+                with contextlib.suppress(OSError):
+                    msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+    finally:
+        fh.close()
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +176,7 @@ class JsonlTaskStore:
 
     def __init__(self, path: Path):
         self.path = Path(path)
-        self.lock_dir = self.path.with_name(self.path.name + ".lock")
+        self.lock_path = self.path.with_name(self.path.name + ".lock")
 
     def read(self) -> list[dict]:
         if not self.path.exists():
@@ -161,7 +203,7 @@ class JsonlTaskStore:
         return events
 
     def append(self, event: dict) -> dict:
-        with pid_lock(self.lock_dir, wait_s=LOCK_WAIT_S):
+        with handle_lock(self.lock_path):
             events = self.read()
             ev = dict(event)
             ev["seq"] = len(events) + 1
@@ -199,8 +241,32 @@ class FileSink:
 # Verify runner
 # ---------------------------------------------------------------------------
 
-def validate_argv(argv) -> list[str]:
-    """The argv as a list of str, or TaskRefused. Never a string, never a shell."""
+def resolve_executable(name: str) -> str | None:
+    """argv[0] as an absolute path, searched on PATH only - NEVER the working
+    directory (Windows CreateProcess would try it first). An absolute name must
+    exist; a relative name with a separator is refused (None)."""
+    if os.path.isabs(name):
+        return name if os.path.isfile(name) else None
+    if os.sep in name or (os.altsep and os.altsep in name):
+        return None
+    exts = [""]
+    if os.name == "nt" and not os.path.splitext(name)[1]:
+        exts = os.environ.get("PATHEXT", ".EXE;.BAT;.CMD").lower().split(";")
+    for d in os.environ.get("PATH", "").split(os.pathsep):
+        if not d or not os.path.isabs(d):
+            continue
+        for ext in exts:
+            cand = os.path.join(d, name + ext)
+            if os.path.isfile(cand):
+                return cand
+    return None
+
+
+def validate_argv(argv, allowlist=None) -> list[str]:
+    """The argv as a list of str, or TaskRefused. Never a string, never a shell.
+
+    `allowlist` is passed by the OWNING tree (MAIN 0020); None = LW's own."""
+    allowlist = LW_ALLOWLIST if allowlist is None else frozenset(a.lower() for a in allowlist)
     # One test covers str and bytes: neither is a list/tuple.
     if not isinstance(argv, (list, tuple)) or not argv:
         raise TaskRefused("verify argv must be a non-empty list of arguments "
@@ -209,17 +275,21 @@ def validate_argv(argv) -> list[str]:
         raise TaskRefused("every verify argument must be a non-empty string")
     exe = argv[0]
     same = os.path.normcase(os.path.abspath(exe)) == os.path.normcase(sys.executable)
-    if not same and Path(exe).name.lower() not in ALLOWED_EXECUTABLES:
+    if not same and Path(exe).name.lower() not in allowlist:
         raise TaskRefused(f"executable {Path(exe).name!r} is not on the allowlist")
     return list(argv)
 
 
-def run_verify(argv, timeout_s: float = VERIFY_TIMEOUT_S) -> dict:
+def run_verify(argv, timeout_s: float = VERIFY_TIMEOUT_S, allowlist=None) -> dict:
     """Run the check. {"passed", "rc", "error"}; never raises."""
     try:
-        argv = validate_argv(argv)
+        argv = validate_argv(argv, allowlist)
     except TaskRefused as exc:
         return {"passed": False, "rc": None, "error": f"refused: {exc}"}
+    exe = resolve_executable(argv[0])
+    if exe is None:
+        return {"passed": False, "rc": None, "error": "executable not found on PATH"}
+    argv = [exe, *argv[1:]]
     try:
         r = subprocess.run(argv, shell=False, capture_output=True, timeout=timeout_s,
                            stdin=subprocess.DEVNULL, creationflags=NO_WINDOW)
@@ -280,9 +350,28 @@ def fold(events: list[dict]) -> dict[str, Task]:
     return tasks
 
 
+def task_id(cap: str, subject: str, events: list[dict]) -> str:
+    """The id FROM (capability, subject) (MAIN 0020): "<cap>.<subject>", reduced
+    to [A-Za-z0-9._-]; a key requested again after closing gets "-2", "-3"."""
+    def clean(x):
+        return re.sub(r"[^A-Za-z0-9._-]+", "-", x.strip()).strip("-")[:48] or "x"
+    base = f"{clean(cap)}.{clean(subject)}"
+    used = {e.get("task") for e in events if e.get("kind") == "request"}
+    if base not in used:
+        return base
+    n = 2
+    while f"{base}-{n}" in used:
+        n += 1
+    return f"{base}-{n}"
+
+
 class TaskEngine:
     def __init__(self, store: JsonlTaskStore, sink=None, *,
-                 verify_timeout_s: float = VERIFY_TIMEOUT_S, runner=run_verify):
+                 verify_timeout_s: float = VERIFY_TIMEOUT_S, runner=run_verify,
+                 allowlist=None, owner: str = OWNER):
+        self.allowlist = LW_ALLOWLIST if allowlist is None else frozenset(
+            a.lower() for a in allowlist)
+        self.owner = owner
         self.store = store
         self.sink = sink if sink is not None else FileSink(store.path.with_name(
             "notifications.jsonl"))
@@ -307,10 +396,11 @@ class TaskEngine:
         return self.store.append({"kind": kind, "task": tid, "ts": _now(), **fields})
 
     def request(self, cap: str, subject: str, reason: str, steps, verify_argv,
-                handoffs=None, owner: str = OWNER) -> str:
-        if owner != OWNER:
-            raise TaskRefused(f"owner {owner!r} may not register a check in {OWNER}")
-        argv = validate_argv(verify_argv)
+                handoffs=None, owner: str | None = None) -> str:
+        owner = self.owner if owner is None else owner
+        if owner != self.owner:
+            raise TaskRefused(f"owner {owner!r} may not register a check in {self.owner}")
+        argv = validate_argv(verify_argv, self.allowlist)
         for name, val in (("cap", cap), ("subject", subject), ("reason", reason)):
             if not isinstance(val, str) or not val.strip():
                 raise TaskRefused(f"{name} must be a non-empty string")
@@ -322,7 +412,7 @@ class TaskEngine:
             if t.state == "open" and (t.cap, t.subject) == (cap, subject):
                 self._event("join", t.id, reason=reason)
                 return t.id
-        tid = f"T{1 + sum(1 for e in events if e.get('kind') == 'request'):04d}"
+        tid = task_id(cap, subject, events)
         self._event("request", tid, cap=cap, subject=subject, reason=reason, steps=steps,
                     handoffs=[str(h) for h in (handoffs or [])], verify_argv=argv,
                     owner=owner)
@@ -350,7 +440,8 @@ class TaskEngine:
             self._event("withdraw", tid, reason=str(reason))
 
     def _check(self, t: Task, trigger: str) -> bool:
-        res = self.runner(t.verify_argv, timeout_s=self.verify_timeout_s)
+        res = self.runner(t.verify_argv, timeout_s=self.verify_timeout_s,
+                          allowlist=self.allowlist)
         self._event("verify", t.id, trigger=trigger, passed=bool(res.get("passed")),
                     rc=res.get("rc"), error=str(res.get("error") or ""))
         if res.get("passed"):
@@ -365,6 +456,10 @@ class TaskEngine:
             return {"task": tid, "closed": t.state == "closed", "state": t.state}
         closed = self._check(t, "done")
         return {"task": tid, "closed": closed, "state": "closed" if closed else "open"}
+
+    def render_asks(self) -> str:
+        """The hand-off's operator-ask block from the open tasks (MAIN 0020 name)."""
+        return render_operator_asks(self.pending())
 
     def verify_pending(self) -> dict:
         """Re-run every open check (the scheduled pass)."""
