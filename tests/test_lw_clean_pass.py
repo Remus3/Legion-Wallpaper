@@ -574,3 +574,63 @@ def test_integration_text_energy_reduction_path(tmp_path):
     assert e_before > e_after                  # the fill removed text-energy
     assert cp._residue_decision(e_before, e_after) is False   # residue gone
     assert cp._residue_decision(e_before, e_before) is True    # no reduction
+
+
+# ===========================================================================
+# G2 outside identity: the STRICT arm (gate board P0-3 finding, 2026-10-04)
+# ===========================================================================
+# The fault-proven gate board planted one 32x32 block moved +16 levels outside
+# the mask of 12 golden frames: outside_ssim 0.9999 and mad_outside 0.0045 -
+# both FRAME MEANS, both far inside their bars - so verify never discarded. The
+# composite (inpaint_lama) is byte-identical outside the mask by construction,
+# so any changed outside pixel is the bug the arm calls itself a tripwire for.
+def test_outside_max_abs_is_zero_for_a_correct_composite():
+    base = _gradient(64, 64)
+    out = base.copy()
+    mask = np.zeros((64, 64), dtype=bool)
+    mask[24:40, 24:40] = True
+    out[24:40, 24:40] = 0
+    assert cp.outside_max_abs(base, out, mask) == 0.0
+
+
+def test_outside_max_abs_sees_one_changed_pixel():
+    base = _gradient(64, 64)
+    out = base.copy()
+    mask = np.zeros((64, 64), dtype=bool)
+    mask[24:40, 24:40] = True
+    out[2, 2, 1] = (int(out[2, 2, 1]) + 3) % 256
+    assert cp.outside_max_abs(base, out, mask) == 3.0
+
+
+def test_verify_verdict_discards_a_localized_outside_change():
+    # means inside their bars, one block changed: must discard
+    r = cp.verify_verdict(0.9999, 0.0045, 0.7, False, 0.95, outside_max_abs=16.0)
+    assert r["verdict"] == "discard"
+    assert any(x.startswith("outside_max_abs") for x in r["reasons"])
+
+
+def test_verify_verdict_default_keeps_old_behaviour():
+    assert cp.verify_verdict(0.999, 0.4, 0.7, False, 0.95)["verdict"] == "pass"
+    assert cp.OUTSIDE_MAX_ABS == 0.0
+
+
+# ===========================================================================
+# residue probe fails CLOSED to a flag (adjudicated 2026-10-04, gate board)
+# ===========================================================================
+# The live verify wrapped the residue probe in `except Exception: residue =
+# False`, so a crashed probe read as "no residue" - a green over a hole. Now a
+# crash is UNKNOWN: recorded, flagged for review, never counted as clean.
+def test_verify_verdict_unknown_residue_is_flagged_never_clean():
+    r = cp.verify_verdict(0.999, 0.4, 0.7, None, 0.95)
+    assert r["verdict"] == "pass"
+    assert "residue_probe_error" in r["flags"]
+
+
+def test_probe_residue_reports_the_exception_type():
+    class Boom:
+        def readtext(self, *_a, **_k):
+            raise RuntimeError("reader died")
+    img = np.zeros((32, 32, 3), dtype=np.uint8)
+    residue, err = cp.probe_residue(img, img, [(0, 0, 16, 16)], Boom())
+    assert residue is None
+    assert err == "RuntimeError"

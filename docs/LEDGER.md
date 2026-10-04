@@ -27,6 +27,38 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+244. DONE **2026-10-04 (gates: fault-proven gate board, ingest P0-3; acceptance NOT MET - 4 rows acknowledged).**
+   `tools/lw_gate_board.py`: rows judge through the LIVE gate code and read thresholds at evaluation
+   time; each measured row carries a calibrated synthetic fault (numpy edit of an in-memory copy, no
+   image bytes tracked). `prove --golden --env all` (metrics rows under .venv-metrics, OCR residue
+   under the lw-clean venv, numpy rows on system python) READ BACK in `ops/runtime/gate_proofs.json`
+   on the 12-frame golden set: PROVEN G0.aspect 12/12, G1.lap_ratio 11/11 (+1 NA downscale-only),
+   G1.halo_pct 12/12, G1.msssim 12/12, G2.no_op 12/12, G2.outside_identity 12/12; BROKEN
+   G1.band_delta 0/12, G1.lpips 11/12 (coven-ashe), G2.text_residue 0/12; UNKNOWN G2.seam 3/12.
+   Findings, fixed in this item: (1) G2 outside identity was two frame MEANS and read a 32x32
+   +16-level block outside the mask as ssim 0.9999 / mad 0.0045 (BROKEN 0/12) - strict arm
+   `outside_max_abs <= OUTSIDE_MAX_ABS (0)` added to `verify_verdict` (the LaMa composite is
+   byte-identical outside its binary mask), row now PROVEN 12/12; (2) the live residue probe failed
+   OPEN (`except Exception: residue = False`) - `probe_residue` now returns (None, ExcType) and
+   verify flags `residue_probe_error` (adjudicated Q4: FLAG, not FAIL). Findings carried as research
+   (adjudicated Q3; `config/gate_board_ack.json` pins each measured state): band_delta cannot see
+   output-scale banding (it counts 1-px steps after a LANCZOS downscale; posterize step 8 and 32
+   LOWER it); lpips misses a 4x detail loss on a soft low-res source (0.037 -> 0.059; lap_ratio
+   catches it there, 1.514 -> 0.198); the seam arm measures ring texture (a perfect fill reads
+   < 0.92 on 9/12; live 22 of 41 verifies flagged) - treat the live seam flag as noise; the OCR+MSER
+   residue arm fires on 7/12 restored regions and misses the +4-level mark on the other 5. Also
+   recorded: golden freeze and live first pass score banding on different gray bases (+0.0074 vs
+   -0.0767 on the same frame); the board measures the live basis (pinned by test). Residue fault
+   amplitude = +4 luma levels, CALIBRATED on the operator's hand-clean captures (105-cleanup step 70
+   median 3.77 levels n=733, final step 4.5 n=2813; the DA veil is ~5x stronger) - evidence in
+   `docs/GATE_BOARD.md`. drift_guard `check_gate_proofs`: breach on any non-PROVEN row without a
+   valid ack (LEDGER id must exist, clears_when required, a WORSE re-run breaches, a stale or - on a
+   machine holding the golden set - absent table breaches); policy adjudicated 2026-10-04 Q1 option
+   (b). TDD: 41 board tests, 4 drift_guard wiring tests, 6 new clean-pass tests, all RED first;
+   mutation-proven 10/10 arms (plant, red, restore byte-exact by sha256, green). Operator
+   validation rows (never counted toward done): "reads like the original art", "no ghost, band or
+   faint residue visible at 1:1".
+
 243. DONE **2026-10-03 (fleet: MAIN FLEET-KIT v4 adopted; adoption commit in the v4 ANSWER).**
    Operator order via MAIN 1204 (supersedes v3). Provenance READ BACK per file with kit v4
    `verify_main` (MAIN's COMMITTED blob): the order note (sha256 b2b3c189) and all five bundle
