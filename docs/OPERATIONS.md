@@ -343,8 +343,8 @@ The hand-off's "Operator asks" block is generated from the open tasks by
 `tools/lw_next_session.py --write`.
 
     python tools/lw_ops_tasks.py pending            # what is open
-    python tools/lw_ops_tasks.py done T0001         # run its check now; exit 0 only if closed
-    python tools/lw_ops_tasks.py withdraw T0001 "why"
+    python tools/lw_ops_tasks.py done physical.dac         # run its check now; exit 0 only if closed
+    python tools/lw_ops_tasks.py withdraw physical.dac "why"
 
 ## Scheduled-job health (tri-state, ingest P0-4, 2026-10-04)
 
