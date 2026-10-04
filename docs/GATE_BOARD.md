@@ -109,3 +109,14 @@ G1.lpips, G2.seam, G2.text_residue (LEDGER 244).
 Two rows no script can measure stay with the operator and never count toward
 done: "reads like the original art" and "no ghost, band or faint residue
 visible at 1:1".
+
+## Stage ledger tolerance (P1-1, `tools/lw_stage_ledger.py`)
+
+The stage ledger compares each stage's input and output at a fixed common
+scale: BOX resampling by an integer factor (2560x1440 -> 640x360), so a
+common-scale pixel whose 4x4 block lies wholly outside an edit is exactly equal
+across an identity pair. Calibrated 2026-10-04 with `lw_stage_ledger.py
+calibrate` on the 26 real clean pairs whose working came from the LaMa
+composite (byte-identical outside its binary mask): outside the declared box
+dilated by 19 px (DILATE_PX 15 + 4), max |luma diff| at common scale = 0.0 on
+26 of 26. `CHANGE_TOL = 0.5` therefore counts any whole-level change.

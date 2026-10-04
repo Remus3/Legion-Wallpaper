@@ -81,6 +81,14 @@ tools\lw_gate_board.py               fault-proven gate board (P0-3): every gate
                                      not covered by config\gate_board_ack.json
                                      (docs/GATE_BOARD.md).
 
+tools\lw_stage_ledger.py             per-stage region ledger (P1-1): which
+                                     stage changed which region, asserted or
+                                     not; operator LOCKS in
+                                     ops\runtime\locks\<slug>.json; writes
+                                     ops\runtime\stage_ledger\<slug>.json;
+                                     lw_pipeline finalize refuses a pass when a
+                                     lock changed unasserted.
+
 ops\runtime\pipeline_state.json      machine state twin, written atomically by
                                      lw_pipeline.py; monitor reads tolerantly
                                      (unknown fields ignored, stale-cache belt).

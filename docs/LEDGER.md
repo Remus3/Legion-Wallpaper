@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+245. DONE **2026-10-04 (pipeline: stage ledger + end-review lock gate, ingest P1-1).**
+   `tools/lw_stage_ledger.py`: per slug per run, each stage of `lw_pipeline.STAGES` (read, never
+   restated) is compared input `_initial` -> output (next `_initial`, or `_lastdone`) at a fixed
+   common scale (integer BOX factor, 2560x1440 -> 640x360); watched regions = operator LOCKS in
+   force (`ops/runtime/locks/<slug>.json`, `lock` verb, operator-initiated) plus `outside_edit`; a
+   stage asserts the region it declared in its SAVE_WORKING params (mask_bbox / boxes, dilated
+   19 px), `first` asserts the whole frame. A stage without coverage reads UNWATCHED, a missing
+   milestone ABSENT, never clean; an empty lock set still writes a note per stage. `lw_pipeline
+   finalize` now builds + writes `ops/runtime/stage_ledger/<slug>.json` and refuses (code 3) when a
+   lock changed in a stage that did not assert it, when a stage under a lock is unwatched/absent,
+   or when the lock file is unreadable; with no locks an unbuildable ledger is recorded and does not
+   block. Tolerance CALIBRATED on real known-identity pairs (`calibrate`): 26 LaMa clean pairs,
+   max |luma diff| outside the dilated box at common scale = 0.0 on 26/26 (docs/GATE_BOARD.md).
+   No slug is past cleaning today (5-8 stage folders empty), so no live ledger exists yet; the
+   finalize wiring is exercised by tests on synthetic end-review sets. TDD: 20 tests RED first
+   (coverage of every pipeline stage, unwatched stage, outside-declared edit, unasserted lock
+   change blocks, asserted change passes, lock scoped after its stage, empty-lock note, finalize
+   refusal + ledger write); 50 existing pipeline move/annotate tests unchanged and green;
+   mutation-proven 6/6 arms (plant, red, restore byte-exact by sha256, green).
+
 244. DONE **2026-10-04 (gates: fault-proven gate board, ingest P0-3; acceptance NOT MET - 4 rows acknowledged).**
    `tools/lw_gate_board.py`: rows judge through the LIVE gate code and read thresholds at evaluation
    time; each measured row carries a calibrated synthetic fault (numpy edit of an in-memory copy, no
