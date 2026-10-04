@@ -1496,7 +1496,13 @@ def cmd_save_working(ctx, slug, from_path, adopt, tool, params_json,
 
 # ---------------------------------------------------------------- submit (T4)
 
-def cmd_submit(ctx, slug):
+SUBMIT_DEFAULT_ACTOR = "unattributed"
+
+
+def cmd_submit(ctx, slug, actor=SUBMIT_DEFAULT_ACTOR):
+    """T4. `actor` defaults to "unattributed": the pipeline cannot know who
+    ran the command, so it never claims "operator" (LEDGER 268 defect 4).
+    Tool callers pass tool:<name>; an attended operator passes operator."""
     stage, folder = find_scratch(ctx, slug)
     if stage is None:
         raise PipelineError(f"submit: {slug} not in any scratch", code=2)
@@ -1514,10 +1520,11 @@ def cmd_submit(ctx, slug):
         ops.rename(src, needauth)
         man = load_manifest(folder)
         if man is not None:
-            add_transition(man, "SUBMIT", src=src.name, dst=needauth.name,
-                           sha_in=sha, sha_out=sha)
+            add_transition(man, "SUBMIT", actor=actor, src=src.name,
+                           dst=needauth.name, sha_in=sha, sha_out=sha)
             ops.write_json(folder / "manifest.json", man)
-        ctx.log(slug, "SUBMIT", SCRATCH_DIR[stage], SCRATCH_DIR[stage], sha[:12])
+        ctx.log(slug, "SUBMIT", SCRATCH_DIR[stage], SCRATCH_DIR[stage], sha[:12],
+                actor=actor)
     finally:
         release_lock(lock)
     _emit(ctx, ops, f"submit {slug}")
@@ -2258,6 +2265,10 @@ def build_parser():
 
     s = sub.add_parser("submit", help="T4: latest working -> _needauth")
     s.add_argument("slug")
+    s.add_argument("--actor", default=SUBMIT_DEFAULT_ACTOR,
+                   help="who is submitting: tool:<name> from a tool, operator "
+                        "when the operator does it. Defaults to "
+                        "'unattributed' - never assumed to be the operator.")
     s.add_argument("--dry-run", action="store_true")
 
     s = sub.add_parser("approve", help="T5/T6: needauth -> done, set -> Done")
@@ -2325,7 +2336,7 @@ def main(argv=None):
             return cmd_save_working(ctx, args.slug, args.from_path, args.adopt,
                                     args.tool, args.params, args.allow_ladder)
         if args.cmd == "submit":
-            return cmd_submit(ctx, args.slug)
+            return cmd_submit(ctx, args.slug, actor=args.actor)
         if args.cmd == "approve":
             return cmd_approve(ctx, args.slug, args.force, actor=args.actor)
         if args.cmd == "reject":

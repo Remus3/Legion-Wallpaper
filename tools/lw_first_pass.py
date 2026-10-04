@@ -656,7 +656,7 @@ def pipeline_annotate(slug, source_url, metrics_obj):
 
 
 def pipeline_submit(slug):
-    proc = _pipeline("submit", slug)
+    proc = _pipeline("submit", slug, "--actor", "tool:lw_first_pass")
     if proc.returncode != 0:
         raise RuntimeError(f"submit rc={proc.returncode}: "
                            f"{(proc.stderr or proc.stdout)[-400:]}")

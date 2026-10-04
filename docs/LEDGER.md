@@ -27,6 +27,42 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+269. DONE **2026-10-04 (LEDGER 268 follow-ups: rejected-working skip applied, SUBMIT records its actor, 08-22 actor backfill = 486 not 287; commit in this push).**
+   (1) Held patch `ops/loop/control/patch_lw_clean_pass_skip_rejected_workings.diff` applied clean
+   (`git apply --check` OK, no drift): `lw_clean_pass.select_working_image` skips any `_cleanworking_NN`
+   whose sha256 is a manifest REJECT `sha256_in`, else falls back to the initial. MUTATION-PROVED:
+   tests/test_lw_clean_select_skips_rejected.py 2/2 FAIL with the tool file reverted, 2/2 pass restored.
+   (2) SUBMIT actor (TDD, 7 RED first in tests/test_lw_pipeline_submit_actor.py): `cmd_submit(actor=)` +
+   `submit --actor`, written to the manifest transition and PIPELINE_LOG. DECISION: CLI default is
+   `unattributed`, not operator - the pipeline cannot know who typed the command, and the old default
+   is exactly how 486 tool submits read as operator (alternatives: default operator = the defect;
+   required flag = breaks every documented hand command). Every tool caller names itself (grep of all
+   `submit` argv builders/callers): lw_clean_pass.build_submit_cmd/build_cleanscan_cmds
+   `tool:lw_clean_pass` (actor= overridable), lw_clean_iopaint `tool:lw_clean_iopaint`, lw_clean_dispose
+   clean-scan `tool:lw_clean_dispose`, lw_first_pass `tool:lw_first_pass`, lw_clean_detector_probe
+   (printed cmd) `tool:lw_clean_detector_probe`. The inbox responder, loop tools and ops/ have NO submit
+   caller (grep). One pinned argv test updated (test_lw_clean_iopaint::test_build_submit_cmd).
+   (3) BACKFILL. PREMISE CORRECTED: LEDGER 268's "287 dispose approvals" is wrong - live manifests held
+   486 APPROVE_CLEAN dated 08-22 with actor=operator (472 in 4.Cleaning Done + the 14 reopened), = 479
+   lw_clean_dispose (12:04-12:17Z, LEDGER 122) + 7 detector-FP passthroughs at 19:08Z, all run with
+   `--actor tool:auto-approve` (docs/CLEAN_OVERLAY_REVIEW_2026-08-22.md "Disposition of the seven").
+   New tools/lw_actor_backfill.py (TDD, 3 tests; dry-run default, idempotent): APPROVE_CLEAN ->
+   tool:auto-approve; that day's SUBMITs -> tool:lw_clean_dispose (479, dispose window) / unattributed
+   (7, driver unrecorded); each changed transition carries `corrected_from {actor, at, ref}`, manifest
+   line endings preserved, atomic tmp+replace. PIPELINE_LOG.md NOT rewritten: 486 `CORRECT_ACTOR` lines
+   appended in the standard 8-field format (log parsers checked: lw_monitor tail_log, lw_facts last line,
+   detector_probe constant only - none parse OPs); pre-run log bytes verified a byte-identical prefix of
+   the new log. READ BACK: 0 manifests still claim operator for the 08-22 approvals; second dry run = 0
+   slugs; samples 233f / 29-cleanup / 164-cleanup = tool:auto-approve + corrected_from; `verify: ok (737)`.
+   OTHER BATCHES (counted, NOT corrected - no tool ever passed --actor to approve except dispose, so no
+   other batch is a provable tool:auto-approve): APPROVE_FIRST operator 07-04 10, 07-05 1, 07-06 110,
+   07-07 58, 07-15 54, 07-18 14, 07-27 46 (operator "approve all 46"), 08-01 22, 08-02 17, 08-17 267,
+   09-01 16, 10-04 1; APPROVE_CLEAN operator 08-02 3, 08-17 3 (operator-select), 09-01 26 - all
+   agent-executed in attended sessions. SUBMIT: 835 pre-fix rows on other dates carry the old default
+   `operator` and many were tool-driven (lw_first_pass); not attributable per row, left as is.
+   Docs: PIPELINE_STATE_MACHINE 4.1 (CORRECT_ACTOR, unattributed), ROADMAP item updated.
+   Suite: 3884 passed, 20 skipped (this run; +12 new); ruff clean on touched files.
+
 268. DONE **2026-10-04 (cleaning incident: 14 operator-REJECTED candidates had shipped to 4.Cleaning Done as "clean-scan"; 3 root causes fixed RED-first, 14 slugs reopened; commit in this push).**
    TRIGGER: operator report (attended, screenshots) on spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre -
    bottom-left credit replaced by a flat smear and the skirt (no mark there) destroyed; the same slug was

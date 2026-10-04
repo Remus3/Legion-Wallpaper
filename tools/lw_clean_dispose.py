@@ -38,6 +38,7 @@ import lw_clean_pass as lcp  # noqa: E402
 # prove. Same value, provable in place.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 ACTOR = "tool:auto-approve"
+SUBMIT_ACTOR = "tool:lw_clean_dispose"
 
 
 def run_cmd(argv, dry_run=False):
@@ -91,7 +92,8 @@ def drive(slug, verdict, image, dry_run=False):
         # A clean scan registers the slug's INITIAL, never the triage image:
         # triage reads the highest _cleanworking_NN, which can be a candidate
         # the operator already REJECTED (14 shipped that way on 2026-08-22).
-        cmds = lcp.build_cleanscan_cmds(slug, cleanscan_source(slug))
+        cmds = lcp.build_cleanscan_cmds(slug, cleanscan_source(slug),
+                                        actor=SUBMIT_ACTOR)
     else:  # auto
         if dry_run:
             rec["status"] = "would-inpaint"

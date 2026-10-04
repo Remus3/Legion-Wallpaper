@@ -426,7 +426,8 @@ def remove_overlay_for(slugs, out_dir=None):
                 json.dumps({"gain": matte.get("gain"),
                             "score_before": round(before, 4),
                             "score_after": round(after, 4)})]
-        cp._print_cmds([save, cp.build_submit_cmd(slug)])
+        cp._print_cmds([save, cp.build_submit_cmd(
+            slug, actor="tool:lw_clean_detector_probe")])
         rows.append((slug, before, after))
     return rows
 

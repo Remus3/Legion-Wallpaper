@@ -439,12 +439,15 @@ state from disk, skips hash-equal completed steps, and resumes the remainder.
 One line per transition, pipe-delimited, ASCII, newest at bottom:
 
 ```
-<iso8601Z> | <slug> | <OP> | <from> -> <to> | actor=<operator|tool:name> | sha12=<hex12> | <ok|fail:reason> | note=<text or ->
+<iso8601Z> | <slug> | <OP> | <from> -> <to> | actor=<operator|tool:name|unattributed> | sha12=<hex12> | <ok|fail:reason> | note=<text or ->
 ```
 
 OP in: INTAKE, START_CLEAN, START_FINAL, START_LAST, SAVE_WORKING, SUBMIT,
 REJECT, APPROVE_FIRST, APPROVE_CLEAN, APPROVE_FINAL, APPROVE_LAST, FINALIZE,
-DELIVER_PICTURES, GC_DONE, RECOVER. Example:
+DELIVER_PICTURES, GC_DONE, RECOVER, CORRECT_ACTOR. SUBMIT takes `--actor`
+(default `unattributed` - never assumed operator); approve takes `--actor`
+(default operator). CORRECT_ACTOR is an appended audit correction: history
+lines are never edited, the note names `OP@ts old->new` (LEDGER 269). Example:
 
 ```
 2026-07-03T21:14:09Z | ahri-star-guardian | APPROVE_CLEAN | 3.Cleaning Scratch -> 4.Cleaning Done | actor=operator | sha12=ab12cd34ef56 | ok | note=-
