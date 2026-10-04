@@ -92,6 +92,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import lw_facts  # noqa: E402  - flat tools/ directory, imported by bare name
 import lw_headless_env  # noqa: E402
+import lw_ops_tasks  # noqa: E402
 import lw_paths  # noqa: E402
 import split_scan  # noqa: E402
 
@@ -708,6 +709,29 @@ def _record_cycle(path: Path, payload: dict, **record) -> None:
         payload["runlog_error"] = f"{type(exc).__name__}: {exc}"
 
 
+def verify_operator_tasks(payload: dict, runlog: Path) -> None:
+    """Re-run every open operator-task check (ingest P0-1). Never the failure.
+
+    The engine's scheduled pass rides this tick instead of a new scheduled
+    task. Only open tasks' checks run - each an allowlisted argv, no shell,
+    CREATE_NO_WINDOW, with a timeout (tools/lw_ops_tasks.py). A cycle that
+    closes a task leaves one run-log line; an idle one leaves nothing.
+    """
+    try:
+        eng = lw_ops_tasks.default_engine()
+        if not eng.store.path.exists():
+            return
+        res = eng.verify_pending()
+    except Exception as exc:  # noqa: BLE001 - advisory, like _publish
+        payload["operator_tasks_error"] = type(exc).__name__
+        return
+    if res["checked"]:
+        payload["operator_tasks"] = res
+    if res["closed"]:
+        _record_cycle(runlog, payload, event="operator_tasks", closed=res["closed"],
+                      still_open=res["open"])
+
+
 def within_budget(mail: list[Note]) -> tuple[list[Note], dict]:
     """The notes this cycle may spawn on, oldest first, and the run count.
 
@@ -830,6 +854,7 @@ def main(argv: list[str] | None = None) -> int:
     announced: dict = {}
     if not args.dry_run:
         _publish(announced, tick_start, "running", "Checking Inbox")
+        verify_operator_tasks(announced, args.runlog)
 
     notes = new_notes(args.inbox, args.state)
 

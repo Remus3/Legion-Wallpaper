@@ -110,3 +110,18 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
     monkeypatch.setattr(kit, "_atomic_write", _guarded)
     yield
     assert hits == [], f"an arm wrote a live fleet-kit file: {hits}"
+
+
+@pytest.fixture(autouse=True)
+def _the_live_operator_task_log_is_never_touched(request, monkeypatch):
+    """Point the operator-task engine (tools/lw_ops_tasks.py) at a per-test root.
+
+    The engine's default store is ops/runtime/operator_tasks/, and the inbox
+    responder runs `verify_pending()` on every `--once` tick. Without this, an
+    arm that drives the responder's main would execute the LIVE pending checks
+    and append verify events to the operator's real log. Env-var seam, read at
+    call time by `lw_ops_tasks.default_root()`.
+    """
+    tmp = request.getfixturevalue("tmp_path")
+    monkeypatch.setenv("LW_OPS_TASKS_ROOT", str(tmp / "operator_tasks"))
+    yield

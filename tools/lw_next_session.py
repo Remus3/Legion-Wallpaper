@@ -41,6 +41,7 @@ time.
 CLI:
     python tools/lw_next_session.py --path            # print the resolved target
     python tools/lw_next_session.py --write FILE      # write FILE's content
+    (--write appends/replaces the generated "Operator asks" block - P0-1)
     ... | python tools/lw_next_session.py --write -   # write stdin
 """
 
@@ -166,6 +167,22 @@ def write_handoff(text, root=None, intent_path=None):
     return target
 
 
+def compose_handoff(text, engine=None):
+    """The hand-off with its "Operator asks" block rendered FROM the task engine.
+
+    Ingest P0-1: the batched operator ask is generated from the open-task log
+    (`tools/lw_ops_tasks.py`), never hand-written - any existing block is
+    replaced, so a stale or typed ask cannot survive a /done. Never raises: an
+    unreadable log renders as an UNKNOWN line rather than failing /done.
+    """
+    try:
+        import lw_ops_tasks
+    except ImportError:  # running with tools/ off sys.path
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import lw_ops_tasks
+    return lw_ops_tasks.inject_operator_asks(text, engine)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="LW next-session hand-off writer")
     ap.add_argument("--path", action="store_true",
@@ -183,6 +200,7 @@ def main(argv=None):
         return 0
 
     text = sys.stdin.read() if args.write == "-" else Path(args.write).read_text(encoding="utf-8")
+    text = compose_handoff(text)
     try:
         written = write_handoff(text)
     except ValueError as exc:
