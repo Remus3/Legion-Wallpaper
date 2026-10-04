@@ -49,6 +49,7 @@ OK, UNHEALTHY, UNKNOWN, HALTED = "OK", "UNHEALTHY", "UNKNOWN", "HALTED"
 QUERY_TRIES = 3
 FAIL_STREAK = 3
 GAP_WINDOW = 20
+MIN_GAPS = 5
 
 
 @dataclass(frozen=True)
@@ -196,7 +197,7 @@ def judge(spec: JobSpec, *, runlog_dir: Path, now: dt.datetime, query=schtasks_q
     if not rows:
         v["reason"] = "no run log - cannot determine"
         return v
-    judged = [r for r in rows if r.get("status") != "skipped"]
+    judged = [r for r in rows if r.get("status") not in ("skipped", "halted")]
     last = judged[-1] if judged else rows[-1]
     v["last_status"] = last.get("status")
     streak = 0
@@ -213,10 +214,11 @@ def judge(spec: JobSpec, *, runlog_dir: Path, now: dt.datetime, query=schtasks_q
     if gaps:
         v["observed_median_s"] = statistics.median(gaps)
     declared = v["declared_s"] or 0
-    observed = _p90(gaps) * 1.5 if len(gaps) >= 2 else 0
+    # MAIN 0020 section 5: fewer than MIN_GAPS gaps -> the declared floor only.
+    observed = _p90(gaps) * 1.5 if len(gaps) >= MIN_GAPS else 0
     threshold = max(declared * 2, observed)
     if not threshold:
-        v["reason"] = "cadence unknown (no declared interval, under 3 ok runs)"
+        v["reason"] = "cadence unknown (no declared interval, under 6 ok runs)"
         return v
     v["threshold_s"] = threshold
     # A SKIPPED run (lock held by a long pass, nothing to do) proves the job is
@@ -225,7 +227,7 @@ def judge(spec: JobSpec, *, runlog_dir: Path, now: dt.datetime, query=schtasks_q
     fresh = oks[-1] if oks else rows[0]["_t"]
     after = [r for r in rows if r["_t"] > fresh]
     if after and not any(r.get("status") in ("partial", "failed") for r in after):
-        skips = [r["_t"] for r in after if r.get("status") == "skipped"]
+        skips = [r["_t"] for r in after if r.get("status") in ("skipped", "halted")]
         fresh = skips[-1] if skips else fresh
     since = fresh
     v["last_ok"] = oks[-1].isoformat() if oks else None

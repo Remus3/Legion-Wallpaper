@@ -44,7 +44,7 @@ if (Test-Path -LiteralPath $halt) {
     $reason = (Get-Content -LiteralPath $halt -Raw -ErrorAction SilentlyContinue)
     if ([string]::IsNullOrWhiteSpace($reason)) { $reason = "HALT file present" }
     Write-Host "[weekly_hygiene] HALT: $($reason.Trim())"
-    Write-RunRecord "skipped" "halted"
+    Write-RunRecord "halted" "HALT file present"
     exit 0
 }
 

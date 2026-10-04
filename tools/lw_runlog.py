@@ -6,7 +6,7 @@ A scheduled job is judged by the status it RECORDED about its own run, not by
 its exit code: a job that exits 0 while one sub-source is dead records
 "partial". Each run appends ONE line to `ops/runtime/runlog/<task>.jsonl`:
 
-    {"task", "started", "ended", "status": ok|partial|failed|skipped,
+    {"task", "started", "ended", "status": ok|partial|failed|skipped|halted,
      "detail", "pid"}
 
 `record()` never raises (a job must not die because its log could not be
@@ -31,7 +31,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ROOT_ENV = "LW_RUNLOG_ROOT"
-STATUSES = ("ok", "partial", "failed", "skipped")
+STATUSES = ("ok", "partial", "failed", "skipped", "halted")
 MAX_BYTES = 512 * 1024
 
 

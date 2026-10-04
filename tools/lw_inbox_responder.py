@@ -844,7 +844,7 @@ def job_status(payload: dict) -> tuple[str, str]:
     failed, whose spawn was refused or whose side outputs failed is PARTIAL.
     """
     if "halted" in payload:
-        return "skipped", "halted"
+        return "halted", str(payload["halted"])[:120]
     if "state_corrupt" in payload:
         return "failed", f"seen-state corrupt: {payload['state_corrupt']}"
     if "fetch_failed" in payload:

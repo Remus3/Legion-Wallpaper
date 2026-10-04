@@ -76,7 +76,10 @@ def test_the_version_route_keeps_the_host_guard(served):
 def test_the_version_payload_leaks_no_path(served):
     _s, body = _get(served.server_address[1], "/api/version")
     text = body.decode("utf-8")
-    assert set(json.loads(text)) == {"commit", "started", "pid", "config_hash"}
+    # MAIN 0020 section 5: exactly these keys, schema 1, nothing else.
+    doc = json.loads(text)
+    assert set(doc) == {"commit", "started", "pid", "config_hash", "schema"}
+    assert doc["schema"] == 1
     assert "\\" not in text and "Users" not in text and "/" not in text.replace(":", "")
 
 

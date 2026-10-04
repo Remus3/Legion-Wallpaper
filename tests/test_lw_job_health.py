@@ -244,3 +244,17 @@ def test_main_writes_job_health_json_and_takes_no_action(tmp_path, monkeypatch):
 def test_the_four_lw_tasks_are_registered():
     assert {j.task for j in jh.JOBS} == {"LW-InboxResponder", "LW-CIWatchdog",
                                          "LW-Wallpaper", "LW-WeeklyHygiene"}
+
+
+def test_under_five_gaps_uses_the_declared_floor_only(tmp_path):
+    # MAIN 0020 section 5. Four 3-hour gaps would lift the threshold to 4.5h;
+    # with under five gaps only the declared PT5M x 2 = 10 min floor applies.
+    _log(tmp_path, "LW-A", [(m, "ok") for m in range(0, 180 * 5, 180)])
+    v, _ = _judge(tmp_path, "LW-A", 180 * 4 + 30)
+    assert v["state"] == jh.UNHEALTHY and v["threshold_s"] == 600
+
+
+def test_halted_is_a_recordable_status(tmp_path):
+    assert "halted" in lw_runlog.STATUSES
+    lw_runlog.record("LW-X", "s", "halted", "HALT", root=tmp_path)
+    assert json.loads((tmp_path / "LW-X.jsonl").read_text(encoding="utf-8"))["status"] == "halted"
