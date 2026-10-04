@@ -103,13 +103,16 @@ def test_a_halted_tick_publishes_halted(tmp_path, capsys):
 
 def test_a_tick_announces_checking_inbox_before_it_reads(tmp_path, capsys, monkeypatch):
     seen = []
-    real = responder.new_notes
+    # The inbox read point moved from `new_notes` to `_entries` when the tick
+    # was retrofitted onto lw_watch.run_source (ingest P0-2); the assertion is
+    # unchanged.
+    real = responder._entries
 
-    def _spy(inbox, state):
+    def _spy(inbox):
         seen.append(_published()["task"])
-        return real(inbox, state)
+        return real(inbox)
 
-    monkeypatch.setattr(responder, "new_notes", _spy)
+    monkeypatch.setattr(responder, "_entries", _spy)
     _main(tmp_path, _inbox(tmp_path))
     assert seen == ["Checking Inbox"]
 

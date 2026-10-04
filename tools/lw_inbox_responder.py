@@ -93,6 +93,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lw_facts  # noqa: E402  - flat tools/ directory, imported by bare name
 import lw_headless_env  # noqa: E402
 import lw_ops_tasks  # noqa: E402
+import lw_watch  # noqa: E402
 import lw_paths  # noqa: E402
 import split_scan  # noqa: E402
 
@@ -856,7 +857,59 @@ def main(argv: list[str] | None = None) -> int:
         _publish(announced, tick_start, "running", "Checking Inbox")
         verify_operator_tasks(announced, args.runlog)
 
-    notes = new_notes(args.inbox, args.state)
+    # THE WATCH (ingest P0-2): `lw_watch.run_source` owns "what did I already
+    # answer". Baseline on the first run, advance ONLY for notes this tick
+    # confirmed (a skip, or an AUTO spawn - each persisted at once), prune to
+    # the live inbox, and count a missing inbox as a FETCH FAILURE - a silent
+    # source must not look like a quiet one. Five in a row log one alert.
+    ctx: dict = {}
+
+    def fetch() -> list[str]:
+        if not args.inbox.is_dir():
+            raise lw_watch.FetchFailed("inbox directory is missing")
+        entries = _entries(args.inbox)
+        ctx["entries"] = {n.key: n for n in entries}
+        return [n.key for n in entries]
+
+    def deliver(keys: list[str], confirm) -> list[str]:
+        notes = [ctx["entries"][k] for k in keys]
+        ctx["notes"] = notes
+        # Self and terminal notes are sorted out BEFORE the cap, so a burst of
+        # them never takes a slot from real mail. Marked seen, never spawned.
+        skipped, mail = [], []
+        for note in notes:
+            why = skip_reason(args.inbox / note.name)
+            if why is None:
+                mail.append(note)
+            else:
+                skipped.append((note, why))
+        capped, budget = within_budget(mail)
+        ctx.update(skipped=skipped, mail=mail, capped=capped, budget=budget, spawned=[])
+        if skipped:
+            confirm([n.key for n, _why in skipped])
+        for note in capped:
+            try:
+                outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
+            except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged
+                outcome = Disposition(UNAVAILABLE, "spawn",
+                                      f"spawn raised {type(exc).__name__} - not run", False)
+            ctx["spawned"].append({"note": note.name, "verdict": outcome.verdict,
+                                   "reason": outcome.reason, "checked": outcome.checked})
+            # Seen AT ONCE, not at the end of the tick: each run is synchronous
+            # and can take an hour, and a tick that dies after it must not
+            # re-spawn it. A dry run confirms too, but persists nothing.
+            if outcome.verdict == AUTO:
+                confirm([note.key])
+        return []
+
+    def alert(source: str, count: int, detail: str):
+        _record_cycle(args.runlog, ctx, event="source_alert", source=source,
+                      consecutive_failures=count, detail=detail)
+        return "runlog_error" not in ctx, "run log"
+
+    res = lw_watch.run_source(lw_watch.FlatSeenState(args.state), "inbox", fetch,
+                              lambda k: k.split("#")[0], deliver, alert=alert,
+                              persist=not args.dry_run)
 
     # COLD START. Measured on the live inbox before this branch existed: a first
     # run with no state file reported 139 new notes and would have launched a
@@ -864,48 +917,36 @@ def main(argv: list[str] | None = None) -> int:
     # a baseline, and an absent state file is not an empty one - the same
     # could-not-check-is-not-checked rule the gate runs on. So the first run
     # records the baseline and spawns NOTHING, and says which it did.
-    if not args.state.exists():
-        payload = {"cold_start": True, "baselined": len(notes),
+    if res["outcome"] == "baseline":
+        payload = {"cold_start": True, "baselined": res["baselined"],
                    "dry_run": args.dry_run, "spawned": []}
         if not args.dry_run:
-            record_seen(args.inbox, args.state, notes)
             _record_cycle(args.runlog, payload, event="cold_start",
-                          baselined=len(notes), spawned=[])
+                          baselined=res["baselined"], spawned=[])
             _publish(payload, tick_start, *_end_state(refused=False))
         print(json.dumps({**announced, **payload}, indent=2))
         return 0
 
-    # Self and terminal notes are sorted out BEFORE the cap, so a burst of them
-    # never takes a slot from real mail. They are marked seen, never spawned.
-    skipped, mail = [], []
-    for note in notes:
-        why = skip_reason(args.inbox / note.name)
-        if why is None:
-            mail.append(note)
-        else:
-            skipped.append((note, why))
+    if res["outcome"] == "fetch-failed":
+        payload = {"fetch_failed": res["detail"], "consecutive_failures": res["failures"],
+                   "dry_run": args.dry_run, "spawned": []}
+        if not args.dry_run:
+            _publish(payload, tick_start, *_end_state(refused=False))
+        print(json.dumps({**announced, **payload}, indent=2))
+        return 0
 
-    capped, budget = within_budget(mail)
-    spawned = []
-    if not args.dry_run and skipped:
-        record_seen(args.inbox, args.state, [n for n, _why in skipped])
-    for note in capped:
-        try:
-            outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
-        except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged
-            outcome = Disposition(UNAVAILABLE, "spawn",
-                                  f"spawn raised {type(exc).__name__} - not run", False)
-        spawned.append({"note": note.name, "verdict": outcome.verdict,
-                        "reason": outcome.reason, "checked": outcome.checked})
-        # Seen AT ONCE, not at the end of the tick: each run is synchronous and
-        # can take an hour, and a tick that dies after it must not re-spawn it.
-        if outcome.verdict == AUTO and not args.dry_run:
-            record_seen(args.inbox, args.state, [note])
-    skips = [{"note": n.name, "reason": why} for n, why in skipped]
-    deferred = len(mail) - len(capped)
+    notes = ctx.get("notes", [])
+    if "budget" not in ctx:            # nothing new: deliver never ran
+        _capped, ctx["budget"] = within_budget([])
+    spawned = ctx.get("spawned", [])
+    skips = [{"note": n.name, "reason": why} for n, why in ctx.get("skipped", [])]
+    deferred = len(ctx.get("mail", [])) - len(ctx.get("capped", []))
+    budget = ctx["budget"]
     payload = {"new_notes": len(notes), "dry_run": args.dry_run,
                "deferred": deferred, "skipped": skips, "spawned": spawned,
                "budget": budget}
+    if res["outcome"] == "deliver-failed" and res.get("detail"):
+        payload["deliver_error"] = res["detail"]
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
     # source, and 288 empty lines a day would bury the ones that matter.
     if notes and not args.dry_run:
