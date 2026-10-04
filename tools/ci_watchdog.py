@@ -427,17 +427,48 @@ def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout, env_seam
         _cleanup_worktree(wt, branch, keep=keep)
 
 
+TASK_RUNLOG_NAME = "LW-CIWatchdog"
+
+
+def _bind_runlog():
+    if "lw_runlog" in sys.modules:
+        return sys.modules["lw_runlog"]
+    spec = importlib.util.spec_from_file_location("lw_runlog", ROOT / "tools" / "lw_runlog.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def one_pass(*, model, dry_run, max_attempts, fix_timeout, state_dir=STATE_DIR):
+    """One pass, plus ONE run record (ingest P0-4) unless it is a dry run."""
+    rl = _bind_runlog()
+    started = rl.utc_now()
+    status = {"status": "failed", "detail": "pass raised"}
+    try:
+        return _one_pass(status, model=model, dry_run=dry_run, max_attempts=max_attempts,
+                         fix_timeout=fix_timeout, state_dir=state_dir)
+    finally:
+        if not dry_run:
+            rl.record(TASK_RUNLOG_NAME, started, status["status"], status["detail"])
+
+
+def _one_pass(status, *, model, dry_run, max_attempts, fix_timeout, state_dir):
     reason = halted(state_dir)
     if reason:
         log(f"HALT: {reason}")
+        status.update(status="skipped", detail="halted")
         return 0
     if not acquire(state_dir):
         log("another pass holds the lock - exiting")
+        status.update(status="skipped", detail="another pass holds the lock")
         return 0
     try:
-        return _watched_pass(state_dir, model=model, dry_run=dry_run,
-                             max_attempts=max_attempts, fix_timeout=fix_timeout)
+        rc = _watched_pass(state_dir, model=model, dry_run=dry_run,
+                           max_attempts=max_attempts, fix_timeout=fix_timeout, status=status)
+        if rc != 0:
+            status.update(status="failed", detail=status.get("detail") or f"rc {rc}")
+        return rc
     finally:
         release(state_dir)
 
@@ -466,7 +497,7 @@ def _bind_watch():
     return mod
 
 
-def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout):
+def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout, status=None):
     lw_watch = _bind_watch()
     tg = _bind_truth_gate()
     ctx = {"rc": 0}
@@ -516,9 +547,15 @@ def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout):
             return False, "alerts file unwritable"
         return True, "alerts file"
 
-    lw_watch.run_source(lw_watch.WatchState(Path(state_dir) / WATCH_FILE), WATCH_SOURCE,
-                        fetch, lambda sha: sha[:8], deliver, alert=alert,
-                        alert_after=ALERT_AFTER, baseline=False, persist=not dry_run)
+    res = lw_watch.run_source(lw_watch.WatchState(Path(state_dir) / WATCH_FILE), WATCH_SOURCE,
+                              fetch, lambda sha: sha[:8], deliver, alert=alert,
+                              alert_after=ALERT_AFTER, baseline=False, persist=not dry_run)
+    if status is not None:
+        if res["outcome"] == "fetch-failed":
+            status.update(status="partial", detail="CI status unavailable")
+        else:
+            d = ctx.get("d") or {}
+            status.update(status="ok", detail=f"{d.get('action', '?')}: {d.get('reason', '')}"[:200])
     return ctx["rc"]
 
 

@@ -83,6 +83,22 @@ MIRROR_PATH = ROOT / "ops" / "runtime" / "agent_fleet_mirror.json"
 
 PIPELINE_STATE_PATH = ROOT / "ops" / "runtime" / "pipeline_state.json"
 ROADMAP_PATH = ROOT / "ROADMAP.md"
+JOB_HEALTH_PATH = ROOT / "ops" / "runtime" / "job_health.json"
+# Fresh enough to serve as-is; older than this, /api/jobs recomputes it.
+JOB_HEALTH_REFRESH_S = 10 * 60
+
+
+def refresh_job_health():
+    """Recompute ops/runtime/job_health.json via tools/lw_job_health.py.
+
+    Observation only (run logs + schtasks /Query); never raises into the
+    handler - a failure leaves the old record, which then reads stale."""
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import lw_job_health
+        lw_job_health.main(["--out", str(JOB_HEALTH_PATH)])
+    except Exception:  # noqa: BLE001 - the view reports UNKNOWN instead
+        pass
 
 # How many resolved cycles the /api/run payload carries. The file is append-only
 # and NEVER cleared, so it grows without bound - the payload must not.
@@ -639,8 +655,12 @@ class RunDashServer(LWServer):
                  config_path=CONFIG_PATH, page_path=PAGE_PATH, repo_root=ROOT,
                  session_dir=None, runner=None, pid_alive=None, cache=None,
                  mirror_path=MIRROR_PATH, pipeline_state_path=PIPELINE_STATE_PATH,
-                 roadmap_path=ROADMAP_PATH):
+                 roadmap_path=ROADMAP_PATH, job_health_path=JOB_HEALTH_PATH,
+                 job_health_refresh=refresh_job_health):
         super().__init__(addr, handler)
+        self.job_health_path = Path(job_health_path)
+        self.job_health_refresh = job_health_refresh
+        self.job_health_lock = threading.Lock()
         self.mirror_path = Path(mirror_path) if mirror_path else None
         self.pipeline_state_path = Path(pipeline_state_path)
         self.roadmap_path = Path(roadmap_path)
@@ -713,6 +733,15 @@ class Handler(BaseLWHandler):
             if path == "/api/fleet":
                 view = build_fleet_history_view(
                     mirror_path=srv.mirror_path, control_dir=srv.control_dir)
+                self._send_json(200, view, {"Cache-Control": "no-store"})
+                return
+            if path == "/api/jobs":
+                with srv.job_health_lock:
+                    view = rundash_state.read_job_health(srv.job_health_path)
+                    age = view.get("age_s")
+                    if age is None or age > JOB_HEALTH_REFRESH_S:
+                        srv.job_health_refresh()
+                        view = rundash_state.read_job_health(srv.job_health_path)
                 self._send_json(200, view, {"Cache-Control": "no-store"})
                 return
             if path == "/api/health":

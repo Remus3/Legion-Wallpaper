@@ -39,6 +39,7 @@ import sys
 from pathlib import Path as _P
 
 sys.path.insert(0, str(_P(__file__).resolve().parent))
+import lw_runlog  # noqa: E402 - ingest P0-4 run record
 import lw_paths  # noqa: E402  (sibling tool, not a package)
 from datetime import UTC, datetime
 from pathlib import Path
@@ -614,12 +615,21 @@ def main(argv=None) -> int:
 
     cfg = load_config(args.config)
     if args.cmd == "tick":
+        started = lw_runlog.utc_now()
         code, pick = tick(cfg, dry_run=args.dry_run)
         if pick is None:
             print("tick: no images to show" if code == 0
                   else "tick: no image was set (see logs)")
         else:
             print(f"tick: {'would set' if args.dry_run else 'set'} {pick}")
+        if not args.dry_run:
+            # ingest P0-4: the status this run records, read by lw_job_health.
+            if code != 0:
+                lw_runlog.record(TASK_NAME, started, "failed", "no image was set")
+            elif pick is None:
+                lw_runlog.record(TASK_NAME, started, "partial", "no images to show")
+            else:
+                lw_runlog.record(TASK_NAME, started, "ok", "")
         return code
     if args.cmd == "status":
         for line in status(cfg):
