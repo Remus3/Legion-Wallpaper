@@ -25,6 +25,7 @@ import contextlib as _contextlib
 import datetime as _datetime
 import importlib.util as _importlib_util
 import os
+import subprocess as _subprocess
 import sys as _sys
 import tempfile
 from pathlib import Path as _Path
@@ -200,6 +201,12 @@ DEFAULT_G1_THRESHOLDS: Dict[str, Dict[str, float]] = {
     # ~0.004 noise. flag if > 0.05; real banding still routes to vision audit.
     # Revisit with a proper banding metric (BBAND, AUDIT_GATES 3.3) before hard-gating.
     "band_delta": {"flag": 0.05},
+    # cambi_delta: CAMBI (libvmaf, max_log_contrast=5) of the output at its
+    # own 2560x1440 scale minus CAMBI of the source resized to that size
+    # (research R1 / E-BAND-1, LEDGER 263). Golden set 2026-10-04: clean delta
+    # -0.51..1.21, posterize_8 delta 3.00..14.17 -> flag if > 2.0 separates
+    # 12/12. Flag-only like band_delta; None (no ffmpeg) is not gated.
+    "cambi_delta": {"flag": 2.0},
 }
 
 
@@ -514,6 +521,93 @@ def banding_delta(source_gray: np.ndarray, output_common_gray: np.ndarray) -> fl
 
 
 # --------------------------------------------------------------------------
+# 3.3b CAMBI banding delta (research R1 / E-BAND-1, LEDGER 263)
+# --------------------------------------------------------------------------
+# banding_delta above reads banding after a LANCZOS downscale to source scale,
+# which smears every posterize step into a ramp (G1.band_delta BROKEN 0/12).
+# CAMBI runs on the output at its own scale. The default max_log_contrast=2
+# reads an 8-level step as an edge, not a band (golden set: 7/12 pairs even
+# rank banded above clean); 5 (the maximum) ranks 12/12. Optional dependency:
+# ffmpeg with libvmaf on PATH. Absent or failing -> None (degraded, logged).
+CAMBI_MAX_LOG_CONTRAST = 5
+CAMBI_TIMEOUT_S = 300
+_NO_WINDOW = getattr(_subprocess, "CREATE_NO_WINDOW", 0)
+
+
+def _ffmpeg_exe():
+    import shutil
+    return shutil.which("ffmpeg")
+
+
+def cambi_score(rgb: np.ndarray, max_log_contrast: int = CAMBI_MAX_LOG_CONTRAST):
+    """CAMBI of one frame (uint8 RGB or gray) at its own resolution, or None.
+
+    The frame is piped as raw rgb24 into ffmpeg, converted to yuv420p and fed
+    to libvmaf as both reference and distorted (CAMBI is no-reference). The
+    feature option must be quoted with an escaped colon - the unquoted form is
+    parsed as a libvmaf option and errors. The JSON log is written to a temp
+    dir used as cwd, so no drive-letter colon enters the filtergraph."""
+    import json
+    import shutil
+
+    exe = _ffmpeg_exe()
+    if not exe:
+        _gpu_log("cambi degraded: ffmpeg not on PATH")
+        return None
+    a = np.asarray(rgb)
+    if a.ndim == 2:
+        a = np.stack([a] * 3, axis=-1)
+    a = np.ascontiguousarray(a[: a.shape[0] // 2 * 2, : a.shape[1] // 2 * 2, :3]
+                             .astype(np.uint8))
+    h, w = a.shape[:2]
+    if h < 2 or w < 2:
+        return None
+    feat = f"feature='name=cambi\\:max_log_contrast={int(max_log_contrast)}'"
+    graph = ("format=yuv420p,split[a][b];[a][b]libvmaf=" + feat
+             + ":log_path=cambi.json:log_fmt=json")
+    argv = [exe, "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{w}x{h}", "-i", "-",
+            "-lavfi", graph, "-f", "null", "-"]
+    tmp = tempfile.mkdtemp(prefix="lw_cambi_")
+    try:
+        r = _subprocess.run(argv, input=a.tobytes(), capture_output=True, cwd=tmp,
+                           creationflags=_NO_WINDOW, timeout=CAMBI_TIMEOUT_S)
+        if r.returncode != 0:
+            tail = (r.stderr or b"").decode("ascii", "replace").strip()[-300:]
+            _gpu_log(f"cambi degraded: ffmpeg rc={r.returncode} {tail}")
+            return None
+        with open(os.path.join(tmp, "cambi.json"), encoding="utf-8") as fo:
+            metrics = json.load(fo)["frames"][0]["metrics"]
+        return float(next(v for k, v in metrics.items() if k.startswith("cambi")))
+    except (OSError, ValueError, KeyError, IndexError, StopIteration,
+            _subprocess.SubprocessError) as exc:
+        _gpu_log(f"cambi degraded: {exc.__class__.__name__}: {exc}")
+        return None
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def cambi_delta(source_rgb: np.ndarray, output_rgb: np.ndarray):
+    """CAMBI(output) - CAMBI(source resized LANCZOS to the output size), or None.
+
+    Positive = the output added banding the source did not carry. Measured at
+    the OUTPUT scale on purpose (the failure of banding_delta is the downscale).
+    """
+    out = np.asarray(output_rgb)
+    src = np.asarray(source_rgb)
+    if src.shape[:2] != out.shape[:2]:
+        from PIL import Image
+        im = Image.fromarray(np.ascontiguousarray(src.astype(np.uint8)))
+        src = np.asarray(im.resize((out.shape[1], out.shape[0]), Image.LANCZOS))
+    c_out = cambi_score(out)
+    if c_out is None:
+        return None
+    c_src = cambi_score(src)
+    if c_src is None:
+        return None
+    return float(c_out - c_src)
+
+
+# --------------------------------------------------------------------------
 # 1.x full-reference metrics (LAZY pyiqa/torch - not importable in CI)
 # --------------------------------------------------------------------------
 # Common-scale pixel budget. DISTS allocates ~2 GiB of VGG activations at
@@ -719,6 +813,7 @@ _METRIC_RULES = (
     ("lap_ratio", "floor", "lap_ratio"),
     ("halo_pct", "flag_over", "halo_pct"),
     ("band_delta", "flag_over", "band_delta"),
+    ("cambi_delta", "flag_over", "cambi_delta"),
 )
 
 _RANK = {"PASS": 0, "FLAG": 1, "FAIL": 2}

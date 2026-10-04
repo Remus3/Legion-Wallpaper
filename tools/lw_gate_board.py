@@ -665,6 +665,16 @@ def _g1_value(metric: str):
     return measure
 
 
+def _cambi_value(subject):
+    """lw_g1_gate.cambi_delta at OUTPUT scale (no common-scale resample - that
+    resample is what blinds band_delta). None when ffmpeg/libvmaf is absent:
+    the board then reads UNKNOWN, never green."""
+    cache = subject.setdefault("_cache", {})
+    if "cambi" not in cache:
+        cache["cambi"] = _g1().cambi_delta(subject["source_rgb"], subject["output_rgb"])
+    return cache["cambi"]
+
+
 def _g1_gated(metric: str):
     def applies(subject):
         import lw_first_pass
@@ -893,6 +903,10 @@ FAULT_EVIDENCE = {
                       "8-level plateaus = a 5-bit-per-channel quantization, the "
                       "classic 8-bit gradient banding; band_delta bound 8 times in "
                       "719 audits (tests/test_g1_msssim_arm_binds.py census)"),
+    "G1.cambi_delta": ("posterize step 8 levels",
+                       "same fault as G1.band_delta (5-bit quantization); research R1 "
+                       "measured CAMBI mlc=5 delta clean max 1.21 vs posterize_8 min "
+                       "3.00 on the 12 golden frames (LEDGER 263)"),
     "G1.msssim": ("16 px horizontal shift",
                   "measured 2026-09-08: shift 16px -> msssim 0.8598 on a real frame "
                   "(tests/test_g1_msssim_arm_binds.py); the only geometric error class"),
@@ -922,6 +936,7 @@ FAULT_EVIDENCE = {
 FAULT_NAME = {
     "G0.aspect": "letterbox_16x10", "G1.lap_ratio": "downup_x2",
     "G1.halo_pct": "usm_r2_p150", "G1.band_delta": "posterize_8",
+    "G1.cambi_delta": "posterize_8",
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
     "G2.seam": "seam_offset_24lv", "G2.text_residue": "credit_line_4lv",
@@ -994,6 +1009,11 @@ def lw_board(envs=ENVS) -> Board:
             _g1_value("band_delta"), _g1_bar("band_delta", "at_most", "flag"),
             unit="density delta", where="smooth regions",
             judge=_g1_judge("band_delta"), applies=_g1_gated("band_delta"), gate="G1"),
+        on_output(lambda a: fault_posterize(a, BAND_STEP)))
+    add(Row("G1.cambi_delta", "no banding added to smooth gradients",
+            _cambi_value, _g1_bar("cambi_delta", "at_most", "flag"),
+            unit="CAMBI mlc5 delta", where="whole frame at output scale",
+            judge=_g1_judge("cambi_delta"), applies=_g1_gated("cambi_delta"), gate="G1"),
         on_output(lambda a: fault_posterize(a, BAND_STEP)))
     # ---- G1: full-reference arms (.venv-metrics)
     add(Row("G1.msssim", "the frame keeps the source's structure and geometry",

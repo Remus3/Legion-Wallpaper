@@ -226,6 +226,17 @@ port), DBI deep banding index (ICASSP 2021, TF2, code licence not seen),
 deepDeband (arxiv.org/abs/2110.08569, MIT) as a remover not a gate. FFmpeg
 deband/gradfun are removers; blurdetect is not a banding metric.
 
+RESULT 2026-10-04 (R1, LEDGER 263): ACCEPTED. On the 12 golden outputs at
+2560x1440, clean vs posterize_8: output-only mlc=5 ranks banded above clean
+12/12, but one absolute bar separates only 11/12 (dfz5w2g banded 3.00 below
+other frames' clean up to 4.90); default mlc=2 ranks 7/12 (bar 3/12). The
+delta vs the source (Lanczos-resized to the output size) separates 12/12:
+clean -0.51..1.21, banded 3.00..14.17. Shipped as `lw_g1_gate.cambi_delta`
++ live-table flag bar 2.0 + board row G1.cambi_delta: PROVEN 12/12. Live
+census on the 131 current `_firstneedauth` frames: 0 flagged (max 1.74,
+median 0.00). Not yet computed in the live first pass (ROADMAP R1b); the
+band_delta arm stays pinned until that wiring retires it.
+
 **G2.seam - contour-normal step (E-SEAM-1).** Nothing in the literature is a
 ready seam metric (re-inpainting self-consistency, arxiv.org/abs/2405.16263,
 no code; "seam gradient" scores seen only in search snippets, UNVERIFIED).
@@ -387,7 +398,7 @@ with a measured negative rather than a guess.
 
 | rank | experiment | gate / stage | cost | expected gain |
 |---|---|---|---|---|
-| 1 | E-BAND-1: CAMBI with max_log_contrast=5 at 2560x1440 as the banding row | G1.band_delta | ~0.5 day, CPU, tool already on disk | HIGH - likely clears a BROKEN 0/12 row; synthetic already separates 44.4 vs 16.8 while the default reads 0 |
+| 1 | E-BAND-1: CAMBI with max_log_contrast=5 at 2560x1440 as the banding row | G1.band_delta | ~0.5 day, CPU, tool already on disk | DONE 2026-10-04 (LEDGER 263): delta vs source separates 12/12; G1.cambi_delta PROVEN 12/12; live wiring = R1b |
 | 2 | E-MIM-1: re-inpaint + stroke-aligned matched filter with shifted-mask null (+ DRAEM-style synthetic segmenter if needed) | G2.text_residue | ~1-2 days, GPU minutes per prove | HIGH if it works - the only row tied to the zero-watermark bar; medium probability |
 | 3 | E-SEAM-1: contour-normal signed step vs 8 px-shifted null, calibrated on the 26 real clean pairs | G2.seam | ~0.5 day, numpy | MEDIUM-HIGH - should clear UNKNOWN 3/12 and kill a flag that is noise on 22/41 live verifies |
 | 4 | E-LAMA-1: anime-lama (already in the operator's IOPaint) vs current LaMa, golden cleaning A/B on slugs where `_01` was approved; operator blind 2AFC; outside identity must stay exact | clean engine (ADR-009 swap, not ladder) | ~0.5 day + operator review; ~1 GB weights, GPU minutes | MEDIUM - domain-matched fill for the busy-art regions that drive the manual IOPaint lane |
