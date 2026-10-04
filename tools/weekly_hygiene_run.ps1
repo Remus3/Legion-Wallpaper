@@ -21,6 +21,16 @@ $ErrorActionPreference = "Continue"
 $repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
 
+# RUN RECORD (ingest P0-4): one line per run in ops/runtime/runlog/LW-WeeklyHygiene.jsonl,
+# read by tools\lw_job_health.py. The job is judged by the status it records, not its
+# exit code. Every value goes to Python as an ARGUMENT, never through stdin.
+$runStarted = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+function Write-RunRecord([string]$Status, [string]$Detail) {
+    $pin = Join-Path $env:LOCALAPPDATA "Programs\Python\Python314\python.exe"
+    $py = if (Test-Path $pin) { $pin } else { (Get-Command python).Source }
+    & $py (Join-Path $repo "tools\lw_runlog.py") --task "LW-WeeklyHygiene" --started $runStarted --status $Status --detail $Detail | Out-Null
+}
+
 # KILL SWITCH, checked BEFORE claude is invoked and before anything is written.
 # Same convention as the other two headless lanes (ops\runtime\inbox_responder\HALT,
 # ops\runtime\ci_watchdog\HALT): an EMPTY file still halts, because
@@ -34,6 +44,7 @@ if (Test-Path -LiteralPath $halt) {
     $reason = (Get-Content -LiteralPath $halt -Raw -ErrorAction SilentlyContinue)
     if ([string]::IsNullOrWhiteSpace($reason)) { $reason = "HALT file present" }
     Write-Host "[weekly_hygiene] HALT: $($reason.Trim())"
+    Write-RunRecord "skipped" "halted"
     exit 0
 }
 
@@ -84,6 +95,7 @@ Write-Host "[weekly_hygiene] exit=$code log=$log"
 # way. It exits 78 so the scheduled task reads red until the proxy is back.
 if ($code -eq $RefusedExit) {
     Write-Host "[weekly_hygiene] REFUSED: headless spawn refused by the fleet kit - claude was not started."
+    Write-RunRecord "failed" "headless spawn refused by the fleet kit"
     exit $RefusedExit
 }
 
@@ -100,7 +112,9 @@ if ($code -ne 0) {
     $transient = 'credit balance is too low|rate limit|rate_limit|overloaded|too many requests|status(?: code)? (?:429|529)|insufficient (?:credit|quota)'
     if ($text -imatch $transient) {
         Write-Host "[weekly_hygiene] SKIPPED: transient Anthropic API condition (credit/rate/availability) - not a hygiene failure; exiting 0 so the scheduled task is not falsely red."
+        Write-RunRecord "partial" "transient API condition - pass not run"
         exit 0
     }
 }
+if ($code -eq 0) { Write-RunRecord "ok" "" } else { Write-RunRecord "failed" "exit $code" }
 exit $code

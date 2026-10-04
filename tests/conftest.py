@@ -125,3 +125,16 @@ def _the_live_operator_task_log_is_never_touched(request, monkeypatch):
     tmp = request.getfixturevalue("tmp_path")
     monkeypatch.setenv("LW_OPS_TASKS_ROOT", str(tmp / "operator_tasks"))
     yield
+
+
+@pytest.fixture(autouse=True)
+def _the_live_job_run_logs_are_never_written(request, monkeypatch):
+    """Point tools/lw_runlog.py at a per-test root (ingest P0-4).
+
+    The responder, CI watchdog and wallpaper tick append a run record on every
+    invocation; an arm that drives their main must never append to the live
+    ops/runtime/runlog/ that tools/lw_job_health.py judges.
+    """
+    tmp = request.getfixturevalue("tmp_path")
+    monkeypatch.setenv("LW_RUNLOG_ROOT", str(tmp / "runlog"))
+    yield

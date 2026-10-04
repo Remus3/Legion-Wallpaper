@@ -95,6 +95,7 @@ import lw_headless_env  # noqa: E402
 import lw_ops_tasks  # noqa: E402
 import lw_watch  # noqa: E402
 import lw_paths  # noqa: E402
+import lw_runlog  # noqa: E402
 import split_scan  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -822,7 +823,51 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
+# ---------------------------------------------------------------------------
+# Run record (ingest P0-4): the status this tick records about itself
+# ---------------------------------------------------------------------------
+
+_LAST: dict = {}
+
+
+def _emit(payload: dict) -> None:
+    """Print the tick's payload and keep it for the run record."""
+    _LAST.clear()
+    _LAST.update(payload)
+    print(json.dumps(payload, indent=2))
+
+
+def job_status(payload: dict) -> tuple[str, str]:
+    """(ok|partial|skipped, detail) for one tick, judged from what it did.
+
+    The exit code is always 0, so it says nothing: a tick whose inbox read
+    failed, whose spawn was refused or whose side outputs failed is PARTIAL.
+    """
+    if "halted" in payload:
+        return "skipped", "halted"
+    if "fetch_failed" in payload:
+        return "partial", f"inbox unreadable: {payload['fetch_failed']}"
+    for key in ("deliver_error", "operator_tasks_error", "status_error", "runlog_error"):
+        if payload.get(key):
+            return "partial", f"{key}: {payload[key]}"
+    refused = [s for s in payload.get("spawned") or [] if s.get("verdict") != AUTO]
+    if refused:
+        return "partial", f"{len(refused)} note(s) not run: {refused[0].get('reason', '')}"
+    return "ok", ""
+
+
 def main(argv: list[str] | None = None) -> int:
+    started = lw_runlog.utc_now()
+    _LAST.clear()
+    rc = _main(argv)
+    args = build_parser().parse_args(argv)
+    if args.once and not args.dry_run and _LAST:
+        status, detail = job_status(dict(_LAST))
+        lw_runlog.record(TASK_NAME, started, status, detail)
+    return rc
+
+
+def _main(argv: list[str] | None = None) -> int:
     ap = build_parser()
     args = ap.parse_args(argv)
 
@@ -849,7 +894,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.dry_run:
             _record_cycle(args.runlog, payload, event="halted", halted=stop, spawned=[])
             _publish(payload, tick_start, "halted", "Halted")
-        print(json.dumps(payload, indent=2))
+        _emit(payload)
         return 0
 
     announced: dict = {}
@@ -924,7 +969,7 @@ def main(argv: list[str] | None = None) -> int:
             _record_cycle(args.runlog, payload, event="cold_start",
                           baselined=res["baselined"], spawned=[])
             _publish(payload, tick_start, *_end_state(refused=False))
-        print(json.dumps({**announced, **payload}, indent=2))
+        _emit({**announced, **payload})
         return 0
 
     if res["outcome"] == "fetch-failed":
@@ -932,7 +977,7 @@ def main(argv: list[str] | None = None) -> int:
                    "dry_run": args.dry_run, "spawned": []}
         if not args.dry_run:
             _publish(payload, tick_start, *_end_state(refused=False))
-        print(json.dumps({**announced, **payload}, indent=2))
+        _emit({**announced, **payload})
         return 0
 
     notes = ctx.get("notes", [])
@@ -956,7 +1001,7 @@ def main(argv: list[str] | None = None) -> int:
         # Refused = this tick tried and launched nothing; the notes stay unseen.
         refused = bool(spawned) and not any(s["verdict"] == AUTO for s in spawned)
         _publish(payload, tick_start, *_end_state(refused=refused))
-    print(json.dumps({**announced, **payload}, indent=2))
+    _emit({**announced, **payload})
     return 0
 
 

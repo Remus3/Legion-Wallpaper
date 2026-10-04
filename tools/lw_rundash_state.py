@@ -1622,3 +1622,46 @@ def read_agent_fleet(session_dir, now_ts=None, *, running_within_s=AGENT_RUNNING
     # with no transcript sort last rather than being dropped.
     out["agents"].sort(key=lambda a: (a["last_event_epoch"] is None, -(a["last_event_epoch"] or 0)))
     return out
+
+
+# ------------------------------------------------------------ job health (P0-4)
+
+JOB_HEALTH_STALE_S = 30 * 60
+
+
+def read_job_health(path, now_ts=None, *, stale_after_s=JOB_HEALTH_STALE_S):
+    """Tri-state view of ops/runtime/job_health.json (tools/lw_job_health.py).
+
+    Overall UNHEALTHY when any job is; UNKNOWN when the record is absent,
+    unreadable, stale, or any job could not be determined; else OK (a HALTED
+    job is an operator's stop, not a fault). Never raises.
+    """
+    now_ts = time.time() if now_ts is None else now_ts
+    view = {"state": "UNKNOWN", "reason": "", "jobs": [], "generated": None,
+            "age_s": None, "stale": False}
+    doc, _mt = _read_json(Path(path))
+    if not isinstance(doc, dict):
+        view["reason"] = "job_health.json absent or unreadable"
+        return view
+    jobs = [j for j in (doc.get("jobs") or []) if isinstance(j, dict)]
+    view["jobs"] = [{"task": _str_or_none(j.get("task")), "state": _str_or_none(j.get("state")),
+                     "reason": _str_or_none(j.get("reason"))} for j in jobs]
+    generated = parse_iso(doc.get("generated"))
+    view["generated"] = doc.get("generated")
+    if generated is None:
+        view["reason"] = "job_health.json has no generation time"
+        return view
+    view["age_s"] = max(0.0, now_ts - generated)
+    if view["age_s"] > stale_after_s:
+        view.update(stale=True, reason=f"record is {human_age(view['age_s'])} old")
+        return view
+    states = {j["state"] for j in view["jobs"]}
+    if not view["jobs"]:
+        view["reason"] = "no jobs in the record"
+    elif "UNHEALTHY" in states:
+        view.update(state="UNHEALTHY", reason="at least one job is unhealthy")
+    elif states - {"OK", "HALTED"}:
+        view["reason"] = "at least one job could not be determined"
+    else:
+        view.update(state="OK", reason="every job healthy or halted")
+    return view

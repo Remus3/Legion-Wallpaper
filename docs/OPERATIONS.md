@@ -345,3 +345,17 @@ The hand-off's "Operator asks" block is generated from the open tasks by
     python tools/lw_ops_tasks.py pending            # what is open
     python tools/lw_ops_tasks.py done T0001         # run its check now; exit 0 only if closed
     python tools/lw_ops_tasks.py withdraw T0001 "why"
+
+## Scheduled-job health (tri-state, ingest P0-4, 2026-10-04)
+
+Each scheduled job appends ONE record per run to `ops/runtime/runlog/<task>.jsonl`
+(`tools/lw_runlog.py`: task, started, ended, status ok|partial|failed|skipped, detail, pid;
+rotated to `.1` past 512 KB). A job is judged by the status it RECORDS, not its exit code:
+the responder records partial when its inbox is unreadable or a spawn is refused, the CI
+watchdog partial on an unavailable CI read and failed on rc 1, the wallpaper tick failed
+when no image was set, weekly hygiene via `Write-RunRecord` before every `exit`.
+`python tools/lw_job_health.py` (read-only) prints one line per task and exits 0 healthy /
+1 unhealthy / 2 could not determine; threshold = max(declared x 2, observed p90 gap x 1.5),
+3 consecutive failed runs are unhealthy at once, a HALT file or a disabled task reads
+HALTED. It writes `ops/runtime/job_health.json`; the rundash (8900) "Scheduled Jobs" card
+reads it through `/api/jobs` and recomputes it when older than 10 minutes.

@@ -130,6 +130,7 @@ button:hover{border-color:var(--teal);color:var(--teal)}
 .wrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 0;
   border-bottom:1px solid rgba(30,45,68,.6);font-size:var(--fs-sm)}
 .wrow:last-child{border-bottom:none}
+.wrow .wrap{overflow-wrap:anywhere;min-width:0}
 pre{font:var(--fs-sm)/1.45 ui-monospace,Consolas,monospace;color:var(--mut);
   white-space:pre-wrap;word-break:break-all;margin:0;max-height:220px;overflow-y:auto}
 .stale,.down{padding:6px 12px;border-radius:8px;font-weight:700;
@@ -189,6 +190,12 @@ pre{font:var(--fs-sm)/1.45 ui-monospace,Consolas,monospace;color:var(--mut);
   <div id="queueyou"></div>
   <h3>Blocked on the machine</h3>
   <div id="queuemachine"></div>
+</div>
+
+<div class="card">
+  <h2>Scheduled Jobs</h2>
+  <div id="jobsnote" class="meta subhead"></div>
+  <div id="jobsboard"></div>
 </div>
 
 <div class="card">
@@ -600,6 +607,40 @@ var lastRun = null;
 var lastResume = null;
 var lastQueue = null;
 var lastTraj = null;
+var lastJobs = null;
+
+// Scheduled-job health (ingest P0-4), tri-state from /api/jobs. The label
+// carries the state in words; the badge style is a second cue, never the
+// only one: UNHEALTHY reuses the double-border REFUTED chip, UNKNOWN the
+// dashed NOT OBSERVED chip.
+var JOB_BADGE = {OK: "b-evok", UNHEALTHY: "b-refuted", UNKNOWN: "b-notobs",
+                 HALTED: "b-pending"};
+function rJobs(v) {
+  if (!v) {
+    $("jobsnote").textContent = "job status unavailable - /api/jobs did not answer";
+    return;
+  }
+  $("jobsnote").textContent = (v.reason || "") +
+    (v.generated ? " - checked " + v.generated : "");
+  var all = v.state || "UNKNOWN";
+  var html = '<div class="wrow"><span class="badge big ' + (JOB_BADGE[all] || "b-notobs") +
+    '">' + (all === "UNHEALTHY" ? "!! " : "") + "JOBS " + esc(all) + "</span></div>";
+  var jobs = v.jobs || [];
+  if (!jobs.length) {
+    html += '<div class="wrow meta">no job record yet</div>';
+  }
+  // overflow-wrap: a long reason must wrap, not push the card past a phone width.
+  for (var i = 0; i < jobs.length; i++) {
+    var s = jobs[i].state || "UNKNOWN";
+    html += '<div class="wrow"><span class="badge ' + (JOB_BADGE[s] || "b-notobs") + '">' +
+      (s === "UNHEALTHY" ? "!! " : "") + esc(s) + "</span>" +
+      '<span class="mono wrap">' +
+      esc(jobs[i].task) + "</span>" +
+      '<span class="meta wrap">' +
+      esc(jobs[i].reason) + "</span></div>";
+  }
+  $("jobsboard").innerHTML = html;
+}
 var lastFleetHist = null;
 var tick = 0;
 var delayMs = 5000;        // base poll
@@ -761,8 +802,10 @@ async function load() {
                                wantResume ? jget("/api/resume") : null,
                                wantResume ? jget("/api/queue") : null,
                                wantResume ? jget("/api/trajectory") : null,
-                               wantResume ? jget("/api/fleet") : null]);
+                               wantResume ? jget("/api/fleet") : null,
+                               wantResume ? jget("/api/jobs") : null]);
   var p = res[0], r = res[1];
+  if (res[5]) { lastJobs = res[5]; }
   if (res[2]) { lastQueue = res[2]; }
   if (res[3]) { lastTraj = res[3]; }
   if (res[4]) { lastFleetHist = res[4]; }
@@ -779,6 +822,7 @@ async function load() {
   if (r) { lastResume = r; }
   rResume(r || lastResume);
   rQueue(lastQueue);
+  if (lastJobs || wantResume) { rJobs(lastJobs); }
   rTrajectory(lastTraj);
   rFleetHistory(lastFleetHist);
   timer = setTimeout(load, delayMs);
