@@ -368,6 +368,76 @@ Acceptance: AUROC >= 0.95 and clears_when met. Expected outcome: (1) likely
 fails on +4 levels (judgement); the value is closing the ExPLoRA question
 with a measured negative rather than a guess.
 
+RESULT 2026-10-04 (R5, LEDGER 271): NOT ACCEPTED; no domain gap measured, so
+step 2 (ExPLoRA) is NOT justified and was not run. Weights: stock
+facebook/dinov2-base (ViT-B/14, Apache-2.0) downloaded from the official HF
+repo because no DINOv2 existed in any LW venv or cache (model.safetensors
+346,345,912 bytes, sha256 d73036b56966966d07975d696bde331762f37297e2f095de8cea0040c3aa0841,
+user HF cache, never tracked). Run in .venv-metrics, cuda, under the
+lw_g1_gate GPU mutex, RC-live gate (lw_gen_run.rc_live_check) CLEAR; about
+15 GPU-minutes in all. Scratch script, results kept outside the tree.
+Method (AnomalyDINO-style, training-free): the full frame is tiled at native
+resolution (518 px tiles, 14 px patches; a second arm upsamples 2x first),
+patch tokens from layers 3 / 6 / 9 / 12 are L2-normalised, and each query
+patch scores 1 - max cosine similarity against a memory bank. Banks:
+(A) the image's own patches outside the query region dilated by 2 patches;
+(B) 98.5k patches from 197 R6-pool images (read in place); (C) 100k patches
+from 200 approved `_cleandone` frames (the section 4.4 bank, own slug
+excluded). Region statistics: max, top-10-percent mean, mean, and each as a
+z-score against 40 shifted copies of the region. Regions: the synthetic
+glyph strokes or their box (golden, real pairs), the operator's brush mask or
+its bbox (hand captures, 105 step 70). Subjects as in R2/R2b: 12 golden
+restored regions clean vs credit_line at +4/8/16/32 levels; 26 real LaMa
+clean pairs (cleandone, glyph box on the changed pixels, + their +4 lv
+copies, + the cleaninitial as a positive control); the 4 hand-capture finals;
+105-cleanup step 70 (cleanup69 at mask70; 708 px changed by the step, median
+4.0 levels).
+Accept rule (task): the 105 step 70 residue caught AND >= 10/12 golden +4 lv
+AND 0 FP on the 26 real clean + 4 hand finals (+ the 12 golden clean), at one
+threshold.
+- Scale 1 (native), all 3 banks: NO configuration meets it. Best per layer:
+  own-bank L6 z_mean on strokes = golden 11/12 at 0 FP (bar 2.93) but 105
+  step 70 2.76 = MISS; L12 mean separates golden 12/12 by itself (clean max
+  0.200, +4 lv min 0.221) but the real pairs (0.233) and the dgk hand final
+  (0.256) sit above most +4 lv copies -> 4/12. Bank B best = 4/12; bank C
+  best = L6 mean 11/12 with 105 MISS (0.468 vs 0.494).
+- Scale 2 (2x upsample), own bank: two configurations meet the literal rule,
+  both only at a threshold placed at the max negative: L6 top10 (negatives
+  max 0.5542 = the 105 hand final itself; golden 11/12; 105 step 70 0.5604)
+  and L12 top10 (negatives max 0.4020, again the 105 final; golden 11/12;
+  105 step 70 0.4068). Margins 0.006 / 0.005, picked post hoc from ~250
+  configurations.
+- Attribution check (prove it CLEARS, not just that it fires): removing the
+  step-70 residue does not move the score - L6 0.5604 -> 0.5591 after the
+  step, L12 0.4068 -> 0.4080 (UP). Steps 71-82 re-brushed the same region
+  (38 percent of the step-70 pixels changed again), so the after-frame may
+  still hold residue; the operator's final scores 0.5444 / 0.3909.
+- Held-out check (every hand step: the BEFORE frame at that step's mask vs
+  the FINAL at the same mask, thresholds frozen above): L12 top10 = 105 late
+  steps (>= 60) before 21/23 over the bar, final 3/23 over the bar (FP on
+  operator-accepted bytes); dgk8f92 before 16/17, final 0/17; 107 (texture
+  regeneration, not residue) 0/45 both. L6 top10: 105 final 7/23 FP.
+  The "0 FP" of the census is therefore an artefact of where the bar was put.
+VERDICT: NOT ACCEPTED (FP > 0 held out, margins at the noise floor, and the
+score does not drop when the residue is removed). The scale-2 L12 top10
+own-bank arm is the only live lead: held-out real-residue recall 37/40 steps
+at 3/85 FP on clean step regions. Filed as R5c: a pre-registered check on
+fresh hand captures (threshold frozen at 0.4020) before any board row.
+DOMAIN-GAP DIAGNOSIS (the section 4.4 step-2 condition): NOT MEASURED.
+(1) Stock features see real marks in this domain: cleaninitial vs cleandone
+at the changed pixels, L3 top10 AUROC 0.97 own bank / 0.985 bank B / 0.97 bank C
+(25-26/26 paired up). (2) The domain-matched banks did not help: B and C
+were worse than the per-image bank (L12 positive-control AUROC 0.54 B / 0.68 C vs
+0.86 own), so normality is per-image, not per-domain. (3) Planted +4 lv
+separates the golden set (L12 top10 AUROC 1.000 at scale 2) - the
+"planted do not separate" half of the condition fails. (4) The real 105
+residue moves the features by 0.15-0.48x the clean nearest-neighbour
+distance (synthetic crisp +4 lv: 0.32-1.03x); the lever that helped was
+RESOLUTION (2x upsample), not adaptation. ExPLoRA (MAE objective, ViT-B,
+EST 2-6 GPU-h + ~0.5 day) stays filed as NOT justified; it reopens only if
+R5c fails on fresh captures with clean busy-art patches far from the bank
+while planted ones do not separate.
+
 ## 5. Other strong alternatives (brief)
 
 ### 5.1 Upscale (stage first; ADR-004 binds)
@@ -438,7 +508,7 @@ with a measured negative rather than a guess.
 | 2 | E-MIM-1: re-inpaint + stroke-aligned matched filter with shifted-mask null (+ DRAEM-style synthetic segmenter if needed) | G2.text_residue | ~1-2 days, GPU minutes per prove | DONE 2026-10-04 (LEDGER 267): median stroke residual separates 12/12, 0/26 real FP at 3.0 levels; G2.text_residue_mf row; live wiring = R2b |
 | 3 | E-SEAM-1: contour-normal signed step vs 8 px-shifted null, calibrated on the 26 real clean pairs | G2.seam | ~0.5 day, numpy | DONE 2026-10-04 (LEDGER 264): golden 12/12, 0/26 real FP at 6.0 levels; G2.seam_step row; live wiring = R3b |
 | 4 | E-LAMA-1: anime-lama (already in the operator's IOPaint) vs current LaMa, golden cleaning A/B on slugs where `_01` was approved; operator blind 2AFC; outside identity must stay exact | clean engine (ADR-009 swap, not ladder) | ~0.5 day + operator review; ~1 GB weights, GPU minutes | MEDIUM - domain-matched fill for the busy-art regions that drive the manual IOPaint lane |
-| 5 | E-PEFT-1: stock-DINOv2 AnomalyDINO zero-shot residue map; ExPLoRA-MAE ViT-B only if the miss is diagnosed as domain gap | G2.text_residue (second signal) | ~0.5 day; +2-6 GPU-h EST if step 2 runs | LOW - expected to miss +4 levels; buys a measured close of the ExPLoRA question |
+| 5 | E-PEFT-1: stock-DINOv2 AnomalyDINO zero-shot residue map; ExPLoRA-MAE ViT-B only if the miss is diagnosed as domain gap | G2.text_residue (second signal) | ~0.5 day; +2-6 GPU-h EST if step 2 runs | DONE 2026-10-04 (LEDGER 271): NOT ACCEPTED - no config meets the rule at native scale; at 2x only post hoc at the max negative, held-out FP 3/23 on the 105 final; no domain gap measured, ExPLoRA not justified; lead filed as R5c |
 
 Not shortlisted: MoE / all-in-one restorers (photo-trained, no LW labels to
 route on); MIM pretraining recipes (no gate impact); diffusion SR (fidelity
