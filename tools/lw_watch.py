@@ -225,7 +225,12 @@ class FlatSeenState:
         doc = _read_json(self.path)
         if doc is None:
             return None
-        return {"seen": list(doc.get("seen") or []),
+        # Present-but-empty (ingest P2-5): `{}` is not a baseline this class
+        # ever writes, and reading it as "seen nothing" would make the whole
+        # inbox new. Only a real list counts.
+        if not isinstance(doc.get("seen"), list):
+            raise WatchStateCorrupt(f"{self.path.name} has no seen list")
+        return {"seen": list(doc["seen"]),
                 "failures": int(doc.get("fetch_failures") or 0),
                 "alerted": bool(doc.get("alerted")),
                 "unbaselined": bool(doc.get("unbaselined"))}
