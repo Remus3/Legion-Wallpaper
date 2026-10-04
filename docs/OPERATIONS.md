@@ -329,3 +329,19 @@ standing reference living there gets archived by design._
     is named explicitly, it is an independent operator style rule, and it is
     mechanically gated by `tools/precommit_gate.py`. PS7 removes a failure mode,
     not the rule.
+
+## Operator tasks (verified asks, ingest P0-1, 2026-10-04)
+
+An ask that waits on the operator (physical act, password, OAuth grant) is a task in
+`tools/lw_ops_tasks.py`, not prose: keyed by (capability, subject), a repeat request joins
+the open task, and it CLOSES ONLY when its verify argv exits 0. Log:
+`ops/runtime/operator_tasks/events.jsonl` (append-only, hash-chained; an edited past event
+refuses every further write). Notifications: `notifications.jsonl` beside it (file sink;
+`LW_OPS_TASKS_HOLD=1` holds every send). The scheduled re-check rides `LW-InboxResponder`'s
+`--once` tick (`verify_operator_tasks`; skipped while HALT is present and on `--dry-run`).
+The hand-off's "Operator asks" block is generated from the open tasks by
+`tools/lw_next_session.py --write`.
+
+    python tools/lw_ops_tasks.py pending            # what is open
+    python tools/lw_ops_tasks.py done T0001         # run its check now; exit 0 only if closed
+    python tools/lw_ops_tasks.py withdraw T0001 "why"
