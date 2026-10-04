@@ -1897,6 +1897,37 @@ def _deliver(ctx, ops, slug, src, deliver_dir, sequential):
     raise PipelineError("deliver: could not find a free sequential name", code=3)
 
 
+def _stage_ledger_gate(ctx, slug):
+    """End review reads the stage ledger (directive P1-1): refuse a pass when an
+    operator-LOCKED region changed in a stage that did not assert it, or a stage
+    under a lock could not be watched. The ledger is written beside the images
+    root (<repo>/ops/runtime/stage_ledger/<slug>.json) on every non-dry run.
+
+    With no locks a ledger that cannot be built is recorded and does not block
+    (nothing was approved to protect); with locks it blocks - UNKNOWN is never
+    a pass.
+    """
+    import lw_stage_ledger as led_mod
+    runtime = ctx.root.parent / "ops" / "runtime"
+    locks_dir = runtime / "locks"
+    locks, lock_err = led_mod.load_locks(slug, locks_dir)
+    try:
+        ledger = led_mod.build_ledger(ctx.root, slug, locks_dir=locks_dir)
+    except Exception as exc:  # noqa: BLE001 - classified below, never silent
+        if locks or lock_err:
+            raise PipelineError(f"finalize: stage ledger could not be built under "
+                                f"locks ({exc.__class__.__name__}) - refusing", code=3)
+        return f"stage ledger skipped ({exc.__class__.__name__})"
+    if not ctx.dry:
+        led_mod.write_ledger(ledger, runtime / "stage_ledger")
+    ok, reasons = led_mod.end_review_check(ledger)
+    if not ok:
+        raise PipelineError("finalize: stage ledger blocks the pass - "
+                            + "; ".join(reasons), code=3)
+    return (f"stage ledger ok, unexplained={len(ledger['summary']['unexplained'])} "
+            f"locks={len(locks)}")
+
+
 def cmd_finalize(ctx, slug, deliver_dir, sequential, audit_json):
     review = ctx.root / DONE_DIR["last"] / slug
     if not review.is_dir():
@@ -1904,6 +1935,7 @@ def cmd_finalize(ctx, slug, deliver_dir, sequential, audit_json):
     lastdone = review / milestone_name(slug, "last", "done")
     if not lastdone.exists():
         raise PipelineError(f"finalize: {slug} has no _lastdone", code=2)
+    ledger_note = _stage_ledger_gate(ctx, slug)
     audit = None
     if audit_json:
         try:
@@ -1940,6 +1972,7 @@ def cmd_finalize(ctx, slug, deliver_dir, sequential, audit_json):
             if "approval" in final_audit:
                 final_audit["supplied_approval"] = final_audit["approval"]
             final_audit["approval"] = _approval_record(man, "last")
+            final_audit["stage_ledger"] = ledger_note
             add_transition(man, "FINALIZE",
                            src="{}/{}/{}".format(DONE_DIR["last"], slug, lastdone.name),
                            dst=f"{BACKUP}/{slug}/{lastdone.name}",
