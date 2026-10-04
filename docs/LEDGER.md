@@ -27,6 +27,38 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+271. DONE **2026-10-04 (research R5 / E-PEFT-1 step 1: stock DINOv2 patch-kNN residue map NOT ACCEPTED; no domain gap measured, ExPLoRA not justified; docs-only).**
+   WEIGHTS: no DINOv2 in any LW venv or cache (searched .venv-gen/-metrics/-poc/-upscale, lw-clean venv, HF +
+   torch hub caches) -> facebook/dinov2-base (Apache-2.0) from the official HF repo into the user HF cache,
+   model.safetensors 346,345,912 B, sha256 d73036b56966966d07975d696bde331762f37297e2f095de8cea0040c3aa0841, never
+   tracked. RUN: .venv-metrics, cuda, lw_g1_gate GPU mutex held, RC-live gate (lw_gen_run.rc_live_check) CLEAR, ~15
+   GPU-min; scratch script + JSON outside the tree. METHOD (AnomalyDINO-style): full frame tiled at native res (and a
+   2x-upsampled arm), patch tokens L3/6/9/12, score = 1 - max cos vs a bank: (A) own image outside the dilated region,
+   (B) 98.5k patches from 197 R6-pool images read in place, (C) 100k patches from 200 approved _cleandone frames
+   (own slug excluded); stats max / top10 / mean and z vs 40 shifted regions. Subjects = R2/R2b sets: 12 golden
+   (clean vs credit_line +4/8/16/32 lv), 26 real LaMa pairs (+4 lv copies; cleaninitial as positive control), 4 hand
+   finals, 105-cleanup step 70 (cleanup69 at mask70, 708 px, median 4.0 lv).
+   RESULT vs the accept rule (105 step 70 caught AND >= 10/12 golden +4 lv AND 0 FP on 26 real + 4 hand, one bar):
+   native scale, all banks: NONE. Best: own L6 z_mean golden 11/12 at 0 FP but 105 = 2.76 vs bar 2.93 (MISS); bank C
+   L6 mean 11/12, 105 MISS; bank B best 4/12. 2x scale, own bank: L6 top10 (bar 0.5542, 105 0.5604) and L12 top10
+   (bar 0.4020, 105 0.4068) pass ONLY with the bar at the max negative (= the 105 hand final itself), margins
+   0.006 / 0.005, chosen post hoc from ~250 configs. ATTRIBUTION: removing the step-70 residue does not lower the score
+   (L6 0.5604 -> 0.5591, L12 0.4068 -> 0.4080 UP; steps 71-82 re-brushed the region, 38 pct of its px changed again).
+   HELD OUT (each hand step: before-frame vs final at that step's mask, bars frozen): L12 105 late steps 21/23 before,
+   FINAL 3/23 over the bar (FP on operator-accepted bytes); dgk 16/17 vs 0/17; 107 (texture regen) 0/45 both; L6
+   final 7/23 FP. DECISION: NOT ACCEPTED, no board row, no gate code touched (alternatives: ship the 2x L12 row as
+   FLAG - rejected, its 0 FP is an artefact of bar placement and it fails held out; FAIL-gate - rejected a fortiori).
+   Lead filed as ROADMAP R5c (pre-registered, bar frozen 0.4020, fresh hand captures; held-out so far 37/40 residue
+   steps at 3/85 FP). DOMAIN GAP: NOT MEASURED - stock features see real marks in-domain (cleaninitial vs cleandone
+   L3 AUROC 0.97 own / 0.985 B / 0.97 C); domain-matched banks B/C were WORSE than the per-image bank (L12 control
+   AUROC 0.54 / 0.68 vs 0.86); +4 lv separates golden at 2x (L12 top10 AUROC 1.000); the real 105 residue moves the
+   features 0.15-0.48x the clean nn distance (synthetic +4 lv 0.32-1.03x) - resolution helped, a bank did not.
+   ExPLoRA (MAE, ViT-B, EST 2-6 GPU-h + ~0.5 day) NOT run, NOT justified; reopens only if R5c fails with clean
+   busy-art patches far from the bank while planted ones do not separate. INCIDENT: the scratchpad is shared with the
+   R4 agent and its `prog.py` overwrote this run's helper; 3 progress writes landed in
+   ops/loop/control/progress/r4-anime-lama-ab.json (~22:10Z) before R4's own next write superseded them; R5 now
+   writes only through its own helper. Docs: research doc 4.4 RESULT + table row 5, ROADMAP R5 DONE / R5c / R6 note.
+
 270. DONE **2026-10-04 (research R2b: G2.text_residue_mf LIVE in the cleaning verify; OCR+MSER arm + G2.text_residue row + ack entry RETIRED together; commit in this push).**
    SHIPPED (TDD; tests/test_g2_text_residue_mf_live.py 8 RED on the missing API, then 5 RED on the
    retirement; numpy only, re-run green with cv2/torch/easyocr/ultralytics/simple_lama blocked in
