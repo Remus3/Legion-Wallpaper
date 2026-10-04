@@ -27,6 +27,30 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+272. DONE **2026-10-04 (research R4 / E-LAMA-1: anime-lama vs LaMa blind A/B PREPARED - 19 slugs, awaiting the OPERATOR; no winner picked, no pipeline state changed).**
+   ADR-009 binds: engine REPLACE test, never a ladder. WEIGHTS: anime-manga Big-LaMa fetched from the official
+   Sanster release (github.com/Sanster/models/releases/download/AnimeMangaInpainting/anime-manga-big-lama.pt),
+   205717870 bytes, md5 29f284f36a0a510bcacf39ecf4c4d54f (= IOPaint 1.6.0's pinned ANIME_LAMA_MODEL_MD5),
+   sha256 479d3afdcb7ed2fd944ed4ebcc39ca45b33491f0f2e43eb1000bd623cfb41823 (pinned in tools/lw_ab_r4.py,
+   refused on mismatch); cached in the torch hub checkpoint dir beside big-lama.pt, outside the tree.
+   SELECTION (tools/lw_ab_r4.py prepare): 4.Cleaning Done slugs whose APPROVE_CLEAN sha == a `lama`
+   SAVE_WORKING to `_cleanworking_01`, no REOPEN (excludes the 14 LEDGER 268 slugs) -> 28; 19 keep a proof
+   that the saved mask belongs to the approved run (ops/runtime/clean/<slug>/_clean_cand.png sha ==
+   approved sha, initial sha == START_CLEAN); 7 have no saved mask, 2 a mask from a later run -> excluded.
+   GENERATE (lw-clean venv, RC-live gate of lw_gen_run clear, gpu_lock held): the SAME mask on the SAME
+   _cleaninitial through SimpleLama with LAMA_MODEL=anime weights and lw_clean_pass.inpaint_lama; outside
+   the mask byte-identical (outside_max_abs 0, 19/19); A side = the approved _01 bytes. Output only under
+   ops/runtime/ab_r4/ (gitignored; check-ignore pattern column `ops/runtime/`); images/ untouched.
+   BLIND: key.json (sides counterbalanced 9/10, display order shuffled, SystemRandom) is never served;
+   items/votes name sides only; votes.json locks on Finish; `python tools/lw_ab_r4.py tally` refuses
+   before Finish. PAGE: LW Monitor http://127.0.0.1:8901/ab (new /ab + /api/ab/{items,img,vote,finish}
+   routes in tools/lw_monitor.py, web/ab_r4.html: before/left/right 1:1 tight + context crops, blink,
+   keys 1/2/3); monitor restarted, /ab 200 read back. Hidden seam_step per side recorded in gen.json for
+   later analysis only. TDD: tests/test_lw_ab_r4.py + tests/test_lw_monitor_ab.py (35, RED first);
+   full suite 3932 passed, 20 skipped; ruff clean. UI audit: self-audit only (subagent audit did not
+   report before the machine restart); focus-visible outline added. NEXT: operator votes, then tally;
+   adoption (if any) is a separate ADR-009 engine swap decision.
+
 271. DONE **2026-10-04 (research R5 / E-PEFT-1 step 1: stock DINOv2 patch-kNN residue map NOT ACCEPTED; no domain gap measured, ExPLoRA not justified; docs-only).**
    WEIGHTS: no DINOv2 in any LW venv or cache (searched .venv-gen/-metrics/-poc/-upscale, lw-clean venv, HF +
    torch hub caches) -> facebook/dinov2-base (Apache-2.0) from the official HF repo into the user HF cache,

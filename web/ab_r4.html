@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LW R4 Blind A/B</title>
+<style>
+:root { --bg:#14161a; --panel:#1d2026; --line:#2e333b; --text:#e6e8eb; --dim:#9aa3ad;
+        --accent:#6cb6ff; --good:#5fd38d; --warn:#f0b35a; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+       font:15px/1.45 "Segoe UI", system-ui, sans-serif; }
+header { position:sticky; top:0; z-index:2; background:var(--panel);
+         border-bottom:1px solid var(--line); padding:10px 16px;
+         display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+h1 { font-size:18px; margin:0 12px 0 0; }
+#progress { color:var(--dim); }
+#slug { font-family:Consolas, monospace; color:var(--accent); word-break:break-all; }
+main { padding:16px; max-width:100%; }
+h2 { font-size:15px; margin:18px 0 6px; color:var(--dim); font-weight:600; }
+.pane { overflow:auto; border:1px solid var(--line); background:#000; max-width:100%; }
+.pane img { display:block; image-rendering:pixelated; max-width:none; }
+.pair { display:flex; flex-direction:column; gap:10px; }
+.label { font-weight:700; font-size:16px; margin:4px 0; }
+.controls { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0; }
+button { font:inherit; min-height:44px; min-width:44px; padding:8px 16px; border-radius:6px;
+         border:1px solid var(--line); background:#262a31; color:var(--text); cursor:pointer; }
+button:hover { border-color:var(--accent); }
+button:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+button.chosen { background:#1f3b2b; border-color:var(--good); }
+button.primary { border-color:var(--accent); }
+button:disabled { opacity:.45; cursor:not-allowed; }
+.hint { color:var(--dim); font-size:13px; }
+#msg { color:var(--warn); min-height:1.4em; }
+#blinkpane { position:relative; }
+#blinktag { position:absolute; top:6px; left:6px; background:rgba(0,0,0,.7);
+            padding:2px 8px; border-radius:4px; font-weight:700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>R4 blind A/B</h1>
+  <span id="progress">loading</span>
+  <span id="slug"></span>
+</header>
+<main>
+  <p class="hint">Two cleans of the same mark with the same mask, engines hidden and sides
+  randomized per image. Judge which removal looks more natural at 1:1. Keys: 1 = Left better,
+  2 = Same, 3 = Right better, Space = blink, arrows = previous / next.</p>
+  <div id="msg" role="status"></div>
+  <div class="controls">
+    <button id="prev" type="button">Previous</button>
+    <button data-choice="left" type="button">Left better (1)</button>
+    <button data-choice="same" type="button">Same (2)</button>
+    <button data-choice="right" type="button">Right better (3)</button>
+    <button id="next" type="button">Next</button>
+    <button id="finish" class="primary" type="button" disabled>Finish</button>
+  </div>
+  <h2>Before (original mark), tight</h2>
+  <div class="pane"><img id="before_tight" alt="before, tight crop"></div>
+  <h2>Candidates, tight (1:1)</h2>
+  <div class="pair">
+    <div><div class="label">Left</div><div class="pane"><img id="left_tight" alt="left candidate, tight crop"></div></div>
+    <div><div class="label">Right</div><div class="pane"><img id="right_tight" alt="right candidate, tight crop"></div></div>
+  </div>
+  <h2>Blink, tight (Space toggles)</h2>
+  <div class="pane" id="blinkpane"><span id="blinktag">Left</span><img id="blink" alt="blink view"></div>
+  <h2>Candidates, context (1:1)</h2>
+  <div class="pair">
+    <div><div class="label">Left</div><div class="pane"><img id="left_context" alt="left candidate, context crop"></div></div>
+    <div><div class="label">Right</div><div class="pane"><img id="right_context" alt="right candidate, context crop"></div></div>
+  </div>
+  <h2>Before (original mark), context</h2>
+  <div class="pane"><img id="before_context" alt="before, context crop"></div>
+</main>
+<script>
+"use strict";
+var state = { items: [], votes: {}, finished: false, i: 0, blinkRight: false };
+var NAMES = ["before_tight", "left_tight", "right_tight", "left_context", "right_context", "before_context"];
+
+function img(slug, name) {
+  return "/api/ab/img?slug=" + encodeURIComponent(slug) + "&name=" + name + ".png";
+}
+function say(t) { document.getElementById("msg").textContent = t || ""; }
+
+function render() {
+  var n = state.items.length;
+  var voted = Object.keys(state.votes).length;
+  document.getElementById("progress").textContent =
+    (n ? (state.i + 1) + " / " + n : "0 / 0") + "  |  voted " + voted + " / " + n +
+    (state.finished ? "  |  FINISHED" : "");
+  document.getElementById("finish").disabled = state.finished || !n || voted < n;
+  if (!n) { say("No A/B items prepared."); return; }
+  var slug = state.items[state.i].slug;
+  document.getElementById("slug").textContent = slug;
+  NAMES.forEach(function (nm) { document.getElementById(nm).src = img(slug, nm); });
+  state.blinkRight = false;
+  blink();
+  var mine = state.votes[slug];
+  document.querySelectorAll("button[data-choice]").forEach(function (b) {
+    b.classList.toggle("chosen", b.getAttribute("data-choice") === mine);
+    b.disabled = state.finished;
+  });
+}
+
+function blink() {
+  if (!state.items.length) { return; }
+  var slug = state.items[state.i].slug;
+  var side = state.blinkRight ? "right" : "left";
+  document.getElementById("blink").src = img(slug, side + "_tight");
+  document.getElementById("blinktag").textContent = state.blinkRight ? "Right" : "Left";
+}
+
+function post(path, body) {
+  return fetch(path, { method: "POST", headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify(body) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); });
+}
+
+function vote(choice) {
+  if (state.finished || !state.items.length) { return; }
+  var slug = state.items[state.i].slug;
+  post("/api/ab/vote", { slug: slug, choice: choice }).then(function (res) {
+    if (!res.ok) { say(res.j.error || "vote refused"); return; }
+    state.votes[slug] = choice;
+    say("");
+    if (state.i < state.items.length - 1) { state.i += 1; }
+    render();
+  }).catch(function () { say("Could not reach the monitor - vote not saved."); });
+}
+
+function move(d) {
+  var n = state.items.length;
+  if (!n) { return; }
+  state.i = Math.max(0, Math.min(n - 1, state.i + d));
+  render();
+}
+
+function load() {
+  fetch("/api/ab/items", { cache: "no-store" }).then(function (r) { return r.json(); })
+    .then(function (j) {
+      state.items = j.items || [];
+      state.votes = j.votes || {};
+      state.finished = !!j.finished;
+      var first = state.items.findIndex(function (it) { return !(it.slug in state.votes); });
+      state.i = first < 0 ? 0 : first;
+      if (state.finished) { say("Finished. Tally: python tools/lw_ab_r4.py tally"); }
+      render();
+    }).catch(function () { say("Could not load the A/B items."); });
+}
+
+document.querySelectorAll("button[data-choice]").forEach(function (b) {
+  b.addEventListener("click", function () { vote(b.getAttribute("data-choice")); });
+});
+document.getElementById("prev").addEventListener("click", function () { move(-1); });
+document.getElementById("next").addEventListener("click", function () { move(1); });
+document.getElementById("finish").addEventListener("click", function () {
+  post("/api/ab/finish", {}).then(function (res) {
+    if (!res.ok) { say(res.j.error || "finish refused"); return; }
+    state.finished = true;
+    say("Finished. Tally: python tools/lw_ab_r4.py tally");
+    render();
+  }).catch(function () { say("Could not reach the monitor."); });
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "1") { vote("left"); }
+  else if (e.key === "2") { vote("same"); }
+  else if (e.key === "3") { vote("right"); }
+  else if (e.key === "ArrowLeft") { move(-1); }
+  else if (e.key === "ArrowRight") { move(1); }
+  else if (e.key === " ") { e.preventDefault(); state.blinkRight = !state.blinkRight; blink(); }
+});
+load();
+</script>
+</body>
+</html>
