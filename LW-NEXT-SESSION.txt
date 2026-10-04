@@ -1,4 +1,4 @@
-HELD LOCAL, NOT PUSHED: /done 2026-10-04 stopped at done.md section 7 (bind RED, drift_guard slots.py C4-vs-RC; push only on exit 0, precedent af5d876). Push these commits after the re-pin clears the gate.
+C4 ROUND CLOSED 2026-10-04: slots.py 290cbf80 on all 5 carriers (LW RSC RC CS SS, own-disk read-back); drift_guard 0 breaches; bind GREEN + verify-push VERIFIED c6e9984.
 NEXT SESSION
 ------------
 Task: FOLLOW THE C4 ROUND TO CLOSE. Re-hash ops/loop/slots.py in every carrier
