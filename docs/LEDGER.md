@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+260. DONE **2026-10-04 (pipeline: yuumi first pass approved by the operator; cleaning started and parked in the QA lane per the gate).**
+   AUTHORITY: operator, own words relayed 2026-10-04: "first pass approved for the yuumi". Not yet
+   recorded (state FIRST_SCRATCH / NEEDAUTH), so recorded through LW's own path:
+   `lw_pipeline.py approve yuumi-by-narumicsibe-dmax7wo-fullview` (actor operator, dry-run first).
+   READ BACK: status FIRST_DONE, PIPELINE_LOG `APPROVE_FIRST ... actor=operator sha12=a10a5f78e03c`.
+   Then `start-stage` (dry-run first) -> READ BACK CLEAN_SCRATCH / EDITING with `_cleaninitial.png`.
+   DETECT + GATE (`lw_clean_pass.py --dry-run`, lw-clean venv): verdict `qa`, reason
+   `centre_overlay` (overlay_score 0.2772 > 0.15 flag), plus a faint_mark credit-line box
+   [1138,983,1490,1008] (conf 0.095) that spans both of the operator's "line wording" seeds; the veil
+   seed [1142,585] lies in the centre-overlay support. So the detector did NOT pass this slug - it
+   flagged it - and the operator's three marks agree with it. Per cleaning-pass section 2 a `qa`
+   verdict goes to the HUMAN QA QUEUE ("do not guess"), and LEDGER 121-123 record the operator
+   rejecting every automated centre-overlay fill against the zero-watermark bar, so NO unattended
+   auto-inpaint was run. The QA lane (IOPaint, `IOPAINT_LAUNCH`) was started on 127.0.0.1:8080 -
+   READ BACK HTTP 200. Threads stay open (state answered, not fixed) until the operator's clean is
+   adopted and verified; the seed mask is at ops/runtime/clean/<slug>/.
+
 259. DONE **2026-10-04 (review bench: P1-2 acceptance MET by the operator; three residue marks answered and seeded for cleaning).**
    OPERATOR ACT, READ BACK from ops/runtime/review: three marks on yuumi-by-narumicsibe-dmax7wo-fullview
    (r=13): [1353,996] and [1447,998] "watermark line wording still present", [1142,585] "watermark
