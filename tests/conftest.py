@@ -138,3 +138,12 @@ def _the_live_job_run_logs_are_never_written(request, monkeypatch):
     tmp = request.getfixturevalue("tmp_path")
     monkeypatch.setenv("LW_RUNLOG_ROOT", str(tmp / "runlog"))
     yield
+
+
+@pytest.fixture(autouse=True)
+def _the_live_bridge_journal_is_never_written(request, monkeypatch):
+    """Point the AHK bridge send journal (ops/loop/executor.py, ingest P1-6) at
+    a per-test path; the live one is ops/runtime/bridge/sends.jsonl."""
+    tmp = request.getfixturevalue("tmp_path")
+    monkeypatch.setenv("LW_BRIDGE_JOURNAL", str(tmp / "bridge" / "sends.jsonl"))
+    yield

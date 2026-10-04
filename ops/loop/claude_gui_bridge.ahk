@@ -6,7 +6,8 @@ SetTitleMatchMode 2
 ; live targeting is PID-ONLY (no title fallback) - RC's launcher self-defers
 ; while any Legion Wallpaper bridge is alive, and each repo's launcher kills
 ; only its own cmdline-scoped bridge instances.
-; Polls control\gemini.ready; types its lines into the TARGET window; ack =
+; Polls control\gemini.ready; slash lines typed, plain lines PASTED as one block
+; (ingest P1-6) into the TARGET window after a process check; ack =
 ; deleting gemini.ready. Target is FILE-DRIVEN (config not code):
 ;   control\ahk_mode.txt    = "dry" (type into Notepad LW-LOOP-DRYRUN) or "live"
 ;   control\target_hwnd.txt = HWND of the Claude window titled "Image". ONE
@@ -48,6 +49,60 @@ Target() {
     return "ahk_id " hwnd
 }
 
+; TARGET CHECK (ingest P1-6): text sent into a plain shell EXECUTES, so the
+; window must belong to the expected process before anything is sent: claude.exe
+; in live mode, notepad.exe for the dry-run window. Unsure = REFUSE: gemini.ready
+; is left in place, so the controller reads "not consumed" and journals a failed
+; result instead of a send that never reached a Claude session.
+ExpectedProcess() {
+    global MODEF
+    mode := FileExist(MODEF) ? Trim(FileRead(MODEF)) : "live"
+    return (mode = "dry") ? "notepad.exe" : "claude.exe"
+}
+
+TargetOk(win) {
+    try proc := WinGetProcessName(win)
+    catch
+        proc := ""
+    want := ExpectedProcess()
+    if (StrLower(proc) != want) {
+        LogMsg("REFUSE: target [" win "] is process [" proc "], expected [" want "] - nothing sent")
+        return false
+    }
+    return true
+}
+
+; SINGLE PASTE (ingest P1-6): a multi-line directive typed line by line submits
+; each line as its own fragment and the session answers only the last one. Plain
+; lines are therefore delivered as ONE clipboard paste; the operator's clipboard
+; is saved first and restored after. Enter is sent SEPARATELY after a pause so it
+; never lands inside the paste.
+PasteBlock(text) {
+    saved := ClipboardAll()
+    A_Clipboard := ""
+    A_Clipboard := text
+    if !ClipWait(2) {
+        A_Clipboard := saved
+        LogMsg("paste FAILED: clipboard did not take the text")
+        return false
+    }
+    Send("^v")
+    Sleep 600
+    A_Clipboard := saved
+    saved := ""
+    return true
+}
+
+SubmitEnter() {
+    Sleep 350
+    Send("{Enter}")
+    ; SECOND Enter (operator-observed 2026-07-26: text landed in the composer
+    ; but was never submitted). Something transient (autocomplete, paste-mode, a
+    ; hint row) can eat the first Enter; on an empty composer Enter is a no-op.
+    Sleep 250
+    Send("{Enter}")
+}
+
 LogMsg("ahk bridge start (LW)")
 Loop {
     if FileExist(STOPF) {
@@ -63,52 +118,52 @@ Loop {
             Sleep 1500
             continue
         }
+        if !TargetOk(win) {
+            Sleep 5000
+            continue
+        }
         WinActivate(win)
         WinWaitActive(win, , 5)
         Sleep 500
-        typed := 0
+        if !TargetOk("A") {
+            Sleep 5000
+            continue
+        }
+        sent := 0
+        block := ""
         for idx, lineText in lines {
             if (idx = 1)                 ; skip CYCLE=n header
                 continue
-            if (Trim(lineText) = "")
-                continue
             if (SubStr(lineText, 1, 1) = "/") {
+                if (Trim(block) != "") {
+                    if PasteBlock(RTrim(block, "`n"))
+                        SubmitEnter(), sent += 1
+                    Sleep LINE_PAUSE
+                }
+                block := ""
                 ; Slash-command line: commit the leading "/" on its own and pause so
-                ; the Claude TUI slash-menu opens BEFORE the command word arrives.
-                ; SendText of the whole short string raced that menu and the "/" landed
-                ; AFTER the word ("clear/" not "/clear"), so /clear silently no-op'd and
-                ; the session never reset (RC 2026-06-06). The leading-slash split forces
-                ; the slash ahead of the word.
+                ; the Claude TUI slash-menu opens BEFORE the command word arrives
+                ; (RC 2026-06-06: "clear/" not "/clear"). A trailing space closes
+                ; the palette so Enter submits (2026-07-17).
                 SendText("/")
                 Sleep 400
                 SendText(SubStr(lineText, 2))
-                ; Trailing space: with the command palette open, Enter is captured by the
-                ; dropdown (no-op when nothing is highlighted) so a bare "/clear" never
-                ; submits - observed idle-window at 2026-07-17 00:03. A space after the
-                ; token closes the palette; Enter then submits and the command parses at
-                ; submit time. Lines with args already carry spaces and always submitted.
                 SendText(" ")
+                SubmitEnter()
+                sent += 1
+                Sleep LINE_PAUSE
+                if (Trim(lineText) = "/clear")
+                    Sleep CLEAR_PAUSE
             } else {
-                SendText(lineText)
+                block .= lineText "`n"
             }
-            Sleep 350
-            Send("{Enter}")
-            ; SECOND Enter (operator-observed 2026-07-26: text landed in the composer
-            ; but was never submitted). Same failure class as the slash-palette scar
-            ; above - something transient (autocomplete, paste-mode, a hint row) eats
-            ; the first Enter, so the directive sits typed-but-unsent and the whole
-            ; cycle stalls until the deadline. Sending a second Enter is SAFE because
-            ; if the first one DID submit, the composer is now empty and Enter on an
-            ; empty composer is a no-op. Cheap insurance against a silent stall.
-            Sleep 250
-            Send("{Enter}")
-            typed += 1
-            Sleep LINE_PAUSE
-            if (Trim(lineText) = "/clear")
-                Sleep CLEAR_PAUSE
+        }
+        if (Trim(block) != "") {
+            if PasteBlock(RTrim(block, "`n"))
+                SubmitEnter(), sent += 1
         }
         FileDelete(READY)              ; READY consumed = the "typed" signal the controller waits on
-        LogMsg("typed " typed " lines into [" win "]")
+        LogMsg("sent " sent " message(s) into [" win "]")
     }
     Sleep 1000
 }
