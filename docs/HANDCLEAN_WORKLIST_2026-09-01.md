@@ -109,3 +109,29 @@ python tools/lw_pipeline.py save-working <slug> --adopt --from <hand-fixed.png> 
 | 61 | `blood-moon-priestess-mel-by-aiaida-dmhckey-pre` | 16.28 | 0.126 | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/blood-moon-priestess-mel-by-aiaida-dmhckey-pre/blood-moon-priestess-mel-by-aiaida-dmhckey-pre_cleaninitial.png) |
 | 62 | `meramora-artwork-by-meramora-dm9c8hi-pre` | 17.65 | 0.159 | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/meramora-artwork-by-meramora-dm9c8hi-pre/meramora-artwork-by-meramora-dm9c8hi-pre_cleaninitial.png) |
 | 63 | `riven-broken-blade-unbroken-will-by-vexxsoul-dm9po91-fullview` | 17.81 | 0.177 | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/riven-broken-blade-unbroken-will-by-vexxsoul-dm9po91-fullview/riven-broken-blade-unbroken-will-by-vexxsoul-dm9po91-fullview_cleaninitial.png) |
+
+## Added 2026-10-04 - reopened after the rejected-reship incident (LEDGER 268)
+
+These 13 had shipped to 4.Cleaning Done carrying a candidate the operator had
+already REJECTED. Reopened to 3.Cleaning Scratch with the original
+`_cleaninitial`; the rejected bytes are kept in 9.Image Backup as
+`_cleandone.2.png`. No automated candidate: every engine has already been
+rejected on these frames. `spirit-blossom-ahri-mono-01-by-hriful` carries only
+the bottom-left `deviantart.com/hriful` credit (about x 0-380, y 1405-1440) -
+leave the skirt alone; nothing else on that frame needs work.
+
+| slug | file |
+|---|---|
+| `dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545/dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545_cleaninitial.png) |
+| `dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5/dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5_cleaninitial.png) |
+| `dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf/dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf_cleaninitial.png) |
+| `dfzypou-30bef263-c754-4a26-9797-484757b1c4cf` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dfzypou-30bef263-c754-4a26-9797-484757b1c4cf/dfzypou-30bef263-c754-4a26-9797-484757b1c4cf_cleaninitial.png) |
+| `dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5/dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5_cleaninitial.png) |
+| `dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395/dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395_cleaninitial.png) |
+| `fantasy-design-by-aivio-dkdq5p7-pre` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/fantasy-design-by-aivio-dkdq5p7-pre/fantasy-design-by-aivio-dkdq5p7-pre_cleaninitial.png) |
+| `fury-tempest-sona-by-ryoairtist-dm7ziam-pre` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/fury-tempest-sona-by-ryoairtist-dm7ziam-pre/fury-tempest-sona-by-ryoairtist-dm7ziam-pre_cleaninitial.png) |
+| `image3` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/image3/image3_cleaninitial.png) |
+| `kayle-new-splash-by-su-ke-d85w02l-fullview` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/kayle-new-splash-by-su-ke-d85w02l-fullview/kayle-new-splash-by-su-ke-d85w02l-fullview_cleaninitial.png) |
+| `prestige-coven-xayah-by-pebano1-dmc27t0-pre` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/prestige-coven-xayah-by-pebano1-dmc27t0-pre/prestige-coven-xayah-by-pebano1-dmc27t0-pre_cleaninitial.png) |
+| `spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre/spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre_cleaninitial.png) |
+| `syndra-coven-league-of-legends-by-kintanki1-dm6e10u-fullview` | [open](file:///C:/Legion%20Wallpaper/images/3.Cleaning%20Scratch/syndra-coven-league-of-legends-by-kintanki1-dm6e10u-fullview/syndra-coven-league-of-legends-by-kintanki1-dm6e10u-fullview_cleaninitial.png) |

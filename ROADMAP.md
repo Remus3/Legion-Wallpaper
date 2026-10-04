@@ -6,6 +6,8 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Cleaning incident: 14 operator-REJECTED candidates shipped as "clean-scan" (2026-08-22 dispose) - FIXED + REOPENED 2026-10-04 (LEDGER 268).** clean-scan must now be byte-identical to the initial (exit 3), dispose registers the initial, approve records the real actor, iopaint has no default region. 14 slugs back in 3.Cleaning Scratch: caitlyn in needauth (operator), 13 on the manual IOPaint lane. OPEN: apply `ops/loop/control/patch_lw_clean_pass_skip_rejected_workings.diff` once the concurrent lw_clean_pass.py edit lands; SUBMIT still logs actor=operator for tool submits.
+
 - **Headless spawns on the operator's second account, fail closed; inbox responder
   ARMED and actually spawning - DONE 2026-10-02/03 (`16d9134`, `883b5f2`,
   `1fe3db8`).** `tools/lw_headless_env.py` gates all six launch sites; proof spawn

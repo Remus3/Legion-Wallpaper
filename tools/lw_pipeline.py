@@ -1398,6 +1398,37 @@ def _global_filter_audit(reference_path, submitted_path):
     return audit
 
 
+PASSTHROUGH_TOOLS = frozenset({"clean-scan"})
+
+
+def assert_clean_scan_passthrough(slug, stage, tool, initial_sha, src_sha):
+    """Refuse a passthrough-tool working whose bytes are not the stage initial.
+
+    `clean-scan` is a passthrough by definition - the frame carried no mark, so
+    the initial goes through unedited - and that is the only reason ADR-009
+    exempts it from the one-engine rule (LADDER_EXEMPT_TOOLS). Any other bytes
+    under that label are an inpaint smuggled past every engine gate: on
+    2026-08-22 fourteen operator-REJECTED candidates shipped to 4.Cleaning Done
+    exactly this way (LEDGER, incident 2026-10-04). Fails CLOSED when there is
+    no initial to compare against.
+    """
+    if tool not in PASSTHROUGH_TOOLS:
+        return
+    if not initial_sha or src_sha != initial_sha:
+        raise PipelineError(
+            f"save-working: {slug} --tool {tool} is a passthrough and must be "
+            f"byte-identical to the {stage} initial (got sha12="
+            f"{(src_sha or '?')[:12]}, initial sha12={(initial_sha or 'none')[:12]})"
+            " - register an edited file under its real engine tool", code=3)
+
+
+def _check_passthrough(slug, stage, tool, stage_initial, src_sha):
+    if tool not in PASSTHROUGH_TOOLS:
+        return
+    init_sha = sha256_file(stage_initial) if stage_initial.is_file() else None
+    assert_clean_scan_passthrough(slug, stage, tool, init_sha, src_sha)
+
+
 def cmd_save_working(ctx, slug, from_path, adopt, tool, params_json,
                      allow_ladder=False):
     stage, folder = find_scratch(ctx, slug)
@@ -1428,6 +1459,7 @@ def cmd_save_working(ctx, slug, from_path, adopt, tool, params_json,
                     code=2)
             src = max(candidates, key=lambda p: p.stat().st_mtime)
             sha = sha256_file(src)
+            _check_passthrough(slug, stage, tool, stage_initial, sha)
             gf = _global_filter_audit(stage_initial, src)
             ops.rename(src, folder / target_name)
         else:
@@ -1435,6 +1467,8 @@ def cmd_save_working(ctx, slug, from_path, adopt, tool, params_json,
             if not src.is_file():
                 raise PipelineError(f"save-working: missing --from file {src}",
                                     code=2)
+            _check_passthrough(slug, stage, tool, stage_initial,
+                               sha256_file(src))
             gf = _global_filter_audit(stage_initial, src)
             sha = ops.safe_copy(src, folder, target_name)
         if gf["flagged"]:
@@ -1773,7 +1807,7 @@ def _approval_record(man, stage):
 
 
 def _complete_approve(ctx, ops, slug, stage, folder, done_src_name, force,
-                      op_name=None):
+                      op_name=None, actor=OPERATOR_ACTOR):
     done_dir = ctx.root / DONE_DIR[stage] / slug
     done_name = milestone_name(slug, stage, "done")
     ops.mkdir(done_dir)
@@ -1791,7 +1825,7 @@ def _complete_approve(ctx, ops, slug, stage, folder, done_src_name, force,
         raise PipelineError(f"approve: {slug} missing {done_src_name}", code=2)
     man = load_manifest(folder)
     if man is not None:
-        add_transition(man, op_name or APPROVE_OP[stage],
+        add_transition(man, op_name or APPROVE_OP[stage], actor=actor,
                        src=f"{SCRATCH_DIR[stage]}/{slug}/{done_src_name}",
                        dst=f"{DONE_DIR[stage]}/{slug}/{done_name}",
                        sha_in=sha_done, sha_out=sha_done,
@@ -1805,7 +1839,7 @@ def _complete_approve(ctx, ops, slug, stage, folder, done_src_name, force,
             if not _gc_prior_done(ctx, ops, slug, prior_folder, done_dir):
                 print(f"STALE_DONE: {prior_folder} kept (hash not verified downstream)")
     ctx.log(slug, op_name or APPROVE_OP[stage], SCRATCH_DIR[stage],
-            DONE_DIR[stage], sha_done[:12])
+            DONE_DIR[stage], sha_done[:12], actor=actor)
     return sha_done
 
 
@@ -1835,7 +1869,8 @@ def cmd_approve(ctx, slug, force, actor=OPERATOR_ACTOR):
                 done_src = done_local.name
         else:
             done_src = done_local.name  # APPROVED_PENDING_MOVE resume
-        _complete_approve(ctx, ops, slug, stage, folder, done_src, force)
+        _complete_approve(ctx, ops, slug, stage, folder, done_src, force,
+                          actor=actor)
     finally:
         release_lock(lock)
     _emit(ctx, ops, f"approve {slug} ({stage})")

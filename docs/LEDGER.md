@@ -27,6 +27,47 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+268. DONE **2026-10-04 (cleaning incident: 14 operator-REJECTED candidates had shipped to 4.Cleaning Done as "clean-scan"; 3 root causes fixed RED-first, 14 slugs reopened; commit in this push).**
+   TRIGGER: operator report (attended, screenshots) on spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre -
+   bottom-left credit replaced by a flat smear and the skirt (no mark there) destroyed; the same slug was
+   G2.seam_step's only live flag (6.28, LEDGER 266). PREMISE CORRECTED: no detector false positive and no
+   gate pass - the shipped bytes (sha12 9965beae45f5) are the 2026-08-01 iopaint candidate the operator
+   REJECTED on 08-02 ("contextually incorrect"), stacked on the 07-16 block-SDXL working (also rejected),
+   re-registered on 08-22 12:15:52 by the gate-driven dispose as a `clean-scan` working and approved 1 s
+   later. CAUSES (file:line at fix time): (1) `lw_clean_pass.select_working_image` (tools/lw_clean_pass.py
+   ~859) returns the highest `_cleanworking_NN` even when it was REJECTED (a REJECT renames the needauth
+   back to its working name); triage scanned that file, found no mark (already painted over) -> verdict
+   clean; (2) `lw_clean_dispose.drive` passed the triage image to `build_cleanscan_cmds` instead of the
+   `_cleaninitial`, and `save-working --tool clean-scan` accepted any bytes - clean-scan is
+   ADR-009-ladder-exempt and verify-free BECAUSE it is a passthrough, so nothing gated it; (3) the skirt
+   damage itself: `lw_clean_iopaint.resolve_preset` gave a slug preset with region None (and any unknown
+   slug / region-less cluster) the namakx credit box (848,1122)-(1712,1430) = frame centre-bottom, and
+   the diff mask repainted 41.7 pct of it; the IOPAINT_TRIAGE "1 blue speck" note was read off that box,
+   never the real mark. (4) separate defect: `cmd_approve` handed `--actor` to the ADR-008 rail only;
+   `_complete_approve` wrote `actor=operator` to the manifest and PIPELINE_LOG for every
+   `tool:auto-approve` approval (all 287 dispose approvals on 08-22 read as operator; SUBMIT has no actor
+   field at all and always logs operator). FIX (TDD, 7 RED first in tests/test_lw_clean_rejected_reship.py):
+   `lw_pipeline.assert_clean_scan_passthrough` - save-working with a passthrough tool must be
+   byte-identical to the stage initial, else exit 3, fail closed with no initial; dispose `clean` registers
+   `cleanscan_source(slug)` (the `_cleaninitial`); `_complete_approve(actor=...)` records the real actor;
+   resolve_preset has NO default box (source "none" -> clean_slug returns manual), hriful preset measured
+   (0,1370)-(420,1440); two old tests that pinned the namakx fallback updated. lw_clean_pass.py was under
+   concurrent edit, so its fix (skip workings whose sha is in the manifest REJECT set) is a patch + test,
+   NOT applied: ops/loop/control/patch_lw_clean_pass_skip_rejected_workings.diff (git apply --check OK).
+   SWEEP (read-only, 517 slugs): manifest pass = APPROVE_CLEAN bytes != START_CLEAN initial under a
+   clean-scan save -> 14, every one an operator-REJECTED candidate (7 block-SDXL, 7 iopaint namakx-box);
+   pixel pass (|diff| > 8, components): 472 byte-identical, 45 changed = the 14 + 3 operator-select (08-17)
+   + 28 lama whose changed bbox matches their recorded mask bbox (not this class). REMEDIATION: each
+   rejected cleandone backup_put to 9.Image Backup (read back by hash, now `_cleandone.2.png` after
+   rotation; fantasy-design + fury-sona also needed their firstinitial preserved first), then
+   `reopen --to clean --yes`; read back 14/14 in 3.Cleaning Scratch with `_cleaninitial` == START_CLEAN
+   sha, `verify: ok (737)`. caitlyn = gate FP (in-art rifle ornament; SDXL had painted a blob) -> initial
+   registered as clean-scan + submitted to needauth for the OPERATOR (not approved). The other 13 ->
+   manual IOPaint lane (docs/HANDCLEAN_WORKLIST_2026-09-01.md section added): hriful's mark crosses a
+   mountain silhouette and the operator already rejected a LaMa erase of it (07-16), the namakx/pebano/
+   aivio/ryoairtist frames are busy-art lanes already rejected by every engine. No candidate generated,
+   nothing approved. Suite: 3872 passed, 20 skipped; ruff clean.
+
 267. DONE **2026-10-04 (research R2 / E-MIM-1: re-inpaint matched filter ACCEPTED; G2.text_residue_mf PROVEN 12/12; DRAEM fallback not needed).**
    MEASURED first (scratch, lw-clean venv, SimpleLama on cuda; RC-live gate of lw_gen_run honoured:
    CLEAR): stroke mask = the board's credit-line glyphs (`text_mask`) in the mark box, dilated 3 px,
