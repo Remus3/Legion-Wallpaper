@@ -27,6 +27,24 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+254. DONE **2026-10-04 (ops: promise watch over the Settled "Reverse if" entries, ingest P1-3 LW part).**
+   `tools/lw_promise_watch.py` + `tools/lw_promise_probes.py` + tracked `ops/promises.json`. All 20
+   CLAUDE.md Settled entries are covered (pinned by test): 9 watched as argv probes (ADR-001/003/007
+   superseded, CI Python pin moved, ci.yml paths filter added, RESTORATION_PLAN section 10 changed
+   (sha pinned), repo no longer public, LoL wiki Action API stopped answering, a FLEET-KIT note newer
+   than v4 in the inbox or the vendored kit moved), 11 listed as not machine-checkable with the
+   reason; plus one dated promise (C4 carrier target 2026-10-09 -> re-hash slots.py in every
+   carrier). Rules: argv only, never a shell, allowlisted executables; exit 0 = TRUE, exit 1 only
+   when the probe SAYS false (a Python crash also exits 1 - read as undecided); any undecided
+   promise fails the run with exit 2 while the rest are still evaluated; a true condition posts
+   ONCE per idempotency marker; a tracker closed by hand counts as said; manual runs are dry by
+   default. Wired into `tools/weekly_hygiene_run.ps1` (LW-WeeklyHygiene) after the HALT check with
+   `--post`, its rc logged, and the unattended pass told to list new posts and rc=2 lines in its
+   WAKEUP entry (PS 5.1 ParseFile: 0 errors). READ BACK: offline probes all false on this tree;
+   repo_not_public false and wiki_api_stopped_answering false live; fleet_kit_moved reads on the
+   live tree (see the hand-off). TDD: 19 tests (exactly-once across three runs, marker, closed
+   tracker, undecided -> exit 2, dry run, string argv refused, date kind); mutation-proven 5/5.
+
 253. DONE **2026-10-04 (docs: failure catalogues for cleaning lane, first pass, source recovery, ingest P2-8).**
    Each tool's skill doc now ends with "## Failure catalogue" (symptom | cause | how it was caught |
    fix | LEDGER): `.claude/commands/cleaning-pass.md` 12 rows, `first-pass.md` 10, `intake.md`
