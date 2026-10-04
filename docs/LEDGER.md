@@ -27,6 +27,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+263. DONE **2026-10-04 (research R1 / E-BAND-1: CAMBI banding arm ACCEPTED; G1.cambi_delta PROVEN 12/12; commit in this push).**
+   MEASURED first (no product code): CAMBI via local ffmpeg 8.1.1 libvmaf, feature
+   `name=cambi\:max_log_contrast=N` single-quoted inside the filtergraph (unquoted errors), frame piped as
+   rgb24 -> yuv420p, on the 12 golden outputs (2560x1440) clean vs the board's posterize_8
+   (`lw_gate_board.fault_posterize`, BAND_STEP 8). Output-only mlc=5: banded > clean 12/12, one absolute
+   bar 11/12 (dfz5w2g banded 3.00 < other frames' clean up to 4.90). Default mlc=2: 7/12 ranked, bar 3/12
+   (reproduces band_delta's blindness). Delta vs the source Lanczos-resized to the output size, mlc=5:
+   clean -0.51..1.21, banded 3.00..14.17 -> 12/12 with margin. Accept criterion (>= 10/12) MET.
+   SHIPPED (TDD, tests/test_g1_cambi.py RED on missing API first): `lw_g1_gate.cambi_score` /
+   `cambi_delta` (None + logs/ line when ffmpeg absent or failing - degraded, no raw error surfaced;
+   CREATE_NO_WINDOW; temp-dir cwd so no drive colon enters the filtergraph), live table
+   `cambi_delta: {flag: 2.0}` + `_METRIC_RULES` flag_over, board row G1.cambi_delta (fault posterize_8).
+   DECISION: a NEW row beside band_delta, not a swap inside it. Alternatives: (a) replace banding_delta's
+   implementation - changes a live arm's meaning under its old name and its 0.05 bar; (b) delete
+   band_delta from the live gate now - removes the only live banding flag before CAMBI is computed live.
+   Chosen: add cambi_delta, keep band_delta pinned (ack clears_when rewritten: retire band_delta when
+   cambi_delta is computed in the live first pass, ROADMAP R1b). Re-prove `prove --golden --env all`:
+   G1.cambi_delta PROVEN 12/12, other rows unchanged (band_delta 0/12, lpips 11/12, seam 3/12,
+   text_residue 0/12); drift_guard 0 breaches. Live census: 131 current `_firstneedauth` frames vs their
+   `_firstinitial` sources - 0 flagged (max 1.74, median 0.00). Cost ~2.6 s CPU per frame.
+
 262. DONE **2026-10-04 (C4 round closed; held commits pushed; MoE/MIM/ExPLoRA research filed as R1-R6).**
    READ BACK, not run-and-assumed: ops/loop/slots.py sha256 prefix 290cbf80 / 11426 B on disk AND at HEAD in
    LW, RSC, RC, CS, SS (LL carries none); drift_guard 0 breaches; done_gate bind GREEN (ruff 0, pytest 0,

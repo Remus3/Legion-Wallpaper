@@ -646,7 +646,8 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 ## Open items - High priority
 
 - **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
-  - TODO R1 CAMBI mlc=5 on the 12 golden pairs at 2560x1440 (ffmpeg 8.1.1, CPU, ~0.5 d); accept = separates banded vs clean on >= 10/12, then re-prove G1.band_delta.
+  - DONE R1 CAMBI mlc=5 (LEDGER 263): ACCEPTED. Output-only mlc=5 ranks posterize_8 above clean 12/12 (one absolute bar 11/12); default mlc=2 7/12 (bar 3/12). Shipped as the delta vs the source resized to output size: clean max 1.21, banded min 3.00 -> new row G1.cambi_delta (flag > 2.0) PROVEN 12/12; live needauth census 0/131 flagged (max 1.74).
+  - TODO R1b wire `lw_g1_gate.cambi_delta` into the live first pass (`lw_first_pass.compute_numpy_metrics` / `assemble_metrics`, +~2.6 s/frame, None when ffmpeg absent), then retire the blind band_delta arm and its ack entry together.
   - TODO R2 re-inpaint matched filter for G2.text_residue (LaMa on dilated stroke mask vs random-offset null, ~1-2 d); fallback DRAEM-style detector trained on synthetic faint text.
   - TODO R3 contour-normal seam step for G2.seam, calibrated on the 26 real clean pairs (~0.5 d, numpy).
   - TODO R4 anime-lama vs LaMa blind A/B on approved-_01 slugs (engine REPLACE, ADR-009); operator judges.
