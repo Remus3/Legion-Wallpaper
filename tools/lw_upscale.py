@@ -222,6 +222,13 @@ USM_MIN_THRESHOLD = 0
 # a non-16:9 upscale into a 16:9 frame).
 ASPECT_TOL = 0.02
 
+# Spandrel tiling. The calibrated values and their evidence (peak VRAM per tile
+# on this card) live in config/profiles/gpu-rtx5070-12g.json (P2-7); a test
+# pins profile == these defaults, because moving the tile changes output bytes
+# and needs a golden regress first.
+DEFAULT_TILE = 512
+DEFAULT_OVERLAP = 32
+
 # Default ncnn fallback executable location on the Legion machine.
 NCNN_EXE_DEFAULT = r"C:\Tools\realesrgan\realesrgan-ncnn-vulkan.exe"
 
@@ -336,7 +343,7 @@ def _finish(upscaled_img, target=TARGET, usm=USM_DEFAULT):
     return img
 
 
-def _tile_infer(net, img_tensor, tile=512, overlap=32, scale=4):
+def _tile_infer(net, img_tensor, tile=DEFAULT_TILE, overlap=DEFAULT_OVERLAP, scale=4):
     """Run `net` over `img_tensor` in overlapping tiles and stitch a 4x result.
 
     Built for the 12GB VRAM ceiling: the full image never hits the net at once.
@@ -417,7 +424,8 @@ def _to_pil(tensor):
     return Image.fromarray(arr, mode="RGB")
 
 
-def upscale_spandrel(src_path, model_path, tile=512, overlap=32, device="cuda"):
+def upscale_spandrel(src_path, model_path, tile=DEFAULT_TILE, overlap=DEFAULT_OVERLAP,
+                     device="cuda"):
     """Load a spandrel model and produce the raw 4x upscale of src_path.
 
     Returns (raw_4x_pil_image, meta_dict). The returned image is the raw AI
@@ -540,6 +548,30 @@ def upscale_ncnn(
     return raw, meta
 
 
+def measure_tile_peak(src_path, model_path, tiles, device="cuda"):
+    """Calibration probe for config/profiles (P2-7): peak VRAM and seconds of
+    one spandrel upscale per tile size. Each measurement runs under ONE GPU
+    hold (re-entrant with upscale_spandrel's own hold, same thread), so the
+    stats reset and read are serialized with the work they measure."""
+    import torch
+    rows = []
+    for t in tiles:
+        with gpu_lock(device):
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats()
+            t0 = time.time()
+            try:
+                upscale_spandrel(src_path, model_path, tile=int(t), overlap=DEFAULT_OVERLAP,
+                                 device=device)
+                rows.append({"tile": int(t), "ok": True,
+                             "peak_mib": round(torch.cuda.max_memory_allocated() / 2 ** 20),
+                             "seconds": round(time.time() - t0, 2)})
+            except Exception as exc:  # noqa: BLE001 - an OOM is a measurement, recorded
+                rows.append({"tile": int(t), "ok": False, "error": exc.__class__.__name__})
+            torch.cuda.empty_cache()
+    return rows
+
+
 def first_pass(
     src_path,
     out_path,
@@ -547,8 +579,8 @@ def first_pass(
     model_path=None,
     target=TARGET,
     usm=USM_DEFAULT,
-    tile=512,
-    overlap=32,
+    tile=DEFAULT_TILE,
+    overlap=DEFAULT_OVERLAP,
 ):
     """Orchestrate one first-pass upscale and write the finished PNG atomically.
 

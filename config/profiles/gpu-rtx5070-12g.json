@@ -1,0 +1,10 @@
+{
+ "kind": "gpu",
+ "name": "rtx5070-12g",
+ "match": {"gpu_name_contains": "RTX 5070", "vram_mib_min": 11000},
+ "values": {
+  "upscale_tile": {"value": 512, "evidence": "measured 2026-10-04 by `lw_profiles.py calibrate-gpu` on NVIDIA GeForce RTX 5070 (12227 MiB), IJN V3 detail DAT2, golden input dgk8f8n 1920x1080: tile 256 peak 1726 MiB 135.6 s (first call, includes warm-up); 384 peak 3029 MiB 67.6 s; 512 peak 4855 MiB 67.5 s; 768 OutOfMemoryError. 512 = largest tile that fits, no slower than 384, ~7.2 GB headroom for the shared card."},
+  "upscale_overlap": {"value": 32, "evidence": "not re-measured 2026-10-04: overlap 32 px is the value every frozen golden baseline was produced with (lw_upscale DEFAULT_OVERLAP); changing it changes output bytes and needs a golden regress first."}
+ },
+ "procedure": "python tools/lw_profiles.py calibrate-gpu --src <golden input> --model tools/models/4x_IllustrationJaNai_V3detail_DAT2_28k_bf16.safetensors [--python <.venv-upscale python>]; record peak_mib and seconds per tile as evidence; keep the value the golden set was frozen with unless a golden regress passes on the new one."
+}

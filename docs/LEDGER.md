@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+255. DONE **2026-10-04 (gpu: calibration profiles as data with evidence, ingest P2-7).**
+   `tools/lw_profiles.py` + `config/profiles/gpu-rtx5070-12g.json`: machine-dependent numbers live
+   in profiles matched by probed environment (nvidia-smi name + VRAM, closed set of match keys, an
+   unprobed machine never matches); every value must carry an evidence string (load refuses one
+   without); each profile names its re-measure procedure. `lw_upscale` gained DEFAULT_TILE /
+   DEFAULT_OVERLAP (the definition site; same 512 / 32, no output change) and `measure_tile_peak`
+   (one GPU hold per tile, registered in the mutex wiring test). Calibration READ BACK on this
+   RTX 5070 (12227 MiB), IJN V3 DAT2, golden input dgk8f8n: tile 256 1726 MiB / 135.6 s (first
+   call), 384 3029 MiB / 67.6 s, 512 4855 MiB / 67.5 s, 768 OutOfMemoryError - 512 confirmed as the
+   largest tile that fits with ~7.2 GB headroom. A test pins profile == code default: moving the
+   tile changes output bytes and needs a golden regress first. AHK bridge timings (the other half
+   of the directive's example) belong to the ops lane's P1-6 bridge work and were left to it.
+   TDD: 9 tests; mutation-proven 4/4.
+
 254. DONE **2026-10-04 (ops: promise watch over the Settled "Reverse if" entries, ingest P1-3 LW part).**
    `tools/lw_promise_watch.py` + `tools/lw_promise_probes.py` + tracked `ops/promises.json`. All 20
    CLAUDE.md Settled entries are covered (pinned by test): 9 watched as argv probes (ADR-001/003/007
