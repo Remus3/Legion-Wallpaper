@@ -645,6 +645,8 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
+
 - **STALE PROSE: two tracked docs still say the headless lanes are "Ready", and
   the responder task is `Disabled` (measured 2026-09-21, LEDGER 223).** Neither
   was touched by `41efc7c` and both were found by grepping LW's own prose for the
