@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://repository-images.githubusercontent.com/1319743764/80e66398-958f-4624-93ce-f2c9de739f0c" width="100%" alt="Legion Wallpaper banner - staged, self-auditing AI image restoration pipeline">
+
 # Legion Wallpaper
 
 **An AI image restoration pipeline - staged, self-auditing, gate-ladder verified - and the multi-agent Claude Code orchestration system that builds it.**
