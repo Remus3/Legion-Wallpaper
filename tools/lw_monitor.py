@@ -60,6 +60,8 @@ PAGE_PATH = ROOT / "web" / "monitor.html"
 REVIEW_PAGE_PATH = ROOT / "web" / "review.html"   # spatial review bench (P1-2)
 REVIEW_ROOT = ROOT / "ops" / "runtime" / "review"
 REVIEW_BODY_MAX = 65536
+AB_ROOT = ROOT / "ops" / "runtime" / "ab_r4"   # R4 blind A/B (tools/lw_ab_r4.py)
+AB_PAGE_PATH = ROOT / "web" / "ab_r4.html"
 DEFAULT_IMAGE_ROOTS = [ROOT / "images"]
 MONITOR_LOG = ROOT / "logs" / "lw_monitor.log"
 
@@ -516,8 +518,11 @@ def make_thumb(resolved):
 class MonitorServer(LWServer):
     def __init__(self, addr, handler, *, state_path=STATE_PATH, log_path=LOG_PATH,
                  page_path=PAGE_PATH, image_roots=None, cache=None,
-                 review_root=REVIEW_ROOT, review_page=REVIEW_PAGE_PATH):
+                 review_root=REVIEW_ROOT, review_page=REVIEW_PAGE_PATH,
+                 ab_root=AB_ROOT, ab_page=AB_PAGE_PATH):
         super().__init__(addr, handler)
+        self.ab_root = Path(ab_root)
+        self.ab_page = Path(ab_page)
         self.review_root = Path(review_root)
         self.review_page = Path(review_page)
         self.state_path = Path(state_path)
@@ -547,6 +552,9 @@ class Handler(BaseLWHandler):
                 return
             if path == "/review" or path.startswith("/api/review/"):
                 self._review_get(path, query)
+                return
+            if path == "/ab" or path.startswith("/api/ab/"):
+                self._ab_get(path, query)
                 return
             if path == "/api/pipeline":
                 view = build_pipeline_view(srv.state_path, cache=srv.view_cache)
@@ -580,6 +588,9 @@ class Handler(BaseLWHandler):
                 return
         if method == "POST" and path.startswith("/api/review/"):
             self._review_post(path)
+            return
+        if method == "POST" and path.startswith("/api/ab/"):
+            self._ab_post(path)
             return
         if method == "POST" and path == "/api/shutdown":
             self._send_json(200, {"ok": True})
@@ -688,6 +699,57 @@ class Handler(BaseLWHandler):
                 self._send_json(200, {"ok": True, "state": t["state"]})
                 return
         except rt.ReviewError as exc:
+            self._send_json(400, {"ok": False, "error": str(exc)})
+            return
+        self._send_json(404, {"ok": False, "error": "not found"})
+
+    # ------------------------------------------------ R4 blind A/B (ADR-009)
+    # The page sees slug order, crops and SIDE-only votes. The key (which
+    # engine is on which side) and the tally are never served: the tally is
+    # `python tools/lw_ab_r4.py tally`, and it refuses until the operator has
+    # pressed Finish. Same loopback + JSON-content-type write rules as review.
+
+    def _ab_get(self, path, query):
+        import lw_ab_r4 as ab
+        srv = self.server
+        if path == "/ab":
+            try:
+                body = srv.ab_page.read_bytes()
+            except OSError:
+                self._send_json(404, {"ok": False, "error": "A/B page missing"})
+                return
+            self._send(200, body, "text/html; charset=utf-8", {"Cache-Control": "no-store"})
+            return
+        if path == "/api/ab/items":
+            self._send_json(200, dict(ab.items_view(srv.ab_root), ok=True),
+                            {"Cache-Control": "no-store"})
+            return
+        if path == "/api/ab/img":
+            p = ab.image_path(srv.ab_root, (query.get("slug") or [""])[0],
+                              (query.get("name") or [""])[0])
+            if p is None:
+                self._send_json(404, {"ok": False, "error": "no such crop"})
+                return
+            self._send(200, p.read_bytes(), "image/png", {"Cache-Control": "no-store"})
+            return
+        self._send_json(404, {"ok": False, "error": "not found"})
+
+    def _ab_post(self, path):
+        import lw_ab_r4 as ab
+        srv = self.server
+        body = self._review_body()
+        if body is None:
+            return
+        try:
+            if path == "/api/ab/vote":
+                v = ab.record_vote(srv.ab_root, body.get("slug"), body.get("choice"))
+                self._send_json(200, {"ok": True, "voted": len(v["votes"])})
+                return
+            if path == "/api/ab/finish":
+                ab.finish(srv.ab_root)
+                self._send_json(200, {"ok": True, "finished": True})
+                return
+        except ab.ABError as exc:
             self._send_json(400, {"ok": False, "error": str(exc)})
             return
         self._send_json(404, {"ok": False, "error": "not found"})
