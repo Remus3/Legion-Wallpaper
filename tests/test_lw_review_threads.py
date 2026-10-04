@@ -146,3 +146,18 @@ def test_traversal_slugs_are_refused_by_name(tmp_path):
     for bad in ("..", "../x", "a/b", "a\b", "", ".hidden"):
         with pytest.raises(RT.ReviewError, match="bad slug"):
             RT.load(bad, "m20261004T000000-abcdef", tmp_path)
+
+
+def test_seed_mask_unions_promoted_marks_for_the_cleaning_lane(tmp_path):
+    root, path, _ = _img(tmp_path)
+    review = tmp_path / "review"
+    a = _mark(tmp_path, review, root)
+    b = RT.submit("ahri", [30, 30], 5, "veil", {"x0": 0, "y0": 0, "x1": 60, "y1": 60},
+                  review_root=review, images_root=root)
+    RT.promote("ahri", a["id"], review)
+    RT.promote("ahri", b["id"], review)
+    out = RT.seed_mask("ahri", review, tmp_path / "clean")
+    m = np.asarray(Image.open(out["mask"]))
+    assert m.shape == (144, 256) and m[60, 100] == 255 and m[30, 30] == 255 and m[0, 255] == 0
+    assert sorted(out["from_marks"]) == sorted([a["id"], b["id"]])
+    assert path.read_bytes() == path.read_bytes()  # the artifact is never edited
