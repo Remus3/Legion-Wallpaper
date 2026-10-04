@@ -85,7 +85,7 @@ function say(t) { document.getElementById("msg").textContent = t || ""; }
 
 function render() {
   var n = state.items.length;
-  var voted = Object.keys(state.votes).length;
+  var voted = state.items.filter(function (it) { return it.slug in state.votes; }).length;
   document.getElementById("progress").textContent =
     (n ? (state.i + 1) + " / " + n : "0 / 0") + "  |  voted " + voted + " / " + n +
     (state.finished ? "  |  FINISHED" : "");
@@ -117,10 +117,14 @@ function post(path, body) {
     .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); });
 }
 
+var busy = false;
 function vote(choice) {
-  if (state.finished || !state.items.length) { return; }
+  if (busy || state.finished || !state.items.length) { return; }
+  busy = true;
+  if (document.activeElement) { document.activeElement.blur(); }
   var slug = state.items[state.i].slug;
-  post("/api/ab/vote", { slug: slug, choice: choice }).then(function (res) {
+  post("/api/ab/vote", { slug: slug, choice: choice }).finally(function () { busy = false; })
+  .then(function (res) {
     if (!res.ok) { say(res.j.error || "vote refused"); return; }
     state.votes[slug] = choice;
     say("");
@@ -163,6 +167,8 @@ document.getElementById("finish").addEventListener("click", function () {
   }).catch(function () { say("Could not reach the monitor."); });
 });
 document.addEventListener("keydown", function (e) {
+  if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) { return; }
+  if (e.key === "Enter" && e.target.tagName === "BUTTON") { return; }
   if (e.key === "1") { vote("left"); }
   else if (e.key === "2") { vote("same"); }
   else if (e.key === "3") { vote("right"); }
