@@ -388,6 +388,20 @@ def check_gate_proofs() -> None:
         notes.append(f"GATE BOARD: {msg}")
 
 
+def check_failure_catalogues() -> None:
+    """Every major tool's skill doc ends with a failure catalogue whose rows
+    cite real LEDGER items (P2-8; tools/lw_failure_catalogue.py). The tables
+    live in the tool docs, never in CLAUDE.md."""
+    try:
+        import lw_failure_catalogue
+        found = lw_failure_catalogue.check()
+    except Exception as exc:  # noqa: BLE001 - reported as a breach, never swallowed
+        warn(f"FAILURE CATALOGUE: check crashed ({exc.__class__.__name__}: {exc})")
+        return
+    for msg in found:
+        warn(f"FAILURE CATALOGUE: {msg}")
+
+
 def check_cited_shas() -> None:
     """SHAs cited in staged docs must resolve (worktree-slice SHAs often do not)."""
     r = subprocess.run(
@@ -704,6 +718,7 @@ def main() -> int:
     check_tracked_but_ignored()
     check_model_pins()
     check_gate_proofs()
+    check_failure_catalogues()
     check_cited_shas()
     check_git_hooks()
     check_shared_loop_files()

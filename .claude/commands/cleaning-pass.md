@@ -70,3 +70,22 @@ Any helper script authored here that spawns subprocesses MUST pass `creationflag
 ```
 LW CLEANING | scanned=<n> clean=<c> inpainted=<i> qa-queued=<q> gate-fail=<f> | submitted=<k> | next: approve/reject via lw_pipeline
 ```
+
+## Failure catalogue
+
+Every rule above traces to a real failure. Each row cites the LEDGER item that recorded it; `drift_guard` checks this table exists and that every cited item is real (`tools/lw_failure_catalogue.py`). Add a row when a new failure teaches a rule.
+
+| Symptom | Cause | How it was caught | Fix | LEDGER |
+|---|---|---|---|---|
+| Operator rejected the LaMa erase and the block-SDXL fill. | LaMa blurs a content-bearing mark; a dilated-box SDXL mask regenerates too much and leaves a hard seam. | Operator review of the 21 auto-cleaned slugs. | Both recorded as Do-not-redo; the work moved to mask-quality R&D. | LEDGER 27 |
+| Art with a stray "@" glyph went to auto-clean. | A bare "@" sat in both watermark token lists, so a lone OCR glyph counted as a handle. | Live detection on staged originals, using the real OCR strings. | Removed bare "@"; a handle now needs "@" plus 2 or more characters (_HANDLE_RE). | LEDGER 28 |
+| A dark-edge ghost survived the inpaint. | The mask covered the white fill but not the mark's dark outline. | Emulating the operator's piece-by-piece IOPaint edits in a scratch probe. | lw_clean_iopaint builds a complete mask that includes the dark outline; pure Dekel algebra parked as capped. | LEDGER 29, 30 |
+| Retry attempt 2 never beat attempt 1. | _auto_inpaint built mask and base once, so attempt 2 recomputed identical pixels. | lw_clean_retry_probe compared workings by sha256, not by filename. | max_attempts cut from 2 to 1 and pinned by a RED-first test. | LEDGER 90 |
+| A suite run deleted 91 of Pillow's 103 files in the lw-clean venv. | ultralytics AUTOINSTALL ran pip install pi-heif on corrupt bytes, replacing Pillow. | Subprocess logger tracing, after it first looked like antivirus damage. | YOLO_AUTOINSTALL=false in conftest and lw_clean_pass; venv rebuilt from a freeze. | LEDGER 90 |
+| One overlay frame never cleared under either lane. | best_shift registered translation only; the mark arrived at 1.12x scale. | A template-scale sweep over every flagged slug. | best_registration adds scale for removal only; the gate is left unscaled. | LEDGER 99 |
+| Region-lane masks covered a median 47.6% of the ROI and blurred whole crops. | The 25% coverage refusal only ran inside an `if faint and` branch. | Operator rejected all 87 automated candidates. | Coverage guard applied to every lane and shared with stale-candidate deletion. | LEDGER 123 |
+| The claim of zero detector false positives was overturned. | In-art text (a jersey name, a lore line, a motto) was flagged as a watermark. | Four operator review rounds on the held queue. | 7 slugs approved unedited; detection became the named open problem. | LEDGER 91, 123 |
+| The credit-line fill flattened artwork inside the mask. | glyph_mask took the top high-pass slice, which on busy art is the art's own sharpest pixels. | A vision pass followed by per-blob damage measurement. | escaped_ink() removes ink that continues outside the box; the mask can only shrink. | LEDGER 139 |
+| A globally filtered hand-clean passed save-working silently. | save-working ran no image check, and every cleaning check was masked or local. | A dry run on slug 259f (halo 0.3897) returned rc=0. | A G1 numpy GLOBAL_FILTER flag at save-working; it flags and never rejects. | LEDGER 135 |
+| A localized change outside the mask passed G2 verify. | The outside-identity arm was two frame means (ssim, mad), blind to one changed block. | The fault-proven gate board planted a 32x32 block: BROKEN 0/12. | Strict arm outside_max_abs == 0 (the composite is byte-identical outside the mask). | LEDGER 244 |
+| A crashed residue probe read as "no residue". | `except Exception: residue = False` in the live verify. | Gate board review of the residue row. | probe_residue returns (None, ExcType); verify flags residue_probe_error. | LEDGER 244 |

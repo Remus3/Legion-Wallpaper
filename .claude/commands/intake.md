@@ -60,3 +60,19 @@ For every image: record in its `manifest.json` (via the lw_pipeline manifest pat
 ```
 LW INTAKE | new=<n> intaken=<k> skipped=<s> | src: t0=<a> t1=<b> t2=<c> manual=<d> | anomalies=<x> | next: /first-pass
 ```
+
+## Failure catalogue
+
+Every rule above traces to a real failure. Each row cites the LEDGER item that recorded it; `drift_guard` checks this table exists and that every cited item is real (`tools/lw_failure_catalogue.py`). Add a row when a new failure teaches a rule.
+
+| Symptom | Cause | How it was caught | Fix | LEDGER |
+|---|---|---|---|---|
+| Tier 1 liveness checks started returning 404. | DeviantArt oEmbed stopped accepting the /deviation/<id> redirect form. | A live failure during the campaign run on 170 targets. | parse_artist() builds the canonical artist URL; the fetch stays on gallery-dl. | LEDGER 8 |
+| A live deviation read as dead. | _ARTIST_RE assumes no underscore in a username, and the token-uuid shape has no artist at all. | Compared against a gallery-dl fetch of the same file seconds later. | Filed: treat a non-200 oEmbed as inconclusive and let the fetch decide. | LEDGER 59 |
+| Memory said quota-free recovery "buys little". | A rule of thumb that had never been measured. | 8 of 20 gained pixels, one 1159x689 to 1920x1142. | Memory corrected; recovery now runs inline at every intake. | LEDGER 59 |
+| Wiki HD counts and one champion's absence were wrong. | ailimit=500 is a cap, not a count, and Velkoz needs the title spelled Vel'Koz. | A third probe round run to kill both claims. | Follow aicontinue; earlier numbers are reported as lower bounds. | LEDGER 72 |
+| A re-downloaded twin passed intake. | unique_slug compared bytes against only one colliding candidate. | Matching pHash and dHash at Hamming 0 on academy-ahri. | Near-dup gate against all backups through lw_recover.consensus_match. | LEDGER 142 |
+| An original=true fetch returned the same watermarked file. | Artists disabled downloads; gallery-dl -j reports is_downloadable false. | A control fetch was byte-identical by sha256. | Check is_downloadable first; that route is recorded as do-not-retry. | LEDGER 143 |
+| 8 of 23 intaken slugs were lost to the DA preview watermark. | The quota-free intermediary route serves watermarked previews. | Cropped detector boxes showed the same credit band across artists. | Operator dropped all 8; weigh that loss rate before the next intake. | LEDGER 143 |
+| gallery_dl_fetch reported fetched when nothing had landed. | Status came from returncode alone, and gallery-dl exits 0 when it writes nothing. | Checking the tool's claim against the disk. | A recursive file count under dest_dir; zero files reports fetch_empty. | LEDGER 204 |
+| Recovery evidence never reached the shareable manifest. | Tier and fetch outcome lived only in the gitignored matches.json. | Reading the per-image chain while verifying the intake. | Passed through lw_pipeline annotate; the 17 existing manifests were backfilled. | LEDGER 204 |

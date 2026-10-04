@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+253. DONE **2026-10-04 (docs: failure catalogues for cleaning lane, first pass, source recovery, ingest P2-8).**
+   Each tool's skill doc now ends with "## Failure catalogue" (symptom | cause | how it was caught |
+   fix | LEDGER): `.claude/commands/cleaning-pass.md` 12 rows, `first-pass.md` 10, `intake.md`
+   (source-recovery waterfall) 9. Every row is a real failure drafted from LEDGER by a read-only
+   sub-agent that re-read each cited entry; the gate board's two fixes and band_delta finding
+   (LEDGER 244) were added. `tools/lw_failure_catalogue.py` + drift_guard
+   `check_failure_catalogues`: breach when a catalogue is missing, malformed, under 5 rows, or a
+   row cites no LEDGER item or one that does not exist. CLAUDE.md unchanged (pinned by test).
+   READ BACK: `lw_failure_catalogue.check()` returns [] on the tracked docs. TDD: 8 tests RED
+   first; mutation-proven 4/4 arms (plant, red, restore byte-exact by sha256, green).
+
 252. DONE **2026-10-04 (review: spatial review bench - marks on the image become threads, ingest P1-2).**
    `tools/lw_review_threads.py` + monitor routes (`/review`, `/api/review/{image,threads,shot}`,
    POST `/api/review/{mark,publish,followup}`) + `web/review.html`. A mark = point + radius + words
