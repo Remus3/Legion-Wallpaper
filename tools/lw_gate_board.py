@@ -855,6 +855,15 @@ def _j_seam(value, subject):
     return "seam" not in _cp().verify_verdict(1.0, 0.0, 0.0, False, value)["flags"]
 
 
+def _m_seam_step(subject):
+    return _cp().seam_step(subject["after"], subject["mask"])
+
+
+def _j_seam_step(value, subject):
+    v = _cp().verify_verdict(1.0, 0.0, 0.0, False, 1.0, seam_step=value)
+    return "seam_step" not in v["flags"]
+
+
 _READER = {}
 
 
@@ -925,6 +934,11 @@ FAULT_EVIDENCE = {
     "G2.seam": ("fill offset +24 levels against its ring",
                 "a hard seam: 24 levels is twice the operator's median per-step "
                 "edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS)"),
+    "G2.seam_step": ("fill offset +24 levels against its ring",
+                     "same fault as G2.seam; research R3 measured the contour-normal "
+                     "step golden clean max 2.36 vs seam_offset_24lv min 21.64, and "
+                     "26 real LaMa clean pairs max 2.06 (offset copies min 14.35) "
+                     "(LEDGER 264)"),
     "G2.text_residue": ("credit line at +4 luma levels over the fill",
                         "faintest real residue the operator's eye rejected: 105-cleanup "
                         "hand-clean step 70 median 3.77 levels (n=733) and final step "
@@ -939,7 +953,8 @@ FAULT_NAME = {
     "G1.cambi_delta": "posterize_8",
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
-    "G2.seam": "seam_offset_24lv", "G2.text_residue": "credit_line_4lv",
+    "G2.seam": "seam_offset_24lv", "G2.seam_step": "seam_offset_24lv",
+    "G2.text_residue": "credit_line_4lv",
 }
 
 
@@ -1051,6 +1066,11 @@ def lw_board(envs=ENVS) -> Board:
             _m_seam, Bar("at_least", lo=lambda: _cp().SEAM_SSIM_MIN),
             unit="ssim ring", where="8px ring around the mask", judge=_j_seam,
             applies=lambda s: "mask" in s, gate="G2"),
+        on_after(lambda s: fault_seam(s["after"], s["mask"], SEAM_OFFSET)))
+    add(Row("G2.seam_step", "no visible seam at the edit boundary",
+            _m_seam_step, Bar("at_most", hi=lambda: _cp().SEAM_STEP_MAX),
+            unit="luma levels", where="1-3 px bands across the mask contour",
+            judge=_j_seam_step, applies=lambda s: "mask" in s, gate="G2"),
         on_after(lambda s: fault_seam(s["after"], s["mask"], SEAM_OFFSET)))
     add(Row("G2.text_residue", "zero watermark: no text left where the mark was",
             _m_residue, None, unit="text energy", where="the mark's box",

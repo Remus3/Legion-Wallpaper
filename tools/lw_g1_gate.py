@@ -200,6 +200,10 @@ DEFAULT_G1_THRESHOLDS: Dict[str, Dict[str, float]] = {
     # signal, so a >0 hard fail wrongly rejected the BETTER upscaler 8/10 on
     # ~0.004 noise. flag if > 0.05; real banding still routes to vision audit.
     # Revisit with a proper banding metric (BBAND, AUDIT_GATES 3.3) before hard-gating.
+    # R1b (LEDGER 265): the FIRST PASS no longer feeds band_delta (blind to
+    # output-scale banding after its common-scale downscale, G1.band_delta
+    # BROKEN 0/12; cambi_delta replaces it there). The rule stays because
+    # lw_clean_fr.clean_fr_audit gates band_delta at same scale, no resample.
     "band_delta": {"flag": 0.05},
     # cambi_delta: CAMBI (libvmaf, max_log_contrast=5) of the output at its
     # own 2560x1440 scale minus CAMBI of the source resized to that size
@@ -772,7 +776,7 @@ def _tri(kind: str, value, th: Dict[str, float]):
       'lower_better'  - lpips:  pass if <= th['pass'], fail if > th['fail'],
                         else flag.
       'floor'         - lap_ratio: fail if < th['fail'], else pass (no ceiling).
-      'flag_over'     - halo_pct, band_delta: flag if > th['flag'], else pass.
+      'flag_over'     - halo_pct, band_delta, cambi_delta: flag if > th['flag'].
       'fail_over'     - available (fail if > th['fail']); unused after the QA
                         Session 2 freeze demoted band_delta to flag-only.
     """

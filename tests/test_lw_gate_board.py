@@ -182,11 +182,26 @@ def _textured_frame():
             "backend": "ijn"}
 
 
+# verdict() rules the live first pass no longer feeds. band_delta stays a
+# verdict rule only because lw_clean_fr.clean_fr_audit gates it at same scale
+# (no common-scale resample there); its first-pass arm and board row were
+# retired in R1b (LEDGER 265). Adding a name here needs a LEDGER entry.
+NOT_FIRST_PASS_RULES = {"band_delta"}
+
+
 def test_registry_covers_every_live_g1_metric_rule():
+    import lw_first_pass
     import lw_g1_gate as G
     board = B.lw_board()
     names = {r.name for r in board.rows}
+    live = set(lw_first_pass.assemble_metrics(
+        {"ms_ssim": 1.0, "lpips": 0.0}, 1.0, 0.0, 0.0))
+    assert "band_delta" not in live
     for metric, _kind, _th in G._METRIC_RULES:
+        if metric in NOT_FIRST_PASS_RULES:
+            assert metric not in live
+            continue
+        assert metric in live, f"verdict rule {metric} is not fed by the first pass"
         assert f"G1.{metric}" in names, f"live G1 arm {metric} has no board row"
 
 
@@ -424,7 +439,20 @@ def test_g1_rows_measure_on_the_live_first_pass_basis(tmp_path):
     sp, op = tmp_path / "s.png", tmp_path / "o.png"
     Image.fromarray(subj["source_rgb"]).save(sp)
     Image.fromarray(subj["output_rgb"]).save(op)
-    lap, halo, band = lw_first_pass.compute_numpy_metrics(str(sp), str(op))
+    lap, halo, _band = lw_first_pass.compute_numpy_metrics(str(sp), str(op))
     assert B._g1_value("lap_ratio")(subj) == pytest.approx(lap, rel=1e-9)
     assert B._g1_value("halo_pct")(subj) == pytest.approx(halo, abs=1e-9)
-    assert B._g1_value("band_delta")(subj) == pytest.approx(band, abs=1e-9)
+
+
+def test_band_delta_arm_retired_with_its_ack_entry():
+    """R1b (LEDGER 265): the blind G1.band_delta row is gone from the board and
+    its acknowledgement left config/gate_board_ack.json in the same change;
+    G1.cambi_delta carries the banding fault."""
+    names = {r.name for r in B.lw_board().rows}
+    assert "G1.band_delta" not in names
+    assert "G1.cambi_delta" in names
+    ack = json.loads((Path(B.ROOT) / "config" / "gate_board_ack.json")
+                     .read_text(encoding="utf-8"))
+    assert all(e["row"] != "G1.band_delta" for e in ack["entries"])
+    with pytest.raises(KeyError):
+        B._g1_value("band_delta")

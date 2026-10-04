@@ -27,6 +27,30 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+264. DONE **2026-10-04 (research R3 / E-SEAM-1: contour-normal seam step ACCEPTED; G2.seam_step PROVEN 12/12; commit in this push).**
+   MEASURED first (scratch prototype, no product code): eight variants of a contour-normal step
+   (signed / abs median, mean, MAD-normalized, each also minus the spec's 8 px-shifted null) on
+   (a) the 12 golden G2 subjects (`lw_gate_board.g2_subject`, Coons fill) clean vs seam_offset_24lv,
+   (b) the 26 real LaMa clean pairs (same filter as `lw_stage_ledger.calibrate`; cleandone + the saved
+   `ops/runtime/clean/<slug>/<slug>_mask.png`, 0 changed pixels outside it, else the exact
+   changed-pixel set on 9 slugs), (c) those 26 offset +24, (d) the 37 of 41 recorded live verifies
+   with mask + candidate on disk. All eight: 12/12, 0/26 FP. Simplest = widest gap, shipped:
+   score = |median over 16 px contour cells of median(inner 1-3 px band) - median(outer 1-3 px
+   band)| in luma levels. Golden clean 0.01..2.36, offset 21.64..24.83; real clean 0.00..2.06,
+   real offset 14.35..; bar SEAM_STEP_MAX = 6.0 (~geometric middle of 2.36 / 14.35). The null added
+   no separation and was dropped. Live: 1/37 over the bar (spirit-blossom-ahri-mono-01, 6.28,
+   unreviewed) vs 22/37 under the ring-SSIM arm. Accept (>= 10/12, low real FP, one bar) MET.
+   SHIPPED (TDD, tests/test_g2_seam_step.py 9 RED on missing API first): `lw_clean_pass.seam_step`,
+   `SEAM_STEP_MAX`, `verify_verdict(..., seam_step=None)` flags "seam_step" only when a value is
+   passed (live verify unchanged), board row G2.seam_step (fault seam_offset_24lv) + mutant test
+   (bar loosened -> BROKEN). DECISION: a NEW row beside G2.seam, as LEDGER 263 did for cambi_delta.
+   Alternatives: (a) replace seam_ring_ssim under the G2.seam name - changes a live flag's meaning
+   and its 0.92 bar silently; (b) wire seam_step into live verify in the same slice - live semantic
+   change before the board re-proves. Chosen: add the row, keep G2.seam pinned (ack clears_when
+   rewritten: retire the ring-SSIM flag when seam_step is computed in live verify, ROADMAP R3b).
+   Re-prove `prove --golden --env all`: G2.seam_step PROVEN 12/12; G2.seam UNKNOWN 3/12, lpips
+   11/12, text_residue 0/12 unchanged.
+
 263. DONE **2026-10-04 (research R1 / E-BAND-1: CAMBI banding arm ACCEPTED; G1.cambi_delta PROVEN 12/12; commit in this push).**
    MEASURED first (no product code): CAMBI via local ffmpeg 8.1.1 libvmaf, feature
    `name=cambi\:max_log_contrast=N` single-quoted inside the filtergraph (unquoted errors), frame piped as

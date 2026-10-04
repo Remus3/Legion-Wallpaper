@@ -57,7 +57,7 @@
    ],
    "reason": "the seam arm is SSIM of the 8px ring OUTSIDE the mask vs its own blur, i.e. ring TEXTURE; on 9/12 golden frames a perfect fill already reads < 0.92 (live: 22 of 41 recorded verifies flagged seam). The live seam flag is mostly noise; give it no weight in review.",
    "ledger": 244,
-   "clears_when": "a seam measure calibrated on real clean pairs that passes the clean subject and fails seam_offset_24lv on 12/12",
+   "clears_when": "the ring-SSIM seam flag is retired from live verify once G2.seam_step (contour-normal step, PROVEN 12/12 under seam_offset_24lv, 0/26 FP on real LaMa clean pairs, LEDGER 264) is computed in live verify_verdict (ROADMAP R3b); the replacement measure exists, the live wiring does not yet",
    "adjudication": "2026-10-04 adjudicator Q3: carry forward as research"
   },
   {

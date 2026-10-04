@@ -421,17 +421,23 @@ def remap_fr(fr):
     return out
 
 
-def assemble_metrics(fr, lap_ratio, halo_pct, band_delta):
+def assemble_metrics(fr, lap_ratio, halo_pct, cambi_delta=None):
     """Build the verdict() input dict from FR results + numpy metrics.
 
     fr may carry 'ms_ssim' (remapped) or 'msssim'. Non-numeric FR values (the
     'ERR ...' strings fr_metrics records on a bad metric) are dropped so a
     single failed metric does not crash verdict; a dropped key is simply not
     gated (verdict skips missing keys).
+
+    cambi_delta is the banding arm (R1b, LEDGER 265); None (ffmpeg/libvmaf
+    absent) is recorded as None and verdict does not gate it. band_delta is NOT
+    a gated first-pass metric any more: it is blind to output-scale banding
+    (G1.band_delta BROKEN 0/12, LEDGER 244) and rides in the annotate payload's
+    info_metrics only.
     """
     remapped = remap_fr(fr)
     metrics = {"lap_ratio": lap_ratio, "halo_pct": halo_pct,
-               "band_delta": band_delta}
+               "cambi_delta": cambi_delta}
     for key in ("msssim", "lpips"):
         val = remapped.get(key)
         if isinstance(val, (int, float)):
@@ -446,7 +452,7 @@ def gate_metrics(metrics, backend):
     down, no AI upscale) has no upscale to sharpen, so the lap_ratio softness
     FLOOR is invalid there - it reads as arbitrary pass/fail by source content.
     Drop lap_ratio from the GATED set for backend "downscale-only"; keep msssim,
-    lpips (structure preservation) and halo_pct, band_delta (added artifacts).
+    lpips (structure preservation) and halo_pct, cambi_delta (added artifacts).
     The lap_ratio VALUE is still recorded in the manifest for provenance - it is
     just not gated on. Every other backend gates on the full set unchanged.
     """
@@ -558,6 +564,11 @@ def compute_numpy_metrics(source_path, out_path):
     Downscales the output to the source resolution (Image.LANCZOS) so both are
     at common scale, then laplacian_ratio, overshoot_halo(...)['halo_pct'],
     banding_delta. Returns (lap_ratio, halo_pct, band_delta).
+
+    band_delta is INFORMATIONAL (not gated in the first pass since R1b, LEDGER
+    264): the common-scale downscale smears output banding into ramps. It stays
+    in the tuple for lw_usm_halo_probe's census and the gate-board basis test.
+    The banding arm is compute_cambi_delta.
     """
     import numpy as np
     from PIL import Image
@@ -575,6 +586,31 @@ def compute_numpy_metrics(source_path, out_path):
     halo = overshoot_halo(src_a, out_a)["halo_pct"]
     band = banding_delta(src_a, out_a)
     return lap, halo, band
+
+
+def compute_cambi_delta(source_path, out_path):
+    """lw_g1_gate.cambi_delta with the output at its OWN scale, or None.
+
+    No common-scale downscale (that resample is what blinds band_delta); the
+    source is resized up to the output inside cambi_delta. ~2.6 s per frame.
+    ffmpeg/libvmaf absent or failing -> None, logged to the daily log by
+    lw_g1_gate (degraded mode; never a raw error on a user-facing surface).
+    """
+    import numpy as np
+    from PIL import Image
+
+    import lw_g1_gate
+
+    try:
+        with Image.open(source_path) as s:
+            src_a = np.asarray(s.convert("RGB"))
+        with Image.open(out_path) as o:
+            out_a = np.asarray(o.convert("RGB"))
+        return lw_g1_gate.cambi_delta(src_a, out_a)
+    except (OSError, ValueError, MemoryError) as exc:  # degraded, not fatal
+        lw_g1_gate._gpu_log(
+            f"cambi degraded (first pass): {exc.__class__.__name__}: {exc}")
+        return None
 
 
 # ==========================================================================
@@ -777,13 +813,17 @@ def process_slug(slug, source_urls, tmp_dir, dry_run=False, crop_sides=None):
     # G1 gate against the conditioned source (the real upscale input).
     fr = run_fr_metrics(up_out, conditioned)
     lap, halo, band = compute_numpy_metrics(conditioned, up_out)
-    metrics = assemble_metrics(fr, lap, halo, band)
+    cambi = compute_cambi_delta(conditioned, up_out)
+    metrics = assemble_metrics(fr, lap, halo, cambi)
     backend = audit.get("backend")
     # ADR-006: downscale-only drops the (invalid) lap_ratio floor from the gate.
     v = verdict(gate_metrics(metrics, backend), DEFAULT_G1_THRESHOLDS)
 
     annotate_payload = {
         "gate": "G1", "metrics": metrics, "fr_all": fr,
+        # Recorded, never gated: band_delta is blind to output-scale banding
+        # (LEDGER 244); kept for census continuity (LEDGER 265).
+        "info_metrics": {"band_delta": band},
         "backend": backend, "lap_ratio_gated": backend != "downscale-only",
         "verdict": v["verdict"], "reasons": v["reasons"],
         "source_choice": kind, "aspect_class": cls, "crop_box": box,

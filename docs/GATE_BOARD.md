@@ -44,6 +44,7 @@ wherever the golden set is on disk; on CI (no golden set) absence is a note.
 | G2.outside_identity | PROVEN | 12/12 | one 32x32 block +16 levels outside the mask |
 | G2.no_op | PROVEN | 12/12 | fill returned the input |
 | G2.seam | UNKNOWN | 3/12 | fill offset +24 levels |
+| G2.seam_step | PROVEN | 12/12 | fill offset +24 levels (added 2026-10-04, LEDGER 264) |
 | G2.text_residue | BROKEN | 0/12 | credit line at +4 luma levels |
 | V.reads_like_original | VALIDATION | - | operator only |
 | V.zero_watermark_eye | VALIDATION | - | operator only |
@@ -74,7 +75,12 @@ acknowledged (below), which is a record of a measured hole, not a pass.
    0.037 -> 0.059 vs a 0.12 bar). lap_ratio catches it there (1.514 -> 0.198).
 5. **G2.seam measures ring texture, not a seam.** A perfect fill reads < 0.92 on
    9/12 frames; live, 22 of 41 recorded verifies carry the flag. Treat the live
-   seam flag as noise until it is rebuilt. Research item.
+   seam flag as noise until it is rebuilt. REPLACEMENT PROVEN (R3, LEDGER
+   264): G2.seam_step = |median over 16 px contour cells of median(inner
+   1-3 px band) - median(outer 1-3 px band)|; golden clean max 2.36 vs
+   offset min 21.64, 26 real LaMa clean pairs max 2.06, bar 6.0 levels,
+   PROVEN 12/12; live 1/37 over the bar. Not yet computed in live verify
+   (R3b), so G2.seam stays pinned until that wiring retires it.
 6. **G2.text_residue fires on clean busy art and misses faint residue.** 7/12
    restored regions read as residue; on the other 5 the +4-level mark does not
    move it. Consistent with LEDGER 121. Research item (a new detector).
@@ -89,6 +95,7 @@ acknowledged (below), which is a record of a measured hole, not a pass.
 |---|---|---|
 | G2.text_residue | +4 luma levels toward white inside the glyphs | the faintest residue the operator's eye REJECTED in the hand-clean captures (`ops/runtime/clean/handedits/`): 105-cleanup step 70 median 3.77 levels (n=733, corr 0.86 with the remaining residue, 84 percent of pixels moving toward final) and its final step 4.5 levels (n=2813). As alpha that is ~0.018-0.026 for a white mark, ~0.06-0.075 for a dark one; the DA centre veil (alpha 0.09-0.13, CLEAN_VEIL_AMPLITUDE_2026-08-12) is ~5x stronger. 107-cleanup's 3.2-level steps were texture regeneration (corr 0.18-0.36), not residue, and were not used. |
 | G2.seam | +24 levels | twice the operator's median per-step edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS) |
+| G2.seam_step | +24 levels | same fault; clean max 2.36 (golden) / 2.06 (26 real pairs) vs offset min 14.35 |
 | G2.outside_identity | 32x32 block, +16 levels | a localized composite bug, far below what the mean arms can see |
 | G1.lap_ratio | down-up x2 | the historic double-resample softness bug (AUDIT_GATES 3.1) |
 | G1.halo_pct | USM r2 p150 t0 | a second USM at the `_clamp_usm` ceiling; the fallback upscaler measured 0.049-0.145 (QA Session 2) |
