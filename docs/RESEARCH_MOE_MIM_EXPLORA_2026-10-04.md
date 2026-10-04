@@ -266,7 +266,8 @@ SEAM_STEP_MAX = 6.0 (about the geometric middle of 2.36 and 14.35). The null
 added no separation and was dropped. Live: 1/37 flagged
 (spirit-blossom-ahri-mono-01 6.28, unreviewed) vs 22/37 under ring SSIM.
 Shipped as `lw_clean_pass.seam_step` + `verify_verdict(seam_step=...)` flag +
-board row G2.seam_step; the live verify does not compute it yet (R3b).
+board row G2.seam_step. LIVE since R3b (LEDGER 266): `_auto_inpaint` passes
+seam_step to verify_verdict; the ring-SSIM seam flag and G2.seam row are retired.
 
 ## 4. Family 3 - ExPLoRA and PEFT domain adaptation
 

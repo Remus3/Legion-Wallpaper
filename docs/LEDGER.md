@@ -27,6 +27,32 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+266. DONE **2026-10-04 (research R3b: G2.seam_step LIVE in the cleaning verify; ring-SSIM seam flag + G2.seam row + ack entry RETIRED together).**
+   SHIPPED (TDD; tests/test_g2_seam_step_live.py 5 RED first): `lw_clean_pass._auto_inpaint`
+   (tools/lw_clean_pass.py ~L1267-1278) computes `seam_step(out_arr, mask_bool)` and passes
+   `seam_step=` to `verify_verdict`; the value is recorded as `metrics.seam_step` in
+   `<slug>_verify.json` and the PASS line prints `[seam-step-flag]`. `verify_verdict` no longer
+   flags `seam` on seam_ssim < SEAM_SSIM_MIN; the seam_ssim parameter stays (call compatibility)
+   and the value stays in `metrics.seam_ssim` as an INFO field. Board: row G2.seam, `_m_seam` /
+   `_j_seam` / `_ring`, its FAULT_EVIDENCE / FAULT_NAME entries removed (G2.seam_step carries the
+   seam_offset_24lv evidence); config/gate_board_ack.json G2.seam entry removed (2 entries left:
+   G1.lpips, G2.text_residue). Old tests updated: test_lw_clean_pass seam flag test now asserts the
+   seam_step flag; test_g2_seam_step no longer expects the G2.seam row; the G2 coverage test lists
+   G2.seam_step.
+   CONSUMER SWEEP (grep seam_ssim / "seam" flag / SEAM_SSIM_MIN over tools, ops, tests, .claude):
+   lw_clean_retry_probe computes its OWN `seam_ring_ssim` per working (does not read verify.json) -
+   function and SEAM_SSIM_MIN kept; lw_pipeline only mentions seam_ssim in comments (ladder census,
+   global-filter tripwire); ladder/retry-default tests pin historical census numbers, not the flag;
+   no monitor / dashboard / review bench reads the `seam` flag. DECISION: keep seam_ssim as an info
+   metric (census continuity), drop only the flag. Alternatives: (a) delete seam_ring_ssim - breaks
+   the retry probe for no gain; (b) keep both flags - keeps a 22/37-noise flag live.
+   LIVE RE-SCORE (37 recorded verifies with mask + candidate on disk, shipped function): seam_step
+   flags 1/37 vs 22/37 under the retired arm. FLAG for operator review (not changed):
+   spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre, seam_step 6.28 > 6.0.
+   READ BACK: full tests/ 3853 passed, 20 skipped (exit 0). `prove --golden --env all`: no G2.seam
+   row; G2.seam_step PROVEN 12/12; NOT GREEN only on the acked G1.lpips 11/12 and
+   G2.text_residue 0/12.
+
 265. DONE **2026-10-04 (research R1b: G1.cambi_delta LIVE in the first pass; blind G1.band_delta row + ack entry RETIRED together).**
    SHIPPED (TDD; 14 tests RED first in tests/test_lw_first_pass.py + tests/test_lw_gate_board.py):
    `lw_first_pass.compute_cambi_delta(source, out)` loads both RGB at their OWN scale (no common-scale

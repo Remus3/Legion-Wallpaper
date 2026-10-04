@@ -155,7 +155,10 @@ MAD_MAX = 1.0                # outside mean-abs-diff ceiling, in 0..255 levels
 # are byte-identical by construction: ANY outside change is the bug.
 OUTSIDE_MAX_ABS = 0.0        # max per-channel |diff| allowed outside the mask
 CHANGE_SSIM_MAX = 0.90       # inside change must drop SSIM to <= this
-SEAM_SSIM_MIN = 0.92         # seam-ring floor; below -> FLAG (not discard)
+# Ring-SSIM seam floor. INFO ONLY since R3b (LEDGER 266): the ring arm reads
+# ring TEXTURE (22/37 live clean fills under it) and no longer flags; the value
+# is still recorded in verify.json metrics and lw_clean_retry_probe reads it.
+SEAM_SSIM_MIN = 0.92
 # Contour-normal seam step (research R3 / E-SEAM-1, LEDGER 264): |median over
 # 16 px contour cells of median(inner 1-3 px band) - median(outer 1-3 px band)|
 # in luma levels. Calibrated 2026-10-04: golden clean max 2.36, the 26 real
@@ -661,10 +664,12 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
          (hard: a pipeline bug, halt - never retry blindly).
       2. inside did not change (change_ssim > 0.90) -> FAIL (inpaint no-op).
       3. text residue detected inside the old bbox -> FAIL.
-      4. otherwise PASS, flagging the seam (seam_ssim < 0.92; seam_step >
-         SEAM_STEP_MAX when a step was measured) and an unknown
-         residue (text_residue None: the probe crashed) for a QA/vision look
-         without discarding.
+      4. otherwise PASS, flagging the seam (seam_step > SEAM_STEP_MAX when a
+         step was measured) and an unknown residue (text_residue None: the
+         probe crashed) for a QA/vision look without discarding.
+
+    seam_ssim (ring SSIM) is kept for call compatibility and is INFO ONLY:
+    its "seam" flag was retired in R3b (LEDGER 266) - it reads ring texture.
     """
     reasons = []
     flags = []
@@ -686,11 +691,9 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
     if text_residue is None:
         # the probe crashed: UNKNOWN, never clean (gate board, 2026-10-04)
         flags.append("residue_probe_error")
-    if seam_ssim < SEAM_SSIM_MIN:
-        flags.append("seam")
     if seam_step is not None and seam_step > SEAM_STEP_MAX:
-        # contour-normal step (R3); None = not computed -> no flag (live path
-        # does not compute it yet, ROADMAP R3b)
+        # contour-normal step (R3, LEDGER 264); live since R3b (LEDGER 266).
+        # None = not computed -> no flag.
         flags.append("seam_step")
     return {"verdict": "pass", "reasons": [], "flags": flags}
 
@@ -1261,14 +1264,16 @@ def _auto_inpaint(slug, image_path, boxes, w, h, out_dir, max_attempts,
             if residue_err:
                 print(f"LW CLEAN {slug}: residue probe error {residue_err} "
                       "- flagged, not read as clean")
-            seam = seam_ring_ssim(out_arr, ring)
+            seam = seam_ring_ssim(out_arr, ring)  # info only since R3b
+            step = seam_step(out_arr, mask_bool)
             v = verify_verdict(ssim_out, mad_out, change, residue, seam,
-                               outside_max_abs=max_out)
+                               outside_max_abs=max_out, seam_step=step)
             v["metrics"] = {"outside_ssim": round(ssim_out, 6),
                             "mad_outside": round(mad_out, 6),
                             "outside_max_abs": max_out,
                             "change_ssim": round(change, 6),
                             "seam_ssim": round(seam, 6),
+                            "seam_step": round(step, 4),
                             "residue": residue, "residue_error": residue_err,
                             "attempt": attempt}
             last = v
@@ -1291,7 +1296,7 @@ def _auto_inpaint(slug, image_path, boxes, w, h, out_dir, max_attempts,
                 sub = build_submit_cmd(slug)
                 atomic_write_json(os.path.join(out_dir, f"{slug}_verify.json"),
                                   {**rec, "verify": v})
-                flag = " [seam-flag]" if "seam" in v["flags"] else ""
+                flag = " [seam-step-flag]" if "seam_step" in v["flags"] else ""
                 print(f"LW CLEAN {slug}: inpaint PASS{flag} (attempt {attempt})")
                 _print_cmds([save, sub])
                 rec["status"] = "inpainted"

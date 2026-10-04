@@ -208,7 +208,8 @@ def test_registry_covers_every_live_g1_metric_rule():
 def test_registry_covers_every_g2_verify_arm():
     board = B.lw_board()
     names = {r.name for r in board.rows}
-    for arm in ("G2.outside_identity", "G2.no_op", "G2.text_residue", "G2.seam"):
+    for arm in ("G2.outside_identity", "G2.no_op", "G2.text_residue",
+                "G2.seam_step"):
         assert arm in names
 
 

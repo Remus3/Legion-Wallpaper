@@ -16,27 +16,6 @@
    "adjudication": "2026-10-04 adjudicator Q2: accept BROKEN, do not rescale or NA the subject"
   },
   {
-   "row": "G2.seam",
-   "state": "UNKNOWN",
-   "n_proven": 3,
-   "n_applicable": 12,
-   "failing": [
-    "dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395",
-    "dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545",
-    "dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5",
-    "dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451",
-    "dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5",
-    "fiora2",
-    "dfzypou-30bef263-c754-4a26-9797-484757b1c4cf",
-    "inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview",
-    "dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf"
-   ],
-   "reason": "the seam arm is SSIM of the 8px ring OUTSIDE the mask vs its own blur, i.e. ring TEXTURE; on 9/12 golden frames a perfect fill already reads < 0.92 (live: 22 of 41 recorded verifies flagged seam). The live seam flag is mostly noise; give it no weight in review.",
-   "ledger": 244,
-   "clears_when": "the ring-SSIM seam flag is retired from live verify once G2.seam_step (contour-normal step, PROVEN 12/12 under seam_offset_24lv, 0/26 FP on real LaMa clean pairs, LEDGER 264) is computed in live verify_verdict (ROADMAP R3b); the replacement measure exists, the live wiring does not yet",
-   "adjudication": "2026-10-04 adjudicator Q3: carry forward as research"
-  },
-  {
    "row": "G2.text_residue",
    "state": "BROKEN",
    "n_proven": 0,
