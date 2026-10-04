@@ -119,6 +119,9 @@ ACQUIRE_SITES = [
     # Gate board (P0-3): the OCR residue rows run EasyOCR on cuda under one hold
     # for the whole golden pass; fr_metrics (metrics rows) acquires for itself.
     ("lw_gate_board.py", "_prove_clean_held"),
+    # Calibration probe for config/profiles (P2-7): one hold per tile size,
+    # re-entrant with upscale_spandrel's own hold (same thread).
+    ("lw_upscale.py", "measure_tile_peak"),
 ]
 
 # (file, class, method) for acquisitions that live on a METHOD. _funcs() keys on
