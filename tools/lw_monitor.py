@@ -605,7 +605,11 @@ class Handler(BaseLWHandler):
                 return
             self._send(200, body, "text/html; charset=utf-8", {"Cache-Control": "no-store"})
             return
-        slug = (query.get("slug") or [""])[0]
+        if path == "/api/review/slugs":
+            self._send_json(200, {"ok": True, "slugs": rt.reviewable_slugs(images)},
+                            {"Cache-Control": "no-store"})
+            return
+        slug = rt.normalize_slug((query.get("slug") or [""])[0])
         if not rt.SLUG_RE.match(slug or ""):
             self._send_json(400, {"ok": False, "error": "bad slug"})
             return
@@ -668,7 +672,7 @@ class Handler(BaseLWHandler):
         images = srv.image_roots[0] if srv.image_roots else DEFAULT_IMAGE_ROOTS[0]
         try:
             if path == "/api/review/mark":
-                rec = rt.submit(body.get("slug"), body.get("xy"), body.get("r"), body.get("said"),
+                rec = rt.submit(rt.normalize_slug(body.get("slug")), body.get("xy"), body.get("r"), body.get("said"),
                                 body.get("view") or {}, review_root=srv.review_root,
                                 images_root=images)
                 self._send_json(200, {"ok": True, "id": rec["id"], "state": rec["state"]})

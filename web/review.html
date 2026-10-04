@@ -72,7 +72,8 @@ figcaption{font-size:14px;color:var(--mut)}
   <h2 id="h-load">Image</h2>
   <label for="slug">Slug</label>
   <div class="row">
-    <input type="text" id="slug" placeholder="slug" autocomplete="off">
+    <input type="text" id="slug" placeholder="pick or paste a slug / file name" autocomplete="off" list="slugs">
+    <datalist id="slugs"></datalist>
     <button id="load">Load</button>
   </div>
   <p class="meta" id="imgmeta" role="status" aria-live="polite">No image loaded.</p>
@@ -80,7 +81,7 @@ figcaption{font-size:14px;color:var(--mut)}
 
 <section class="card" aria-labelledby="h-view">
   <h2 id="h-view">View at 1:1 - tap the spot</h2>
-  <div id="view"><img id="img" alt="working image at 1:1"></div>
+  <div id="view"><img id="img" alt="working image at 1:1" hidden></div>
 </section>
 
 <section class="card" aria-labelledby="h-mark">
@@ -152,10 +153,13 @@ function load(){
   S.slug = slug; S.spot = null; S.rings = []; $("submit").disabled = true;
   $("xy").textContent = "tap the image first";
   var img = $("img");
+  $("imgmeta").textContent = "Loading " + slug + " ...";
   img.onload = function(){
+    img.hidden = false;
     $("imgmeta").textContent = slug + " - " + img.naturalWidth + " x " + img.naturalHeight + " at 1:1";
     threads(); };
-  img.onerror = function(){ $("imgmeta").textContent = "No image for that slug."; };
+  img.onerror = function(){ img.hidden = true;
+    $("imgmeta").textContent = "No image for \"" + slug + "\" - pick one from the list."; };
   img.src = "/api/review/image?slug=" + encodeURIComponent(slug) + "&t=" + Date.now();
 }
 function threads(){
@@ -227,6 +231,12 @@ $("publish").onclick = function(){
     threads(); });
 };
 var q = new URLSearchParams(location.search);
+getJSON("/api/review/slugs").then(function(j){
+  var list = j.slugs || [];
+  $("slugs").innerHTML = list.map(function(s){ return "<option value='" + esc(s) + "'>"; }).join("");
+  if (!q.get("slug") && list.length && !$("slug").value) { $("slug").value = list[0]; load(); }
+  if (!list.length) { $("imgmeta").textContent = "No slug has a working image to review."; }
+}).catch(function(){ $("imgmeta").textContent = "Could not list slugs."; });
 if (q.get("slug")) { $("slug").value = q.get("slug"); load(); }
 </script>
 </body>

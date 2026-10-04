@@ -122,7 +122,7 @@ def test_followup_reopens(bench):
 def test_bad_inputs_refused_without_path_echo(bench):
     srv, _, _ = bench
     for path in ("/api/review/image?slug=..%2F..%2Fx", "/api/review/shot?slug=ahri&name=..%2Fx.png",
-                 "/api/review/shot?slug=ahri&name=secret.txt", "/api/review/threads?slug=a%2Fb"):
+                 "/api/review/shot?slug=ahri&name=secret.txt", "/api/review/threads?slug=%3Cx%3E"):
         status, _, body = _req(srv, "GET", path)
         assert status in (400, 404), path
         assert b"\\\\" not in body and b"images" not in body
@@ -142,3 +142,45 @@ def test_post_body_is_capped(bench):
     srv, _, _ = bench
     status, _, _ = _req(srv, "POST", "/api/review/mark", b"{" + b" " * 70000 + b"}")
     assert status == 413
+
+
+# ---------------------------------------------------------------- operator test 2026-10-04
+# REAL FAILURE: the operator opened /review three times and no image ever showed.
+# The server log holds three GET /review and ZERO image requests: the page
+# offered no slug to load (a blank text box nobody can fill from memory) and
+# showed a broken <img> placeholder with no src. These pin the fix: the page
+# lists loadable slugs, auto-loads one, never shows a src-less <img>, and a
+# pasted file name or path resolves to its slug.
+def test_slugs_route_lists_only_slugs_whose_image_route_serves(bench, tmp_path):
+    srv, _, _ = bench
+    empty = tmp_path / "images" / "4.Cleaning Done" / "nothing-here"
+    empty.mkdir(parents=True)
+    status, _, body = _req(srv, "GET", "/api/review/slugs")
+    slugs = json.loads(body)["slugs"]
+    assert status == 200 and slugs == ["ahri"]
+    for s in slugs:
+        st, ctype, data = _req(srv, "GET", f"/api/review/image?slug={s}")
+        assert st == 200 and ctype.startswith("image/") and len(data) > 0
+
+
+def test_pasted_file_name_or_path_resolves_to_the_slug(bench):
+    srv, path, _ = bench
+    for raw in ("ahri_cleanworking_01.png", "3.Cleaning%20Scratch/ahri/ahri_cleanworking_01.png",
+                "%20ahri%20"):
+        st, ctype, data = _req(srv, "GET", f"/api/review/image?slug={raw}")
+        assert st == 200 and data == path.read_bytes(), raw
+
+
+def test_page_never_shows_a_src_less_image_and_offers_slugs():
+    page = (Path(__file__).resolve().parents[1] / "web" / "review.html").read_text(encoding="utf-8")
+    assert '<img id="img" alt="working image at 1:1" hidden>' in page
+    assert "/api/review/slugs" in page and "<datalist" in page
+    assert "img.hidden = false" in page
+
+
+def test_path_like_slugs_reduce_to_a_basename_never_a_traversal(bench):
+    """A pasted path is reduced to its last component: '../..' can never walk."""
+    import lw_review_threads as rt
+    assert rt.normalize_slug("../../etc/passwd") == "passwd"
+    assert rt.normalize_slug("..") == ".."
+    assert not rt.SLUG_RE.match(rt.normalize_slug(".."))

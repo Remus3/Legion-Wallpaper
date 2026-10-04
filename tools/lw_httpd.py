@@ -16,6 +16,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import subprocess
 import time
 from datetime import UTC, datetime
@@ -146,15 +147,43 @@ def config_hash(paths):
     return h.hexdigest()[:12] if seen else None
 
 
+# HOST ALLOWLIST (operator 2026-10-04, phone access to the review bench). The
+# server stays bound to 127.0.0.1; `tailscale serve` proxies tailnet requests to
+# it with the machine's tailnet DNS name as the Host header. That one name is
+# admitted ONLY when listed in local/httpd_allowed_hosts.json (gitignored - the
+# name is account-identifying; written by tools/lw_tailnet_host.py from
+# `tailscale status --json`). Only *.ts.net names qualify, so the file cannot
+# widen the DNS-rebinding guard to an arbitrary public name.
+LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost"})
+ALLOWED_HOSTS_PATH = REPO_ROOT / "local" / "httpd_allowed_hosts.json"
+_TAILNET_RE = re.compile(
+    r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*\.ts\.net$")
+
+
+def load_allowed_hosts(path=ALLOWED_HOSTS_PATH):
+    """Loopback names plus every valid tailnet name in `path`; never raises."""
+    hosts = set(LOOPBACK_HOSTS)
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        for name in data.get("hosts", []):
+            name = str(name).strip().lower().rstrip(".")
+            if _TAILNET_RE.match(name):
+                hosts.add(name)
+    except (OSError, ValueError, AttributeError, TypeError):
+        pass
+    return hosts
+
+
 class LWServer(ThreadingHTTPServer):
     daemon_threads = True
     # Windows SO_REUSEADDR would let a second server steal the port; a hard
     # bind failure is what makes the bind-first single-instance guard work.
     allow_reuse_address = False
 
-    def __init__(self, addr, handler, *, config_paths=()):
+    def __init__(self, addr, handler, *, config_paths=(), hosts_path=ALLOWED_HOSTS_PATH):
         super().__init__(addr, handler)
         self.started_iso = iso_from_epoch(time.time())
+        self.allowed_hosts = frozenset(load_allowed_hosts(hosts_path))
         # SERVED VERSION (ingest P0-5): captured ONCE, after the bind, so
         # GET /api/version reports what this process is RUNNING - a commit
         # landed later without a restart reads as stale to the probe
@@ -194,7 +223,7 @@ class BaseLWHandler(BaseHTTPRequestHandler):
     def _host_ok(self):
         host = (self.headers.get("Host") or "").strip().lower()
         name = host.rsplit(":", 1)[0] if ":" in host else host
-        return name in ("127.0.0.1", "localhost")
+        return name in getattr(self.server, "allowed_hosts", LOOPBACK_HOSTS)
 
     def do_GET(self):
         self._guarded("GET")

@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+258. DONE **2026-10-04 (review bench: image never shown in operator test - slug picker + auto-load; tailnet Host allowlist for phone access).**
+   OPERATOR TEST (2026-10-04): /review loaded but no image showed, and the phone could not reach
+   127.0.0.1. CAUSE (read from logs/lw_monitor.log): three `GET /review`, ZERO image requests - the
+   page offered only an empty slug box (nobody types a slug from memory) and rendered a src-less
+   `<img>` as a broken-image placeholder; the image route itself was healthy (200 image/png). FIX:
+   `GET /api/review/slugs` (slugs whose image route serves, newest first) feeds a datalist and the
+   page auto-loads the newest; the `<img>` stays hidden until it loads; a pasted milestone file
+   name or path resolves to its slug (`normalize_slug`, basename only - never a traversal). PHONE:
+   the server stays bound to 127.0.0.1; `lw_httpd` now admits a Host only from loopback names plus
+   *.ts.net names listed in the GITIGNORED `local/httpd_allowed_hosts.json`, written by
+   `tools/lw_tailnet_host.py` from `tailscale status --json` Self.DNSName (read only; the name is
+   account-identifying and never tracked - pinned by a check-ignore test). `tailscale serve` was
+   NOT run by the agent (it changes network exposure): the operator runs it once. READ BACK: the
+   regression test fails on the old code (no slugs route, src-less img, no normalization) and
+   passes now; mutation-proven 5/5 (allowlist accepts any name, guard ignores allowlist, slugs
+   route missing, no normalization, img shown before load); phone width 375 px: no horizontal
+   scroll (scrollWidth 375), buttons 325x44, image auto-loaded 2560x1440 at 1:1; monitor restarted
+   (shutdown + relaunch) and read back below. Suite 3791 passed (one GPU-contention OOM in
+   test_lw_usm_halo_probe re-ran 40/40 green).
+
 257. DONE **2026-10-04 (ingest P2-5 + P2-6: present-but-empty fixtures; isolated verify copy + dashboards --runtime-root; 1ac1a01, f68ed40).**
    P2-5: ABSENT / PRESENT-BUT-EMPTY / POPULATED arms over the rundash queue and monitor
    pipeline view, the job-health record and judge, the task log and WatchState, each with a
