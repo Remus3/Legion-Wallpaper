@@ -280,7 +280,8 @@ def test_slug_preset_spirit_blossom_turns_chroma_on():
         "spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre")
     assert chroma == 12.0
     assert src == "slug"
-    assert region == io.NAMAKX_REGION
+    # bottom-left credit box, NOT the namakx box (incident 2026-10-04)
+    assert region != io.NAMAKX_REGION
 
 
 def test_slug_preset_viego_uses_full_width_band():
@@ -315,11 +316,12 @@ def test_cluster_beats_the_slug_preset():
     assert src == "cluster"
 
 
-def test_unknown_slug_falls_back_to_the_namakx_default():
+def test_unknown_slug_gets_no_borrowed_namakx_box():
+    """No default box: the namakx region on a foreign frame repaints art."""
     region, chroma, src = io.resolve_preset("no-such-slug-at-all")
-    assert region == io.NAMAKX_REGION
+    assert region is None
     assert chroma is None
-    assert src == "default"
+    assert src == "none"
 
 
 # --------------------------------------------------------------------------

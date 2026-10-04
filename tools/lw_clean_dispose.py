@@ -3,7 +3,8 @@
 Reads a triage JSONL produced by `lw_clean_pass --all-scratch --dry-run
 --triage-out`, then per verdict:
 
-  clean -> register the initial as a clean-scan working, submit, approve
+  clean -> register the _cleaninitial (never the triage image) as a
+           clean-scan working, submit, approve
   auto  -> live inpaint via lw_clean_pass.process_slug, then submit + approve
   qa    -> live pass ONLY (writes the mask + detect side-files); the slug STAYS
            in 3.Cleaning Scratch for the manual IOPaint lane. No pipeline
@@ -50,6 +51,22 @@ def run_cmd(argv, dry_run=False):
             "err": (proc.stderr or "").strip()[-400:]}
 
 
+def cleanscan_source(slug):
+    """The slug's `_cleaninitial.*` in 3.Cleaning Scratch (the passthrough).
+
+    Falls back to the canonical .png path when none is found, so the pipeline's
+    own passthrough check (lw_pipeline.assert_clean_scan_passthrough) refuses
+    the step rather than this module guessing at another file.
+    """
+    folder = os.path.join(lcp.CLEAN_SCRATCH, slug)
+    prefix = f"{slug}_cleaninitial."
+    if os.path.isdir(folder):
+        for name in sorted(os.listdir(folder)):
+            if name.startswith(prefix):
+                return os.path.join(folder, name)
+    return os.path.join(folder, prefix + "png")
+
+
 def approve_cmd(slug):
     return [lcp.SYS_PY, lcp.PIPELINE, "approve", slug, "--actor", ACTOR]
 
@@ -71,7 +88,10 @@ def drive(slug, verdict, image, dry_run=False):
         return rec
 
     if verdict == "clean":
-        cmds = lcp.build_cleanscan_cmds(slug, image)
+        # A clean scan registers the slug's INITIAL, never the triage image:
+        # triage reads the highest _cleanworking_NN, which can be a candidate
+        # the operator already REJECTED (14 shipped that way on 2026-08-22).
+        cmds = lcp.build_cleanscan_cmds(slug, cleanscan_source(slug))
     else:  # auto
         if dry_run:
             rec["status"] = "would-inpaint"

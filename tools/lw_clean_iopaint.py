@@ -104,9 +104,13 @@ CLUSTER_PRESETS = {
 # improvement 4 (low-contrast COLOURED marks need the chroma term OR-ed in).
 # region None = keep the default/cluster region, only override chroma_thr.
 SLUG_PRESETS = {
-    # 1 blue speck survived luma-only; chroma at 12 clears it (confirmed).
+    # The deviantart.com/hriful credit is bottom-LEFT (detector box 0..392 x
+    # 1383..1440). This entry used to say region None, which fell through to
+    # the namakx box - centre-bottom, i.e. the character's skirt - and the
+    # 2026-08-01 candidate repainted 41.7 pct of it (operator-rejected, then
+    # re-shipped by the 08-22 dispose; incident 2026-10-04). Measured box now.
     "spirit-blossom-ahri-mono-01-by-hriful-dk79ceq-pre": {
-        "region": None, "chroma_thr": 12.0,
+        "region": (0, 1370, 420, 1440), "chroma_thr": 12.0,
     },
     # flank "(c)SLI/.DEVIANTART" sat outside the default box; the full-width
     # band + chroma clears it (confirmed).
@@ -123,25 +127,33 @@ SLUG_PRESETS = {
 def resolve_preset(slug, region=None, cluster=None, chroma_thr=None):
     """PURE: settle (region, chroma_thr) for a slug. Returns (region, chroma, source).
 
-    Precedence: explicit args > named cluster > per-slug preset > namakx default.
-    source is one of explicit / cluster / slug / default and is logged so a run
-    is reproducible from its own output.
+    Precedence: explicit args > named cluster > per-slug preset > namakx slug.
+    source is one of explicit / cluster / slug / namakx / none and is logged so
+    a run is reproducible from its own output.
+
+    There is NO default region. The namakx box was hand-measured for ONE
+    artist's credit; applied to any other frame it lands wherever that frame
+    keeps its subject (centre-bottom), and the diff mask then repaints art.
+    No measured region -> (None, None, "none"), and clean_slug refuses.
     """
     if region is not None or chroma_thr is not None:
         cpre = CLUSTER_PRESETS.get(cluster, {}) if cluster else {}
         spre = SLUG_PRESETS.get(slug, {})
         r = region if region is not None else (
-            cpre.get("region") or spre.get("region") or NAMAKX_REGION)
+            cpre.get("region") or spre.get("region")
+            or (NAMAKX_REGION if slug in NAMAKX_SLUGS else None))
         c = chroma_thr if chroma_thr is not None else (
             cpre.get("chroma_thr") if cluster else spre.get("chroma_thr"))
         return r, c, "explicit"
     if cluster:
         cpre = CLUSTER_PRESETS.get(cluster, {})
-        return cpre.get("region") or NAMAKX_REGION, cpre.get("chroma_thr"), "cluster"
+        return cpre.get("region"), cpre.get("chroma_thr"), "cluster"
     spre = SLUG_PRESETS.get(slug)
-    if spre:
-        return spre.get("region") or NAMAKX_REGION, spre.get("chroma_thr"), "slug"
-    return NAMAKX_REGION, None, "default"
+    if spre and spre.get("region"):
+        return spre["region"], spre.get("chroma_thr"), "slug"
+    if slug in NAMAKX_SLUGS:
+        return NAMAKX_REGION, None, "namakx"
+    return None, None, "none"
 
 # Validated single-image mask defaults (namakx dfz5w2g).
 BRIGHT_THR = 10.0            # gray-bg > +10 -> bright FILL
@@ -844,6 +856,10 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
             slug, region, cluster, chroma_thr)
         log(f"LW IOPAINT {slug}: region={region} chroma_thr={chroma_thr} "
             f"(source={preset_src})")
+        if region is None:
+            return {"slug": slug, "status": "manual",
+                    "reason": "no measured region for this slug - pass --region "
+                              "or add a SLUG_PRESETS entry (no default box)"}
 
     if image is None:
         image = C.select_working_image(os.path.join(CLEAN_SCRATCH, slug), slug)
