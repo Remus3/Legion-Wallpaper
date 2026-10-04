@@ -27,6 +27,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+262. DONE **2026-10-04 (C4 round closed; held commits pushed; MoE/MIM/ExPLoRA research filed as R1-R6).**
+   READ BACK, not run-and-assumed: ops/loop/slots.py sha256 prefix 290cbf80 / 11426 B on disk AND at HEAD in
+   LW, RSC, RC, CS, SS (LL carries none); drift_guard 0 breaches; done_gate bind GREEN (ruff 0, pytest 0,
+   drift_guard 0) bound to c6e9984; push 31604ac..c6e9984; verify-push VERIFIED origin = HEAD = graded.
+   Research doc docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md (c6e9984): no MoE all-in-one restorer fits
+   (photo degradations, no router labels for ADR-009); MIM useful only as a re-inpaint residue detector;
+   ExPLoRA feasible (2-6 GPU-h ViT-B est.) but DINOv2 kNN first. Experiments R1-R6 filed under the ROADMAP
+   gate-repair item; operator offered ~8.7k unlabeled local images (count read back 8714) for R5/R6.
+
 261. DONE **2026-10-04 (/done session close: live state read back for the yuumi QA lane and the open operator ask; docs-only).**
    READ BACK at close, not run-and-assumed: `lw_pipeline.py status` -> yuumi-by-narumicsibe-dmax7wo-fullview
    CLEAN_SCRATCH / EDITING, w0 (no working saved yet; the operator's IOPaint hand clean is pending -
