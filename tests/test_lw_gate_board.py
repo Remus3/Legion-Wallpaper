@@ -208,7 +208,7 @@ def test_registry_covers_every_live_g1_metric_rule():
 def test_registry_covers_every_g2_verify_arm():
     board = B.lw_board()
     names = {r.name for r in board.rows}
-    for arm in ("G2.outside_identity", "G2.no_op", "G2.text_residue",
+    for arm in ("G2.outside_identity", "G2.no_op",
                 "G2.seam_step", "G2.text_residue_mf"):
         assert arm in names
 
@@ -283,7 +283,7 @@ def test_mean_only_outside_arm_is_broken_on_a_localized_change(monkeypatch):
 def test_rows_outside_the_requested_envs_are_not_evaluated():
     board = B.lw_board(envs=("base",))
     names = {r.name for r in board.rows}
-    assert "G1.msssim" not in names and "G2.text_residue" not in names
+    assert "G1.msssim" not in names and "G2.text_residue_mf" not in names
 
 
 # ------------------------------------------------------------------ proofs file

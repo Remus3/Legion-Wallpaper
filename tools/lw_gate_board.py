@@ -855,35 +855,10 @@ def _j_seam_step(value, subject):
     return "seam_step" not in v["flags"]
 
 
-_READER = {}
-
-
-def _reader():
-    if "r" not in _READER:
-        import easyocr  # lw-clean venv only
-        _READER["r"] = easyocr.Reader(["en"], gpu=True, verbose=False)
-    return _READER["r"]
-
-
-STRONG_MARK_ALPHA = 0.9  # the "before" credit line: a fully legible mark
-
-
-def _m_residue(subject):
-    cp = _cp()
-    marked = fault_text(subject["before"], subject["box"], alpha=STRONG_MARK_ALPHA)
-    before_e = cp.text_energy(marked, subject["box"], _reader())
-    after_e = cp.text_energy(subject["restored"], subject["box"], _reader())
-    return {"before_energy": before_e, "after_energy": after_e}
-
-
 def _plant_residue(subject):
     subject["restored"] = fault_text(subject["restored"], subject["box"],
                                      levels=RESIDUE_LEVELS)
     return subject
-
-
-def _j_residue(value, subject):
-    return not _cp()._residue_decision(value["before_energy"], value["after_energy"])
 
 
 _LAMA = {}
@@ -959,16 +934,12 @@ FAULT_EVIDENCE = {
                      "26 real LaMa clean pairs max 2.06 (offset copies min 14.35) "
                      "(LEDGER 264)"),
     "G2.text_residue_mf": ("credit line at +4 luma levels over the fill",
-                           "same faint-residue calibration as G2.text_residue (105-cleanup "
-                           "hand-clean steps 3.77 / 4.5 levels); research R2 measured the "
-                           "re-inpaint matched filter golden clean max 2.00 vs +4 lv min "
-                           "4.00, 26 real LaMa clean pairs max 1.94 (+4 lv min 3.89) "
-                           "(LEDGER 267)"),
-    "G2.text_residue": ("credit line at +4 luma levels over the fill",
-                        "faintest real residue the operator's eye rejected: 105-cleanup "
-                        "hand-clean step 70 median 3.77 levels (n=733) and final step "
-                        "4.5 levels (n=2813), alpha ~0.02 white / 0.06 dark; the DA "
-                        "veil (alpha 0.09-0.13) is ~5x stronger (docs/GATE_BOARD.md)"),
+                           "faintest real residue the operator's eye rejected: 105-cleanup "
+                           "hand-clean step 70 median 3.77 levels (n=733) and final step "
+                           "4.5 levels (n=2813); research R2 measured the re-inpaint matched "
+                           "filter golden clean max 2.00 vs +4 lv min 4.00, 26 real LaMa "
+                           "clean pairs max 1.94 (+4 lv min 3.89) (LEDGER 267); live strokes "
+                           "(R2b) LaMa max 2.22, hand cleans max 1.85"),
 }
 
 
@@ -978,7 +949,7 @@ FAULT_NAME = {
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
     "G2.seam_step": "seam_offset_24lv",
-    "G2.text_residue": "credit_line_4lv", "G2.text_residue_mf": "credit_line_4lv",
+    "G2.text_residue_mf": "credit_line_4lv",
 }
 
 
@@ -1088,10 +1059,8 @@ def lw_board(envs=ENVS) -> Board:
             unit="luma levels", where="1-3 px bands across the mask contour",
             judge=_j_seam_step, applies=lambda s: "mask" in s, gate="G2"),
         on_after(lambda s: fault_seam(s["after"], s["mask"], SEAM_OFFSET)))
-    add(Row("G2.text_residue", "zero watermark: no text left where the mark was",
-            _m_residue, None, unit="text energy", where="the mark's box",
-            judge=_j_residue, applies=lambda s: "mask" in s, env="clean", gate="G2"),
-        _plant_residue)
+    # R2b: the OCR+MSER G2.text_residue row is RETIRED with its live arm;
+    # residue_mf below is the live residue measure.
     add(Row("G2.text_residue_mf", "zero watermark: no faint residue along the old strokes",
             _m_residue_mf, Bar("at_most", hi=lambda: _cp().RESIDUE_MF_MAX),
             unit="luma levels", where="the old mark's strokes (re-inpainted)",

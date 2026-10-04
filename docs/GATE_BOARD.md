@@ -43,12 +43,11 @@ wherever the golden set is on disk; on CI (no golden set) absence is a note.
 | G2.outside_identity | PROVEN | 12/12 | one 32x32 block +16 levels outside the mask |
 | G2.no_op | PROVEN | 12/12 | fill returned the input |
 | G2.seam_step | PROVEN | 12/12 | fill offset +24 levels (added 2026-10-04, LEDGER 264) |
-| G2.text_residue | BROKEN | 0/12 | credit line at +4 luma levels |
-| G2.text_residue_mf | PROVEN | 12/12 | credit line at +4 luma levels (added 2026-10-04, LEDGER 267) |
+| G2.text_residue_mf | PROVEN | 12/12 | credit line at +4 luma levels (added 2026-10-04, LEDGER 267; live since R2b, LEDGER 270) |
 | V.reads_like_original | VALIDATION | - | operator only |
 | V.zero_watermark_eye | VALIDATION | - | operator only |
 
-**P0-3 acceptance ("every gate PROVEN") is NOT MET.** Two rows are
+**P0-3 acceptance ("every gate PROVEN") is NOT MET.** One row is
 acknowledged (below), which is a record of a measured hole, not a pass.
 
 ## What the board found
@@ -62,6 +61,8 @@ acknowledged (below), which is a record of a measured hole, not a pass.
 2. **The live residue probe failed OPEN - FIXED.** `except Exception: residue =
    False` turned a crashed probe into "no residue". `probe_residue` now returns
    (None, ExcType); verify flags `residue_probe_error` and records the type.
+   (R2b: that probe left the live path; its successor `live_residue_mf`
+   keeps the rule - a failed probe flags `residue_mf_error`, never clean.)
 3. **G1.band_delta cannot see output-scale banding.** It counts isolated 1-px
    steps after a LANCZOS downscale to source scale, which smears every step into
    a ramp; posterizing the output at step 8 (and 32) LOWERS it. REPLACEMENT
@@ -95,9 +96,15 @@ acknowledged (below), which is a record of a measured hole, not a pass.
    stroke pixels of luma(cleaned) - luma(LaMa re-inpaint of the strokes
    dilated 3 px); golden clean |.| max 2.00 vs +4 lv min 4.00, 26 real LaMa
    clean pairs max 1.94 (0 FP; +4 lv copies min 3.89, 26/26 caught), bar
-   3.0 levels, PROVEN 12/12. Not yet computed in live verify (R2b: needs a
-   stroke mask from the pre-clean detection), so G2.text_residue stays
-   pinned until that wiring retires it.
+   3.0 levels, PROVEN 12/12. LIVE since R2b (LEDGER 270): `_auto_inpaint`
+   derives the strokes from the PRE-clean image inside each detected box
+   (`lw_clean_creditline.glyph_mask`, grow=0) and passes `residue_mf` to
+   `verify_verdict` (FLAG; a failed probe flags `residue_mf_error`).
+   Live census over the 3.0 bar: real LaMa 0/26 (max 2.22), operator hand
+   / IOPaint captures 0/4 (max 1.85). Kept FLAG-only: the operator-rejected
+   105-cleanup step 70 reads -2.07, so recall on real hand residue is not
+   shown. The OCR+MSER arm, the G2.text_residue row and its ack entry are
+   RETIRED.
 7. **Measurement-basis split, recorded:** `lw_golden._real_compute_metrics`
    feeds PIL "L" (uint8) gray to banding_delta, the live first pass feeds float
    luma from RGB; the same frame scores +0.0074 vs -0.0767. The board measures
@@ -107,8 +114,8 @@ acknowledged (below), which is a record of a measured hole, not a pass.
 
 | row | amplitude | evidence |
 |---|---|---|
-| G2.text_residue | +4 luma levels toward white inside the glyphs | the faintest residue the operator's eye REJECTED in the hand-clean captures (`ops/runtime/clean/handedits/`): 105-cleanup step 70 median 3.77 levels (n=733, corr 0.86 with the remaining residue, 84 percent of pixels moving toward final) and its final step 4.5 levels (n=2813). As alpha that is ~0.018-0.026 for a white mark, ~0.06-0.075 for a dark one; the DA centre veil (alpha 0.09-0.13, CLEAN_VEIL_AMPLITUDE_2026-08-12) is ~5x stronger. 107-cleanup's 3.2-level steps were texture regeneration (corr 0.18-0.36), not residue, and were not used. |
-| G2.text_residue_mf | +4 luma levels (same fault) | same calibration as G2.text_residue; clean max 2.00 (golden) / 1.94 (26 real pairs) vs +4 lv min 3.89 |
+| G2.text_residue (retired R2b) | +4 luma levels toward white inside the glyphs | the faintest residue the operator's eye REJECTED in the hand-clean captures (`ops/runtime/clean/handedits/`): 105-cleanup step 70 median 3.77 levels (n=733, corr 0.86 with the remaining residue, 84 percent of pixels moving toward final) and its final step 4.5 levels (n=2813). As alpha that is ~0.018-0.026 for a white mark, ~0.06-0.075 for a dark one; the DA centre veil (alpha 0.09-0.13, CLEAN_VEIL_AMPLITUDE_2026-08-12) is ~5x stronger. 107-cleanup's 3.2-level steps were texture regeneration (corr 0.18-0.36), not residue, and were not used. |
+| G2.text_residue_mf | +4 luma levels (same fault) | same calibration as the retired G2.text_residue row above; clean max 2.00 (golden) / 1.94 (26 real pairs) vs +4 lv min 3.89; live strokes (R2b) LaMa max 2.22, hand cleans max 1.85 |
 | G2.seam_step | +24 levels | twice the operator's median per-step edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS); clean max 2.36 (golden) / 2.06 (26 real pairs) vs offset min 14.35 |
 | G2.outside_identity | 32x32 block, +16 levels | a localized composite bug, far below what the mean arms can see |
 | G1.lap_ratio | down-up x2 | the historic double-resample softness bug (AUDIT_GATES 3.1) |
@@ -128,9 +135,10 @@ the row, its pinned measured state (state, n_proven, failing subjects), a
 LEDGER item that exists and a checkable `clears_when` downgrades exactly that
 row to a note. A re-run that is WORSE breaches; a row that becomes PROVEN asks
 for its entry to be removed. Entries are added only through a recorded
-adjudication; removing one is always allowed. Current entries: G1.lpips,
-G2.text_residue (LEDGER 244); G1.band_delta removed with its row in R1b
-(LEDGER 265); G2.seam removed with its row in R3b (LEDGER 266).
+adjudication; removing one is always allowed. Current entries: G1.lpips
+(LEDGER 244); G1.band_delta removed with its row in R1b (LEDGER 265);
+G2.seam removed with its row in R3b (LEDGER 266); G2.text_residue removed
+with its row in R2b (LEDGER 270).
 
 ## Operator validation rows
 

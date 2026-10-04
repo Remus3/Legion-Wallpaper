@@ -27,6 +27,38 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+270. DONE **2026-10-04 (research R2b: G2.text_residue_mf LIVE in the cleaning verify; OCR+MSER arm + G2.text_residue row + ack entry RETIRED together; commit in this push).**
+   SHIPPED (TDD; tests/test_g2_text_residue_mf_live.py 8 RED on the missing API, then 5 RED on the
+   retirement; numpy only, re-run green with cv2/torch/easyocr/ultralytics/simple_lama blocked in
+   sys.modules, 67 passed): `lw_clean_pass.boxes_mask` (numpy box union, render_mask needs cv2),
+   `live_stroke_mask` (REUSES `lw_clean_creditline.glyph_mask` on the PRE-clean image once per
+   detected box, grow=0) and `live_residue_mf` -> (value, error_type), never raises. `_auto_inpaint`
+   (tools/lw_clean_pass.py, the verify_verdict call ~L1417) computes it inside the existing
+   gpu_lock hold with the already-loaded models["lama"] and passes `residue_mf` +
+   `residue_mf_error`; verify.json metrics record both; a failed probe prints the exception TYPE
+   only and flags `residue_mf_error` (unknown, never clean - the LEDGER 244 rule carried over).
+   DECISION grow=0: synthetic credit line, glyph_mask precision 0.82 / recall 0.99 at grow 0 vs
+   0.26 / 1.00 at grow 4; the median over a grown (mostly halo) mask reads the fill, not the residue.
+   LIVE CENSUS (scratch, lw-clean venv, cuda, RC-live gate CLEAR; real detect_image boxes on the
+   cleaninitial, score on the approved frame), bar 3.0: real LaMa clean pairs 0/26 slugs flagged
+   (30 boxes, max |.| 2.22 on 150-cleanup, 254f 2.11); operator-select 0/2 measurable (4 had no
+   live boxes); operator HAND / IOPaint captures (ops/runtime/clean/handedits, 4 frames) 0/4 -
+   live boxes exist on 2 (209 -0.40, dgk 0.00), the DA credit-line box (lw_clean_creditline.detect)
+   on 105 -1.85 / 107 -0.27, the operator's brush bbox max |.| 1.14, brush glyphs max 1.47.
+   FP on hand cleans = 0/4. CAVEAT: 105-cleanup hand step 70 (a residue the operator's eye
+   rejected, GATE_BOARD calibration) reads -2.07 / -1.54 - NOT caught, so recall on real hand
+   residue is unshown. DECISION: FLAG, not FAIL (alternatives: FAIL under the zero-watermark bar -
+   rejected on the step-70 miss and the thin 2.22-vs-3.0 live margin; keep the OCR arm beside it -
+   rejected, it is BROKEN 0/12 both ways and its FAIL bounced restored busy art). RETIRED together:
+   verify_verdict no longer FAILs on text_residue (param kept, ignored, like seam_ssim), the live
+   OCR+MSER `probe_residue` call and its `residue` / `residue_error` metrics (grep: no consumer of
+   verify.json outside lw_clean_pass), board row G2.text_residue + _m_residue / _j_residue /
+   _reader / STRONG_MARK_ALPHA, its FAULT_EVIDENCE / FAULT_NAME keys (calibration text moved to
+   the _mf row) and its config/gate_board_ack.json entry. probe_residue / text_energy kept as
+   offline helpers (own tests). Skill cleaning-pass verify line updated.
+   READ BACK: full tests/ 3897 passed, 20 skipped (exit 0). `prove --golden --env all`: env clean
+   GREEN (G2.text_residue_mf PROVEN 12/12); NOT GREEN only on the acked G1.lpips 11/12. ruff clean.
+
 269. DONE **2026-10-04 (LEDGER 268 follow-ups: rejected-working skip applied, SUBMIT records its actor, 08-22 actor backfill = 486 not 287; commit in this push).**
    (1) Held patch `ops/loop/control/patch_lw_clean_pass_skip_rejected_workings.diff` applied clean
    (`git apply --check` OK, no drift): `lw_clean_pass.select_working_image` skips any `_cleanworking_NN`

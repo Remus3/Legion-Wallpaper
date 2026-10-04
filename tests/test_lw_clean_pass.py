@@ -305,9 +305,11 @@ def test_verify_verdict_fail_noop():
     assert r["verdict"] == "fail"
 
 
-def test_verify_verdict_fail_residue():
+def test_verify_verdict_ocr_residue_is_retired():
+    # the OCR+MSER arm was retired in R2b; residue_mf flags instead
+    # (tests/test_g2_text_residue_mf_live.py)
     r = cp.verify_verdict(0.999, 0.4, 0.7, True, 0.95)
-    assert r["verdict"] == "fail"
+    assert r["verdict"] == "pass"
 
 
 def test_verify_verdict_flag_seam_step_still_passes():
@@ -622,9 +624,11 @@ def test_verify_verdict_default_keeps_old_behaviour():
 # False`, so a crashed probe read as "no residue" - a green over a hole. Now a
 # crash is UNKNOWN: recorded, flagged for review, never counted as clean.
 def test_verify_verdict_unknown_residue_is_flagged_never_clean():
-    r = cp.verify_verdict(0.999, 0.4, 0.7, None, 0.95)
+    # R2b: the live residue measure is residue_mf; a failed probe is UNKNOWN
+    r = cp.verify_verdict(0.999, 0.4, 0.7, None, 0.95,
+                          residue_mf_error="RuntimeError")
     assert r["verdict"] == "pass"
-    assert "residue_probe_error" in r["flags"]
+    assert "residue_mf_error" in r["flags"]
 
 
 def test_probe_residue_reports_the_exception_type():

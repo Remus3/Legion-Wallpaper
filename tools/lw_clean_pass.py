@@ -713,9 +713,57 @@ def residue_mf(image, strokes, lama, dilate: int = RESIDUE_MF_DILATE,
     return float(np.median((_luma(crop) - _luma(rebuilt))[sc]))
 
 
+def boxes_mask(boxes, w, h):
+    """Bool union of the detection boxes, inclusive like cv2.rectangle, clipped.
+    numpy only (render_mask needs cv2, which CI does not have)."""
+    m = np.zeros((int(h), int(w)), dtype=bool)
+    for x0, y0, x1, y1 in boxes:
+        xa, ya = max(0, int(x0)), max(0, int(y0))
+        xb, yb = min(int(w), int(x1) + 1), min(int(h), int(y1) + 1)
+        if xb > xa and yb > ya:
+            m[ya:yb, xa:xb] = True
+    return m
+
+
+def live_stroke_mask(base_arr, boxes):
+    """Stroke mask of the old mark for the live residue_mf (ROADMAP R2b).
+
+    Reuses the credit-line glyph narrowing `lw_clean_creditline.glyph_mask` on
+    the PRE-clean image, once per detected box (its percentile is per region),
+    with grow=0: the residue sits on the glyph pixels themselves, and a grown
+    mask is mostly halo whose median reads the fill rather than the residue.
+    """
+    import lw_clean_creditline as _cl   # numpy-only; lazy keeps import order free
+    arr = np.asarray(base_arr)
+    h, w = arr.shape[:2]
+    out = np.zeros((h, w), dtype=bool)
+    for b in boxes:
+        bm = boxes_mask([b], w, h)
+        if bm.any():
+            out |= _cl.glyph_mask(arr, bm, grow=0)
+    return out
+
+
+def live_residue_mf(base_arr, out_arr, boxes, lama):
+    """(value, error_type) of residue_mf for the live verify (ROADMAP R2b).
+
+    The strokes come from the pre-clean `base_arr` inside the detected boxes;
+    the re-inpaint runs on the cleaned `out_arr`. Degrades, never raises: no
+    reconstructor -> (None, "lama_unavailable"); any probe error -> (None,
+    <exception type>) so the caller logs the type, never the raw message.
+    """
+    if lama is None:
+        return None, "lama_unavailable"
+    try:
+        strokes = live_stroke_mask(base_arr, boxes)
+        return round(residue_mf(out_arr, strokes, lama), 4), None
+    except Exception as exc:  # noqa: BLE001 - recorded as None, never read as clean
+        return None, exc.__class__.__name__
+
+
 def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
                    seam_ssim, outside_max_abs=0.0, seam_step=None,
-                   residue_mf=None):
+                   residue_mf=None, residue_mf_error=None):
     """Combine the G2 checks into {"verdict", "reasons", "flags"}.
 
     Precedence:
@@ -723,13 +771,17 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
          outside pixel changed: outside_max_abs > OUTSIDE_MAX_ABS) -> DISCARD
          (hard: a pipeline bug, halt - never retry blindly).
       2. inside did not change (change_ssim > 0.90) -> FAIL (inpaint no-op).
-      3. text residue detected inside the old bbox -> FAIL.
-      4. otherwise PASS, flagging the seam (seam_step > SEAM_STEP_MAX when a
-         step was measured) and an unknown residue (text_residue None: the
-         probe crashed) for a QA/vision look without discarding.
+      3. otherwise PASS, flagging the seam (seam_step > SEAM_STEP_MAX when a
+         step was measured), a faint residue along the old strokes
+         (|residue_mf| > RESIDUE_MF_MAX when measured) and an UNKNOWN residue
+         (residue_mf_error set: the re-inpaint probe failed, never read as
+         clean) for a QA/vision look without discarding.
 
     seam_ssim (ring SSIM) is kept for call compatibility and is INFO ONLY:
     its "seam" flag was retired in R3b (LEDGER 266) - it reads ring texture.
+    text_residue (the OCR+MSER arm) is kept for call compatibility and is
+    IGNORED: retired in R2b (BROKEN 0/12 on the gate board, LEDGER 244) once
+    residue_mf was live with 0 FP on real LaMa and hand cleans.
     """
     reasons = []
     flags = []
@@ -746,26 +798,26 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
                 "reasons": [f"no_op change_ssim {change_ssim:g} "
                             f"> {CHANGE_SSIM_MAX:g}"],
                 "flags": flags}
-    if text_residue:
-        return {"verdict": "fail", "reasons": ["text_residue"], "flags": flags}
-    if text_residue is None:
-        # the probe crashed: UNKNOWN, never clean (gate board, 2026-10-04)
-        flags.append("residue_probe_error")
     if seam_step is not None and seam_step > SEAM_STEP_MAX:
         # contour-normal step (R3, LEDGER 264); live since R3b (LEDGER 266).
         # None = not computed -> no flag.
         flags.append("seam_step")
     if residue_mf is not None and abs(residue_mf) > RESIDUE_MF_MAX:
-        # re-inpaint matched filter (R2, LEDGER 267); None = not computed ->
-        # no flag (the live path does not compute it yet, ROADMAP R2b)
+        # re-inpaint matched filter (R2, LEDGER 267); live since R2b
+        # (_auto_inpaint -> live_residue_mf). FLAG, not FAIL (R2b census)
         flags.append("residue_mf")
+    if residue_mf is None and residue_mf_error:
+        # the probe failed: UNKNOWN, never clean (principle of LEDGER 244)
+        flags.append("residue_mf_error")
     return {"verdict": "pass", "reasons": [], "flags": flags}
 
 
 def probe_residue(base_arr, out_arr, boxes, reader):
-    """(residue, error_type). A crashed probe returns (None, ExcType) - the
-    caller records it and verify flags `residue_probe_error`; it used to read
-    as residue=False, i.e. clean (gate board finding, 2026-10-04)."""
+    """(residue, error_type). A crashed probe returns (None, ExcType).
+
+    RETIRED from the live verify in R2b (the OCR+MSER arm was BROKEN 0/12 on
+    the gate board, LEDGER 244; residue_mf replaced it). Kept for offline
+    probes and its tests; nothing in the live path calls it."""
     try:
         return any(_residue_decision(text_energy(base_arr, b, reader),
                                      text_energy(out_arr, b, reader))
@@ -1355,22 +1407,25 @@ def _auto_inpaint(slug, image_path, boxes, w, h, out_dir, max_attempts,
             ssim_out, mad_out = masked_identity(base_arr, out_arr, mask_bool)
             max_out = outside_max_abs(base_arr, out_arr, mask_bool)
             change = _inside_change_ssim(base_arr, out_arr, mask_bool)
-            residue, residue_err = probe_residue(base_arr, out_arr, boxes,
-                                                 models["reader"])
-            if residue_err:
-                print(f"LW CLEAN {slug}: residue probe error {residue_err} "
-                      "- flagged, not read as clean")
             seam = seam_ring_ssim(out_arr, ring)  # info only since R3b
             step = seam_step(out_arr, mask_bool)
-            v = verify_verdict(ssim_out, mad_out, change, residue, seam,
-                               outside_max_abs=max_out, seam_step=step)
+            # re-inpaint matched filter, live since R2b; same GPU hold, same LaMa
+            mf, mf_err = live_residue_mf(base_arr, out_arr, boxes,
+                                         models.get("lama"))
+            if mf_err:
+                print(f"LW CLEAN {slug}: residue_mf not computed ({mf_err}) "
+                      "- flagged, not read as clean")
+            # the OCR+MSER residue probe is retired (R2b): text_residue=None
+            v = verify_verdict(ssim_out, mad_out, change, None, seam,
+                               outside_max_abs=max_out, seam_step=step,
+                               residue_mf=mf, residue_mf_error=mf_err)
             v["metrics"] = {"outside_ssim": round(ssim_out, 6),
                             "mad_outside": round(mad_out, 6),
                             "outside_max_abs": max_out,
                             "change_ssim": round(change, 6),
                             "seam_ssim": round(seam, 6),
                             "seam_step": round(step, 4),
-                            "residue": residue, "residue_error": residue_err,
+                            "residue_mf": mf, "residue_mf_error": mf_err,
                             "attempt": attempt}
             last = v
             if v["verdict"] == "discard":
@@ -1393,6 +1448,8 @@ def _auto_inpaint(slug, image_path, boxes, w, h, out_dir, max_attempts,
                 atomic_write_json(os.path.join(out_dir, f"{slug}_verify.json"),
                                   {**rec, "verify": v})
                 flag = " [seam-step-flag]" if "seam_step" in v["flags"] else ""
+                if "residue_mf" in v["flags"]:
+                    flag += " [residue-mf-flag]"
                 print(f"LW CLEAN {slug}: inpaint PASS{flag} (attempt {attempt})")
                 _print_cmds([save, sub])
                 rec["status"] = "inpainted"
