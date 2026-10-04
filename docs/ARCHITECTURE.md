@@ -95,6 +95,14 @@ tools\lw_reviewability.py            reviewability record for every crop a
                                      floors; lw_clean_qa_crops emits one per
                                      cell; doctrine in end-review.md.
 
+tools\lw_review_threads.py           spatial review bench (P1-2): a mark (xy +
+                                     radius + words + the exact 1:1 view) is a
+                                     thread new/answered/fixed/wont under
+                                     ops\runtime\review\<slug>\; publish = one
+                                     notification per batch; replies render
+                                     from the stored view. Page web\review.html
+                                     on the monitor (127.0.0.1:8901/review).
+
 ops\runtime\pipeline_state.json      machine state twin, written atomically by
                                      lw_pipeline.py; monitor reads tolerantly
                                      (unknown fields ignored, stale-cache belt).

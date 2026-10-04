@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LW Review Bench</title>
+<style>
+:root{
+  --bg:#0a1428;--panel:#0f1c2e;--line:#1e2d44;--gold:#c8aa6e;--teal:#0ac8b9;
+  --tx:#cdd2e0;--mut:#9aa3b8;--red:#f07890;--grn:#3fb950;--org:#d29922
+}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:1400px;background:var(--bg);color:var(--tx);
+  padding:16px;font:16px/1.5 'Segoe UI',system-ui,sans-serif}
+header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:22px;color:var(--gold);margin:0;letter-spacing:1px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.6px;color:var(--teal);margin:0 0 8px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;margin-bottom:12px}
+.meta{color:var(--mut);font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=text],textarea{background:#08101f;color:var(--tx);border:1px solid var(--line);
+  border-radius:8px;padding:10px 12px;font:inherit;font-size:16px;line-height:1.4;min-height:44px}
+input[type=text]{flex:1;min-width:200px}
+textarea{width:100%;min-height:88px;resize:vertical}
+button{background:var(--teal);color:#04121f;border:0;border-radius:8px;padding:10px 18px;
+  font:inherit;font-size:16px;font-weight:700;line-height:1;min-height:44px;min-width:44px;cursor:pointer}
+button.sec{background:transparent;color:var(--teal);border:1px solid var(--teal)}
+button:disabled{opacity:.45;cursor:not-allowed}
+label{font-size:14px;color:var(--mut)}
+input[type=range]{width:180px;min-height:44px}
+input[type=range]::-webkit-slider-thumb{width:28px;height:28px}
+input[type=range]::-moz-range-thumb{width:28px;height:28px}
+#view{position:relative;overflow:auto;max-height:70vh;border:1px solid var(--line);
+  border-radius:8px;background:#000;touch-action:pan-x pan-y}
+#view img{display:block;max-width:none;image-rendering:pixelated;cursor:crosshair}
+.ring{position:absolute;border:2px solid var(--org);border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 1px #000}
+.ring.pending{border-color:var(--red);border-style:dashed}
+.thread{border-top:1px solid var(--line);padding:12px 0}
+.thread:first-child{border-top:0}
+.thread button{margin-top:8px}
+.badge{display:inline-block;padding:2px 12px;border-radius:12px;font-size:14px;font-weight:700}
+.s-new{background:rgba(240,120,144,.10);color:var(--red)}
+.s-answered{background:rgba(210,153,34,.2);color:var(--org)}
+.s-fixed{background:rgba(63,185,80,.18);color:var(--grn)}
+.s-wont{background:rgba(154,163,184,.18);color:var(--mut)}
+.shots{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.shots figure{margin:0;max-width:100%;overflow:auto}
+.shots img{display:block;max-width:none;image-rendering:pixelated;border:1px solid var(--line)}
+figcaption{font-size:14px;color:var(--mut)}
+.said{white-space:pre-wrap;word-break:break-word}
+.msg{font-weight:700}
+.msg.err{color:var(--red)}
+.msg.ok{color:var(--grn)}
+@media (max-width:600px){
+  body{padding:10px}
+  .row{flex-direction:column;align-items:stretch}
+  button{width:100%}
+  input[type=range]{width:100%}
+  #view{max-height:55vh}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>LW Review Bench</h1>
+  <span class="meta">Mark a spot at 1:1, say what is wrong, publish once. The bench never edits the image. Pinch zoom is off in the view on purpose: it shows true pixels.</span>
+</header>
+<main>
+<section class="card" aria-labelledby="h-load">
+  <h2 id="h-load">Image</h2>
+  <label for="slug">Slug</label>
+  <div class="row">
+    <input type="text" id="slug" placeholder="slug" autocomplete="off">
+    <button id="load">Load</button>
+  </div>
+  <p class="meta" id="imgmeta" role="status" aria-live="polite">No image loaded.</p>
+</section>
+
+<section class="card" aria-labelledby="h-view">
+  <h2 id="h-view">View at 1:1 - tap the spot</h2>
+  <div id="view"><img id="img" alt="working image at 1:1"></div>
+</section>
+
+<section class="card" aria-labelledby="h-mark">
+  <h2 id="h-mark">Mark</h2>
+  <div class="row">
+    <label for="radius">Radius <span id="rv">24</span> px</label>
+    <input type="range" id="radius" min="4" max="256" value="24">
+    <span class="meta" id="xy">tap the image first</span>
+  </div>
+  <label for="said">What is wrong here</label>
+  <textarea id="said" placeholder="ghost, band, halo, smear..."></textarea>
+  <div class="row">
+    <button id="submit" disabled>Submit mark</button>
+    <span class="msg" id="msg" role="status" aria-live="polite"></span>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="h-threads">
+  <h2 id="h-threads">Threads</h2>
+  <div class="row">
+    <button id="publish" class="sec" disabled>Publish all (0)</button>
+    <span class="msg" id="pubmsg" role="status" aria-live="polite"></span>
+  </div>
+  <p class="meta">One notification for the whole batch, every slug.</p>
+  <div id="threads"><p class="meta">No threads for this slug.</p></div>
+</section>
+</main>
+
+<script>
+"use strict";
+var S = {slug: "", spot: null, rings: []};
+function $(id){ return document.getElementById(id); }
+function esc(t){ return String(t).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+function say(el, text, ok){ el.textContent = text; el.className = "msg " + (ok ? "ok" : "err"); }
+function getJSON(path){
+  return fetch(path).then(function(r){
+    if (!r.ok) { throw new Error("HTTP " + r.status); }
+    return r.json(); });
+}
+function post(path, body){
+  return fetch(path, {method: "POST", headers: {"Content-Type": "application/json"},
+                      body: JSON.stringify(body)})
+  .then(function(r){ return r.json().then(function(j){ return {status: r.status, body: j}; },
+                                          function(){ return {status: r.status, body: {error: "bad reply"}}; }); })
+  .catch(function(){ return {status: 0, body: {error: "network error"}}; });
+}
+function view(){
+  var v = $("view");
+  return {x0: v.scrollLeft, y0: v.scrollTop, x1: v.scrollLeft + v.clientWidth,
+          y1: v.scrollTop + v.clientHeight};
+}
+function ring(x, y, r, pending){
+  var d = document.createElement("div");
+  d.className = "ring" + (pending ? " pending" : "");
+  d.style.left = (x - r) + "px"; d.style.top = (y - r) + "px";
+  d.style.width = (2 * r) + "px"; d.style.height = (2 * r) + "px";
+  $("view").appendChild(d);
+}
+function redraw(){
+  Array.prototype.slice.call(document.querySelectorAll(".ring"))
+    .forEach(function(n){ n.parentNode.removeChild(n); });
+  S.rings.forEach(function(g){ ring(g[0], g[1], g[2], false); });
+  if (S.spot) { ring(S.spot[0], S.spot[1], +$("radius").value, true); }
+}
+function load(){
+  var slug = $("slug").value.trim();
+  if (!slug) { $("imgmeta").textContent = "Type a slug first."; return; }
+  S.slug = slug; S.spot = null; S.rings = []; $("submit").disabled = true;
+  $("xy").textContent = "tap the image first";
+  var img = $("img");
+  img.onload = function(){
+    $("imgmeta").textContent = slug + " - " + img.naturalWidth + " x " + img.naturalHeight + " at 1:1";
+    threads(); };
+  img.onerror = function(){ $("imgmeta").textContent = "No image for that slug."; };
+  img.src = "/api/review/image?slug=" + encodeURIComponent(slug) + "&t=" + Date.now();
+}
+function threads(){
+  getJSON("/api/review/threads?slug=" + encodeURIComponent(S.slug)).then(function(j){
+    var html = [];
+    S.rings = [];
+    (j.threads || []).forEach(function(t){
+      S.rings.push([+t.xy[0], +t.xy[1], +t.r]);
+      var shot = function(label, name){
+        return "<figure><figcaption>" + label + "</figcaption><img alt='" + label +
+          "' src='/api/review/shot?slug=" + encodeURIComponent(t.slug) + "&name=" +
+          encodeURIComponent(name) + "'></figure>"; };
+      var shots = shot("before", t.shots.before);
+      var talk = t.thread.map(function(e){
+        if (e.shot) { shots += shot("reply", e.shot); }
+        return "<div class='said'><b>" + esc(e.role) + ":</b> " + esc(e.said) + "</div>"; }).join("");
+      html.push("<div class='thread'><div class='row'><span class='badge s-" + esc(t.state) + "'>" +
+        esc(t.state) + "</span><span class='meta'>" + esc(t.id) + " at " + esc(t.xy[0]) + "," +
+        esc(t.xy[1]) + " r " + esc(t.r) + (t.published ? " - published" : " - not published") +
+        "</span></div>" + talk + "<div class='shots'>" + shots + "</div>" +
+        "<label>Follow up (reopens the thread)<textarea></textarea></label>" +
+        "<button class='sec fu' data-id='" + esc(t.id) + "'>Send follow-up</button></div>");
+    });
+    $("threads").innerHTML = html.length ? html.join("") : "<p class='meta'>No threads for this slug.</p>";
+    var n = j.unpublished_all || 0;
+    $("publish").textContent = "Publish all (" + n + ")"; $("publish").disabled = n === 0;
+    Array.prototype.slice.call(document.querySelectorAll("button.fu")).forEach(function(b){
+      b.onclick = function(){
+        var ta = b.previousElementSibling.querySelector("textarea");
+        post("/api/review/followup", {slug: S.slug, id: b.getAttribute("data-id"), said: ta.value})
+        .then(function(res){
+          say($("pubmsg"), res.status === 200 ? "Follow-up recorded; thread reopened."
+              : (res.body.error || "refused"), res.status === 200);
+          threads(); });
+      };
+    });
+    redraw();
+  }).catch(function(){ say($("pubmsg"), "Could not load threads.", false); });
+}
+$("load").onclick = load;
+$("slug").addEventListener("keydown", function(e){ if (e.key === "Enter") { load(); } });
+$("radius").oninput = function(){ $("rv").textContent = this.value; redraw(); };
+$("img").addEventListener("click", function(e){
+  S.spot = [Math.round(e.offsetX), Math.round(e.offsetY)];
+  $("xy").textContent = "spot " + S.spot[0] + ", " + S.spot[1];
+  $("submit").disabled = false;
+  redraw();
+});
+$("submit").onclick = function(){
+  if (!S.spot) { return; }
+  var said = $("said").value;
+  if (!said.trim()) { say($("msg"), "Say what is wrong first.", false); return; }
+  $("submit").disabled = true;
+  post("/api/review/mark", {slug: S.slug, xy: S.spot, r: +$("radius").value, said: said, view: view()})
+  .then(function(res){
+    if (res.status === 200) {
+      say($("msg"), "Mark saved as " + res.body.id + ".", true);
+      $("said").value = ""; S.spot = null; $("xy").textContent = "tap the image first";
+    } else {
+      say($("msg"), res.body.error || "refused", false); $("submit").disabled = false;
+    }
+    threads();
+  });
+};
+$("publish").onclick = function(){
+  post("/api/review/publish", {}).then(function(res){
+    say($("pubmsg"), res.status === 200 ? ("Published " + (res.body.count || 0) + " in one batch.")
+        : (res.body.error || "refused"), res.status === 200);
+    threads(); });
+};
+var q = new URLSearchParams(location.search);
+if (q.get("slug")) { $("slug").value = q.get("slug"); load(); }
+</script>
+</body>
+</html>
