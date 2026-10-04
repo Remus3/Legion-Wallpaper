@@ -51,8 +51,11 @@ Carried forward:
   - yuumi-by-narumicsibe-dmax7wo-fullview: 3 operator residue seeds (credit
     line wording x2, veil) filed for its next /cleaning-pass at
     ops/runtime/clean/<slug>/<slug>_review_seeds.json; slug is still at
-    _firstneedauth awaiting operator approval. Answer each thread with the
-    after crop once cleaned.
+    first pass APPROVED by the operator 2026-10-04 (LEDGER 260); now CLEAN_SCRATCH /
+    EDITING, gate verdict qa (centre_overlay 0.277 + faint credit line), parked
+    for the operator's IOPaint hand clean. After `save-working <slug> --adopt`
+    (G2 verify runs) answer each thread with the after crop and set fixed only
+    if the mark is gone at 1:1; then `submit`.
   - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The
     first real finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
     Locks are operator-initiated: python tools/lw_stage_ledger.py lock ...
