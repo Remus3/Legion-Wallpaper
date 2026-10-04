@@ -11,8 +11,8 @@ Calibrated 2026-10-04 (LEDGER 264): golden clean 0.01..2.36 vs seam_offset_24lv
 21.64..24.83; the 26 real LaMa clean pairs 0.00..2.06 (0 over the bar), the
 same pairs offset +24 14.35..; flag bar SEAM_STEP_MAX = 6.0 levels.
 
-The live verify does NOT compute it yet (ROADMAP R3b): verify_verdict only
-flags when a value is passed, so the live seam semantics are unchanged.
+Live since R3b (LEDGER 266, tests/test_g2_seam_step_live.py): _auto_inpaint
+passes it to verify_verdict; the ring-SSIM "seam" flag and G2.seam row retired.
 """
 import os
 import sys
@@ -88,10 +88,10 @@ def _g2_subject():
             "box": (60, 50, 180, 100), "restored": img.copy()}
 
 
-def test_board_registers_seam_step_row_beside_the_old_seam_row():
+def test_board_registers_seam_step_row():
     board = B.lw_board(envs=("base",))
     names = {r.name for r in board.rows}
-    assert "G2.seam_step" in names and "G2.seam" in names
+    assert "G2.seam_step" in names  # G2.seam retired in R3b (LEDGER 266)
     f = board.faults["G2.seam_step"]
     assert f.plant.__name__ == "seam_offset_24lv"
     assert f.amplitude and "LEDGER 264" in f.evidence

@@ -818,13 +818,6 @@ def g2_subject(g1_subject: dict) -> dict:
     return subj
 
 
-def _ring(subject):
-    cache = subject.setdefault("_cache", {})
-    if "ring" not in cache:
-        cache["ring"] = _cp()._ring_mask(subject["mask"])
-    return cache["ring"]
-
-
 def _m_outside(subject):
     cp = _cp()
     b, a, m = subject["before"], subject["after"], subject["mask"]
@@ -851,14 +844,6 @@ def _m_noop(subject):
 def _j_noop(value, subject):
     v = _cp().verify_verdict(1.0, 0.0, value, False, 1.0)
     return v["verdict"] != "fail"
-
-
-def _m_seam(subject):
-    return _cp().seam_ring_ssim(subject["after"], _ring(subject))
-
-
-def _j_seam(value, subject):
-    return "seam" not in _cp().verify_verdict(1.0, 0.0, 0.0, False, value)["flags"]
 
 
 def _m_seam_step(subject):
@@ -934,11 +919,10 @@ FAULT_EVIDENCE = {
                             "(ssim 0.995 / mad 1.0) - see the proof table"),
     "G2.no_op": ("fill returned the input unchanged",
                  "the inpaint no-op the arm exists for (model returned its input)"),
-    "G2.seam": ("fill offset +24 levels against its ring",
-                "a hard seam: 24 levels is twice the operator's median per-step "
-                "edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS)"),
     "G2.seam_step": ("fill offset +24 levels against its ring",
-                     "same fault as G2.seam; research R3 measured the contour-normal "
+                     "a hard seam: 24 levels is twice the operator's median per-step "
+                     "edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS); research R3 measured "
+                     "the contour-normal "
                      "step golden clean max 2.36 vs seam_offset_24lv min 21.64, and "
                      "26 real LaMa clean pairs max 2.06 (offset copies min 14.35) "
                      "(LEDGER 264)"),
@@ -955,7 +939,7 @@ FAULT_NAME = {
     "G1.halo_pct": "usm_r2_p150", "G1.cambi_delta": "posterize_8",
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
-    "G2.seam": "seam_offset_24lv", "G2.seam_step": "seam_offset_24lv",
+    "G2.seam_step": "seam_offset_24lv",
     "G2.text_residue": "credit_line_4lv",
 }
 
@@ -1059,11 +1043,8 @@ def lw_board(envs=ENVS) -> Board:
             unit="ssim inside", where="inside the mask", judge=_j_noop,
             applies=lambda s: "mask" in s, gate="G2"),
         on_after(lambda s: np.array(s["before"], copy=True)))
-    add(Row("G2.seam", "no visible seam at the edit boundary",
-            _m_seam, Bar("at_least", lo=lambda: _cp().SEAM_SSIM_MIN),
-            unit="ssim ring", where="8px ring around the mask", judge=_j_seam,
-            applies=lambda s: "mask" in s, gate="G2"),
-        on_after(lambda s: fault_seam(s["after"], s["mask"], SEAM_OFFSET)))
+    # G2.seam (ring SSIM vs its blur = ring TEXTURE, UNKNOWN 3/12) retired in
+    # R3b (LEDGER 266): seam_step is the live seam flag; seam_ssim is info only.
     add(Row("G2.seam_step", "no visible seam at the edit boundary",
             _m_seam_step, Bar("at_most", hi=lambda: _cp().SEAM_STEP_MAX),
             unit="luma levels", where="1-3 px bands across the mask contour",

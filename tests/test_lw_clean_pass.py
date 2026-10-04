@@ -310,10 +310,11 @@ def test_verify_verdict_fail_residue():
     assert r["verdict"] == "fail"
 
 
-def test_verify_verdict_flag_seam_still_passes():
-    r = cp.verify_verdict(0.999, 0.4, 0.7, False, 0.90)
+def test_verify_verdict_flag_seam_step_still_passes():
+    # ring-SSIM "seam" flag retired in R3b (LEDGER 266); seam_step flags, never fails
+    r = cp.verify_verdict(0.999, 0.4, 0.7, False, 0.90, seam_step=cp.SEAM_STEP_MAX + 1)
     assert r["verdict"] == "pass"
-    assert "seam" in r["flags"]
+    assert "seam_step" in r["flags"] and "seam" not in r["flags"]
 
 
 # ===========================================================================
