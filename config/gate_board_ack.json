@@ -1,0 +1,88 @@
+{
+ "schema": 1,
+ "about": "Gate-board rows that are honestly not PROVEN, acknowledged by adjudication 2026-10-04 (option b). Each entry pins the measured state; a re-run that is WORSE (lower n_proven, a worse state, a new failing subject) breaches drift_guard; a row now PROVEN asks for its entry to be removed. Adding an entry needs a recorded adjudication; removing one is always allowed. An acknowledged row is NOT a pass: P0-3 acceptance stays NOT MET until this list is empty. Evidence: docs/GATE_BOARD.md.",
+ "entries": [
+  {
+   "row": "G1.band_delta",
+   "state": "BROKEN",
+   "n_proven": 0,
+   "n_applicable": 12,
+   "failing": [
+    "dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395",
+    "dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545",
+    "dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5",
+    "dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451",
+    "dgk8f92-bc10d7a7-f520-4b4f-ad86-ac70f6d50293",
+    "dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5",
+    "fiora2",
+    "dfzypou-30bef263-c754-4a26-9797-484757b1c4cf",
+    "inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview",
+    "dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf",
+    "coven-ashe-lol-df49jt0-pre",
+    "1341679-banding"
+   ],
+   "reason": "banding_delta counts isolated 1-px steps flanked by flats, measured after a LANCZOS downscale to source scale; that resample smears every posterize step into a 2-3 px ramp, so posterizing the 2560x1440 output (step 8, and step 32) LOWERS the metric on all 12 golden frames. The arm cannot see output-scale banding (it bound 8 times in 719 audits).",
+   "ledger": 244,
+   "clears_when": "a banding metric that reads PROVEN 12/12 under posterize_8 on the golden set",
+   "adjudication": "2026-10-04 adjudicator Q1 option (b)"
+  },
+  {
+   "row": "G1.lpips",
+   "state": "BROKEN",
+   "n_proven": 11,
+   "n_applicable": 12,
+   "failing": [
+    "coven-ashe-lol-df49jt0-pre"
+   ],
+   "reason": "4x down-up of the output moves LPIPS only 0.037 -> 0.059 on the soft low-res source coven-ashe (1192x670 -> 2560); LPIPS at 0.12 is blind to that detail loss there. Ladder coverage holds: G1.lap_ratio catches the same fault on coven-ashe (1.514 -> 0.198, FAIL).",
+   "ledger": 244,
+   "clears_when": "G1.lpips PROVEN 12/12 under downup_x4 (fault NOT rescaled to suit the gate)",
+   "adjudication": "2026-10-04 adjudicator Q2: accept BROKEN, do not rescale or NA the subject"
+  },
+  {
+   "row": "G2.seam",
+   "state": "UNKNOWN",
+   "n_proven": 3,
+   "n_applicable": 12,
+   "failing": [
+    "dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395",
+    "dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545",
+    "dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5",
+    "dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451",
+    "dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5",
+    "fiora2",
+    "dfzypou-30bef263-c754-4a26-9797-484757b1c4cf",
+    "inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview",
+    "dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf"
+   ],
+   "reason": "the seam arm is SSIM of the 8px ring OUTSIDE the mask vs its own blur, i.e. ring TEXTURE; on 9/12 golden frames a perfect fill already reads < 0.92 (live: 22 of 41 recorded verifies flagged seam). The live seam flag is mostly noise; give it no weight in review.",
+   "ledger": 244,
+   "clears_when": "a seam measure calibrated on real clean pairs that passes the clean subject and fails seam_offset_24lv on 12/12",
+   "adjudication": "2026-10-04 adjudicator Q3: carry forward as research"
+  },
+  {
+   "row": "G2.text_residue",
+   "state": "BROKEN",
+   "n_proven": 0,
+   "n_applicable": 12,
+   "failing": [
+    "dgk8f8n-398197d0-65d6-4299-8f0b-afdd9021c395",
+    "dfz5w2g-8ba7345b-5776-4d83-b939-4ca7d045f545",
+    "dfzlox4-7e2bdc64-36ce-41fa-80b0-c83f97fdf5f5",
+    "dgfkw05-0dca21c7-cf08-4dee-9a8e-4045dc98c451",
+    "dgk8f92-bc10d7a7-f520-4b4f-ad86-ac70f6d50293",
+    "dfzypp1-251c5c37-e25f-496e-a9a6-4900304e6fa5",
+    "fiora2",
+    "dfzypou-30bef263-c754-4a26-9797-484757b1c4cf",
+    "inkshadow-kai-sa-by-pebano1-dm7m9lz-fullview",
+    "dfzypoo-482973ff-dfb0-44e4-a90c-386714d27faf",
+    "coven-ashe-lol-df49jt0-pre",
+    "1341679-banding"
+   ],
+   "reason": "the live OCR+MSER residue arm reads a perfectly RESTORED busy-art region as residue on 7/12 golden frames (clean fails), and on the other 5 the faintest real residue (+4 luma levels) does not move it. Matches LEDGER 121: contrast-based residue detection is dead in both directions.",
+   "ledger": 244,
+   "clears_when": "a residue detector that catches credit_line_4lv on 12/12 golden frames with 0 false positives on the restored regions",
+   "adjudication": "2026-10-04 adjudicator Q3: carry forward as research (a new detector, not a patch)"
+  }
+ ]
+}

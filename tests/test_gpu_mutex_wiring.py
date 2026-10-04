@@ -116,6 +116,9 @@ ACQUIRE_SITES = [
     # W4 LoRA training. Hand-run leaf with no spawn site anywhere in tools/ or
     # ops/, and no CPU path at all (train() refuses without CUDA).
     ("lw_gen_train_weapon_lora.py", "train"),
+    # Gate board (P0-3): the OCR residue rows run EasyOCR on cuda under one hold
+    # for the whole golden pass; fr_metrics (metrics rows) acquires for itself.
+    ("lw_gate_board.py", "_prove_clean_held"),
 ]
 
 # (file, class, method) for acquisitions that live on a METHOD. _funcs() keys on
@@ -135,6 +138,7 @@ BORROWERS = {
     "lw_gen_qa.py": "lw_g1_gate",
     "lw_gen_weaponpass.py": "lw_gen_run",
     "lw_gen_train_weapon_lora.py": "lw_gen_run",
+    "lw_gate_board.py": "lw_g1_gate",
 }
 
 # Modules that carry their OWN copy of the helper. Four copies exist because

@@ -148,6 +148,12 @@ FAINT_MIN_W_FRAC = 0.05
 
 OUTSIDE_SSIM_MIN = 0.995     # G2 outside-mask identity floor (AG 1.3/3.4)
 MAD_MAX = 1.0                # outside mean-abs-diff ceiling, in 0..255 levels
+# Strict outside arm (2026-10-04, gate board P0-3): the two arms above are FRAME
+# MEANS and the board measured them blind to a localized bug - one 32x32 block
+# moved +16 levels outside the mask read ssim 0.9999 / mad 0.0045 on all 12
+# golden frames. inpaint_lama composites with a binary mask, so outside pixels
+# are byte-identical by construction: ANY outside change is the bug.
+OUTSIDE_MAX_ABS = 0.0        # max per-channel |diff| allowed outside the mask
 CHANGE_SSIM_MAX = 0.90       # inside change must drop SSIM to <= this
 SEAM_SSIM_MIN = 0.92         # seam-ring floor; below -> FLAG (not discard)
 
@@ -546,6 +552,23 @@ def masked_identity(image_a, image_b, mask_bool):
     return ssim_outside, mad
 
 
+def outside_max_abs(image_a, image_b, mask_bool) -> float:
+    """Largest per-channel absolute difference OUTSIDE the mask, in levels.
+
+    Unlike masked_identity's means this sees one changed pixel. No outside
+    pixels -> 0.0.
+    """
+    a = np.asarray(image_a, dtype=np.int16)
+    b = np.asarray(image_b, dtype=np.int16)
+    outside = ~np.asarray(mask_bool, dtype=bool)
+    if not outside.any():
+        return 0.0
+    d = np.abs(a - b)
+    if d.ndim == 3:
+        d = d.max(axis=2)
+    return float(d[outside].max())
+
+
 def patch_change_ssim(patch_a, patch_b) -> float:
     """Mean SSIM between two patches: ~1.0 if identical, low if very different."""
     ga = _to_gray(patch_a)
@@ -569,16 +592,18 @@ def seam_ring_ssim(image, ring_mask, blur_win: int = 7) -> float:
 
 
 def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
-                   seam_ssim):
+                   seam_ssim, outside_max_abs=0.0):
     """Combine the G2 checks into {"verdict", "reasons", "flags"}.
 
     Precedence:
-      1. outside identity violated (ssim < 0.995 OR mad > 1 level) -> DISCARD
+      1. outside identity violated (ssim < 0.995 OR mad > 1 level OR any
+         outside pixel changed: outside_max_abs > OUTSIDE_MAX_ABS) -> DISCARD
          (hard: a pipeline bug, halt - never retry blindly).
       2. inside did not change (change_ssim > 0.90) -> FAIL (inpaint no-op).
       3. text residue detected inside the old bbox -> FAIL.
-      4. otherwise PASS, flagging the seam (seam_ssim < 0.92) for a QA/vision
-         look without discarding.
+      4. otherwise PASS, flagging the seam (seam_ssim < 0.92) and an unknown
+         residue (text_residue None: the probe crashed) for a QA/vision look
+         without discarding.
     """
     reasons = []
     flags = []
@@ -586,6 +611,8 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
         reasons.append(f"outside_ssim {outside_ssim:g} < {OUTSIDE_SSIM_MIN:g}")
     if mad_outside > MAD_MAX:
         reasons.append(f"mad_outside {mad_outside:g} > {MAD_MAX:g}")
+    if outside_max_abs > OUTSIDE_MAX_ABS:
+        reasons.append(f"outside_max_abs {outside_max_abs:g} > {OUTSIDE_MAX_ABS:g}")
     if reasons:
         return {"verdict": "discard", "reasons": reasons, "flags": flags}
     if change_ssim > CHANGE_SSIM_MAX:
@@ -595,9 +622,24 @@ def verify_verdict(outside_ssim, mad_outside, change_ssim, text_residue,
                 "flags": flags}
     if text_residue:
         return {"verdict": "fail", "reasons": ["text_residue"], "flags": flags}
+    if text_residue is None:
+        # the probe crashed: UNKNOWN, never clean (gate board, 2026-10-04)
+        flags.append("residue_probe_error")
     if seam_ssim < SEAM_SSIM_MIN:
         flags.append("seam")
     return {"verdict": "pass", "reasons": [], "flags": flags}
+
+
+def probe_residue(base_arr, out_arr, boxes, reader):
+    """(residue, error_type). A crashed probe returns (None, ExcType) - the
+    caller records it and verify flags `residue_probe_error`; it used to read
+    as residue=False, i.e. clean (gate board finding, 2026-10-04)."""
+    try:
+        return any(_residue_decision(text_energy(base_arr, b, reader),
+                                     text_energy(out_arr, b, reader))
+                   for b in boxes), None
+    except Exception as exc:  # noqa: BLE001 - recorded and flagged, never silent
+        return None, exc.__class__.__name__
 
 
 def _residue_decision(before_energy, after_energy, keep_frac: float = 0.45,
@@ -1147,22 +1189,23 @@ def _auto_inpaint(slug, image_path, boxes, w, h, out_dir, max_attempts,
             out_img = inpaint_lama(base, mask, models["lama"])
             out_arr = np.asarray(out_img)
             ssim_out, mad_out = masked_identity(base_arr, out_arr, mask_bool)
+            max_out = outside_max_abs(base_arr, out_arr, mask_bool)
             change = _inside_change_ssim(base_arr, out_arr, mask_bool)
-            try:
-                residue = any(
-                    _residue_decision(
-                        text_energy(base_arr, b, models["reader"]),
-                        text_energy(out_arr, b, models["reader"]))
-                    for b in boxes)
-            except Exception:   # noqa: BLE001 - residue probe is advisory, not fatal
-                residue = False
+            residue, residue_err = probe_residue(base_arr, out_arr, boxes,
+                                                 models["reader"])
+            if residue_err:
+                print(f"LW CLEAN {slug}: residue probe error {residue_err} "
+                      "- flagged, not read as clean")
             seam = seam_ring_ssim(out_arr, ring)
-            v = verify_verdict(ssim_out, mad_out, change, residue, seam)
+            v = verify_verdict(ssim_out, mad_out, change, residue, seam,
+                               outside_max_abs=max_out)
             v["metrics"] = {"outside_ssim": round(ssim_out, 6),
                             "mad_outside": round(mad_out, 6),
+                            "outside_max_abs": max_out,
                             "change_ssim": round(change, 6),
                             "seam_ssim": round(seam, 6),
-                            "residue": residue, "attempt": attempt}
+                            "residue": residue, "residue_error": residue_err,
+                            "attempt": attempt}
             last = v
             if v["verdict"] == "discard":
                 atomic_write_json(os.path.join(out_dir, f"{slug}_verify.json"),

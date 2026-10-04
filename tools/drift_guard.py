@@ -367,6 +367,27 @@ def check_model_pins(pins_path: str | None = None) -> None:
         notes.append(f"{len(summary['verified'])} pinned model weight(s) verified")
 
 
+def check_gate_proofs() -> None:
+    """Every registered gate has been SEEN RED (fault-proven gate board, P0-3).
+
+    Reads ops/runtime/gate_proofs.json via lw_gate_board.check_proofs_acked:
+    a gate not PROVEN on the golden set breaches unless a tracked, adjudicated
+    entry in config/gate_board_ack.json covers it at no worse a state. A crash
+    here is a breach - a guard that cannot look must never read as clean.
+    """
+    try:
+        import lw_gate_board
+        found, seen = lw_gate_board.check_proofs_acked(
+            lw_gate_board.PROOFS_PATH, lw_gate_board.lw_board())
+    except Exception as exc:  # noqa: BLE001 - reported as a breach, never swallowed
+        warn(f"GATE BOARD: check crashed ({exc.__class__.__name__}: {exc})")
+        return
+    for msg in found:
+        warn(f"GATE BOARD: {msg}")
+    for msg in seen:
+        notes.append(f"GATE BOARD: {msg}")
+
+
 def check_cited_shas() -> None:
     """SHAs cited in staged docs must resolve (worktree-slice SHAs often do not)."""
     r = subprocess.run(
@@ -682,6 +703,7 @@ def main() -> int:
     check_untracked_authored()
     check_tracked_but_ignored()
     check_model_pins()
+    check_gate_proofs()
     check_cited_shas()
     check_git_hooks()
     check_shared_loop_files()

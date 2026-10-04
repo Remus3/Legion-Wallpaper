@@ -73,6 +73,14 @@ tools\lw_ports.py                    LW's reserved TCP block 8900-8919 and its
                                      foreign port literals stay out of this
                                      tree by test.
 
+tools\lw_gate_board.py               fault-proven gate board (P0-3): every gate
+                                     row must pass clean AND fail on a planted
+                                     synthetic fault over the golden set;
+                                     writes ops\runtime\gate_proofs.json;
+                                     drift_guard breaches on non-PROVEN rows
+                                     not covered by config\gate_board_ack.json
+                                     (docs/GATE_BOARD.md).
+
 ops\runtime\pipeline_state.json      machine state twin, written atomically by
                                      lw_pipeline.py; monitor reads tolerantly
                                      (unknown fields ignored, stale-cache belt).
