@@ -27,6 +27,67 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+251. DONE **2026-10-04 (ingest P1-6: AHK bridge single-paste + target process check + send journal; e466348).**
+   Audit: the bridge typed each directive line with its own Enter (a multi-line directive
+   arrived as fragments). Plain lines now go as ONE clipboard paste (operator clipboard saved
+   and restored), Enter separate after a pause; slash lines keep the typed "/" + word +
+   space path; the window process must be claude.exe (notepad.exe in dry mode) before and
+   after activation, else REFUSE and gemini.ready stays (controller reads not consumed).
+   `SendJournal` in ops/loop/executor.py writes attempt (id, len, sha256) before and result
+   after each hand-off to ops/runtime/bridge/sends.jsonl. AHK v2 /Validate clean (a planted
+   error is reported). 10 arms (40-line quotes/backslash/dollar/backtick payload); 6 mutants
+   KILLED (2 static arms tightened after surviving). Full suite 3707 passed / 20 skipped.
+   READ BACK: channel is still `sdk`, so no live send happened. CARRIED: the live 40-line
+   proof in the dry-run Notepad window (needs an attended desktop - it activates a window
+   and borrows the clipboard).
+
+250. DONE **2026-10-04 (ingest P0-5: /api/version on every lw_httpd server + served-version probe; d927d07).**
+   `LWServer` captures {commit, started, pid, config_hash} once after the bind and
+   `BaseLWHandler` answers `GET /api/version` behind the Host guard (sha + timestamps only);
+   `tools/lw_served_probe.py` asks each `lw_ports` allocation and records current / stale
+   (with `stale_first_seen`) / no-commit-reported / down in `ops/runtime/served_versions.json`.
+   TDD RED first (2 failed, 6 errors); 13 arms; 5 mutants KILLED. Full suite 3611 passed /
+   20 skipped. READ BACK (live): a rundash started on d927d07 probed `current` (monitor
+   `down`, not running); after e466348 landed and the
+   main checkout fast-forwarded WITHOUT a restart the probe read `stale - serving d927d07 since
+   06:00:30Z; HEAD is e466348`; after taskkill of the served pid and a relaunch it read
+   `current - serving e466348` and `stale_first_seen` was gone. Appears and goes away.
+
+249. DONE **2026-10-04 (ingest P0-4: per-job run log, tri-state job health, rundash Scheduled Jobs card; 17b5326).**
+   `tools/lw_runlog.py` (one record per run, never raises, rotation, args-not-stdin) wired
+   into LW-InboxResponder, LW-CIWatchdog, LW-Wallpaper and LW-WeeklyHygiene (PS 5.1 ParseFile
+   0 errors); `tools/lw_job_health.py` read-only, exit 0/1/2, threshold = max(declared x 2,
+   observed p90 x 1.5), HALT/disabled = HALTED; rundash `/api/jobs` + card (UI fixture audit:
+   no MUST-FIX, 3 SHOULDs applied). 26 mutants KILLED. Full suite 3597 passed / 0 failed /
+   20 skipped; CI run 37181011559 success. Live READ BACK of /api/jobs on a fresh rundash:
+   overall OK - InboxResponder OK (last ok 4m, threshold 10m), Wallpaper OK (1m, 6m),
+   CIWatchdog and WeeklyHygiene HALTED (their HALT files). READ BACK after the main checkout
+   fast-forwarded: `ops/runtime/runlog/LW-CIWatchdog.jsonl` gained
+   {"status": "skipped", "detail": "halted"} at 05:50:27Z (the watchdog is HALTED since
+   2026-09-11 - the record says so instead of looking idle).
+
+248. DONE **2026-10-04 (ingest P0-2: lw_watch watcher primitive + responder and CI-watchdog retrofits; 0335fce, 7b79eaa, 8530e48).**
+   `tools/lw_watch.py` run_source: baseline first, advance only on confirmed delivery
+   (confirm() persists per item), pid-stamped lock dir (OpenProcess liveness, never mtime),
+   one alert after K fetch failures, no write when nothing changed. Responder seen-set and
+   CI watchdog settled-failure handling now ride it (one commit each); a missing inbox and an
+   `unavailable` CI read are fetch failures, not quiet sources. One existing test retargeted
+   (adjudicated, recorded in 7b79eaa: spy on `_entries`, assertion unchanged). Mutation incl.
+   "advance state before delivery" KILLED in all three. Full suite 3549 passed / 20 skipped;
+   CI run 37180351989 success. READ BACK: the live responder seen file kept its
+   legacy shape (557 keys, no extra keys) after the main checkout moved to 8530e48.
+
+247. DONE **2026-10-04 (ingest P0-1: verified operator-task engine; a70da35).**
+   `tools/lw_ops_tasks.py` (tasks keyed by (cap, subject), join without re-notify, close only
+   when the verify argv exits 0, hash-chained append-only log, string argv refused,
+   allowlisted executables, owner LW only, hold env); hand-off "Operator asks" block rendered
+   from the open tasks by `lw_next_session.py --write`; `verify_pending()` rides the
+   LW-InboxResponder `--once` tick. 36 arms, 13 mutants KILLED. Full suite 3522 / 20 skipped;
+   CI run 37179473586 success. READ BACK (live acceptance): planted T0001 (verify = flag file
+   exists) read `open, 1 attempt, exit 1` after the 05:21:56Z scheduled tick; flag created;
+   the 05:26:57Z tick logged {"event": "operator_tasks", "closed": ["T0001"]} in
+   runs.jsonl and `lw_ops_tasks.py render` read back "none open".
+
 246. DONE **2026-10-04 (review: reviewability pre-check + picture-judging doctrine, ingest P1-7).**
    `tools/lw_reviewability.py`: every crop sent for a residue judgement carries a record - scale
    (must be exactly 1.0), ROI margin to the crop edge (>= 16 px where the frame allows; an ROI on
