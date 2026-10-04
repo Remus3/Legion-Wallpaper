@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+246. DONE **2026-10-04 (review: reviewability pre-check + picture-judging doctrine, ingest P1-7).**
+   `tools/lw_reviewability.py`: every crop sent for a residue judgement carries a record - scale
+   (must be exactly 1.0), ROI margin to the crop edge (>= 16 px where the frame allows; an ROI on
+   the FRAME edge is recorded, not re-cut), ROI brightness / clipped fraction / contrast floors -
+   and an action: judge, recut, or "not judgeable from pixels"; crops per item capped at 4
+   (`plan_crops`). `tools/lw_clean_qa_crops.py` (the residue-sheet builder) no longer resizes crops
+   to a 760 px cell: cells are 1:1, re-cut when the ROI touches the crop edge, and each sheet writes
+   a `.json` of its records. Doctrine added to the reviewer prompt `.claude/commands/end-review.md`
+   ("Picture-judging doctrine"; pinned by test). Shadow-window run READ BACK (gatev4 census, all 67
+   qa rows, sheets to a scratch dir, nothing approved): 67 crops, 0 downscaled, 0 resampled (the old
+   builder would have downscaled 45 of them, up to 3.4x, and upscaled 22); 66 judge, 1 not
+   judgeable from pixels (dim + clipped), 4 ROIs on the frame edge recorded. TDD: 12 tests RED
+   first (downscaled crop rejected, ROI touching edge rejected, dim crop flagged, cap enforced);
+   mutation-proven 5/5 arms (plant, red, restore byte-exact by sha256, green).
+
 245. DONE **2026-10-04 (pipeline: stage ledger + end-review lock gate, ingest P1-1).**
    `tools/lw_stage_ledger.py`: per slug per run, each stage of `lw_pipeline.STAGES` (read, never
    restated) is compared input `_initial` -> output (next `_initial`, or `_lastdone`) at a fixed
