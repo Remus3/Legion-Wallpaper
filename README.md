@@ -8,8 +8,8 @@
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg)](https://www.python.org/)
 [![platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6.svg)](#requirements)
-[![decisions: 12 ADRs](https://img.shields.io/badge/decisions-12%20ADRs-6f42c1.svg)](docs/adr/)
-[![tests: 2.9k arms](https://img.shields.io/badge/tests-2.9k%20arms-2ea44f.svg)](tests/)
+[![decisions: 13 ADRs](https://img.shields.io/badge/decisions-13%20ADRs-6f42c1.svg)](docs/adr/)
+[![tests: 3.5k](https://img.shields.io/badge/tests-3.5k-2ea44f.svg)](tests/)
 
 </div>
 
@@ -54,14 +54,15 @@ routes it to a human QA queue. The single-writer rule has no exceptions:
 
 ## Where it stands
 
-_Probed live 2026-09-14. A static status table goes stale, so the machine-readable version is `ops/runtime/pipeline_state.json`, refreshed by `lw_pipeline scan`._
+_Probed live 2026-10-03. A static status table goes stale, so the machine-readable version is `ops/runtime/pipeline_state.json`, refreshed by `lw_pipeline scan`._
 
 | Area | Status |
 |---|---|
 | **Running on the corpus** | Intake, source recovery, first pass (spandrel DAT2 super-resolution plus the G1 fidelity gate), and cleaning (detect, mask, LaMa inpaint, verify, with IOPaint as the human QA lane) |
 | **Built, not yet exercised end to end** | Final pass, last pass and end review are coded, tested and gated, but no image has been carried through to delivery yet |
-| **Corpus** | 713 tracked illustrations on one Windows workstation: 517 through cleaning, 70 in cleaning scratch, 118 in first pass, each with a retained milestone snapshot set |
-| **Code** | 98 tools, 145 test files, 2,938 test arms, 12 ADRs, 201 ledger items, 571 commits |
+| **Corpus** | 737 tracked illustrations on one Windows workstation: 517 through cleaning, 70 in cleaning scratch, 142 in first pass, 8 outside the active stages |
+| **Approval** | First-pass results wait for the operator. An agent never approves its own output |
+| **Code** | 101 tools, 177 test files, 3,506 collected tests, 13 ADRs, 243 ledger items, 670+ commits |
 | **Autonomy** | Phase A (shadow). Promotion needs a window of 50 or more operator-reviewed images |
 
 ## What is next
@@ -111,6 +112,46 @@ believe it. The same instinct runs through the publication guards, which pin
 every forbidden value by hash rather than writing it down, because a guard that
 names what it forbids publishes it.
 
+## How it is built
+
+This repo is developed by Claude Code agents working under an operating contract
+([`CLAUDE.md`](CLAUDE.md)), steered by one human operator. The interesting part is
+not that agents write the code; it is what stops them from shipping a claim they
+have not proven.
+
+```mermaid
+flowchart LR
+  OP["Operator"] --> MS["Main session<br/><i>plans, dispatches,<br/>reports</i>"]
+  MS --> SA["Worktree subagents<br/><i>TDD, RED first</i>"]
+  SA --> VF["Verifier subagent<br/><i>tries to falsify<br/>the green claim</i>"]
+  VF --> GH["Git hooks + CI<br/><i>glyph, lint, leak<br/>and drift gates</i>"]
+  GH --> MAINB["main"]
+  INB["Sync inbox<br/><i>notes from sibling repos</i>"] --> RESP["Inbox responder<br/><i>every 5 min</i>"]
+  RESP --> HL["Headless lane<br/><i>detached claude -p</i>"]
+  HL --> GH
+  CIW["CI watchdog"] --> HL
+```
+
+- **Subagent first.** The main session plans, dispatches and reports. Work beyond
+  a one-line fix runs in background subagents that write a progress file as they
+  go, so status is read from a file, never by interrupting the worker.
+- **Cross-repo note sync, end to end.** This repo is one of six sibling projects
+  on the same machine that talk through a file-based channel
+  ([`docs/CHANNEL.md`](docs/CHANNEL.md)). Notes land in a gitignored inbox; shared
+  files are pinned by sha256 and a change lands only when every carrier reports
+  the same digest from its own disk.
+- **Headless background lanes.** Scheduled tasks run unattended work without
+  touching the operator's window: `LW-InboxResponder` answers new channel notes
+  in a detached headless session, `LW-CIWatchdog` repairs a red `main` in an
+  isolated worktree and merges only on the fix's own green CI, and
+  `LW-WeeklyHygiene` runs a weekly sweep. Every headless spawn goes through one
+  vendored helper (`ops/fleet_kit/`) that fails closed, hides its console, caps
+  runs per rolling 24 hours and writes a live status file. Each lane has a HALT
+  file as its kill switch. Details: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+- **Gates over good intentions.** `.githooks/` blocks banned glyphs and net-new
+  lint on staged lines and strips agent co-author trailers; CI re-runs the full
+  suite, including the publication guards, on every push to `main`.
+
 ## Decisions are written down, including the wrong ones
 
 Every choice with lasting consequences becomes a numbered ADR in
@@ -142,7 +183,17 @@ IOPaint for cleaning, ComfyUI with an SDXL illustration checkpoint for face
 repair and generation). Built around one machine, one corpus and one operator:
 treat it as a reference implementation, not a turnkey tool.
 
-The three commands that drive everything:
+Trying the code without the corpus or the GPU stack:
+
+```powershell
+git clone https://github.com/Remus3/Legion-Wallpaper.git
+cd Legion-Wallpaper
+python -m pip install -r requirements.txt
+python tools\install_git_hooks.py           # arm the commit gates
+python -m pytest tests -q                     # GPU-only tests skip
+```
+
+The three commands that drive the pipeline on a provisioned machine:
 
 ```powershell
 python tools\lw_pipeline.py scan      # refresh pipeline_state.json
@@ -166,7 +217,10 @@ clear. Security or privacy problems go through the private channel in
 | Roadmap (highest priority at top) | `ROADMAP.md` |
 | Aspirational backlog | `BACKLOG.md` |
 | Per-item completion ledger (append-only, newest-first) | `docs/LEDGER.md` |
-| Session hand-off notes (newest-first) | `WAKEUP_NOTES.md` |
+| Session hand-off (the only continuity) | `LW-NEXT-SESSION.txt` |
+| Older session notes (newest-first) | `WAKEUP_NOTES.md` |
+| Cross-repo channel conventions | `docs/CHANNEL.md` |
+| Vendored headless-spawn kit (pinned) | `ops/fleet_kit/` |
 | Operating rules (per-session auto-load) | `CLAUDE.md` |
 | Harness config, hooks, agents, commands | `.claude/` |
 | Pipeline stage folders (content gitignored) | `images\0.Originals` .. `images\9.Image Backup` |
@@ -192,8 +246,10 @@ hooks, not by good intentions.
 - **Subagent-first delegation.** Non-trivial work fans out to worktree subagent
   slices. An independent read-only verifier must CONFIRM before the orchestrator
   merges, and the orchestrator is the sole merger.
-- **Session rituals.** Wake by reading `WAKEUP_NOTES.md` and `ROADMAP.md`. Wrap
-  by appending a ledger entry to `docs/LEDGER.md` and syncing the living docs.
+- **Session rituals.** Wake by reading `LW-NEXT-SESSION.txt`, the single
+  hand-off file. Wrap with `/done`: tests, commit, push, a ledger entry in
+  `docs/LEDGER.md`, CI confirmed green, and a rewritten hand-off that carries
+  every unfinished item forward.
 - **Ledger discipline.** Every completed item gets a numbered, append-only entry
   in `docs/LEDGER.md`, never in `CLAUDE.md` (it has a hard size budget).
 - **7-bit ASCII only** in authored content: no em or en dashes, no smart quotes.
