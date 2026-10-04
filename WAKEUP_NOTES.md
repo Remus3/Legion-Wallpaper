@@ -79,6 +79,14 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-04, second) - C4 closed, research filed
+
+- C4 round CLOSED: slots.py 290cbf80 on all 5 carriers (own-disk + HEAD read
+  back). drift_guard 0; bind GREEN; held commits pushed c6e9984, verify-push OK.
+- Research: docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md; R1-R6 todos in ROADMAP
+  (run R1 CAMBI mlc=5 first). Operator offers ~8.7k unlabeled images (R6).
+- Do NOT redo: the C4 re-hash tally; the MoE/MIM/ExPLoRA literature survey.
+
 ## PREVIOUS SESSION (2026-10-03, seventh) - MAIN FLEET-KIT v4 adopted
 
 - Shipped: 62442fc (MAIN 1204 order; 5 kit files vendored, MANIFEST v4, spawn

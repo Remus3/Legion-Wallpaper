@@ -646,6 +646,12 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 ## Open items - High priority
 
 - **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
+  - TODO R1 CAMBI mlc=5 on the 12 golden pairs at 2560x1440 (ffmpeg 8.1.1, CPU, ~0.5 d); accept = separates banded vs clean on >= 10/12, then re-prove G1.band_delta.
+  - TODO R2 re-inpaint matched filter for G2.text_residue (LaMa on dilated stroke mask vs random-offset null, ~1-2 d); fallback DRAEM-style detector trained on synthetic faint text.
+  - TODO R3 contour-normal seam step for G2.seam, calibrated on the 26 real clean pairs (~0.5 d, numpy).
+  - TODO R4 anime-lama vs LaMa blind A/B on approved-_01 slugs (engine REPLACE, ADR-009); operator judges.
+  - TODO R5 DINOv2 kNN residue map (AnomalyDINO, training-free) FIRST; ExPLoRA (MAE objective, ViT-B, 2-6 GPU-h) only if a domain gap is measured.
+  - TODO R6 unlabeled pretraining pool: operator offers ~8.7k local images (content does not matter; folder `<account>\Desktop\interesting\hmm`, 8714 files counted 2026-10-04). Usable for R5/ExPLoRA self-supervised continued pretraining and as R2 synthetic-text backgrounds. Never track image bytes (repo public); read in place, log only counts + sha256 manifest outside the tree.
 
 - **STALE PROSE: two tracked docs still say the headless lanes are "Ready", and
   the responder task is `Disabled` (measured 2026-09-21, LEDGER 223).** Neither
