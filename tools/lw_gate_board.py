@@ -886,6 +886,38 @@ def _j_residue(value, subject):
     return not _cp()._residue_decision(value["before_energy"], value["after_energy"])
 
 
+_LAMA = {}
+
+
+def _lama():
+    """SimpleLama on cuda (lw-clean venv only), loaded once per process."""
+    if "m" not in _LAMA:
+        import torch
+        from simple_lama_inpainting import SimpleLama
+        _LAMA["m"] = SimpleLama(device=torch.device("cuda"))
+    return _LAMA["m"]
+
+
+def stroke_mask(box, shape, text: str = "WWW.DEVIANTART.COM/ARTIST") -> np.ndarray:
+    """Full-frame bool glyph mask of the credit line fault_text renders in `box`."""
+    h, w = shape[:2]
+    x0, y0, x1, y1 = (int(v) for v in box)
+    m = np.zeros((h, w), dtype=bool)
+    cov = text_mask(text, x1 - x0, y1 - y0) > 0.5
+    m[y0:y1, x0:x1] = cov[:y1 - y0, :x1 - x0]
+    return m
+
+
+def _m_residue_mf(subject):
+    img = subject["restored"]
+    return _cp().residue_mf(img, stroke_mask(subject["box"], img.shape), _lama())
+
+
+def _j_residue_mf(value, subject):
+    v = _cp().verify_verdict(1.0, 0.0, 0.0, False, 1.0, residue_mf=value)
+    return "residue_mf" not in v["flags"]
+
+
 # ============================================================== calibration
 # Each fault amplitude is set from evidence, not from "whatever turns it red".
 # Values marked CALIBRATED were measured on the golden set by
@@ -926,6 +958,12 @@ FAULT_EVIDENCE = {
                      "step golden clean max 2.36 vs seam_offset_24lv min 21.64, and "
                      "26 real LaMa clean pairs max 2.06 (offset copies min 14.35) "
                      "(LEDGER 264)"),
+    "G2.text_residue_mf": ("credit line at +4 luma levels over the fill",
+                           "same faint-residue calibration as G2.text_residue (105-cleanup "
+                           "hand-clean steps 3.77 / 4.5 levels); research R2 measured the "
+                           "re-inpaint matched filter golden clean max 2.00 vs +4 lv min "
+                           "4.00, 26 real LaMa clean pairs max 1.94 (+4 lv min 3.89) "
+                           "(LEDGER 267)"),
     "G2.text_residue": ("credit line at +4 luma levels over the fill",
                         "faintest real residue the operator's eye rejected: 105-cleanup "
                         "hand-clean step 70 median 3.77 levels (n=733) and final step "
@@ -940,7 +978,7 @@ FAULT_NAME = {
     "G1.msssim": "shift_16px", "G1.lpips": "downup_x4",
     "G2.outside_identity": "outside_block_32px_16lv", "G2.no_op": "noop_fill",
     "G2.seam_step": "seam_offset_24lv",
-    "G2.text_residue": "credit_line_4lv",
+    "G2.text_residue": "credit_line_4lv", "G2.text_residue_mf": "credit_line_4lv",
 }
 
 
@@ -1053,6 +1091,11 @@ def lw_board(envs=ENVS) -> Board:
     add(Row("G2.text_residue", "zero watermark: no text left where the mark was",
             _m_residue, None, unit="text energy", where="the mark's box",
             judge=_j_residue, applies=lambda s: "mask" in s, env="clean", gate="G2"),
+        _plant_residue)
+    add(Row("G2.text_residue_mf", "zero watermark: no faint residue along the old strokes",
+            _m_residue_mf, Bar("at_most", hi=lambda: _cp().RESIDUE_MF_MAX),
+            unit="luma levels", where="the old mark's strokes (re-inpainted)",
+            judge=_j_residue_mf, applies=lambda s: "mask" in s, env="clean", gate="G2"),
         _plant_residue)
 
     # ---- operator validation rows (never measured, never count toward done)

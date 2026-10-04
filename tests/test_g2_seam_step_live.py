@@ -46,6 +46,15 @@ def _run_auto_inpaint(tmp_path, monkeypatch, offset):
         out[m] = np.clip(inside[::-1] + offset, 0, 255)
         return Image.fromarray(out.astype(np.uint8))
 
+    def np_render_mask(bxs, ww, hh, dilate_px=cp.DILATE_PX):
+        # cv2-free stand-in (CI has no cv2): box union grown by a square
+        m = np.zeros((int(hh), int(ww)), dtype=np.uint8)
+        for x0, y0, x1, y1 in bxs:
+            m[max(0, y0 - dilate_px):y1 + dilate_px + 1,
+              max(0, x0 - dilate_px):x1 + dilate_px + 1] = 255
+        return m
+
+    monkeypatch.setattr(cp, "render_mask", np_render_mask)
     monkeypatch.setattr(cp, "inpaint_lama", fake_inpaint)
     monkeypatch.setattr(cp, "probe_residue", lambda *a, **k: (False, None))
     monkeypatch.setattr(cp, "gpu_lock", lambda dev: contextlib.nullcontext())

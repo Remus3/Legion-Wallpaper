@@ -36,7 +36,7 @@
    ],
    "reason": "the live OCR+MSER residue arm reads a perfectly RESTORED busy-art region as residue on 7/12 golden frames (clean fails), and on the other 5 the faintest real residue (+4 luma levels) does not move it. Matches LEDGER 121: contrast-based residue detection is dead in both directions.",
    "ledger": 244,
-   "clears_when": "a residue detector that catches credit_line_4lv on 12/12 golden frames with 0 false positives on the restored regions",
+   "clears_when": "the OCR+MSER residue arm is retired from live verify once G2.text_residue_mf (re-inpaint matched filter, PROVEN 12/12 under credit_line_4lv, 0/26 FP on real LaMa clean pairs, LEDGER 267) is computed in live verify_verdict with a stroke mask from the pre-clean detection (ROADMAP R2b); the replacement measure exists, the live wiring does not yet",
    "adjudication": "2026-10-04 adjudicator Q3: carry forward as research (a new detector, not a patch)"
   }
  ]

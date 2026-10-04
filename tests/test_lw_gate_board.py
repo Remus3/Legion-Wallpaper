@@ -209,7 +209,7 @@ def test_registry_covers_every_g2_verify_arm():
     board = B.lw_board()
     names = {r.name for r in board.rows}
     for arm in ("G2.outside_identity", "G2.no_op", "G2.text_residue",
-                "G2.seam_step"):
+                "G2.seam_step", "G2.text_residue_mf"):
         assert arm in names
 
 

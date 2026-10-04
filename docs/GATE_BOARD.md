@@ -44,6 +44,7 @@ wherever the golden set is on disk; on CI (no golden set) absence is a note.
 | G2.no_op | PROVEN | 12/12 | fill returned the input |
 | G2.seam_step | PROVEN | 12/12 | fill offset +24 levels (added 2026-10-04, LEDGER 264) |
 | G2.text_residue | BROKEN | 0/12 | credit line at +4 luma levels |
+| G2.text_residue_mf | PROVEN | 12/12 | credit line at +4 luma levels (added 2026-10-04, LEDGER 267) |
 | V.reads_like_original | VALIDATION | - | operator only |
 | V.zero_watermark_eye | VALIDATION | - | operator only |
 
@@ -89,7 +90,14 @@ acknowledged (below), which is a record of a measured hole, not a pass.
    6.28 - operator review) vs 22/37 under the retired arm.
 6. **G2.text_residue fires on clean busy art and misses faint residue.** 7/12
    restored regions read as residue; on the other 5 the +4-level mark does not
-   move it. Consistent with LEDGER 121. Research item (a new detector).
+   move it. Consistent with LEDGER 121. REPLACEMENT PROVEN (R2 / E-MIM-1,
+   LEDGER 267): G2.text_residue_mf = signed median over the old mark's
+   stroke pixels of luma(cleaned) - luma(LaMa re-inpaint of the strokes
+   dilated 3 px); golden clean |.| max 2.00 vs +4 lv min 4.00, 26 real LaMa
+   clean pairs max 1.94 (0 FP; +4 lv copies min 3.89, 26/26 caught), bar
+   3.0 levels, PROVEN 12/12. Not yet computed in live verify (R2b: needs a
+   stroke mask from the pre-clean detection), so G2.text_residue stays
+   pinned until that wiring retires it.
 7. **Measurement-basis split, recorded:** `lw_golden._real_compute_metrics`
    feeds PIL "L" (uint8) gray to banding_delta, the live first pass feeds float
    luma from RGB; the same frame scores +0.0074 vs -0.0767. The board measures
@@ -100,6 +108,7 @@ acknowledged (below), which is a record of a measured hole, not a pass.
 | row | amplitude | evidence |
 |---|---|---|
 | G2.text_residue | +4 luma levels toward white inside the glyphs | the faintest residue the operator's eye REJECTED in the hand-clean captures (`ops/runtime/clean/handedits/`): 105-cleanup step 70 median 3.77 levels (n=733, corr 0.86 with the remaining residue, 84 percent of pixels moving toward final) and its final step 4.5 levels (n=2813). As alpha that is ~0.018-0.026 for a white mark, ~0.06-0.075 for a dark one; the DA centre veil (alpha 0.09-0.13, CLEAN_VEIL_AMPLITUDE_2026-08-12) is ~5x stronger. 107-cleanup's 3.2-level steps were texture regeneration (corr 0.18-0.36), not residue, and were not used. |
+| G2.text_residue_mf | +4 luma levels (same fault) | same calibration as G2.text_residue; clean max 2.00 (golden) / 1.94 (26 real pairs) vs +4 lv min 3.89 |
 | G2.seam_step | +24 levels | twice the operator's median per-step edit delta (11.8, CLEAN_HANDEDIT_ANALYSIS); clean max 2.36 (golden) / 2.06 (26 real pairs) vs offset min 14.35 |
 | G2.outside_identity | 32x32 block, +16 levels | a localized composite bug, far below what the mean arms can see |
 | G1.lap_ratio | down-up x2 | the historic double-resample softness bug (AUDIT_GATES 3.1) |

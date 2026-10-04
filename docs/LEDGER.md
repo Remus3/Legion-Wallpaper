@@ -27,6 +27,37 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+267. DONE **2026-10-04 (research R2 / E-MIM-1: re-inpaint matched filter ACCEPTED; G2.text_residue_mf PROVEN 12/12; DRAEM fallback not needed).**
+   MEASURED first (scratch, lw-clean venv, SimpleLama on cuda; RC-live gate of lw_gen_run honoured:
+   CLEAR): stroke mask = the board's credit-line glyphs (`text_mask`) in the mark box, dilated 3 px,
+   re-inpainted on a 96 px-context crop of the CLEANED image; R = luma(image) - luma(re-inpaint)
+   over the strokes. Subjects: (a) the 12 golden G2 subjects, restored region vs credit_line_4lv
+   (+4 levels, amplitude NOT re-derived); (b) the 26 real LaMa clean pairs (same filter as
+   `lw_stage_ledger.calibrate`; cleandone, a 549x69-per-2560 glyph box centred on the median changed
+   pixel) and those 26 with +4 lv planted. Six statistics (mean / median, raw, minus the null mean,
+   z vs 40 random-offset nulls beside the box): all 12/12 on golden; z_mean missed 2/26 real
+   positives, raw mean 3/26. Shipped the simplest with the widest gap: signed MEDIAN, one LaMa call.
+   Shipped-function numbers: golden clean |.| max 2.00 vs +4 lv min 4.00 (12/12); real clean max
+   1.94 (0/26 FP), real +4 lv min 3.89 (26/26). Bar RESIDUE_MF_MAX = 3.0. Accept (>= 10/12, low FP,
+   one threshold) MET. Caveat recorded: the real FP check re-inpaints a LaMa fill with LaMa at a
+   stand-in glyph box - it bounds FP on LaMa fills, not hand / IOPaint fills.
+   SHIPPED (TDD, tests/test_g2_text_residue_mf.py 7 RED on missing API first): `lw_clean_pass.residue_mf`
+   (+ `_dilate_disk`, `_luma`, RESIDUE_MF_MAX / _DILATE / _MARGIN), `verify_verdict(...,
+   residue_mf=None)` flags "residue_mf" on |value| > bar only when a value is passed (live verify
+   unchanged), board row G2.text_residue_mf (env clean, fault credit_line_4lv, `_lama()` lazy loader,
+   `stroke_mask()`), mutant test (bar loosened -> BROKEN), G2 coverage test lists the row.
+   DECISION: a NEW row beside G2.text_residue (pattern of LEDGER 263/264); FLAG not FAIL until the
+   live census exists. Alternatives: (a) replace the OCR arm under its name - silent semantic change;
+   (b) wire live now - live has detection BOXES, not a stroke mask, so the live input does not exist
+   yet. Ack G2.text_residue kept (state unchanged 0/12); clears_when rewritten: retire the OCR+MSER
+   arm when residue_mf is computed in live verify with a pre-clean stroke mask (ROADMAP R2b, filed).
+   CI FIX (R3b push 9989ca0 RED on CI: tests/test_g2_seam_step_live.py reached cv2 via
+   render_mask; CI has no cv2): the test now injects a numpy render_mask; new tests re-run green
+   locally with cv2 + torch blocked in sys.modules (104 passed, 5 skipped).
+   READ BACK: full tests/ 3860 passed, 20 skipped (exit 0, after this entry).
+   `prove --golden --env all`: G2.text_residue_mf PROVEN 12/12; NOT GREEN only on the acked
+   G1.lpips 11/12 and G2.text_residue 0/12.
+
 266. DONE **2026-10-04 (research R3b: G2.seam_step LIVE in the cleaning verify; ring-SSIM seam flag + G2.seam row + ack entry RETIRED together).**
    SHIPPED (TDD; tests/test_g2_seam_step_live.py 5 RED first): `lw_clean_pass._auto_inpaint`
    (tools/lw_clean_pass.py ~L1267-1278) computes `seam_step(out_arr, mask_bool)` and passes
