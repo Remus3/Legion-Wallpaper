@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import io
+import json
 import logging
 import os
 import re
@@ -39,6 +40,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 if str(ROOT) not in sys.path:  # launched as a script, not as tools.lw_monitor
     sys.path.insert(0, str(ROOT))
+if str(ROOT / "tools") not in sys.path:  # sibling tools (lw_review_threads -> lw_pipeline)
+    sys.path.insert(0, str(ROOT / "tools"))
 
 from tools.lw_httpd import (  # noqa: E402
     BaseLWHandler,
@@ -54,6 +57,9 @@ from tools.lw_httpd import (  # noqa: E402
 STATE_PATH = ROOT / "ops" / "runtime" / "pipeline_state.json"
 LOG_PATH = ROOT / "PIPELINE_LOG.md"  # project-root append-only log (build-wave contract)
 PAGE_PATH = ROOT / "web" / "monitor.html"
+REVIEW_PAGE_PATH = ROOT / "web" / "review.html"   # spatial review bench (P1-2)
+REVIEW_ROOT = ROOT / "ops" / "runtime" / "review"
+REVIEW_BODY_MAX = 65536
 DEFAULT_IMAGE_ROOTS = [ROOT / "images"]
 MONITOR_LOG = ROOT / "logs" / "lw_monitor.log"
 
@@ -509,8 +515,11 @@ def make_thumb(resolved):
 
 class MonitorServer(LWServer):
     def __init__(self, addr, handler, *, state_path=STATE_PATH, log_path=LOG_PATH,
-                 page_path=PAGE_PATH, image_roots=None, cache=None):
+                 page_path=PAGE_PATH, image_roots=None, cache=None,
+                 review_root=REVIEW_ROOT, review_page=REVIEW_PAGE_PATH):
         super().__init__(addr, handler)
+        self.review_root = Path(review_root)
+        self.review_page = Path(review_page)
         self.state_path = Path(state_path)
         self.log_path = Path(log_path)
         self.page_path = Path(page_path)
@@ -535,6 +544,9 @@ class Handler(BaseLWHandler):
                     self._send_json(404, {"ok": False, "error": "monitor page missing"})
                     return
                 self._send(200, body, "text/html; charset=utf-8", {"Cache-Control": "no-store"})
+                return
+            if path == "/review" or path.startswith("/api/review/"):
+                self._review_get(path, query)
                 return
             if path == "/api/pipeline":
                 view = build_pipeline_view(srv.state_path, cache=srv.view_cache)
@@ -566,11 +578,118 @@ class Handler(BaseLWHandler):
                     "state_present": srv.state_path.is_file(),
                 })
                 return
+        if method == "POST" and path.startswith("/api/review/"):
+            self._review_post(path)
+            return
         if method == "POST" and path == "/api/shutdown":
             self._send_json(200, {"ok": True})
             threading.Thread(target=srv.shutdown, daemon=True).start()
             return
         self._send_json(404, {"ok": False, "error": "not found"})
+
+
+    # ------------------------------------------------ review bench (P1-2)
+    # Loopback only (the scaffold's Host guard runs first). Writes need a JSON
+    # content type, so a cross-site "simple" form post cannot reach them, and a
+    # capped body. Errors never echo a path.
+
+    def _review_get(self, path, query):
+        import lw_review_threads as rt
+        srv = self.server
+        images = srv.image_roots[0] if srv.image_roots else DEFAULT_IMAGE_ROOTS[0]
+        if path == "/review":
+            try:
+                body = srv.review_page.read_bytes()
+            except OSError:
+                self._send_json(404, {"ok": False, "error": "review page missing"})
+                return
+            self._send(200, body, "text/html; charset=utf-8", {"Cache-Control": "no-store"})
+            return
+        slug = (query.get("slug") or [""])[0]
+        if not rt.SLUG_RE.match(slug or ""):
+            self._send_json(400, {"ok": False, "error": "bad slug"})
+            return
+        if path == "/api/review/image":
+            img = rt.latest_image(slug, images)
+            if img is None or img.suffix.lower() not in _RAW_CTYPES:
+                self._send_json(404, {"ok": False, "error": "no image for that slug"})
+                return
+            # 1:1 and byte-for-byte: no re-encode, no downscale (a review of
+            # faint residue from a resampled view is the unreliable case).
+            self._send(200, img.read_bytes(), _RAW_CTYPES[img.suffix.lower()],
+                       {"Cache-Control": "no-store"})
+            return
+        if path == "/api/review/threads":
+            threads = rt.list_threads(srv.review_root, slug=slug)
+            every = rt.list_threads(srv.review_root)
+            self._send_json(200, {"ok": True, "threads": threads,
+                                  "unpublished": sum(1 for t in threads if not t.get("published")),
+                                  "unpublished_all": sum(1 for t in every if not t.get("published"))},
+                            {"Cache-Control": "no-store"})
+            return
+        if path == "/api/review/shot":
+            name = (query.get("name") or [""])[0]
+            if not _SHOT_RE.match(name or ""):
+                self._send_json(400, {"ok": False, "error": "bad shot name"})
+                return
+            p = srv.review_root / slug / name
+            if not p.is_file():
+                self._send_json(404, {"ok": False, "error": "no such shot"})
+                return
+            self._send(200, p.read_bytes(), "image/png", {"Cache-Control": "no-store"})
+            return
+        self._send_json(404, {"ok": False, "error": "not found"})
+
+    def _review_body(self):
+        ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        if ctype != "application/json":
+            self._send_json(415, {"ok": False, "error": "application/json required"})
+            return None
+        try:
+            n = int(self.headers.get("Content-Length") or "0")
+        except ValueError:
+            n = -1
+        if n < 0 or n > REVIEW_BODY_MAX:
+            self._send_json(413, {"ok": False, "error": "body too large"})
+            self.close_connection = True
+            return None
+        try:
+            return json.loads(self.rfile.read(n) or b"{}")
+        except ValueError:
+            self._send_json(400, {"ok": False, "error": "body is not JSON"})
+            return None
+
+    def _review_post(self, path):
+        import lw_review_threads as rt
+        srv = self.server
+        body = self._review_body()
+        if body is None:
+            return
+        images = srv.image_roots[0] if srv.image_roots else DEFAULT_IMAGE_ROOTS[0]
+        try:
+            if path == "/api/review/mark":
+                rec = rt.submit(body.get("slug"), body.get("xy"), body.get("r"), body.get("said"),
+                                body.get("view") or {}, review_root=srv.review_root,
+                                images_root=images)
+                self._send_json(200, {"ok": True, "id": rec["id"], "state": rec["state"]})
+                return
+            if path == "/api/review/publish":
+                m = rt.publish(srv.review_root)
+                self._send_json(200, {"ok": True, "count": len(m["items"]) if m else 0,
+                                      "batch": m["batch"] if m else None})
+                return
+            if path == "/api/review/followup":
+                t = rt.follow_up(body.get("slug"), body.get("id"), body.get("said"),
+                                 review_root=srv.review_root)
+                self._send_json(200, {"ok": True, "state": t["state"]})
+                return
+        except rt.ReviewError as exc:
+            self._send_json(400, {"ok": False, "error": str(exc)})
+            return
+        self._send_json(404, {"ok": False, "error": "not found"})
+
+
+_SHOT_RE = re.compile(r"^m[0-9]{8}T[0-9]{6}-[0-9a-f]{6}_(before|reply_[0-9]{2})\.png$")
 
 
 # ---------------------------------------------------------------------- main

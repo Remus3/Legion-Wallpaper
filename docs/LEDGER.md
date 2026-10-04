@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+252. DONE **2026-10-04 (review: spatial review bench - marks on the image become threads, ingest P1-2).**
+   `tools/lw_review_threads.py` + monitor routes (`/review`, `/api/review/{image,threads,shot}`,
+   POST `/api/review/{mark,publish,followup}`) + `web/review.html`. A mark = point + radius + words
+   + the exact 1:1 view; stored under `ops/runtime/review/<slug>/<id>.json` with a 1:1 "before"
+   crop (runtime only, no image bytes in git); states new / answered / fixed / wont; `publish`
+   stamps only unpublished marks with one batch id and sends ONE notification (file sink); `answer`
+   renders the reply crop from the SAME stored view; an operator follow-up reopens the thread;
+   `promote` writes a mask seed (operator-initiated); the bench never edits the image. Loopback
+   only (scaffold Host guard), writes require `application/json` (a cross-site simple post gets
+   415), bodies capped at 64 KB (413), the image route serves the latest milestone byte-for-byte
+   (no re-encode, no downscale), no path echo on refusals. 5-phase UI fixture audit run BEFORE
+   commit: 7 MUST-FIX found (pending ring wiped by a refresh, no fetch error handling, unescaped
+   numbers, invalid font shorthands, badge contrast 4.03:1, 13 px captions, publish feedback off
+   screen at phone width) - all fixed, re-audit READ BACK "remaining MUST-FIX: none". Live
+   rehearsal READ BACK on a real cleaning-scratch slug through an ephemeral-port server with a
+   scratch review root: image 200 image/png 4.29 MB at 1:1, three marks, one publish
+   (count 3, ONE notification line), three replies rendered from their stored views. TDD: 9 thread
+   tests + 8 route tests; mutation-proven 6/6 arms. OPERATOR VALIDATION (only the operator can
+   judge): mark three real spots on a phone and on the desktop, publish once.
+
 251. DONE **2026-10-04 (ingest P1-6: AHK bridge single-paste + target process check + send journal; e466348).**
    Audit: the bridge typed each directive line with its own Enter (a multi-line directive
    arrived as fragments). Plain lines now go as ONE clipboard paste (operator clipboard saved
