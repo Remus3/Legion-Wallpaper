@@ -695,6 +695,15 @@ _SHOT_RE = re.compile(r"^m[0-9]{8}T[0-9]{6}-[0-9a-f]{6}_(before|reply_[0-9]{2})\
 # ---------------------------------------------------------------------- main
 
 
+def resolve_state_path(args):
+    """--state-file, else <--runtime-root>/pipeline_state.json (ingest P2-6), else live."""
+    if args.state_file:
+        return Path(args.state_file)
+    if getattr(args, "runtime_root", None):
+        return Path(args.runtime_root) / STATE_PATH.name
+    return STATE_PATH
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="LW pipeline monitor server (127.0.0.1 only)")
     ap.add_argument("--open", action="store_true", dest="open_browser",
@@ -704,6 +713,9 @@ def main(argv=None):
                     help="allowed thumbnail root (repeatable); default C:\\Legion Wallpaper\\images")
     ap.add_argument("--log-file", default=None, help="PIPELINE_LOG path override")
     ap.add_argument("--state-file", default=None, help="pipeline_state.json path override")
+    ap.add_argument("--runtime-root", default=None,
+                    help="read pipeline_state.json from this dir (a verify copy made by "
+                         "tools/lw_verify_snapshot.py); --state-file still wins")
     # INJECTION POINT, added 2026-09-11. Without it `main()` always attached a
     # handler to the operator's real log, so every arm driving `main()` reached
     # it. Measured by tracing the suite's writes, alongside the same defect in
@@ -713,7 +725,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
     setup_logging(Path(args.monitor_log) if args.monitor_log else MONITOR_LOG)
     image_roots = [Path(r) for r in args.images_root] if args.images_root else list(DEFAULT_IMAGE_ROOTS)
-    state_path = Path(args.state_file) if args.state_file else STATE_PATH
+    state_path = resolve_state_path(args)
     url = f"http://{HOST}:{args.port}/"
     log.info("lw_monitor state=%s", state_path)
 

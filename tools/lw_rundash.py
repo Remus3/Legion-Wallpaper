@@ -764,6 +764,33 @@ class Handler(BaseLWHandler):
 # ---------------------------------------------------------------------- main
 
 
+def server_kwargs(args):
+    """RunDashServer keyword arguments from the CLI. `--runtime-root` (ingest
+    P2-6) moves every ops/runtime read - manifest, fleet mirror, pipeline state,
+    job health and its refresh - onto a verify copy; nothing live is read or
+    written for those."""
+    kw = {"control_dir": Path(args.control_dir) if args.control_dir else CONTROL_DIR,
+          "manifest_path": Path(args.manifest) if args.manifest else MANIFEST_PATH,
+          "session_dir": Path(args.session_dir) if args.session_dir else None}
+    if getattr(args, "runtime_root", None):
+        rt = Path(args.runtime_root)
+        health = rt / "job_health.json"
+
+        def refresh():
+            try:
+                sys.path.insert(0, str(ROOT / "tools"))
+                import lw_job_health
+                lw_job_health.main(["--out", str(health)])
+            except Exception:  # noqa: BLE001 - the view reports UNKNOWN instead
+                pass
+        kw.update(mirror_path=rt / MIRROR_PATH.name,
+                  pipeline_state_path=rt / PIPELINE_STATE_PATH.name,
+                  job_health_path=health, job_health_refresh=refresh)
+        if not args.manifest:
+            kw["manifest_path"] = rt / MANIFEST_PATH.name
+    return kw
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="LW run dashboard server (127.0.0.1 only)")
     ap.add_argument("--open", action="store_true", dest="open_browser",
@@ -773,16 +800,15 @@ def main(argv=None):
     ap.add_argument("--manifest", default=None, help="slice_manifest.json override")
     ap.add_argument("--session-dir", default=None, help="agent transcript session dir override")
     ap.add_argument("--log-file", default=None, help="server log path override")
+    ap.add_argument("--runtime-root", default=None,
+                    help="read ops/runtime state from this dir instead (a verify copy "
+                         "made by tools/lw_verify_snapshot.py)")
     args = ap.parse_args(argv)
     setup_logging(Path(args.log_file) if args.log_file else RUNDASH_LOG)
     url = f"http://{HOST}:{args.port}/"
 
     def factory():
-        return RunDashServer(
-            (HOST, args.port), Handler,
-            control_dir=Path(args.control_dir) if args.control_dir else CONTROL_DIR,
-            manifest_path=Path(args.manifest) if args.manifest else MANIFEST_PATH,
-            session_dir=Path(args.session_dir) if args.session_dir else None)
+        return RunDashServer((HOST, args.port), Handler, **server_kwargs(args))
 
     # webbrowser.open routes through os.startfile - no console flash
     return serve_or_defer(factory, url, name="lw_rundash", log=log,
