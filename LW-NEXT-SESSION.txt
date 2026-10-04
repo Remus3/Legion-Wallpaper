@@ -1,114 +1,109 @@
 NEXT SESSION
 ------------
-Task: RUN RESEARCH EXPERIMENT R1 (ROADMAP gate-repair item): CAMBI with
-  max_log_contrast=5 (ffmpeg 8.1.1, CPU) on the 12 golden pairs at 2560x1440;
-  then R2-R6 in ROADMAP order. Spec in docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md.
-Context: MAIN FLEET-KIT v4 is ADOPTED (62442fc, LEDGER 243; CI run 37142252994
-  success). Headless spawns go through ops/fleet_kit/ via tools/lw_headless_env.py.
-  Watch the inbox for a FLEET-KIT-v5 note: on receipt vendor the kit files
-  byte-for-byte, re-check the CLAUDE.md block, and act on the two v5 gaps below.
-  The inbox responder is LIVE (LW-InboxResponder, every 5 min, 120 runs / 24 h,
-  its children COMMIT in this tree). Kill: the HALT file, or delete the proxy
-  user variable. MAIN notes carry operator authority after a sha256 check
-  against MAIN's outbox. Never put a 64-hex digest in this file.
-Acceptance: R1 verdict recorded (LEDGER + doc): CAMBI separates banded vs clean on
-  >= 10/12 golden pairs and G1.band_delta re-proved, or the row stays pinned with the measured reason.
+Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
+  A/B anime-lama vs LaMa is READY - operator opens http://127.0.0.1:8901/ab (re-probe
+  HTTP 200 first; LW Monitor must be up after the reboot), votes 19 slugs, presses
+  Finish; then run `python tools/lw_ab_r4.py tally` (refuses before Finish) and
+  record the verdict (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only). (2) Then
+  next research item: R5c pre-registered DINOv2 2x layer-12 check (bar frozen 0.4020)
+  on FRESH hand captures - ROADMAP R5c; or G1.lpips (only pinned board row, 11/12).
+Context: machine was rebooted (operator enabling Windows Sandbox + Linux VM). After
+  boot re-probe: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
+  serve. MAIN FLEET-KIT v4 is ADOPTED (62442fc, LEDGER 243). Headless spawns go
+  through ops/fleet_kit/ via tools/lw_headless_env.py. Watch the inbox for a
+  FLEET-KIT-v5 note: on receipt vendor the kit files byte-for-byte, re-check the
+  CLAUDE.md block, and act on the two v5 gaps below. The inbox responder is LIVE
+  (LW-InboxResponder, every 5 min, 120 runs / 24 h, its children COMMIT in this
+  tree). Kill: the HALT file, or delete the proxy user variable. MAIN notes carry
+  operator authority after a sha256 check against MAIN's outbox. Never put a
+  64-hex digest in this file.
+Acceptance: R4 tally recorded with the operator's votes, or the A/B still READY and
+  carried; R5c / lpips verdict recorded with measured numbers.
 Carried forward:
-  - RESEARCH EXPERIMENTS R1-R6 filed in ROADMAP (Gate-repair research item); run R1 first. Operator offered ~8.7k
-    unlabeled local images for DINOv2/ExPLoRA pretraining (path in ROADMAP R6, never track bytes).
+  - R4 votes go to ops/runtime/ab_r4/votes.json (sides only); key in key.json is
+    never served. 9 of 28 candidate slugs were excluded (7 no mask, 2 later-run mask).
+  - CLEAN-DAMAGE INCIDENT follow-ups (LEDGER 268/269): 13 slugs on the manual
+    IOPaint lane in docs/HANDCLEAN_WORKLIST_2026-09-01.md (incl. hriful Ahri: region
+    (0,1370)-(420,1440), credit crosses a mountain outline); caitlyn-love-confession
+    original is at needauth for OPERATOR approval (never self-approve). 835 submits
+    on other dates still read actor=operator (not attributable row by row - noted).
+  - text_residue_mf is FLAG-ONLY: misses 105-cleanup hand step 70 (-2.07) and live
+    margin is thin (2.22 vs 3.0) (LEDGER 270). seam_step flags spirit-blossom-ahri
+    (6.28) - that slug is now reopened for hand clean.
+  - test_lw_usm_halo_probe flaked once under full-suite load (passes 40/40 alone);
+    watch it.
+  - Operator offered ~8.7k unlabeled local images (path in ROADMAP R6, never track bytes).
   - Two kit gaps reported to MAIN for v5 (1258 ADOPTED note): (a) loop executor
     stays on kit primitives - v4 spawn() returns only result text, executor
     needs structured result + session id; (b) kit should pass CREATE_NO_WINDOW
     as a literal keyword at its own launch call so the console-flash test
-    exemption can be removed. Wait for v5; do not patch the kit.
+    exemption can be removed (window guard flags ops/fleet_kit/fleet_headless.py:652).
+    Wait for v5; do not patch the kit.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
-    _firstneedauth awaiting OPERATOR approval (never self-approve); yuumi was
-    approved 2026-10-04 and is in cleaning (item below). Check
-    banding on the five -pre slugs (+0.008..+0.014). Lux coven -pre duplicate
-    is now operator task physical.lux-coven-pre-duplicate (see Operator asks).
-    Miss Fortune DA fetch is 403 (manual_queue.csv).
-  - SYNC INBOX: ~289 unread notes remain. Do NOT bulk-ack (--mark-inbox-seen);
-    read by mtime.
+    _firstneedauth awaiting OPERATOR approval (never self-approve). Check
+    banding on the five -pre slugs (+0.008..+0.014) - now via cambi_delta.
+    Miss Fortune DA fetch is 403 (manual_queue.csv). 0.Originals has 2 loose
+    files (katarina -pre, lux coven -pre duplicate).
+  - SYNC INBOX: ~296 unread notes remain. Do NOT bulk-ack (--mark-inbox-seen);
+    read by mtime. New since last: CS 1634 + RC 1640 C4 LANDED notes (informational).
   - CONCURRENCY: before editing a file check for live `claude -p` processes and
     recent mtimes; commit file-scoped (`git commit -- <paths>`), never git add -A.
-  - INGEST LW-GATES (2026-10-04, LEDGER 244-246, 252-255): P0-3 acceptance is
-    NOT MET - 4 gate-board rows are honestly not PROVEN and pinned in
-    config/gate_board_ack.json (research, each with a clears_when): G1.band_delta
-    BROKEN 0/12 (blind to output-scale banding; needs a new banding metric),
-    G1.lpips BROKEN 11/12 (coven-ashe soft source; lap_ratio covers it),
-    G2.seam UNKNOWN 3/12 (measures ring texture; treat the live seam flag as
-    noise), G2.text_residue BROKEN 0/12 (OCR+MSER fires on restored busy art
-    and misses +4-level residue; needs a new detector). Re-prove after any gate
-    change: python tools/lw_gate_board.py prove --golden --env all (~4 min).
+    Parallel agents: worktree isolation or disjoint files + private scratch dirs.
   - Gate-board validation rows "reads like the original art" and "no
     ghost/band/faint residue at 1:1" stay with the operator and never count
-    toward done. (P1-2 bench acceptance MET 2026-10-04, LEDGER 259.)
-  - yuumi-by-narumicsibe-dmax7wo-fullview: first pass APPROVED by the operator
-    2026-10-04 (LEDGER 260); READ BACK at /done (LEDGER 261): CLEAN_SCRATCH /
-    EDITING, w0 - awaiting the OPERATOR's IOPaint hand clean (gate verdict qa:
-    centre_overlay 0.277 + faint credit line; never auto-inpaint it). Targets:
-    credit line x1138-1490 y983-1011, veil ~[1142,585]; 3 operator seeds at
+    toward done. Re-prove after any gate change: python tools/lw_gate_board.py
+    prove --golden --env all (~4 min).
+  - yuumi-by-narumicsibe-dmax7wo-fullview: CLEAN_SCRATCH / EDITING, w0 - awaiting
+    the OPERATOR's IOPaint hand clean (gate verdict qa: centre_overlay 0.277 +
+    faint credit line; never auto-inpaint it). Targets: credit line x1138-1490
+    y983-1011, veil ~[1142,585]; 3 operator seeds at
     ops/runtime/clean/<slug>/<slug>_review_seeds.json (+ _review_seed_mask.png).
     After the operator saves: `python tools/lw_pipeline.py save-working <slug>
     --adopt` (G2 verify runs), render the after-crops, and set the 3 review
     threads (fixed ONLY if the mark is gone at 1:1, else stays answered); then
-    `submit`.
-  - IOPaint QA lane was started on 127.0.0.1:8080 (READ BACK HTTP 200 at /done
-    2026-10-04). Re-probe before telling the operator to use it.
+    `submit --actor operator`.
+  - IOPaint QA lane on 127.0.0.1:8080 - re-probe after reboot before telling the
+    operator to use it.
   - PHONE ACCESS to the review bench: `tailscale serve --bg
     http://127.0.0.1:8901` -> https://<tailnet host>/review. The hostname is
-    NEVER written in tracked files. READ BACK at /done: `tailscale serve
-    status` = "No serve config" - re-run the serve command before phone use.
-  - A cloud kit exists OUTSIDE this repo (not tracked here; do not vendor it
-    into the tree).
-  - physical.lux-coven-pre-duplicate (registered operator task, still open at
-    /done: 90 checks, not done): operator moves the duplicate -pre.jpg to the
-    Recycle Bin, then `lw_ops_tasks.py done ...`. MAIN's v5 P0-1 gate needs
-    this real task closed by the scheduled verify pass.
+    NEVER written in tracked files. Re-run the serve command before phone use.
+  - A cloud kit exists OUTSIDE this repo (not tracked here; do not vendor it).
+  - physical.lux-coven-pre-duplicate (registered operator task, see Operator asks).
+    MAIN's v5 P0-1 gate needs this real task closed by the scheduled verify pass.
   - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The
     first real finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
-    Locks are operator-initiated: python tools/lw_stage_ledger.py lock ...
-  - P2-7: AHK bridge timings were left to the ops lane's P1-6 bridge; only GPU
-    tile profile landed. Moving the upscale tile needs a golden regress first.
-  - INGEST LW-OPS (2026-10-04, LEDGER 247-251, 256-257): carried, not done -
-    P1-6 live proof: a 40-line quotes/backslash/dollar/newline directive must
-    arrive as ONE message in the dry-run Notepad window (ahk_mode.txt=dry,
-    title LW-LOOP-DRYRUN) with paired lines in ops/runtime/bridge/sends.jsonl -
-    needs an attended desktop (window activation + clipboard). P1-8 report_fact
-    helper: MAIN 0020 ruled "later - needs producers and a consumer first"; do
-    not build until MAIN ships the facts design. P2-3 secret references: MAIN
-    0020 says v5 ships fleet_secrets.py - do NOT build a local resolver; on v5
-    move the API-Key-*.txt readers onto it. On FLEET-KIT-v5 arrival: swap
-    tools/lw_watch.py (and lw_ops_tasks.py if v5 lifts P0-1) to the kit as a
-    changed import; LW's five keyword-only extensions were offered as kit tests
-    in LW 0135 (reached 1/1). The v5 P0-1 gate needs one REAL task closed by
-    the scheduled verify pass: physical.lux-coven-pre-duplicate is that task.
-Do NOT redo: the C4 round (CLOSED 2026-10-04, all 5 carriers 290cbf80, pushed
-  c6e9984); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v4 adoption + ADOPTED answer to MAIN (62442fc, LEDGER
-  243; the first attempt stalled at 72 pct, a takeover agent finished it);
-  FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
-  fix (fc6cdb4); the C4 landing (700cd64); the responder self-skip (b7d50a7);
-  the per-tree pytest temp root (7d54d16); the CI no-filter tripwire parser
-  (0a0b17e); the UNAUDITED verdict (6e1da28); the RSC date move + MAIN ask (LW
-  0800); the audit-hook arm + writer-spy guards (4f2106c, dbf067e, 3e4a54f); the
-  proxy wiring, responder arming, bare-claude and DETACHED_PROCESS spawn fixes
-  (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps; round-B
-  mutants; bulk-acking the inbox; the email-residual history rewrite (operator
-  declined); ingest LW-gates items P0-3, P1-1, P1-7, P1-2, P2-8, P1-3 (LW part),
-  P2-7 (80d5922, 7101023, 8f593f8, b45005d, 15000a2, 13a83c1, 02664d5; CI
-  green on 02664d5) - the residue fault amplitude (+4 levels) is calibrated on
-  the hand-clean captures, do not re-derive it; ingest LW-ops items P0-1,
-  P0-2 (+ both retrofits), P0-4, P0-5, P1-6, P2-5, P2-6 and the MAIN 0020
-  contract alignment (a70da35 .. f68ed40; live acceptance read back for P0-1
-  close-on-check, P0-4 tri-state, P0-5 stale-then-current) and the answer to
-  MAIN 0020 (LW 0135).
-CI: see the /done commit's run (recorded below if read).
+  - P2-7: AHK bridge timings left to the ops lane's P1-6 bridge; moving the
+    upscale tile needs a golden regress first.
+  - INGEST LW-OPS carried, not done - P1-6 live proof: a 40-line
+    quotes/backslash/dollar/newline directive must arrive as ONE message in the
+    dry-run Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired
+    lines in ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8
+    report_fact: MAIN 0020 "later". P2-3 secret references: v5 ships
+    fleet_secrets.py - do NOT build a local resolver; on v5 move the
+    API-Key-*.txt readers onto it. On FLEET-KIT-v5 arrival: swap tools/lw_watch.py
+    (and lw_ops_tasks.py if v5 lifts P0-1) to the kit as a changed import.
+Do NOT redo: research R1/R1b/R2/R2b/R3/R3b (LEDGER 263-267, 270; board rows
+  cambi_delta, seam_step, text_residue_mf PROVEN 12/12; band_delta, ring-SSIM seam,
+  OCR+MSER text_residue RETIRED); R5 DINOv2 kNN (NOT accepted, no domain gap,
+  ExPLoRA not justified, LEDGER 271); R4 A/B prep (082cd18, LEDGER 272) + UI-audit
+  MUST-FIX (04fe420); clean-damage diagnosis, 14-slug reopen, passthrough guard,
+  approve actor, no default iopaint box (82ae760, LEDGER 268); skip-rejected
+  workings, SUBMIT actor, 486-row 08-22 actor backfill (672c2e9, LEDGER 269); the
+  C4 round (CLOSED 2026-10-04); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v4
+  adoption (62442fc) and v3 (062ffd5); spawn routing + MAIN 1029 bundle fix
+  (fc6cdb4); the responder self-skip (b7d50a7); hooksPath; bulk-acking the inbox;
+  the email-residual history rewrite (operator declined); ingest LW-gates P0-3,
+  P1-1, P1-7, P1-2, P2-8, P1-3, P2-7 and LW-ops P0-1, P0-2, P0-4, P0-5, P1-6, P2-5,
+  P2-6 + MAIN 0020 alignment (LW 0135) - the residue fault amplitude (+4 levels)
+  is calibrated on the hand-clean captures, do not re-derive it.
+CI: green on 6ff360d, 0aa78f0, 082cd18 (runs read back by agents); /done push run
+  recorded in the commit after this one if read.
 Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not edit by hand):
   - physical.lux-coven-pre-duplicate physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > C:/Legion Wallpaper/images/0.Originals
-      last check: not done (154 tries)
+      last check: not done (197 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate (closes only when its check passes)
   (end operator asks)
