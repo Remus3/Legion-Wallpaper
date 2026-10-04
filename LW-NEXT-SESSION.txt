@@ -36,6 +36,25 @@ Carried forward:
     read by mtime.
   - CONCURRENCY: before editing a file check for live `claude -p` processes and
     recent mtimes; commit file-scoped (`git commit -- <paths>`), never git add -A.
+  - INGEST LW-GATES (2026-10-04, LEDGER 244-246, 252-255): P0-3 acceptance is
+    NOT MET - 4 gate-board rows are honestly not PROVEN and pinned in
+    config/gate_board_ack.json (research, each with a clears_when): G1.band_delta
+    BROKEN 0/12 (blind to output-scale banding; needs a new banding metric),
+    G1.lpips BROKEN 11/12 (coven-ashe soft source; lap_ratio covers it),
+    G2.seam UNKNOWN 3/12 (measures ring texture; treat the live seam flag as
+    noise), G2.text_residue BROKEN 0/12 (OCR+MSER fires on restored busy art
+    and misses +4-level residue; needs a new detector). Re-prove after any gate
+    change: python tools/lw_gate_board.py prove --golden --env all (~4 min).
+  - OPERATOR VALIDATION (only the operator can judge): open
+    http://127.0.0.1:8901/review on the phone and the desktop, mark three real
+    spots on one slug, publish once (P1-2 acceptance). Gate-board validation
+    rows "reads like the original art" and "no ghost/band/faint residue at 1:1"
+    never count toward done.
+  - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The
+    first real finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
+    Locks are operator-initiated: python tools/lw_stage_ledger.py lock ...
+  - P2-7: AHK bridge timings were left to the ops lane's P1-6 bridge; only GPU
+    tile profile landed. Moving the upscale tile needs a golden regress first.
 Do NOT redo: FLEET-KIT v4 adoption + ADOPTED answer to MAIN (62442fc, LEDGER
   243; the first attempt stalled at 72 pct, a takeover agent finished it);
   FLEET-KIT v3 adoption (062ffd5); spawn routing + MAIN 1029 bundle
@@ -46,5 +65,8 @@ Do NOT redo: FLEET-KIT v4 adoption + ADOPTED answer to MAIN (62442fc, LEDGER
   proxy wiring, responder arming, bare-claude and DETACHED_PROCESS spawn fixes
   (883b5f2, 1fe3db8); hooksPath; environ-leak and invalid-escape sweeps; round-B
   mutants; bulk-acking the inbox; the email-residual history rewrite (operator
-  declined).
+  declined); ingest LW-gates items P0-3, P1-1, P1-7, P1-2, P2-8, P1-3 (LW part),
+  P2-7 (80d5922, 7101023, 8f593f8, b45005d, 15000a2, 13a83c1, 02664d5; CI
+  green on 02664d5) - the residue fault amplitude (+4 levels) is calibrated on
+  the hand-clean captures, do not re-derive it.
 CI: green on 62442fc (run 37142252994). Session 7 /done commit not pushed (gate RED above).
