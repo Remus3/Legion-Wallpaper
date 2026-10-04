@@ -56,14 +56,12 @@ Coverage: tests/test_lw_ops_tasks.py.
 from __future__ import annotations
 
 import argparse
-import contextlib
 import datetime as dt
 import hashlib
 import json
 import os
 import subprocess
 import sys
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -113,92 +111,12 @@ def _digest(event: dict) -> str:
     return hashlib.sha256(json.dumps(body, sort_keys=True).encode("utf-8")).hexdigest()
 
 
-# ---------------------------------------------------------------------------
-# Single-writer lock (lock dir + pid file; liveness by pid, never by mtime)
-# ---------------------------------------------------------------------------
-
-def pid_alive(pid: int) -> bool:
-    """True when `pid` names a running process. Never judged by a file's mtime."""
-    if not isinstance(pid, int) or pid <= 0:
-        return False
-    if os.name == "nt":
-        import ctypes
-        from ctypes import wintypes
-        k32 = ctypes.WinDLL("kernel32", use_last_error=True)
-        k32.OpenProcess.restype = wintypes.HANDLE
-        k32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
-        handle = k32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
-        if not handle:
-            # ERROR_ACCESS_DENIED (5) means it exists but belongs to someone else.
-            return ctypes.get_last_error() == 5
-        try:
-            code = wintypes.DWORD()
-            if not k32.GetExitCodeProcess(handle, ctypes.byref(code)):
-                return True
-            return code.value == 259  # STILL_ACTIVE
-        finally:
-            k32.CloseHandle(handle)
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
-
-
-class LockBusy(RuntimeError):
-    """A live process holds the lock."""
-
-
-@contextlib.contextmanager
-def pid_lock(lock_dir: Path, *, wait_s: float = 0.0, pid: int | None = None,
-             alive=pid_alive):
-    """Hold `lock_dir` (a directory + `pid` file) for the body.
-
-    A lock whose recorded pid is dead - or unreadable - is taken over; a live
-    pid blocks (raises LockBusy after `wait_s`). mkdir is the atomic step.
-    """
-    lock_dir = Path(lock_dir)
-    lock_dir.parent.mkdir(parents=True, exist_ok=True)
-    me = os.getpid() if pid is None else pid
-    deadline = time.monotonic() + wait_s
-    while True:
-        try:
-            lock_dir.mkdir()
-            break
-        except FileExistsError:
-            holder = _read_pid(lock_dir)
-            if holder is None or not alive(holder):
-                _break_lock(lock_dir)
-                continue
-            if time.monotonic() >= deadline:
-                raise LockBusy(f"lock held by live pid {holder}") from None
-            time.sleep(0.05)
-    try:
-        (lock_dir / "pid").write_text(str(me), encoding="ascii")
-        yield
-    finally:
-        _break_lock(lock_dir)
-
-
-def _read_pid(lock_dir: Path) -> int | None:
-    try:
-        return int((lock_dir / "pid").read_text(encoding="ascii").strip())
-    except (OSError, ValueError):
-        # mkdir landed but the pid file is not written yet: give it a moment.
-        time.sleep(0.05)
-        try:
-            return int((lock_dir / "pid").read_text(encoding="ascii").strip())
-        except (OSError, ValueError):
-            return None
-
-
-def _break_lock(lock_dir: Path) -> None:
-    with contextlib.suppress(OSError):
-        (lock_dir / "pid").unlink()
-    with contextlib.suppress(OSError):
-        lock_dir.rmdir()
+# Single-writer lock: lw_watch's pid-stamped lock dir (liveness by pid, never mtime)
+try:
+    from lw_watch import LockBusy, pid_alive, watch_lock as pid_lock  # noqa: F401
+except ImportError:  # running with tools/ off sys.path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from lw_watch import LockBusy, pid_alive, watch_lock as pid_lock  # noqa: F401
 
 
 # ---------------------------------------------------------------------------
