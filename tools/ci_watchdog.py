@@ -514,10 +514,10 @@ def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout, statu
         log(f"{d['action']}: {d['reason']}")
         return [d["sha"]] if d["action"] in ("fix", "give-up") and d["sha"] else []
 
-    def deliver(items, confirm):
+    def deliver(items):
         d = ctx["d"]
         if d["action"] == "give-up":
-            return True                      # handled: left for the operator
+            return {"delivered": True}       # handled: left for the operator
         state = bump_attempt(read_state(state_dir), d["sha"])
         write_state(state_dir, state)
         runs = ", ".join(x.get("name", "?") for x in (ctx["ci"].get("runs") or []))
@@ -531,10 +531,10 @@ def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout, statu
             write_state(state_dir, {"sha": d["sha"],
                                     "attempts": max(0, state["attempts"] - 1)})
             ctx["rc"] = 1 if result == "refused" else 0
-            return False
+            return {"delivered": False}
         ctx["rc"] = 0 if result else 1
         # A dry run proves nothing was fixed, so it never retires the sha.
-        return bool(result) and not dry_run
+        return {"delivered": bool(result) and not dry_run}
 
     def alert(source, count, detail):
         line = json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "source": source,
@@ -548,8 +548,11 @@ def _watched_pass(state_dir, *, model, dry_run, max_attempts, fix_timeout, statu
         return True, "alerts file"
 
     res = lw_watch.run_source(lw_watch.WatchState(Path(state_dir) / WATCH_FILE), WATCH_SOURCE,
-                              fetch, lambda sha: sha[:8], deliver, alert=alert,
-                              alert_after=ALERT_AFTER, baseline=False, persist=not dry_run)
+                              fetch, deliver, alert, alert_after=ALERT_AFTER,
+                              describe=lambda sha: sha[:8], baseline=False,
+                              persist=not dry_run)
+    if res.get("detail") and res["outcome"] != "fetch-failed":
+        log(f"watch: {res['outcome']} - {res['detail']}")
     if status is not None:
         if res["outcome"] == "fetch-failed":
             status.update(status="partial", detail="CI status unavailable")

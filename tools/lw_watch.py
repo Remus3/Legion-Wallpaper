@@ -15,9 +15,12 @@ missing directory - looked identical to a QUIET one. One run of `run_source`:
       closed target, a failed or raising send re-offers the same items next
       run. `confirm(ids)` persists at once, for a deliver that handles items
       one at a time and may die mid-batch;
-  (c) `watch_lock` - a lock DIRECTORY plus a pid file - stops overlapping
-      runs; a lock whose pid is dead is taken over. Liveness is the process
-      table (OpenProcess), never an mtime;
+  (c) `watch_lock` - a lock DIRECTORY holding the pid, created by renaming a
+      temp dir that already holds it onto the lock path - stops overlapping
+      runs; a dead or pid-less holder is renamed aside and the take retried;
+      release only while the lock still holds our pid. Liveness is the
+      process table (OpenProcess + GetExitCodeProcess), never an mtime and
+      never os.kill(pid, 0) on Windows;
   (d) consecutive fetch failures are counted per source; at `alert_after` in
       a row exactly ONE alert is sent (a failed alert send is retried next
       run), and the counter resets on the next successful fetch;
@@ -25,11 +28,19 @@ missing directory - looked identical to a QUIET one. One run of `run_source`:
 
 Outcomes: baseline | nothing-new | delivered | deliver-failed | fetch-failed.
 
-`deliver(items, confirm)` is injected (a fleet-kit spawn, a sync-inbox note,
-a task-engine notification) and returns a structured result: True (all),
-a list of ids, or {"delivered": [...]}; anything else - False, None, a raise -
-delivers nothing. `fetch()` returns the source's CURRENT item ids; a raise or
-None is a fetch failure, never an empty source.
+CONTRACT = MAIN 0020 section 4 (operator order via MAIN, sha256 MATCH), so the
+v5 swap to the kit's fleet_watch is a changed import:
+run_source(state, source, fetch, deliver, alert=None, alert_after=5,
+describe=None) -> {source, outcome, new, detail}. `deliver(items)` is injected
+(a fleet-kit spawn, a sync-inbox note, a task-engine notification); ONLY a dict
+whose "delivered" is exactly True advances state. LW EXTENSIONS, keyword-only
+and offered to the kit as tests: "delivered" as a list of ids (per-item
+partial delivery), `confirm_arg=True` (deliver(items, confirm) - confirm(ids)
+persists at once, for a sender whose items take an hour each), `baseline=False`
+(state-shaped sources), `persist=False` (dry runs), `prune`. `fetch()` returns
+the source's CURRENT item ids; a raise or None is a fetch failure, never an
+empty source. A corrupt state file RAISES WatchStateCorrupt and is never
+rewritten.
 
 State: `WatchState(path)` - {"sources": {name: {"seen", "failures",
 "alerted"}}}, atomic tmp+replace, seen pruned to the live source and bounded by
@@ -92,52 +103,62 @@ def pid_alive(pid: int) -> bool:
 
 
 @contextlib.contextmanager
-def watch_lock(lock_dir: Path, *, wait_s: float = 0.0, pid: int | None = None,
-               alive=pid_alive):
-    """Hold `lock_dir` (a directory + `pid` file) for the body.
+def watch_lock(lock_dir: Path, *, pid: int | None = None, pid_alive=pid_alive,
+               wait_s: float = 0.0, alive=None):
+    """Hold `lock_dir` (a DIRECTORY holding a `pid` file) for the body.
 
-    mkdir is the atomic step. A lock whose recorded pid is dead - or whose pid
-    file is unreadable - is taken over; a live pid blocks, raising LockBusy
-    once `wait_s` has passed.
+    MAIN 0020 section 4 contract: the lock is created atomically - a temp dir
+    that already holds our pid is RENAMED onto the lock path, so no observer
+    ever sees a pid-less lock of ours; a dead or pid-less holder is taken over
+    by renaming it ASIDE and retrying; the lock is released only while it
+    still holds our pid. A live holder blocks (LockBusy once `wait_s` passed).
+    `alive` is the pre-0020 name of `pid_alive`, kept for callers.
     """
+    check = alive if alive is not None else pid_alive
     lock_dir = Path(lock_dir)
     lock_dir.parent.mkdir(parents=True, exist_ok=True)
     me = os.getpid() if pid is None else pid
     deadline = time.monotonic() + wait_s
     while True:
+        tmp = lock_dir.with_name(f"{lock_dir.name}.{me}.{time.monotonic_ns()}.tmp")
+        tmp.mkdir()
+        (tmp / "pid").write_text(str(me), encoding="ascii")
         try:
-            lock_dir.mkdir()
+            tmp.rename(lock_dir)
             break
-        except FileExistsError:
+        except OSError:
+            _remove_dir(tmp)
+            if not lock_dir.exists():
+                continue
             holder = _read_pid(lock_dir)
-            if holder is None or not alive(holder):
-                _break_lock(lock_dir)
+            if holder is None or not check(holder):
+                aside = lock_dir.with_name(f"{lock_dir.name}.stale.{time.monotonic_ns()}")
+                with contextlib.suppress(OSError):
+                    lock_dir.rename(aside)
+                    _remove_dir(aside)
                 continue
             if time.monotonic() >= deadline:
                 raise LockBusy(f"lock held by live pid {holder}") from None
             time.sleep(0.05)
     try:
-        (lock_dir / "pid").write_text(str(me), encoding="ascii")
         yield
     finally:
-        _break_lock(lock_dir)
+        if _read_pid(lock_dir) == me:
+            _remove_dir(lock_dir)
 
 
 def _read_pid(lock_dir: Path) -> int | None:
-    for _ in range(2):
-        try:
-            return int((lock_dir / "pid").read_text(encoding="ascii").strip())
-        except (OSError, ValueError):
-            # mkdir landed but the pid file is not written yet: give it a moment.
-            time.sleep(0.05)
-    return None
+    try:
+        return int((lock_dir / "pid").read_text(encoding="ascii").strip())
+    except (OSError, ValueError):
+        return None
 
 
-def _break_lock(lock_dir: Path) -> None:
+def _remove_dir(d: Path) -> None:
     with contextlib.suppress(OSError):
-        (lock_dir / "pid").unlink()
+        (d / "pid").unlink()
     with contextlib.suppress(OSError):
-        lock_dir.rmdir()
+        d.rmdir()
 
 
 # ---------------------------------------------------------------------------
@@ -151,12 +172,27 @@ def _atomic_json(path: Path, doc: dict) -> None:
     tmp.replace(path)
 
 
+class WatchStateCorrupt(RuntimeError):
+    """The state file exists but is not a JSON object. Raised, never rewritten
+    (MAIN 0020 section 4): silently restarting from empty would replay every
+    item as news, or - worse - re-baseline over a real backlog."""
+
+
 def _read_json(path: Path) -> dict | None:
+    """The state document; None only when the file is ABSENT."""
     try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
         return None
-    return doc if isinstance(doc, dict) else None
+    except OSError as exc:
+        raise WatchStateCorrupt(f"{path.name} unreadable ({type(exc).__name__})") from None
+    try:
+        doc = json.loads(text)
+    except ValueError:
+        raise WatchStateCorrupt(f"{path.name} is not JSON") from None
+    if not isinstance(doc, dict):
+        raise WatchStateCorrupt(f"{path.name} is not a JSON object")
+    return doc
 
 
 class WatchState:
@@ -186,9 +222,9 @@ class FlatSeenState:
         self.max_seen = max_seen
 
     def get(self, source: str) -> dict | None:
-        if not self.path.exists():
+        doc = _read_json(self.path)
+        if doc is None:
             return None
-        doc = _read_json(self.path) or {}
         return {"seen": list(doc.get("seen") or []),
                 "failures": int(doc.get("fetch_failures") or 0),
                 "alerted": bool(doc.get("alerted")),
@@ -210,21 +246,24 @@ class FlatSeenState:
 # ---------------------------------------------------------------------------
 
 def _delivered_ids(result, items: list[str]) -> list[str]:
-    if result is True:
+    """MAIN 0020: only a dict whose "delivered" is exactly True advances (all
+    items). LW extension, offered to the kit as a test: "delivered" as a LIST
+    of ids advances exactly those (per-item partial delivery). Anything else -
+    a bare True, a list, False, None - advances nothing."""
+    if not isinstance(result, dict):
+        return []
+    got = result.get("delivered")
+    if got is True:
         return list(items)
-    if isinstance(result, dict):
-        result = result.get("delivered")
-        if result is True:
-            return list(items)
-    if isinstance(result, (list, tuple, set)):
+    if isinstance(got, list):
         wanted = set(items)
-        return [i for i in result if i in wanted]
+        return [i for i in got if i in wanted]
     return []
 
 
-def run_source(state, source: str, fetch, describe, deliver, *, alert=None,
-               alert_after: int = ALERT_AFTER, baseline: bool = True,
-               persist: bool = True, prune: bool = True) -> dict:
+def run_source(state, source: str, fetch, deliver, alert=None,
+               alert_after: int = ALERT_AFTER, describe=None, *, baseline: bool = True,
+               persist: bool = True, prune: bool = True, confirm_arg: bool = False) -> dict:
     """One watcher run for `source`. Returns {"source", "outcome", ...}; never raises
     for a fetch or deliver failure (a state-file write error still propagates)."""
     rec = state.get(source)
@@ -271,7 +310,7 @@ def run_source(state, source: str, fetch, describe, deliver, *, alert=None,
     seen_list = list(rec.get("seen") or [])
     seen = set(seen_list)
     new = [i for i in dict.fromkeys(items) if i not in seen]
-    out["new"] = [describe(i) for i in new]
+    out["new"] = [describe(i) for i in new] if describe is not None else list(new)
     kept = [i for i in seen_list if i in live] if prune else seen_list
     recovered = bool(rec.get("failures")) or bool(rec.get("alerted"))
     base = {"seen": kept, "failures": 0, "alerted": False}
@@ -292,7 +331,7 @@ def run_source(state, source: str, fetch, describe, deliver, *, alert=None,
         save({**base, "seen": kept + confirmed})
 
     try:
-        result = deliver(list(new), confirm)
+        result = deliver(list(new), confirm) if confirm_arg else deliver(list(new))
         err = ""
     except Exception as exc:  # noqa: BLE001 - a failed send keeps the items
         result, err = None, f"{type(exc).__name__}: {exc}".splitlines()[0][:200]

@@ -63,3 +63,18 @@ def test_a_cold_start_on_a_missing_inbox_does_not_baseline_it(tmp_path, monkeypa
     responder.main(_argv(tmp_path, inbox))
     out = json.loads(capsys.readouterr().out.split("\n}\n")[-2] + "\n}")
     assert out["cold_start"] is True and out["baselined"] == 1
+
+
+def test_a_corrupt_seen_file_is_reported_never_rewritten_and_spawns_nothing(
+        tmp_path, monkeypatch, capsys):
+    _quiet(monkeypatch, tmp_path)
+    (tmp_path / "seen.json").write_text("{torn", encoding="utf-8")
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "2026-10-04-0001-from-RC-note.md").write_text("n", encoding="utf-8")
+    monkeypatch.setattr(responder, "spawn", lambda *a, **k: (_ for _ in ()).throw(
+        AssertionError("spawned over a corrupt seen-file")))
+    assert responder.main(_argv(tmp_path, inbox)) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert "state_corrupt" in out
+    assert (tmp_path / "seen.json").read_text(encoding="utf-8") == "{torn"
