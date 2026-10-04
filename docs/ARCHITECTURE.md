@@ -143,6 +143,24 @@ LEDGER 30), manual IOPaint QA lane via the operator's local py3.11 install
 created; WAKEUP 2026-07-16), ComfyUI portable later for the final-stage
 inpaint service.
 
+## Ops infrastructure (ingest 2026-10-04, LW-ops lane)
+
+```
+tools\lw_ops_tasks.py      operator asks as tasks: (cap, subject) key, verify argv closes
+                           it, hash-chained ops/runtime/operator_tasks/events.jsonl; the
+                           hand-off "Operator asks" block renders from it; verify_pending
+                           rides the LW-InboxResponder tick
+tools\lw_watch.py          watcher primitive (baseline / advance after delivery / one rot
+                           alert); the responder and CI watchdog run on it. MAIN 0020
+                           contract - v5 swaps it for the kit's fleet_watch
+tools\lw_runlog.py         one run record per scheduled-job run, ops/runtime/runlog/
+tools\lw_job_health.py     read-only tri-state judge -> ops/runtime/job_health.json,
+                           rundash /api/jobs
+tools\lw_served_probe.py   asks each lw_httpd server GET /api/version vs HEAD
+tools\lw_verify_snapshot.py  verify copy of ops/runtime/*.json; dashboards --runtime-root
+ops\loop\executor.py       SendJournal (attempt/result) around every AHK hand-off
+```
+
 ---
 
 ## Inherited runtime conventions

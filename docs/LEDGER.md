@@ -27,6 +27,36 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+257. DONE **2026-10-04 (ingest P2-5 + P2-6: present-but-empty fixtures; isolated verify copy + dashboards --runtime-root; 1ac1a01, f68ed40).**
+   P2-5: ABSENT / PRESENT-BUT-EMPTY / POPULATED arms over the rundash queue and monitor
+   pipeline view, the job-health record and judge, the task log and WatchState, each with a
+   write that round-trips. DEFECT FOUND AND FIXED: FlatSeenState read `{}` as "seen nothing",
+   so a present-but-empty responder seen-file would have made the whole inbox new; it now
+   raises WatchStateCorrupt (never rewritten). P2-6: `tools/lw_verify_snapshot.py` copies
+   top-level ops/runtime/*.json into a marked verify root, refuses same-path / source-inside-
+   target / an unmarked target with files, proves count + newest mtime + sha256 per file;
+   `lw_rundash --runtime-root` and `lw_monitor --runtime-root` read the copy. 5 + 4 mutants
+   KILLED. Full suite 3808 passed / 0 failed / 20 skipped; CI on f68ed40 is run 37183437120
+   (in progress at write time - the hand-off records the result).
+
+256. DONE **2026-10-04 (MAIN 0020 contract alignment for P0-1, P0-2, P0-4, P0-5; 0174d4e, 4507683, c1b3322).**
+   MAIN 0020 (ORDER to ALL; sha256 4e391c40 MATCH against MAIN's committed outbox - the
+   operator's instruction) asked LW to build its reference watcher and task engine to the v5
+   contract; LW's responder had measured ten divergences (LW 0055). All ten closed: watcher
+   signature, exactly-True delivery, corrupt state raises and is never rewritten, rename-onto
+   lock with rename-aside takeover, release only while ours; task id from (cap, subject),
+   argv[0] on PATH never cwd, owner-passed allowlist, open-handle lock never unlinked,
+   render_asks. Section 5: "halted" run status, <5 gaps = declared floor, /api/version
+   schema 1. Five LW extensions kept keyword-only and offered as kit tests. CORRECTION to
+   0174d4e's message: its new contract arms were written alongside the change, not RED
+   before it; their RED is shown by the mutants it lists. Full suite 3725 passed / 20
+   skipped; CI run 37183033582 success. Answer to MAIN filed: LW 0135, reached 1 of 1
+   (destination copy re-hashed equal, sha256 4c35197c...). READ BACK (live, main at f68ed40):
+   lw_job_health exit 0 - InboxResponder OK (last ok 3m), Wallpaper OK (2m), CIWatchdog and
+   WeeklyHygiene HALTED; CIWatchdog run log now records "halted" with the HALT reason; a REAL
+   operator ask physical.lux-coven-pre-duplicate is open after 1 scheduled check (exit 1) and
+   renders in the hand-off.
+
 255. DONE **2026-10-04 (gpu: calibration profiles as data with evidence, ingest P2-7).**
    `tools/lw_profiles.py` + `config/profiles/gpu-rtx5070-12g.json`: machine-dependent numbers live
    in profiles matched by probed environment (nvidia-smi name + VRAM, closed set of match keys, an
