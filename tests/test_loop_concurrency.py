@@ -420,7 +420,8 @@ def test_shared_module_matches_the_pinned_cross_repo_digest(name: str):
 #     not a guard. This is that guard.
 CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper", "Riot Commander",
                  "RiotCommander", "Resin Compute", "ResinCompute",
-                 "Clockspeed", "Lanternlight", "Substrate")
+                 "Clockspeed", "Lanternlight", "Lantern Light", "Substrate",
+                 "Ebonwake")  # LL retired 2026-10-04: a retired name still leaks
 
 
 # ---- the detectors, refactored into seams a FIXTURE can be pointed at -------
@@ -529,7 +530,7 @@ def test_shared_module_names_no_carrier(name: str):
 # 2026-07-26 - and editing a pinned shared file is a joint round, not one
 # carrier's unilateral edit. Not pinned by LINE: a line number decays on the
 # next joint re-pin and trains readers to bump it instead of reading it.
-CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS")
+CARRIER_CODES = ("RC", "CS", "LW", "LL", "RSC", "SS", "RM", "DS", "EW")
 
 # EMPTIED by round B, 2026-09-21, in the same commit as the bytes - which is exactly
 # what the arm below exists to force. An empty pin is STRICTER than the one it

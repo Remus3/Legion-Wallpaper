@@ -6,6 +6,14 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Recently shipped
 
+- **Fleet roster change - DONE 2026-10-05 (MAIN 0230 order, digest `a229e8a8`).**
+  Fleet is MAIN + RC CS LW SS RSC EW. EW (Ebonwake) JOINED 2026-10-04, ports
+  8940-8959; LL (Lanternlight) RETIRED 2026-10-04, block 8810-8819 held, not
+  freed, no notes addressed to it. Updated: `tools/lw_ports.py`, its pin test,
+  the sibling-name/code needles in `tests/test_loop_concurrency.py`. History
+  mentions of LL below stay as written. `docs/CHANNEL.md` participant table is
+  a jointly pinned carrier: its LL/EW rows wait for a re-pin round.
+
 - **Cleaning incident: 14 operator-REJECTED candidates shipped as "clean-scan" (2026-08-22 dispose) - FIXED + REOPENED 2026-10-04 (LEDGER 268).** clean-scan must now be byte-identical to the initial (exit 3), dispose registers the initial, approve records the real actor, iopaint has no default region. 14 slugs back in 3.Cleaning Scratch: caitlyn in needauth (operator), 13 on the manual IOPaint lane. Follow-ups DONE (LEDGER 269): select_working_image skips REJECTED workings; SUBMIT takes `--actor` (default `unattributed`, tools pass tool:<name>); 08-22 backfill 486 slugs (CORRECT_ACTOR lines appended, manifests carry `corrected_from`). OPEN: 835 pre-fix SUBMIT rows on other dates still read the old default `operator` (not attributable row-by-row; left, counted in LEDGER 269).
 
 - **Headless spawns on the operator's second account, fail closed; inbox responder
