@@ -25,9 +25,12 @@ Acceptance: R4 tally recorded with the operator's votes, or the A/B still READY 
 CHECKLIST:
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
   - R5c: Run the R5c DINOv2 layer-12 check on fresh hand captures, or G1.lpips
-  - ROSTER: Act on MAIN 0230 roster-change order (EW joins, LL retired)
   - SECRETS: Move the API-Key-*.txt readers onto the vendored fleet_secrets.py
 Carried forward:
+  - ROSTER (MAIN 0230) DONE by the responder in 1d8fd05 (LEDGER 274, ANSWER
+    delivered to MAIN). Open: docs/CHANNEL.md participant table still lists LL
+    as a participant and has no EW row; it is a jointly pinned carrier, so the
+    change waits for a re-pin round (asked MAIN for a ruling to open one).
   - R4 votes go to ops/runtime/ab_r4/votes.json (sides only); key in key.json is
     never served. 9 of 28 candidate slugs were excluded (7 no mask, 2 later-run mask).
   - CLEAN-DAMAGE INCIDENT follow-ups (LEDGER 268/269): 13 slugs on the manual

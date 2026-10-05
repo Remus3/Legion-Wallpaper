@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+274. DONE **2026-10-05 (fleet: roster change - EW Ebonwake joins, LL Lanternlight retired; responder-authored, commit 1d8fd05).**
+   Operator order via MAIN 0230, provenance READ BACK with kit `verify_main` against MAIN's
+   committed outbox blob: MATCH, 3807 B. `tools/lw_ports.py` FORBIDDEN gains EW 8940-8959, LL
+   8810-8819 kept and commented RETIRED (held, not freed); `tests/test_lw_ports.py` pin gains EW;
+   `tests/test_loop_concurrency.py` needles gain "Ebonwake", "Lantern Light" (LL's roster display
+   spelling, previously uncovered) and code EW, every LL needle kept; ROADMAP one line. Nothing
+   deleted; no automatic send list or headless route to LL exists here (grep measured zero).
+   NOT done: `docs/CHANNEL.md` participant table (LL row, no EW row) is a jointly pinned carrier -
+   its rows wait for a re-pin round. Suite read back: exit 0, 4006 passed, 20 skipped. ANSWER
+   note delivered to MAIN's inbox, re-hashed equal, 1/1.
+
 273. DONE **2026-10-05 (fleet: MAIN FLEET-KIT v7 adopted directly from v4, with the v6 order's lane items; commits in the v7 ANSWER).**
    Operator order via MAIN 2237 (v6) and MAIN 0215 (v7, supersedes v6; a v4 tree vendors v7 directly
    and still performs v6's adoption items). Provenance READ BACK with kit `verify_main` against
