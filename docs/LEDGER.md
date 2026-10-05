@@ -40,7 +40,10 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    the merge), reconcile once the child exits. Alternatives: concurrent work in main (mixed-commit
    hazard), idle wait (no safety gain), kill (forbidden). Read back: the child ran 163 s, rc 0,
    committed nothing and sent no note. The abandoned v6 responder attempt
-   (.claude/worktrees/agent-a6b282..., pid dead, 60 pct, uncommitted) was ported as the base.
+   (.claude/worktrees/agent-a6b282..., pid dead, 60 pct, uncommitted) was ported as the base, then
+   MOVED (git worktree move, nothing deleted) to the gitignored worktrees/ dir - its copies broke
+   test_tracked_settings_is_safe. The live HALT had also failed 7 responder spawn arms (they read
+   the real HALT path) until it was removed.
    v6 ITEMS: loop controller lifts the single-controller RUNNING.lock onto
    `fleet_lanes.run_lane` - CAP 3 (kit LANE_CAP_MAX; no measured reason for less), lane NAME
    exclusive, each lane in its own worktree `<parent>/lw-worktrees/lane-<i>` with its own control dir;
