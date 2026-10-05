@@ -1,0 +1,17 @@
+# INPUT FILE. Edit this, then regenerate the hash-pinned requirements.txt with:
+#   uv pip compile requirements.in --universal --python-version 3.14 --generate-hashes -o requirements.txt
+# CI installs requirements.txt with --require-hashes (MAIN supply-chain order
+# 2026-10-05); Dependabot's pip entry keeps both files in step.
+# Legion Wallpaper - dependency manifest (CI + dev toolchain).
+# CI (python 3.12) installs this and runs `pytest tests/`. The pipeline core
+# (lw_pipeline.py) is pure stdlib. The cheap image-gate checks (lw_g1_gate.py
+# laplacian/overshoot/banding) and the upscale finish step (lw_upscale.py) use
+# numpy + Pillow only, so those two are CI deps and their unit tests run in CI.
+# Heavy ML deps (torch, spandrel, pyiqa, opencv) live in the gitignored side
+# venvs (.venv-upscale / .venv-metrics) and are NEVER added here; tests that
+# need them use pytest.importorskip and SKIP in CI.
+# The compiled requirements.txt keys the pip cache in .github/workflows/ci.yml.
+pytest
+ruff
+numpy
+Pillow

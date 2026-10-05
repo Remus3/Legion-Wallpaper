@@ -37,9 +37,11 @@ template implies, and they are the ones this project actually cares about.
 a leaked value republishes the value, which is the exact mistake this project
 has already made once and now guards against.
 
-Use GitHub's private vulnerability reporting on this repository:
-**Security -> Advisories -> Report a vulnerability**. That channel needs no
-email address, which is deliberate - the maintainer publishes none.
+Use GitHub's private vulnerability reporting on this repository (enabled):
+<https://github.com/Remus3/Legion-Wallpaper/security/advisories/new>
+(the same form as **Security -> Advisories -> Report a vulnerability**). That
+channel needs no email address, which is deliberate - the maintainer
+publishes none.
 
 If that form is not available to you, open the smallest possible public issue
 that says a private channel is needed and contains **no detail and no value**,
@@ -52,6 +54,20 @@ days. A confirmed leak is fixed forward and a guard is added in the same change
 so it cannot silently return: history rewriting is deliberately not the default
 remedy here, because a force-push does not purge server-side unreachable
 objects and the rewrite invalidates every SHA already cited in the docs.
+
+## Fuzzing - ruled out (decision 2026-10-05)
+
+No fuzzer (ClusterFuzzLite, atheris) is wired here, by MAIN adjudication under
+the operator's 2026-10-05 supply-chain order. This is a single-user local tool:
+its parsers read the operator's own files and pinned upstream data, not
+untrusted network input, so a fuzzer would buy Scorecard points (about +0.56)
+rather than risk reduction, at hours of setup plus recurring CI minutes.
+Alternatives weighed: an atheris harness on the manifest/ledger parsers, and
+ClusterFuzzLite on PRs - both rejected on the same cost/value line.
+
+**Reverses when** the tree starts parsing untrusted input (a network-facing
+service, third-party user-supplied files, a published parser library) or the
+operator orders it.
 
 ## Supported versions
 

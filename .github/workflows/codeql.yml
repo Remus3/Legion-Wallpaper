@@ -1,0 +1,50 @@
+# CodeQL static analysis (advanced setup), added by MAIN's supply-chain order of
+# 2026-10-05 (Scorecard SAST). Languages are the two this tree actually holds:
+# python (tools/, ops/, tests/) and actions (the workflow files themselves).
+# Neither needs a build, so both run with build-mode: none. Every `uses:` is
+# pinned to a full commit SHA with its tag as the trailing comment; Dependabot's
+# github-actions entry keeps the pins and comments current.
+
+name: codeql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * 1'  # weekly, Monday, off the :00 mark
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The one job in the tree that needs more than read: uploading SARIF needs
+    # security-events: write. Scoped here, never at the workflow level.
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, actions]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          category: /language:${{ matrix.language }}
