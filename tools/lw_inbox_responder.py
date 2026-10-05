@@ -93,6 +93,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lw_facts  # noqa: E402  - flat tools/ directory, imported by bare name
 import lw_headless_env  # noqa: E402
 import lw_ops_tasks  # noqa: E402
+import lw_checklist  # noqa: E402
 import lw_watch  # noqa: E402
 import lw_paths  # noqa: E402
 import lw_runlog  # noqa: E402
@@ -557,15 +558,52 @@ def writes_code(note_path: Path) -> bool:
     return (m.group(1).upper() if m else "") not in READ_KINDS
 
 
+# FLEET-KIT v6 RULING (MAIN 2237 section 2): a responder run on an ACK /
+# INFORMATION / ANSWER-shaped note stays OUTSIDE the machine-wide governor slots
+# (governor=None, as before); a run that writes code takes ONE slot, at the
+# call (kit.spawn governor=). A slot not won within SLOT_WAIT_S refuses the run
+# before anything starts: UNAVAILABLE, the note stays unseen, the next tick
+# retries. Reversed by: proxy 429s in the usage lines while acks overlap three
+# lanes.
+SLOT_PRIORITY = "queued"
+SLOT_WAIT_S = 600
+
+
+def run_governor(note_path: Path) -> str | None:
+    """`queued` (one governor slot) for a code-writing run; None for reply-only."""
+    return SLOT_PRIORITY if writes_code(note_path) else None
+
+
 def run_effort(note_path: Path) -> str | None:
     """`high` for a code-writing run; None lets the kit's pick_effort decide."""
     return CODE_EFFORT if writes_code(note_path) else None
 
 
+# FLEET-COMMON item 13 (kit v7, MAIN 0215): a tick that runs notes is a
+# headless fire. It logs its checklist into its run-log record and writes the
+# remaining list into progress/<FIRE_TASK>.json under the fleet root; the child
+# it spawns is told to keep its own (progress/<CHILD_TASK>.json). FIRE_N is the
+# fire's run count (cycle records in the run log + 1), set by the tick.
+FIRE_TASK = "inbox-responder"
+CHILD_TASK = "responder-run"
+FIRE_N = 0
+
+
+def fire_number(runlog: Path) -> int:
+    """This tick's run count: cycle records already in the run log, plus one."""
+    try:
+        with open(runlog, encoding="utf-8", errors="replace") as fh:
+            return 1 + sum(1 for ln in fh if '"event": "cycle"' in ln)
+    except OSError:
+        return 1
+
+
 def spawn_prompt(note_path: Path, provenance: str = "") -> str:
-    """The child's prompt. The parent's MAIN digest, when computed, is appended."""
+    """The child's prompt. The parent's MAIN digest, when computed, is appended,
+    then the item-13 checklist rule for the child."""
     prompt = _PROMPT.format(note=note_path.as_posix())
-    return f"{prompt} {provenance}" if provenance else prompt
+    prompt = f"{prompt} {provenance}" if provenance else prompt
+    return f"{prompt} {lw_checklist.child_rule(CHILD_TASK, FIRE_N)}"
 
 
 def spawn(note_path: Path, dry_run: bool = False, *,
@@ -592,10 +630,13 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         if dry_run:
             lw_headless_env.resolve(seams.get("url_source"), seams.get("connect"))
             return _auto("spawn", f"dry run, would run kit.spawn on {note_path.name}{tail}")
+        governor = run_governor(note_path)
         line = lw_headless_env.spawn(spawn_prompt(note_path, provenance),
                                      note=note_path.name,
                                      writes_code=writes_code(note_path),
                                      effort=run_effort(note_path),
+                                     governor=governor,
+                                     governor_timeout=SLOT_WAIT_S if governor else None,
                                      timeout=RUN_TIMEOUT_S, extra=RESPONDER_EXTRA,
                                      stdin=True, halt_file=HALT_PATH,
                                      **seams)
@@ -934,7 +975,20 @@ def _main(argv: list[str] | None = None) -> int:
         ctx.update(skipped=skipped, mail=mail, capped=capped, budget=budget, spawned=[])
         if skipped:
             confirm([n.key for n, _why in skipped])
-        for note in capped:
+        fire = None
+        if capped and not args.dry_run:
+            global FIRE_N
+            FIRE_N = fire_number(args.runlog)
+            ctx["checklist"] = []
+            fire = lw_checklist.Fire(
+                lw_headless_env.FLEET_ROOT, FIRE_TASK, FIRE_N,
+                [(f"N{i + 1}", f"Answer {n.name}"[:lw_checklist.kit_checklist().TASK_MAX])
+                 for i, n in enumerate(capped)],
+                log=ctx["checklist"].append, kit=lw_headless_env.kit)
+            fire.start()
+        for i, note in enumerate(capped):
+            if fire:
+                fire.running(f"N{i + 1}", "headless run", RUN_TIMEOUT_S)
             try:
                 outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
             except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged
@@ -947,6 +1001,10 @@ def _main(argv: list[str] | None = None) -> int:
             # re-spawn it. A dry run confirms too, but persists nothing.
             if outcome.verdict == AUTO:
                 confirm([note.key])
+            if fire:
+                fire.complete(f"N{i + 1}")
+        if fire:
+            fire.close()
         return {"delivered": []}            # every advance went through confirm()
 
     def alert(source: str, count: int, detail: str):
@@ -1007,8 +1065,10 @@ def _main(argv: list[str] | None = None) -> int:
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
     # source, and 288 empty lines a day would bury the ones that matter.
     if notes and not args.dry_run:
+        extra = {"checklist": ctx["checklist"]} if ctx.get("checklist") else {}
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
-                      deferred=deferred, skipped=skips, spawned=spawned, budget=budget)
+                      deferred=deferred, skipped=skips, spawned=spawned, budget=budget,
+                      **extra)
     if not args.dry_run:
         # Refused = this tick tried and launched nothing; the notes stay unseen.
         refused = bool(spawned) and not any(s["verdict"] == AUTO for s in spawned)

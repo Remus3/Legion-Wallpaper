@@ -483,3 +483,64 @@ def test_no_launcher_passes_bare(path):
     code = _code_lines(path.read_text(encoding="utf-8", errors="replace"))
     hits = [ln for ln in code if re.search(r"""["']--bare["']|\bbare\s*=\s*True""", ln)]
     assert hits == [], f"{path.name}: {hits}"
+
+
+# --------------------------------------------------------------------------
+# FLEET-KIT v6 ruling (MAIN 2237 section 2), carried by v7: a run that writes
+# code holds ONE governor slot at the call. `exec --governor` is that slot for
+# the long operator-fired run (tools/headless_run.ps1). Root: conftest seam.
+# --------------------------------------------------------------------------
+
+def _gov_root() -> Path:
+    import os
+    return Path(os.environ["LW_GOVERNOR_ROOT"])
+
+
+def test_cli_exec_with_governor_holds_exactly_one_slot_for_the_run(monkeypatch, tmp_path):
+    seen = {}
+
+    def _fake_exec(argv, env):
+        seen["slots"] = [json.loads(p.read_text(encoding="utf-8"))
+                         for p in sorted(_gov_root().glob("*.lock"))]
+        return 0
+
+    monkeypatch.setattr(he, "_exec", _fake_exec)
+    rc = he.main(["exec", "--governor", "interactive", "--", sys.executable, "-c", "pass"],
+                 log_dir=tmp_path, url_source=lambda: _URL, connect=_up)
+    assert rc == 0
+    assert len(seen["slots"]) == 1
+    assert seen["slots"][0]["repo"] == "LW" and seen["slots"][0]["priority"] == "interactive"
+    assert list(_gov_root().glob("*.lock")) == [], "the slot is released after the run"
+
+
+def test_cli_exec_without_governor_takes_no_slot(monkeypatch, tmp_path):
+    seen = {}
+    monkeypatch.setattr(he, "_exec", lambda argv, env: seen.setdefault(
+        "slots", list(_gov_root().glob("*.lock"))) and 0 or 0)
+    assert he.main(["exec", "--", sys.executable, "-c", "pass"], log_dir=tmp_path,
+                   url_source=lambda: _URL, connect=_up) == 0
+    assert seen["slots"] == []
+
+
+def test_cli_exec_no_free_slot_refuses_78_and_runs_nothing(monkeypatch, tmp_path):
+    import os
+    import time as _time
+    root = _gov_root()
+    root.mkdir(parents=True, exist_ok=True)
+    for i in range(3):
+        (root / f"{i}.lock").write_text(json.dumps(
+            {"pid": os.getpid(), "repo": "OTHER", "run_id": f"r{i}", "cycle": 0,
+             "ts": _time.time()}), encoding="utf-8")
+    ran = []
+    monkeypatch.setattr(he, "_exec", lambda argv, env: ran.append(argv) or 0)
+    rc = he.main(["exec", "--governor", "queued", "--governor-timeout", "0", "--",
+                  sys.executable, "-c", "pass"],
+                 log_dir=tmp_path, url_source=lambda: _URL, connect=_up)
+    assert rc == he.REFUSED_EXIT
+    assert ran == []
+    assert he.budget().used() == 0, "a refused exec spends no budget"
+
+
+def test_headless_run_ps1_asks_for_one_interactive_slot():
+    text = (ROOT / "tools" / "headless_run.ps1").read_text(encoding="ascii")
+    assert '"exec", "--governor", "interactive"' in text

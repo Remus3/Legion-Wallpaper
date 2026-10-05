@@ -27,6 +27,42 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+273. DONE **2026-10-05 (fleet: MAIN FLEET-KIT v7 adopted directly from v4, with the v6 order's lane items; commits in the v7 ANSWER).**
+   Operator order via MAIN 2237 (v6) and MAIN 0215 (v7, supersedes v6; a v4 tree vendors v7 directly
+   and still performs v6's adoption items). Provenance READ BACK with kit `verify_main` against
+   MAIN's COMMITTED outbox blobs: both order notes + all 10 v6 bundle files + all 11 v7 bundle files,
+   23 of 23 MATCH, every file hash also equal to its note's list. Vendored byte-for-byte (copyfile,
+   sha256 re-read = MANIFEST v7, 11 files: + fleet_checklist, fleet_lanes, fleet_secrets,
+   fleet_watch, tokens.css/json); CLAUDE.md block re-embedded (block hash e3a73f4d, item 13).
+   COLLISION handled: at 02:16 the responder spawned a headless opus child on the v7 note while this
+   attended adoption started. ADJUDICATED (distinct agent): work in an isolated worktree, never the
+   main index, HALT further fires (`ops/runtime/inbox_responder/HALT`, created 02:20, removed after
+   the merge), reconcile once the child exits. Alternatives: concurrent work in main (mixed-commit
+   hazard), idle wait (no safety gain), kill (forbidden). Read back: the child ran 163 s, rc 0,
+   committed nothing and sent no note. The abandoned v6 responder attempt
+   (.claude/worktrees/agent-a6b282..., pid dead, 60 pct, uncommitted) was ported as the base.
+   v6 ITEMS: loop controller lifts the single-controller RUNNING.lock onto
+   `fleet_lanes.run_lane` - CAP 3 (kit LANE_CAP_MAX; no measured reason for less), lane NAME
+   exclusive, each lane in its own worktree `<parent>/lw-worktrees/lane-<i>` with its own control dir;
+   a live old-layout RUNNING.lock refuses a v6 start (never coexist). One governor slot per
+   code-writing call: loop executor keeps `slots.hold(3)` (never also governor=); responder
+   code-writing runs and the CI-watchdog fix take `spawn(governor="queued")`, reply-only runs stay
+   outside (MAIN ruling); `lw_headless_env exec --governor interactive` holds one slot for
+   tools/headless_run.ps1. v7 ITEM 13: `tools/lw_checklist.py` (SessionStart hook prints `Session
+   <n> checklist` from the hand-off's `SESSION:` + `CHECKLIST:`; Fire helper; `progress` CLI);
+   `lw_next_session --write` stamps `SESSION: <n+1>`; done.md pre-flight + unprompted /done; loop
+   cycle writes `progress/lane-<i>.json` in the MAIN checkout; responder tick writes
+   `progress/inbox-responder.json` and its child prompt (and the CI-fix prompt) carries the rule.
+   DECISION (adjudicated): the fleet_watch swap (v6 4b) is DEFERRED - kit run_source is
+   all-or-nothing, always baselines, has no persist/prune/confirm and rejects both live state files;
+   a straight swap re-spawns hour-long responder runs and swallows the CI watchdog's first red sha.
+   Alternatives: full swap with adapters, partial swap. Tripwire
+   tests/test_fleet_watch_swap_tripwire.py goes red when the kit gains the extensions. Window guard
+   now applies the kit **kw exemption by shape (it flagged fleet_headless.py:652 every session).
+   Promise probe fired on OLDER kit notes forever; now fires only on a newer version. KIT GAPS for
+   MAIN: A (spawn returns only result text) and B (_run Popen flag via **kw) still open at v7; C
+   fleet_watch lacks LW's five extensions. Reverse if: a MAIN FLEET-KIT-vN note supersedes v7.
+
 272. DONE **2026-10-04 (research R4 / E-LAMA-1: anime-lama vs LaMa blind A/B PREPARED - 19 slugs, awaiting the OPERATOR; no winner picked, no pipeline state changed).**
    ADR-009 binds: engine REPLACE test, never a ladder. WEIGHTS: anime-manga Big-LaMa fetched from the official
    Sanster release (github.com/Sanster/models/releases/download/AnimeMangaInpainting/anime-manga-big-lama.pt),

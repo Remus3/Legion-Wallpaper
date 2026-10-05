@@ -1523,3 +1523,115 @@ def test_an_unexpected_spawn_error_never_escapes_the_cycle(tmp_path, capsys, mon
     assert rc == 0
     (entry,) = payload["spawned"]
     assert entry["verdict"] == responder.UNAVAILABLE and "RuntimeError" in entry["reason"]
+
+
+# --------------------------------------------------------------------------
+# FLEET-KIT v6 RULING (MAIN 2237 section 2): ACK / INFORMATION / ANSWER-shaped
+# runs stay OUTSIDE the governor slots; a code-writing run takes ONE slot, at
+# the call. The slot root is redirected per test (conftest, LW_GOVERNOR_ROOT).
+# --------------------------------------------------------------------------
+
+def _slot_root() -> Path:
+    return Path(os.environ["LW_GOVERNOR_ROOT"])
+
+
+def _slots_seen_during_run(seen: dict) -> dict:
+    seams = _kit_seams(seen)
+    inner = seams["run"]
+
+    def _run(argv, **kw):
+        seen["slots"] = [json.loads(p.read_text(encoding="utf-8"))
+                         for p in sorted(_slot_root().glob("*.lock"))]
+        return inner(argv, **kw)
+
+    seams["run"] = _run
+    return seams
+
+
+def test_a_code_writing_run_holds_exactly_one_governor_slot():
+    seen: dict = {}
+    out = responder.spawn(Path("moon_sync_inbox/2026-10-04-from-MAIN-ORDER-to-LW-x.md"),
+                          kit_seams=_slots_seen_during_run(seen))
+    assert out.verdict == responder.AUTO
+    assert len(seen["slots"]) == 1, seen["slots"]
+    assert seen["slots"][0]["repo"] == "LW"
+    assert seen["slots"][0]["priority"] == "queued"
+    assert list(_slot_root().glob("*.lock")) == [], "the slot is released after the run"
+
+
+@pytest.mark.parametrize("kind", ["ACK", "INFORMATION", "ANSWER"])
+def test_a_reply_only_run_stays_outside_the_governor_slots(kind):
+    seen: dict = {}
+    out = responder.spawn(Path(f"moon_sync_inbox/2026-10-04-from-RC-{kind}-to-LW-x.md"),
+                          kit_seams=_slots_seen_during_run(seen))
+    assert out.verdict == responder.AUTO
+    assert seen["slots"] == []
+
+
+def test_run_governor_maps_only_reply_kinds_to_no_slot():
+    assert responder.run_governor(Path("x-from-RC-ACK-y.md")) is None
+    assert responder.run_governor(Path("x-from-RC-INFORMATION-y.md")) is None
+    assert responder.run_governor(Path("x-from-MAIN-ORDER-y.md")) == "queued"
+    assert responder.run_governor(Path("note.md")) == "queued"
+
+
+def test_no_free_slot_refuses_the_run_and_leaves_the_note_unseen(monkeypatch):
+    import time as _time
+    root = _slot_root()
+    root.mkdir(parents=True, exist_ok=True)
+    for i in range(3):
+        (root / f"{i}.lock").write_text(json.dumps(
+            {"pid": os.getpid(), "repo": "OTHER", "run_id": f"r{i}", "cycle": 0,
+             "ts": _time.time()}), encoding="utf-8")
+    monkeypatch.setattr(responder, "SLOT_WAIT_S", 0)
+    seen: dict = {}
+    out = responder.spawn(Path("moon_sync_inbox/2026-10-04-from-MAIN-ORDER-to-LW-x.md"),
+                          kit_seams=_kit_seams(seen))
+    assert out.verdict == responder.UNAVAILABLE and out.checked is True
+    assert "argv" not in seen, "nothing may start without its slot"
+
+
+# --------------------------------------------------------------------------
+# FLEET-KIT v7 item 13 d: a responder tick that runs notes is a headless fire -
+# it logs `Session <n> checklist` (into its run-log record) and writes the
+# remaining list into progress/inbox-responder.json under the fleet root
+# (redirected per test by conftest). The spawned child is told to do the same.
+# --------------------------------------------------------------------------
+
+def test_a_tick_with_notes_writes_its_checklist(tmp_path, capsys, monkeypatch):
+    import lw_headless_env as he
+    inbox = tmp_path / "moon_sync_inbox"
+    _fill(inbox, 1)
+    state = tmp_path / "seen.json"
+    runlog = tmp_path / "runs.jsonl"
+    args = ["--once", "--runlog", str(runlog), "--inbox", str(inbox), "--state", str(state),
+            "--halt", str(tmp_path / "absent-HALT")]
+    responder.main(args)  # cold start: baseline
+    capsys.readouterr()
+    seen_progress = []
+
+    def _spawn(p, dry_run=False, **_k):
+        prog = Path(he.FLEET_ROOT) / "ops" / "loop" / "control" / "progress" / \
+            "inbox-responder.json"
+        seen_progress.append(json.loads(prog.read_text(encoding="utf-8")))
+        return responder._auto("spawn", "fake")
+
+    monkeypatch.setattr(responder, "spawn", _spawn)
+    (inbox / "2026-09-11-0001-from-RC-new.md").write_text("new", encoding="utf-8")
+    responder.main(args)
+    (during,) = seen_progress
+    assert during["status"] == "running"
+    assert during["checklist"][0]["id"] == "N1"
+    assert "2026-09-11-0001-from-RC-new.md" in during["checklist"][0]["task"]
+    assert during["checklist"][0]["state"] == "headless run"
+    after = json.loads((Path(he.FLEET_ROOT) / "ops" / "loop" / "control" / "progress" /
+                        "inbox-responder.json").read_text(encoding="utf-8"))
+    assert after["status"] == "done" and after["checklist"] == []
+    rec = json.loads(runlog.read_text(encoding="utf-8").splitlines()[-1])
+    assert rec["checklist"][0].startswith("Session ")
+
+
+def test_the_child_prompt_carries_the_item_13_rule():
+    prompt = responder.spawn_prompt(Path("moon_sync_inbox/x-from-MAIN-ORDER-y.md"))
+    assert "FLEET-COMMON item 13" in prompt
+    assert "--task responder-run" in prompt

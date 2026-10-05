@@ -281,7 +281,7 @@ HARD BOUNDARIES:
 def _fix_in_worktree(wt, sha, runs, model, timeout, kit_seams=None):
     """Run headless claude inside the worktree. Returns (ok, transient, output).
 
-    ONE call to `kit.spawn` through `lw_headless_env.spawn` (kit v4): the child
+    ONE call to `kit.spawn` through `lw_headless_env.spawn` (kit v7): the child
     runs in the worktree (`cwd=wt`), its stderr comes back for the transient
     check (`return_stderr`), a code-writing fix runs at effort `high`, and the
     kit owns everything else - proxy gate, `claude_exe` (never from cwd), lean
@@ -292,15 +292,20 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, kit_seams=None):
     """
     he = _bind_headless_env()
     prompt = FIX_PROMPT.format(base=BASE_BRANCH, sha=sha, runs=runs)
+    # FLEET-COMMON item 13 d (kit v7): the fix run keeps its own checklist.
+    # A fix run is its own fire: run count 1.
+    prompt = f"{prompt}\n{_bind_checklist().child_rule(FIX_NOTE, 1)}\n"
     try:
         line = he.spawn(prompt, note=FIX_NOTE, writes_code=True, model=model or None,
                         effort=FIX_EFFORT, cwd=wt, return_stderr=True, timeout=timeout,
+                        governor=FIX_GOVERNOR, governor_timeout=FIX_SLOT_WAIT_S,
                         extra=("--permission-mode", "bypassPermissions",
                                "--add-dir", str(wt)),
                         **(kit_seams or {}))
     except he.HeadlessRefused as exc:
         # The gate passed a moment ago, so this is the budget or a lock filling
-        # in between: not a repo fault, refunded like a transient.
+        # in between, or no governor slot freed within FIX_SLOT_WAIT_S: not a
+        # repo fault, refunded like a transient.
         return False, True, f"headless spawn refused: {exc}"
     except OSError as exc:
         return False, False, f"could not start claude ({type(exc).__name__})"
@@ -318,6 +323,13 @@ FIX_EFFORT = "high"
 
 # The kit's `note` for this run: names it in the usage log and picks its effort.
 FIX_NOTE = "ci-watchdog-fix"
+
+# FLEET-KIT v6 RULING (MAIN 2237 section 2), carried by v7: a run that writes
+# code takes ONE machine-wide governor slot, taken AT the call by kit.spawn
+# (governor=), never around git. A slot not won within FIX_SLOT_WAIT_S refuses
+# before anything starts (kit.Refused -> transient, refunded).
+FIX_GOVERNOR = "queued"
+FIX_SLOT_WAIT_S = 600
 
 
 def _head_of(wt):
@@ -485,6 +497,18 @@ WATCH_FILE = "watch.json"
 ALERTS_FILE = "alerts.jsonl"
 WATCH_SOURCE = "ci-main"
 ALERT_AFTER = 5
+
+
+def _bind_checklist():
+    """tools/lw_checklist.py (FLEET-COMMON item 13, kit v7), bound by path."""
+    if "lw_checklist" in sys.modules:
+        return sys.modules["lw_checklist"]
+    spec = importlib.util.spec_from_file_location("lw_checklist",
+                                                  ROOT / "tools" / "lw_checklist.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def _bind_watch():

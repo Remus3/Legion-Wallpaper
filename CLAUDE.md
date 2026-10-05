@@ -154,6 +154,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 - Background daemons use `pythonw.exe`; every subprocess gets `CREATE_NO_WINDOW`.
 
 ## Session
+- Session checklist (FLEET-COMMON item 13, kit v7): the counter is the `SESSION: <n>` line in `LW-NEXT-SESSION.txt` (stamped n+1 by `tools/lw_next_session.py --write` at /done); tasks come from its `CHECKLIST:` section. Printers: SessionStart hook `tools/lw_checklist.py session-start` (interactive); `ops/loop/loop_controller.py` per cycle into `progress/lane-<i>.json` (main checkout); `tools/lw_inbox_responder.py` per tick into `progress/inbox-responder.json`, and its child prompt (plus the CI-fix prompt) carries `lw_checklist.child_rule`.
 - /done: tests, commit, push, append the item to `docs/LEDGER.md` (never CLAUDE.md), confirm CI green, rewrite `LW-NEXT-SESSION.txt` carrying forward every un-acted item, commit it; chat output only per FLEET-COMMON item 5. CLAUDE.md is CI size-budgeted (< 60 KB, `drift_guard`).
 - Push every verified-green commit to origin main; CI runs only the tip of a push.
 

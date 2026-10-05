@@ -75,7 +75,9 @@ function Invoke-HeadlessRun {
     # Returns "" on a clean exit, "REFUSED" when the proxy gate refused the
     # spawn, otherwise the crash reason to log.
     $claudeArgs = @("-p", $Prompt, "--permission-mode", "bypassPermissions")
-    $gateArgs = @($HeadlessEnv, "exec", "--", $ClaudeExe) + $claudeArgs
+    # ONE interactive governor slot for the run (FLEET-KIT v6 ruling: code-writing
+    # runs take one slot at the call); none free in 30 min = REFUSED (78).
+    $gateArgs = @($HeadlessEnv, "exec", "--governor", "interactive", "--governor-timeout", "1800", "--", $ClaudeExe) + $claudeArgs
     $argLine = ($gateArgs | ForEach-Object { Format-NativeArg $_ }) -join " "
     $proc = Start-Process -FilePath $Python -ArgumentList $argLine `
         -WorkingDirectory $Root -NoNewWindow -PassThru

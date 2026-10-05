@@ -1,5 +1,6 @@
 NEXT SESSION
 ------------
+SESSION: 63
 Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
   A/B anime-lama vs LaMa is READY - operator opens http://127.0.0.1:8901/ab (re-probe
   HTTP 200 first; LW Monitor must be up after the reboot), votes 19 slugs, presses
@@ -9,16 +10,23 @@ Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 b
   on FRESH hand captures - ROADMAP R5c; or G1.lpips (only pinned board row, 11/12).
 Context: machine was rebooted (operator enabling Windows Sandbox + Linux VM). After
   boot re-probe: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
-  serve. MAIN FLEET-KIT v4 is ADOPTED (62442fc, LEDGER 243). Headless spawns go
-  through ops/fleet_kit/ via tools/lw_headless_env.py. Watch the inbox for a
-  FLEET-KIT-v5 note: on receipt vendor the kit files byte-for-byte, re-check the
-  CLAUDE.md block, and act on the two v5 gaps below. The inbox responder is LIVE
+  serve. MAIN FLEET-KIT v7 is ADOPTED (v6 lane items folded in, LEDGER 273):
+  loop lanes via fleet_lanes cap 3, one worktree per lane (C:/lw-worktrees),
+  one governor slot per code-writing call; session checklist (FLEET-COMMON item
+  13) printed by the SessionStart hook from SESSION + CHECKLIST below. Headless
+  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. The promise
+  probe fires on a kit NEWER than v7. The inbox responder is LIVE
   (LW-InboxResponder, every 5 min, 120 runs / 24 h, its children COMMIT in this
   tree). Kill: the HALT file, or delete the proxy user variable. MAIN notes carry
   operator authority after a sha256 check against MAIN's outbox. Never put a
   64-hex digest in this file.
 Acceptance: R4 tally recorded with the operator's votes, or the A/B still READY and
   carried; R5c / lpips verdict recorded with measured numbers.
+CHECKLIST:
+  - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
+  - R5c: Run the R5c DINOv2 layer-12 check on fresh hand captures, or G1.lpips
+  - ROSTER: Act on MAIN 0230 roster-change order (EW joins, LL retired)
+  - SECRETS: Move the API-Key-*.txt readers onto the vendored fleet_secrets.py
 Carried forward:
   - R4 votes go to ops/runtime/ab_r4/votes.json (sides only); key in key.json is
     never served. 9 of 28 candidate slugs were excluded (7 no mask, 2 later-run mask).
@@ -33,12 +41,19 @@ Carried forward:
   - test_lw_usm_halo_probe flaked once under full-suite load (passes 40/40 alone);
     watch it.
   - Operator offered ~8.7k unlabeled local images (path in ROADMAP R6, never track bytes).
-  - Two kit gaps reported to MAIN for v5 (1258 ADOPTED note): (a) loop executor
-    stays on kit primitives - v4 spawn() returns only result text, executor
-    needs structured result + session id; (b) kit should pass CREATE_NO_WINDOW
-    as a literal keyword at its own launch call so the console-flash test
-    exemption can be removed (window guard flags ops/fleet_kit/fleet_headless.py:652).
-    Wait for v5; do not patch the kit.
+  - Kit gaps still open at v7 (re-reported in the v7 ANSWER): (a) loop executor
+    stays on kit primitives - spawn() returns only result text, executor needs
+    structured result + session id; (b) kit's _run Popen gets CREATE_NO_WINDOW
+    only via **kw - exempted by exact shape in tests AND now in the window guard
+    (no line number); (c) fleet_watch lacks LW's five watcher extensions, so the
+    lw_watch swap is DEFERRED (adjudicated, tripwire test
+    tests/test_fleet_watch_swap_tripwire.py goes red when the kit gains them).
+    Wait for MAIN; do not patch the kit.
+  - fleet_secrets.py is now VENDORED (v7): moving the API-Key-*.txt readers onto
+    it is open (not done in the v7 adoption).
+  - A stale Claude agent worktree .claude/worktrees/agent-a6b282fa560024205
+    holds the abandoned responder v6 attempt (uncommitted, superseded by the v7
+    adoption commits). Remove it with git worktree remove once confirmed unused.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
@@ -80,10 +95,9 @@ Carried forward:
     quotes/backslash/dollar/newline directive must arrive as ONE message in the
     dry-run Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired
     lines in ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8
-    report_fact: MAIN 0020 "later". P2-3 secret references: v5 ships
-    fleet_secrets.py - do NOT build a local resolver; on v5 move the
-    API-Key-*.txt readers onto it. On FLEET-KIT-v5 arrival: swap tools/lw_watch.py
-    (and lw_ops_tasks.py if v5 lifts P0-1) to the kit as a changed import.
+    report_fact: MAIN 0020 "later". P2-3 secret references: fleet_secrets.py
+    is vendored (v7) - do NOT build a local resolver (move item above).
+    lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
 Do NOT redo: research R1/R1b/R2/R2b/R3/R3b (LEDGER 263-267, 270; board rows
   cambi_delta, seam_step, text_residue_mf PROVEN 12/12; band_delta, ring-SSIM seam,
   OCR+MSER text_residue RETIRED); R5 DINOv2 kNN (NOT accepted, no domain gap,
@@ -91,8 +105,8 @@ Do NOT redo: research R1/R1b/R2/R2b/R3/R3b (LEDGER 263-267, 270; board rows
   MUST-FIX (04fe420); clean-damage diagnosis, 14-slug reopen, passthrough guard,
   approve actor, no default iopaint box (82ae760, LEDGER 268); skip-rejected
   workings, SUBMIT actor, 486-row 08-22 actor backfill (672c2e9, LEDGER 269); the
-  C4 round (CLOSED 2026-10-04); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v4
-  adoption (62442fc) and v3 (062ffd5); spawn routing + MAIN 1029 bundle fix
+  C4 round (CLOSED 2026-10-04); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v7
+  adoption incl. v6 lane items (LEDGER 273), v4 (62442fc) and v3 (062ffd5); spawn routing + MAIN 1029 bundle fix
   (fc6cdb4); the responder self-skip (b7d50a7); hooksPath; bulk-acking the inbox;
   the email-residual history rewrite (operator declined); ingest LW-gates P0-3,
   P1-1, P1-7, P1-2, P2-8, P1-3, P2-7 and LW-ops P0-1, P0-2, P0-4, P0-5, P1-6, P2-5,
