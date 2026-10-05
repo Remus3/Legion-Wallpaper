@@ -51,9 +51,10 @@ Carried forward:
     Wait for MAIN; do not patch the kit.
   - fleet_secrets.py is now VENDORED (v7): moving the API-Key-*.txt readers onto
     it is open (not done in the v7 adoption).
-  - A stale Claude agent worktree .claude/worktrees/agent-a6b282fa560024205
-    holds the abandoned responder v6 attempt (uncommitted, superseded by the v7
-    adoption commits). Remove it with git worktree remove once confirmed unused.
+  - The abandoned responder v6 attempt (uncommitted, superseded by the v7
+    adoption commits) was MOVED out of .claude/worktrees to the gitignored
+    worktrees/abandoned-v6-responder-attempt (it broke the tracked-settings
+    corpus test). Remove it with git worktree remove once confirmed unused.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at

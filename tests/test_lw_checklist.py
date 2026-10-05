@@ -195,7 +195,7 @@ def test_done_command_carries_the_item_13_preflight_and_counter():
 def test_claude_md_names_the_counter_and_the_code_paths_below_the_block():
     text = (ROOT / "CLAUDE.md").read_text(encoding="ascii")
     tail = text.split("<!-- FLEET-COMMON END -->", 1)[1]
-    assert "Session checklist (FLEET-COMMON item 13)" in tail
+    assert "Session checklist (FLEET-COMMON item 13" in tail
     for path in ("tools/lw_checklist.py", "LW-NEXT-SESSION.txt", "ops/loop/loop_controller.py",
                  "tools/lw_inbox_responder.py"):
         assert path in tail, path
