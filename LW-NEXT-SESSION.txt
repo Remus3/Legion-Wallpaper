@@ -26,7 +26,12 @@ CHECKLIST:
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
   - R5c: Run the R5c DINOv2 layer-12 check on fresh hand captures, or G1.lpips
   - SECRETS: Move the API-Key-*.txt readers onto the vendored fleet_secrets.py
+  - DEPBOT: Merge Dependabot PR #1 (github-actions group) once its CI is green
 Carried forward:
+  - SUPPLY CHAIN (MAIN 0300) DONE by the responder in acd2335 + 5d50e2c (LEDGER
+    275, ANSWER delivered to MAIN 1/1). Scorecard 3.3 -> 6.4. Dependabot PRs are
+    merged by this tree on green, never auto-merged; PR #1 is the first. Edit
+    requirements*.in, then re-run the uv compile line in each .in header.
   - ROSTER (MAIN 0230) DONE by the responder in 1d8fd05 (LEDGER 274, ANSWER
     delivered to MAIN). Open: docs/CHANNEL.md participant table still lists LL
     as a participant and has no EW row; it is a jointly pinned carrier, so the
