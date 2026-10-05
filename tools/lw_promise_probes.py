@@ -21,7 +21,7 @@ CI_PYTHON_PIN = "3.14"
 SECTION10_SHA16 = "330b3d9cef5bb833"
 REPO_API = "https://api.github.com/repos/Remus3/Legion-Wallpaper"
 WIKI_API = "https://wiki.leagueoflegends.com/en-us/api.php?action=query&meta=siteinfo&format=json"
-FLEET_KIT_VERSION = 4
+FLEET_KIT_VERSION = 7
 
 
 class Undecided(Exception):
@@ -118,14 +118,17 @@ def fleet_kit_moved():
     inbox = ROOT / "moon_sync_inbox"
     if not inbox.is_dir():
         raise Undecided("sync inbox missing")
-    pat = re.compile(rf"FLEET-KIT-v(?!{FLEET_KIT_VERSION}\b)([5-9]|\d\d)\b")
+    # NEWER than the vendored kit only: the inbox keeps every older FLEET-KIT
+    # note for good, and "any other version" would fire on that history forever.
+    pat = re.compile(r"FLEET-KIT-v(\d{1,3})\b")
     for p in inbox.glob("*"):
         if p.is_file() and p.stat().st_size < 2_000_000:
             try:
-                if pat.search(p.read_text(encoding="utf-8", errors="replace")):
-                    return True
+                text = p.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
+            if any(int(v) > FLEET_KIT_VERSION for v in pat.findall(text)):
+                return True
     return False
 
 
