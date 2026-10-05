@@ -51,6 +51,12 @@ on:
     - cron: '0 8 * * *'  # Nightly full run (also covers a quiet day with no pushes)
   workflow_dispatch:       # manual trigger to verify the full suite on demand
 
+# TOKEN PERMISSIONS (MAIN supply-chain order 2026-10-05): every job here only
+# reads the checkout, so the workflow-wide GITHUB_TOKEN is read-only. A job
+# that ever needs more gets it at JOB level, that job and that scope only.
+permissions:
+  contents: read
+
 # MINUTE SAVER (carried from RC 2026-06-30): cancel a superseded in-progress
 # run when a newer commit lands on the same ref, so rapid pushes do not each
 # bill to completion. event_name is in the group so a push never cancels the
@@ -66,20 +72,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.14"
           cache: pip
       - name: Install test deps
         run: |
-          python -m pip install --upgrade pip
           # requirements.txt is dev-toolchain-only for now (pytest + ruff) -
           # the tree is pure stdlib so far. When runtime deps appear they go
           # in requirements.txt too (mirroring the nightly/check split: the
           # nightly installs the full runtime stack, the per-push check stays
           # minimal). The file also keys the setup-python pip cache.
-          pip install -r requirements.txt
+          # Hash-pinned (MAIN supply-chain order 2026-10-05): requirements.txt is
+          # compiled from requirements.in with every hash, and --require-hashes
+          # refuses any artifact whose digest is not listed. The runner's bundled
+          # pip is used as-is; an unpinned `--upgrade pip` would be the one
+          # unhashed download left in the job.
+          pip install --require-hashes -r requirements.txt
       - name: arm the git-hook gate
         run: |
           # Same reason as the check job's copy of this step: core.hooksPath is
@@ -140,20 +150,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.14"
           cache: pip
 
       - name: Install minimal test deps
         run: |
-          python -m pip install --upgrade pip
           # Test runner + linter only - LW has no runtime stack yet;
           # everything in tests/ is pure stdlib. requirements.txt carries
           # just the dev toolchain and keys the setup-python pip cache.
-          pip install -r requirements.txt
+          # Hash-pinned (MAIN supply-chain order 2026-10-05): requirements.txt is
+          # compiled from requirements.in with every hash, and --require-hashes
+          # refuses any artifact whose digest is not listed. The runner's bundled
+          # pip is used as-is; an unpinned `--upgrade pip` would be the one
+          # unhashed download left in the job.
+          pip install --require-hashes -r requirements.txt
 
       - name: arm the git-hook gate
         run: |
@@ -242,21 +256,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.14"
           cache: pip
 
       - name: Install the CV numeric stack
         run: |
-          python -m pip install --upgrade pip
           # All four resolve to wheels on cp314 manylinux (opencv ships
           # cp37-abi3, which covers 3.14) - verified 2026-08-02. If pip ever
           # starts BUILDING one of these from source the job will crawl or
           # die, and that is the signal to pin.
-          pip install -r requirements-cv.txt
+          # Hash-pinned (MAIN supply-chain order 2026-10-05): requirements-cv.txt is
+          # compiled from requirements-cv.in with every hash, and --require-hashes
+          # refuses any artifact whose digest is not listed. The runner's bundled
+          # pip is used as-is; an unpinned `--upgrade pip` would be the one
+          # unhashed download left in the job.
+          pip install --require-hashes -r requirements-cv.txt
 
       - name: arm the git-hook gate
         run: |

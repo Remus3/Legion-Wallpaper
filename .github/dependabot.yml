@@ -1,0 +1,29 @@
+# Dependabot version updates (MAIN supply-chain order 2026-10-05). One entry per
+# ecosystem actually present in this tree, weekly, one group per ecosystem so a
+# week is at most one PR per ecosystem. PRs are merged by hand once the gating
+# CI is green on them; nothing here auto-merges.
+#
+# pip: requirements.txt and requirements-cv.txt at the root are hash-pinned
+# outputs compiled from requirements.in / requirements-cv.in; Dependabot
+# updates the pins and the hashes together.
+# github-actions: keeps the full-SHA `uses:` pins and their `# vX.Y.Z` comments
+# current - that is how the pins stay fresh.
+# No npm entry: the tree holds no package.json.
+
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      pip:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
