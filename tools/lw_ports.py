@@ -62,14 +62,17 @@ ALLOCATIONS = {
 # working copy deleted on 2026-09-06 - Amberstone's core/ports.py still
 # declares RM_BLOCK = range(8770, 8790), so the boundary is still real and
 # dropping it here would only invite someone to take a band another registry
-# still claims.
+# still claims. Same rule for LL: Lanternlight was retired by the operator on
+# 2026-10-04 and its band STAYS RESERVED (reassignment is an operator act).
+# EW (Ebonwake) joined the fleet the same day with 8940-8959 (MAIN 0230 order).
 FORBIDDEN = {
     "RM": ((8770, 8789),),          # Red Moon (archived 2026-09-06)
     "RSC": ((8790, 8809),),         # Resin Compute
-    "LL": ((8810, 8819),),          # Lanternlight
+    "LL": ((8810, 8819),),          # Lanternlight - RETIRED 2026-10-04, block held, not freed
     "DS": ((8860, 8879),),          # Daemon Slayer
     "RC": ((2999, 2999), (8888, 8895)),   # Amberstone / Riot Commander
     "CS": ((8920, 8939),),          # Clockspeed
+    "EW": ((8940, 8959),),          # Ebonwake (joined 2026-10-04)
 }
 
 
