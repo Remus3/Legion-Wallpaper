@@ -27,6 +27,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+275. DONE **2026-10-05 (supply chain: dependabot, SHA-pinned actions, hash-pinned pip, CodeQL, read-only token, fuzzing ruled out; responder-authored, commit acd2335).**
+   Operator order via MAIN 0300, provenance sha256 03d43065...5ebc9d MATCH (inbox and MAIN outbox,
+   6988 B). `.github/dependabot.yml` (pip + github-actions at /, weekly, one group each, no npm:
+   no package.json). ci.yml: top-level `permissions: contents: read`; 6 `uses:` pinned to the
+   SHAs of v6.1.0 / v6.3.0 (identical to the v6 major tags, read back); `--upgrade pip` dropped
+   x3; installs are `--require-hashes`. requirements.txt / requirements-cv.txt are now uv
+   `--universal --python-version 3.14 --generate-hashes` outputs (9 / 15 exact pins) compiled
+   from the new requirements.in / requirements-cv.in. `.github/workflows/codeql.yml` (python +
+   actions, build-mode none, codeql-action v4.38.2 by SHA, job-level security-events: write).
+   SECURITY.md: private vulnerability reporting (read back enabled) linked by URL; fuzzing
+   ruled-out section with its reverse-if. Scorecard v5.5.0 linux (checksum OK, WSL) before: 3.3.
+   Suite read back: exit 0, 4006 passed, 20 skipped; hashed dry-run installs exit 0 (9 / 15).
+
 274. DONE **2026-10-05 (fleet: roster change - EW Ebonwake joins, LL Lanternlight retired; responder-authored, commit 1d8fd05).**
    Operator order via MAIN 0230, provenance READ BACK with kit `verify_main` against MAIN's
    committed outbox blob: MATCH, 3807 B. `tools/lw_ports.py` FORBIDDEN gains EW 8940-8959, LL
