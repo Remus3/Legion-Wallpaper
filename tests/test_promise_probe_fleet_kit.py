@@ -37,13 +37,13 @@ def _tree(tmp_path, version, notes):
 def test_the_probe_pins_the_vendored_version():
     pp = _probes()
     man = json.loads((ROOT / "ops" / "fleet_kit" / "MANIFEST.json").read_text(encoding="utf-8"))
-    assert pp.FLEET_KIT_VERSION == man["version"] == 7
+    assert pp.FLEET_KIT_VERSION == man["version"] == 8
 
 
 def test_older_kit_notes_in_the_inbox_do_not_fire(tmp_path, monkeypatch):
     pp = _probes()
     monkeypatch.setattr(pp, "ROOT", _tree(tmp_path, pp.FLEET_KIT_VERSION, [
-        "FLEET-KIT-v4 order", "FLEET-KIT-v5 plan", "FLEET-KIT-v6 lanes", "FLEET-KIT-v7 now"]))
+        "FLEET-KIT-v4 order", "FLEET-KIT-v5 plan", "FLEET-KIT-v6 lanes", "FLEET-KIT-v7 checklist", "FLEET-KIT-v8 now"]))
     assert pp.fleet_kit_moved() is False
 
 

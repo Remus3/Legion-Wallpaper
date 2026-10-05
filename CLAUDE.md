@@ -105,6 +105,25 @@ edit. Tree-specific rules go BELOW this block, never inside it.
        A lane writes `progress/lane-<i>.json` (i = its lane-lock index) in the
        MAIN checkout, never in its worktree, so the lane widget reads one named
        file per live lane and shows the lane name, then its remaining items.
+14. INBOX COST (operator order 2026-10-05). It changes COST, never AUTONOMY: the
+    inbox is read and acted on AUTOMATICALLY every tick, unattended, with no
+    operator prompt, ever. Why: about 60 percent of second-account spend was
+    inbox chatter between trees, not build work. Kit helper: `fleet_inbox.py`.
+    a. Inbox handling folds into this tree's existing lane / loop tick, which
+       reads the inbox on every fire. No separate high-frequency responder
+       where a lane loop exists; a tree without one keeps one responder.
+    b. Triage first: `fleet_inbox.classify()` (free), then one sonnet run at
+       effort low only for what it cannot classify. ACK / INFORMATION /
+       TERMINAL / ANSWER notes get a mechanical ack (a ledger line, no note) or
+       no reply. Only ORDER / FIX / RULING escalate to a real work lane.
+    c. At most 6 outbound notes per tree per local day (ORDER / FIX / RULING
+       exempt), counted by `OutboundCap`. Several answers go in ONE note.
+    d. Never answer an answer. No note chain past 2 hops (`HOP: <n>`) without
+       new work.
+    e. Every headless run logs a usage line to
+       `ops/loop/control/headless_usage.jsonl` via the kit, with `kind`
+       build / inbox / triage and a non-empty note label. MAIN reports the
+       weekly build-vs-inbox split in its insights report.
 <!-- FLEET-COMMON END -->
 
 # LW rules (tree-specific, below the fleet block)

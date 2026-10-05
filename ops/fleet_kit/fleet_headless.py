@@ -43,6 +43,12 @@ v7 adds fleet_checklist.py (FLEET-COMMON item 13, the session checklist) and
 an OPTIONAL write_progress(..., checklist=[{id, task, state, eta_s}]) field;
 without it the progress file is byte-for-byte the v6 shape.
 
+v8 adds fleet_inbox.py (FLEET-COMMON item 14, inbox cost discipline: triage on
+sonnet/low, mechanical acks, an outbound cap, a hop limit, the build-vs-inbox
+cost split) and an OPTIONAL spawn(kind=build|inbox|triage). The usage line
+gains "kind": the explicit value, else inferred by run_kind() (a channel-note
+name is inbox, an empty note unattributed, any other label build).
+
 Pure stdlib. No machine path, account id or repo name appears in this file.
 """
 
@@ -59,7 +65,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
-KIT_VERSION = 7
+KIT_VERSION = 8
 VAR = "CLAUDE_HEADLESS_BASE_URL"
 RUNS_CAP = 120
 WINDOW_S = 86400
@@ -93,6 +99,8 @@ _TOKEN_ID = re.compile(r"^[A-Za-z0-9._-]{1,128}$")
 _TASK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _CHECK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,15}$")
 CHECKLIST_MAX = 20
+KINDS = ("build", "inbox", "triage")
+_NOTE_SENDER = re.compile(r"(?:^|[-_])(?i:from)-[A-Z]+-")
 _EPOCH = _dt.datetime(1970, 1, 1, tzinfo=_dt.timezone(_dt.timedelta(0)))
 
 
@@ -564,7 +572,21 @@ def write_progress(root, task, pct, step, eta_s, status, clock=time.time, checkl
     return doc
 
 
-def usage_line(result, code, note, model, effort, bare, rc, duration_s, error=None):
+def run_kind(note, kind=None):
+    """build | inbox | triage as given; else inbox for a channel-note name,
+    unattributed for an empty note, build for any other label (v8)."""
+    if kind is not None:
+        if kind not in KINDS:
+            raise Refused(f"kind {kind!r} not in {KINDS}")
+        return kind
+    base = _base(note)
+    if not base:
+        return "unattributed"
+    return "inbox" if _NOTE_SENDER.search(base) else "build"
+
+
+def usage_line(result, code, note, model, effort, bare, rc, duration_s, error=None,
+               kind=None):
     r = result if isinstance(result, dict) else {}
     u = r.get("usage") if isinstance(r.get("usage"), dict) else {}
     return {
@@ -578,6 +600,7 @@ def usage_line(result, code, note, model, effort, bare, rc, duration_s, error=No
         "cost_usd": r.get("total_cost_usd"),
         "num_turns": r.get("num_turns"),
         "error": error,
+        "kind": run_kind(note, kind),
     }
 
 
@@ -767,7 +790,7 @@ def spawn(root, code, prompt, note="", writes_code=False, bare=False,
           persist=False, session_id=None, resume=None, model=None, effort=None,
           setting_sources=DEFAULT_SOURCES, floors_in_hooks=False, pin=None,
           log_path=None, halt_file=None, governor=None, governor_timeout=None,
-          governor_root=None, governor_since=None):
+          governor_root=None, governor_since=None, kind=None):
     """Start ONE headless run and wait for it. Returns the usage line (dict)
     plus "result" (and "stderr" when return_stderr). Raises Refused, before
     anything starts, when the fleet rules forbid it; the status file then reads
@@ -777,7 +800,8 @@ def spawn(root, code, prompt, note="", writes_code=False, bare=False,
     "interactive" holds one machine-wide slot for the run (v6); a slot not won
     within governor_timeout seconds raises Refused and nothing starts; a caller
     that retries passes governor_since (its first ask) so it keeps its age. A
-    lane run inside fleet_lanes.run_lane takes its ONE slot here, nowhere else."""
+    lane run inside fleet_lanes.run_lane takes its ONE slot here, nowhere else.
+    kind (v8) labels the run build / inbox / triage in the usage line."""
     root = Path(root)
     budget = RunBudget(root / BUDGET_REL)
     run = _run if run is None else run
@@ -786,6 +810,7 @@ def spawn(root, code, prompt, note="", writes_code=False, bare=False,
         raise Refused("halt file present")
     try:
         check_door(bare, extra, floors_in_hooks)
+        run_kind(note, kind)  # an unknown kind refuses before anything starts
         model, effort = pick_model(writes_code, model), pick_effort(note, effort)
         if not stdin and len(prompt) > ARGV_PROMPT_MAX:
             raise Refused(f"prompt over {ARGV_PROMPT_MAX} chars in argv - pass stdin=True")
@@ -809,11 +834,12 @@ def spawn(root, code, prompt, note="", writes_code=False, bare=False,
             raise Refused(str(exc)) from None
         return _spawn_slotted(root, code, prompt, note, bare, budget, run, url, argv,
                               model, effort, cwd, stdin, timeout, log_path,
-                              return_stderr, slot)
+                              return_stderr, slot, kind)
 
 
 def _spawn_slotted(root, code, prompt, note, bare, budget, run, url, argv, model,
-                   effort, cwd, stdin, timeout, log_path, return_stderr, slot):
+                   effort, cwd, stdin, timeout, log_path, return_stderr, slot,
+                   kind=None):
     """The v5 run body, entered only once a governor slot (if any) is held."""
     try:
         counted = budget.start()
@@ -847,7 +873,8 @@ def _spawn_slotted(root, code, prompt, note, bare, budget, run, url, argv, model
         error = "timeout"
     except BaseException as exc:
         _finish(root, code, budget, usage_line(None, code, note, model, effort, bare, None,
-                                               time.time() - started, type(exc).__name__))
+                                               time.time() - started, type(exc).__name__,
+                                               kind))
         raise
     if log_path:
         result = _result_from_log(log_path)
@@ -855,7 +882,7 @@ def _spawn_slotted(root, code, prompt, note, bare, budget, run, url, argv, model
         result = _json_or_none(getattr(proc, "stdout", None))
     rc = getattr(proc, "returncode", None) if proc is not None else None
     line = usage_line(result, code, note, model, effort, bare, rc,
-                      time.time() - started, error)
+                      time.time() - started, error, kind)
     line["governor_slot"] = Path(slot).name if slot else None
     _finish(root, code, budget, line)
     line["result"] = result.get("result") if isinstance(result, dict) else None
