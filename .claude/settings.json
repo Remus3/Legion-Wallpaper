@@ -98,6 +98,11 @@
             "type": "command",
             "command": "pythonw \"$CLAUDE_PROJECT_DIR/tools/install_git_hooks.py\" --check",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "pythonw \"$CLAUDE_PROJECT_DIR/tools/lw_checklist.py\" session-start",
+            "timeout": 10
           }
         ]
       }

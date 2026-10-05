@@ -315,6 +315,44 @@ def test_the_fix_runs_in_the_worktree_at_high_effort_with_stderr(monkeypatch, tm
     assert out == "fixedwarn", "the result text and the child's stderr both come back"
 
 
+def test_the_code_writing_fix_holds_exactly_one_governor_slot(tmp_path):
+    """FLEET-KIT v6 ruling (MAIN 2237 section 2): a run that writes code takes
+    ONE machine-wide governor slot at the call. Root redirected by conftest."""
+    import os
+    root = Path(os.environ["LW_GOVERNOR_ROOT"])
+    seen = {}
+    seams = _kit_seams(seen)
+    inner = seams["run"]
+
+    def _run(argv, **kw):
+        seen["slots"] = [json.loads(p.read_text(encoding="utf-8"))
+                         for p in sorted(root.glob("*.lock"))]
+        return inner(argv, **kw)
+
+    seams["run"] = _run
+    ok, _t, _o = cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60, kit_seams=seams)
+    assert ok is True
+    assert len(seen["slots"]) == 1 and seen["slots"][0]["repo"] == "LW"
+    assert list(root.glob("*.lock")) == [], "the slot is released after the run"
+
+
+def test_no_free_slot_refunds_the_fix_as_transient_and_starts_nothing(monkeypatch, tmp_path):
+    import os
+    import time as _time
+    root = Path(os.environ["LW_GOVERNOR_ROOT"])
+    root.mkdir(parents=True, exist_ok=True)
+    for i in range(3):
+        (root / f"{i}.lock").write_text(json.dumps(
+            {"pid": os.getpid(), "repo": "OTHER", "run_id": f"r{i}", "cycle": 0,
+             "ts": _time.time()}), encoding="utf-8")
+    monkeypatch.setattr(cw, "FIX_SLOT_WAIT_S", 0)
+    seen = {}
+    ok, transient, out = cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60,
+                                             kit_seams=_kit_seams(seen))
+    assert (ok, transient) == (False, True) and "refused" in out
+    assert seen == {}, "nothing may start without its slot"
+
+
 def test_a_transient_in_stderr_is_still_refunded(tmp_path):
     seen = {}
     ok, transient, _out = cw._fix_in_worktree(
@@ -360,3 +398,11 @@ def test_a_spent_fleet_kit_budget_attempts_nothing(monkeypatch, tmp_path: Path):
     assert cw.do_fix_pass("a" * 40, "ci", 1, None, model=None, dry_run=False,
                           fix_timeout=1, env_seams=up) == "refused"
     assert calls == []
+
+
+def test_the_fix_prompt_carries_the_item_13_checklist_rule(tmp_path):
+    """FLEET-KIT v7 item 13 d: the CI-fix run is a headless fire too."""
+    seen = {}
+    cw._fix_in_worktree(tmp_path, "a" * 40, "1", None, 60, kit_seams=_kit_seams(seen))
+    blob = json.dumps(seen, default=str)
+    assert "FLEET-COMMON item 13" in blob and "ci-watchdog-fix" in blob

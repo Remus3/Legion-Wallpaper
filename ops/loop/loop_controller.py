@@ -46,7 +46,7 @@ def _bind(modname, filename):
 
 executor = _bind("lw_loop_executor", "executor.py")
 # tools/ is not on sys.path either. The headless gate, tools/lw_headless_env.py
-# (LW's binding of MAIN's fleet kit, kit v4), is bound through the executor's
+# (LW's binding of MAIN's fleet kit, kit v6), is bound through the executor's
 # own by-path binder so the two share ONE module object and one HeadlessRefused
 # class (the kit's Refused).
 headless_env = executor._headless_env_module()
@@ -55,6 +55,54 @@ headless_env = executor._headless_env_module()
 # mutex namespace, so a divergence is a silent concurrency bug, not a conflict.
 slots = _bind("lw_loop_slots", "slots.py")
 winmutex = _bind("lw_loop_winmutex", "winmutex.py")
+
+
+def _bind_kit_lanes():
+    """MAIN's fleet_lanes (kit v6), vendored byte-for-byte at ops/fleet_kit/.
+
+    Bound under the SAME module name fleet_headless._lanes() uses
+    (fleet_headless.py:698-709), so this controller and any
+    spawn(governor=...) share one module object and one LaneRefused class."""
+    name = f"fleet_kit_lanes_v{headless_env.kit.KIT_VERSION}"
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(
+        name, Path(__file__).resolve().parents[1] / "fleet_kit" / "fleet_lanes.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+fleet_lanes = _bind_kit_lanes()
+LANE_CODE = "LW"
+
+
+def _bind_lw_checklist():
+    """tools/lw_checklist.py (LW's binding of the kit's fleet_checklist, v7),
+    by path: tools/ is not on sys.path for the controller."""
+    if "lw_checklist" in sys.modules:
+        return sys.modules["lw_checklist"]
+    spec = importlib.util.spec_from_file_location(
+        "lw_checklist", Path(__file__).resolve().parents[2] / "tools" / "lw_checklist.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["lw_checklist"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+lw_checklist = _bind_lw_checklist()
+# FLEET-COMMON item 13 (kit v7, MAIN 0215): every loop fire (one cycle) prints
+# `Session <cycle> checklist` to the controller log and writes the remaining
+# tasks into progress/lane-<i>.json in the MAIN checkout (i = lane-lock index).
+CYCLE_ITEMS = (
+    ("D", "Get this cycle's directive"),
+    ("X", "Run the executor call in the lane worktree"),
+    ("G", "Reconcile the executor's claims with the truth gate"),
+    ("A", "Audit the diff and record the outcome"),
+)
+LANE_INDEX = 0
+_LANE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 
 # Module-RELATIVE, not an absolute path only this machine has. The previous
 # fallback hardcoded C:\Legion Wallpaper\...\config.json, and the comment below
@@ -98,6 +146,12 @@ def _cfg_path(key, default):
 ROOT = _cfg_path("repo_root", Path(__file__).resolve().parents[2])
 CTL = _cfg_path("control_dir", Path(__file__).resolve().parent / "control")
 CTL.mkdir(parents=True, exist_ok=True)
+# FLEET-KIT v6 (MAIN 2237): main() re-points ROOT at this run's lane worktree
+# and CTL at this lane's own control dir. MAIN_ROOT / ROOT_CTL keep the main
+# tree's: lane locks, the governor slot's repo key and the operator's
+# all-lanes STOP live there.
+MAIN_ROOT = ROOT
+ROOT_CTL = CTL
 DRY = bool(CFG.get("dry_run", False))
 GEMINI_USD = 0.0  # cumulative estimated Gemini spend - THIS is the capped budget (not Claude)
 RUN_ID = ""  # minted in main(); namespaces logs + slot payloads across concurrent runs
@@ -347,6 +401,13 @@ def consume_directive_override(ctl=None):
         text = ""
     p.unlink(missing_ok=True)
     return text or None
+
+def cycle_fire(cycle):
+    """This cycle's item-13 checklist: log + progress/lane-<LANE_INDEX>.json
+    under MAIN_ROOT (never the worktree). Never raises."""
+    return lw_checklist.Fire(MAIN_ROOT, lw_checklist.kit_checklist().lane_task(LANE_INDEX),
+                             cycle, CYCLE_ITEMS, log=log, kit=headless_env.kit)
+
 
 def cycle_source(cfg, override):
     """Pure: which directive source feeds this cycle. Precedence:
@@ -1055,7 +1116,7 @@ def meter(start_ts):
 # ---- main loop ---------------------------------------------------------
 def wait_for(path, deadline_ts):
     while time.time() < deadline_ts:
-        if (CTL / "STOP").exists():
+        if stop_requested():
             log("external STOP seen"); sys.exit(0)
         if Path(path).exists():
             return True
@@ -1064,7 +1125,7 @@ def wait_for(path, deadline_ts):
 
 def wait_gone(path, deadline_ts):
     while time.time() < deadline_ts:
-        if (CTL / "STOP").exists():
+        if stop_requested():
             log("external STOP seen"); sys.exit(0)
         if not Path(path).exists():
             return True
@@ -1100,47 +1161,117 @@ def stall_recovery_directive(cycle):
         f"\"{py}\" ops/loop/done_sentinel.py --tests <pass_count> --regressions <0|1>"
     )
 
-def claim_single_controller():
-    """One controller per repo. A second one would interleave two runs through
-    the SAME control_dir - the handshake files are not namespaced, so both would
-    consume each other's gemini.ready and claude.done. Concurrency ACROSS repos
-    is the goal; concurrency within one repo is corruption.
+# ---- FLEET-KIT v6 lanes (MAIN 2237 sections 3 + 4a) ----------------------
+# The per-repo guard used to be ONE controller per repo (control/RUNNING.lock),
+# because the control-dir handshake files are not namespaced. v6 lifts it onto
+# fleet_lanes: up to LANE_CAP_MAX (3) lanes per repo, lane i always in its own
+# git worktree <parent>/lw-worktrees/lane-<i> (fleet_lanes.worktree_path,
+# fleet_lanes.py:537), and each lane gets its OWN control dir, keyed by the
+# lane NAME - names are exclusive per repo (try_acquire_lane exclusive=True,
+# fleet_lanes.py:612-644), so two lanes can never share handshake files, and a
+# name's directive chain survives a run landing on a different index.
+# run_lane (fleet_lanes.py:724-739) takes NO governor slot: the slots.hold(3)
+# around the executor call in main() stays this lane's ONE slot - never also
+# spawn(governor=...), never a slot around git.
 
-    Returns the run_id. Exits nonzero if another live controller holds the repo.
+def lane_settings(cfg):
+    """(lane name, cap) from the loop config; defaults "loop" and the kit's 3.
+    The cap is validated by fleet_lanes.lane_cap (fleet_lanes.py:527-534)."""
+    name = str(cfg.get("lane", "loop"))
+    if not _LANE_NAME.match(name):
+        raise ValueError(f"lane name {name!r} is not a safe directory name")
+    return name, fleet_lanes.lane_cap(cfg.get("lane_cap", fleet_lanes.LANE_CAP_MAX))
+
+
+def lane_control_dir(root_ctl, lane_name):
+    """This lane's own control dir: <control_dir>/lane-runs/<name>."""
+    return Path(root_ctl) / "lane-runs" / lane_name
+
+
+def lane_cfg(cfg, claim):
+    """A copy of cfg whose repo_root is the lane worktree: the executor's cwd
+    and --add-dir (executor.py:527, :621) follow it, so nothing the headless
+    executor writes lands in the main tree."""
+    return {**cfg, "repo_root": str(claim["worktree"])}
+
+
+def old_layout_holder(root_ctl, me=None):
+    """The pre-v6 RUNNING.lock record when it names a LIVE controller, else None.
+
+    An old-layout lock and a v6 lane lock must never coexist (MAIN 2237
+    section 3 item 5), so a live one refuses the v6 start. The liveness rule is
+    the old guard's, unchanged: a live pid does not prove the ORIGINAL holder
+    lives (Windows reissues pids - on 2026-08-01 this lock named a pid from a
+    run five days dead, reissued to a conhost), so a lock older than the stale
+    window cannot be a live run. READ ONLY: the file is never deleted here.
     """
-    lock = CTL / "RUNNING.lock"
-    if lock.exists():
-        rec = rjson(lock, {})
+    lock = Path(root_ctl) / "RUNNING.lock"
+    if not lock.exists():
+        return None
+    rec = rjson(lock, {}) or {}
+    try:
         holder = int(rec.get("pid", 0) or 0)
-        # A live pid does not prove the ORIGINAL holder lives: Windows reissues
-        # pids, and on 2026-08-01 this lock named a pid from a run that ended
-        # five days earlier which the OS had since handed to an unrelated
-        # conhost. Bare liveness wedged the repo. A holder owns it for at most a
-        # cycle, so a lock older than the stale window cannot be a live run.
         age = time.time() - float(rec.get("ts", 0) or 0)
-        fresh = age < slots.DEFAULT_STALE_AFTER
-        alive = bool(holder) and holder != os.getpid() and slots.pid_alive(holder)
-        if alive and fresh:
-            sys.stderr.write(
-                f"another controller is already running in this repo "
-                f"(pid={holder} run_id={rec.get('run_id')} since {rec.get('ts')}). "
-                f"Stop it first, or delete {lock} if it is a stale leftover.\n")
-            sys.exit(2)
-        why = "not alive" if not alive else f"expired ({age:.0f}s old)"
-        log(f"reclaiming stale RUNNING.lock (pid={holder} {why})")
-    run_id = uuid.uuid4().hex[:8]
-    awrite(lock, json.dumps({"pid": os.getpid(), "run_id": run_id,
-                             "ts": time.time(), "repo": str(ROOT)}))
-    awrite(CTL / "run_id.txt", run_id)
-    return run_id
+    except (TypeError, ValueError):
+        return None
+    me = os.getpid() if me is None else me
+    alive = bool(holder) and holder != me and slots.pid_alive(holder)
+    return rec if alive and age < slots.DEFAULT_STALE_AFTER else None
+
+
+def _enter_lane(claim, lane_name):
+    """Re-point ROOT / CTL / CFG at the claimed lane; returns the run_id."""
+    global ROOT, CTL, LANE_INDEX
+    LANE_INDEX = int(claim["index"])
+    ROOT = Path(claim["worktree"])
+    CTL = lane_control_dir(ROOT_CTL, lane_name)
+    CTL.mkdir(parents=True, exist_ok=True)
+    CFG.update(lane_cfg(CFG, claim))
+    for f in ("STOP", "gemini.ready", "typed.flag", "claude.done", "cycle.txt"):
+        (CTL / f).unlink(missing_ok=True)
+    # The shared STOP is the operator's all-lanes stop. It used to be cleared
+    # at every start; it is still cleared, but only when no OTHER lane is
+    # running, so one lane's start never swallows a STOP meant for another.
+    others = [r for r in fleet_lanes.repo_lane_state(MAIN_ROOT)
+              if r["state"] == fleet_lanes.RUNNING and r["index"] != claim["index"]]
+    if not others:
+        (ROOT_CTL / "STOP").unlink(missing_ok=True)
+    awrite(CTL / "run_id.txt", claim["run_id"])
+    return claim["run_id"]
+
+
+def stop_requested():
+    """This lane's STOP, or the shared all-lanes STOP in the main control dir."""
+    return (CTL / "STOP").exists() or (ROOT_CTL / "STOP").exists()
 
 
 def main():
+    try:
+        lane_name, cap = lane_settings(CFG)
+    except ValueError as e:
+        sys.stderr.write(f"lane config refused: {e}\n")
+        sys.exit(2)
+    held = old_layout_holder(ROOT_CTL)
+    if held is not None:
+        sys.stderr.write(
+            f"another controller is already running in this repo under the pre-v6 "
+            f"layout (pid={held.get('pid')} run_id={held.get('run_id')} since "
+            f"{held.get('ts')}). Stop it first; a v6 lane never runs beside it.\n")
+        sys.exit(2)
+    run_id = uuid.uuid4().hex[:8]
+    try:
+        with fleet_lanes.run_lane(MAIN_ROOT, LANE_CODE, lane_name, run_id, cap) as claim:
+            _run_lane(claim, lane_name)
+    except fleet_lanes.LaneRefused as e:
+        sys.stderr.write(f"lane refused ({lane_name}, cap {cap}): {e}\n")
+        sys.exit(2)
+
+
+def _run_lane(claim, lane_name):
     global RUN_ID
-    for f in ("STOP", "gemini.ready", "typed.flag", "claude.done", "cycle.txt"):
-        (CTL / f).unlink(missing_ok=True)
-    RUN_ID = claim_single_controller()
-    log(f"run_id={RUN_ID}")
+    RUN_ID = _enter_lane(claim, lane_name)
+    log(f"run_id={RUN_ID} lane={lane_name} index={claim['index']} "
+        f"worktree={claim['worktree']} saved_ref={claim.get('saved_ref')}")
     start_ts = time.time()
     # persistent-session model: pin the session active at launch (the executor being
     # driven via /clear) so the meter bills it for the whole run, not whatever is newest.
@@ -1175,9 +1306,11 @@ def main():
         # run while the director is erroring - a 2026-07-03 outage in the RC
         # ancestor spun 20+ directive-less cycles where an operator STOP would
         # have been ignored.
-        if (CTL / "STOP").exists():
+        if stop_requested():
             log("external STOP seen (cycle top)")
             sys.exit(0)
+        fire = cycle_fire(cycle)
+        fire.start()
         override = consume_directive_override()
         src = cycle_source(CFG, override)
         if src == "override":
@@ -1194,9 +1327,11 @@ def main():
                 # signal. Advance to the next cycle instead of terminating the whole run;
                 # the no-progress (same-sha) guard still stops a persistent outage cleanly.
                 log(f"cycle {cycle}: director backend error (retries exhausted) - advancing, NOT terminating")
+                fire.close("failed", "director error")
                 continue
             if body[:40].upper().find("NO_WORK") >= 0:
                 stop("director returned NO_WORK")
+        fire.complete("D")
         awrite(CTL / "directive.md", body)
         awrite(CTL / "cycle.txt", str(cycle))
         # The channel-specific half of a cycle (typing handshake + done sentinel for
@@ -1215,9 +1350,10 @@ def main():
         # handed to the next director call as last_done so a contention outage
         # is visible rather than silent, and the run stays bounded by max_cycles.
         slot_timeout = slot_wait_timeout()
+        fire.running("X", "executor running", CFG.get("cycle_deadline_sec"))
         try:
             with held_slot(int(CFG.get("max_concurrent_lanes", 3)),
-                           repo=str(ROOT), run_id=RUN_ID, cycle=cycle,
+                           repo=str(MAIN_ROOT), run_id=RUN_ID, cycle=cycle,
                            timeout=slot_timeout, log=log):
                 rec = EXEC.run(cycle, body, src)
         except slots.SlotTimeout as e:
@@ -1225,7 +1361,9 @@ def main():
                 f"skipping this cycle, NOT proceeding unslotted ({e})")
             last_done = executor.failure_raw(
                 cycle, f"no executor slot within {slot_timeout}s", None)
+            fire.close("failed", "no executor slot")
             continue
+        fire.complete("X")
         done = rec.raw
         last_done = done
         new_sha = rec.sha or head()
@@ -1253,6 +1391,7 @@ def main():
             if tg_verdict == "REFUSE" and CFG.get("truth_gate_blocking", False):
                 log(f"cycle {cycle}: truth_gate REFUSE is blocking - "
                     f"{tg_report.get('action', 'commit blocked')}")
+        fire.complete("G")
         log(f"cycle {cycle}: claude.done sha={new_sha[:8]} tests={done.get('tests_pass')} regress={done.get('regressions')}")
 
         # NO Claude dollar accounting (operator 2026-07-26). Two reasons, both
@@ -1294,6 +1433,8 @@ def main():
                                  done_record=rec, run_id=RUN_ID,
                                  manifest_run_id=read_manifest_run_id())
         run_agent_mirror()
+        fire.complete("A")
+        fire.close()
         prev_sha = new_sha
 
     stop(f"max_cycles {CFG['max_cycles']} reached")

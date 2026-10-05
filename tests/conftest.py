@@ -102,7 +102,8 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
     hits: list[str] = []
 
     def _guarded(path, text):
-        if Path(path).resolve().parent == real:
+        # progress/ too (kit v7 write_progress, item-13 checklists).
+        if Path(path).resolve().parent in (real, real / "progress"):
             hits.append(str(path))
             raise RuntimeError("test arm wrote a live fleet-kit file")
         return original(path, text)
@@ -137,6 +138,21 @@ def _the_live_job_run_logs_are_never_written(request, monkeypatch):
     """
     tmp = request.getfixturevalue("tmp_path")
     monkeypatch.setenv("LW_RUNLOG_ROOT", str(tmp / "runlog"))
+    yield
+
+
+@pytest.fixture(autouse=True)
+def _the_live_governor_slots_are_never_taken(request, monkeypatch):
+    """Point the fleet-kit v6 governor (spawn(governor=...)) at a per-test root.
+
+    A code-writing headless run takes one machine-wide slot under
+    %ProgramData%/lw-loop/slots - the SAME bucket every live loop on this
+    machine draws from. An arm that drove a governed spawn there would hold a
+    real slot (or wait behind a live run). Env seam, read at call time by
+    `lw_headless_env.governor_root()`.
+    """
+    tmp = request.getfixturevalue("tmp_path")
+    monkeypatch.setenv("LW_GOVERNOR_ROOT", str(tmp / "governor" / "slots"))
     yield
 
 

@@ -218,3 +218,20 @@ def test_resolver_follows_module_level_constants(src, expected):
                 and isinstance(n.func, ast.Attribute) and n.func.attr == "run")
     flags = next(k.value for k in call.keywords if k.arg == "creationflags")
     assert resolves_to_flag(flags, consts) is expected
+
+
+def test_the_session_start_guard_reports_no_spawn_site_on_this_tree():
+    """The SessionStart window guard applies the SAME single kit exemption as
+    this suite (kit gap B: _run's Popen takes creationflags via **kw, proved at
+    runtime above). Before kit v7 the guard flagged it at every session start."""
+    assert guard.check_spawns() == []
+
+
+def test_the_guard_exemption_is_the_one_kit_forwarding_site_only(tmp_path, monkeypatch):
+    """Guard the exemption: a flagless **kw spawn OUTSIDE the kit is still flagged."""
+    d = tmp_path / "tools"
+    d.mkdir()
+    (d / "x.py").write_text("import subprocess\n\ndef f(**kw):\n"
+                            "    subprocess.Popen(['a'], **kw)\n", encoding="ascii")
+    monkeypatch.setattr(guard, "ROOT", tmp_path)
+    assert guard.check_spawns() == ["tools/x.py:4"]

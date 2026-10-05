@@ -64,6 +64,13 @@ EXPECTED_INTERACTIVE = {
     "RC-Supervisor": "Win32 + overlay ownership",
 }
 SCAN_DIRS = ("tools", "ops")
+# The ONE spawn site LW cannot edit: MAIN's vendored kit runs claude through
+# fleet_headless._run, whose Popen gets creationflags only via **kw (spawn puts
+# CREATE_NO_WINDOW in that dict). The AST cannot see through **kw; the flag is
+# proved at runtime by tests/test_no_console_flash.py. Exempt by exact shape -
+# that file, flagless, forwarding **kw - and never by line number, which moves
+# with every kit version (kit gap B, reported to MAIN since the v4 ANSWER).
+KIT_FORWARDING_FILE = "ops/fleet_kit/fleet_headless.py"
 
 
 def _run(args, timeout=6):
@@ -200,7 +207,11 @@ def check_spawns():
                               if k.arg == "creationflags"), None)
                 if flags is not None and resolves_to_flag(flags, consts):
                     continue
-                misses.append(f"{py.relative_to(ROOT).as_posix()}:{node.lineno}")
+                rel = py.relative_to(ROOT).as_posix()
+                if (rel == KIT_FORWARDING_FILE and flags is None
+                        and any(k.arg is None for k in node.keywords)):
+                    continue
+                misses.append(f"{rel}:{node.lineno}")
     return misses
 
 

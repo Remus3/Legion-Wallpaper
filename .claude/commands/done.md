@@ -12,6 +12,8 @@ The user wants to end the session cleanly so the next one starts with a fresh co
 
 **Chat output (FLEET-COMMON item 5, MAIN FLEET-KIT v3, 2026-10-03):** /done prints ONE line and nothing else: `Done ritual complete, safe to clear` - or, if a step failed, the single failure that stopped it. No banner, no review, no recap, and NEVER the hand-off or a next-session prompt. Everything the old banner carried goes into the hand-off file and the commit.
 
+**Session checklist (FLEET-COMMON item 13, MAIN FLEET-KIT v7, 2026-10-05):** /done is run UNPROMPTED once no checklist task remains - the session does not wait for the operator to type it. Pre-flight line: every checklist task done or carried into the hand-off (an open task goes into the hand-off's `CHECKLIST:` section as `  - <ID>: <task>`, which the next session's SessionStart hook `tools/lw_checklist.py session-start` prints). The hand-off gets the `SESSION: <n+1>` line from `tools/lw_next_session.py --write` (section 6), which stamps it - never count by hand.
+
 **The order of this document is load-bearing (2026-09-07).** The gate that licenses the push is section 7, and it is the LAST act before the push. Everything authored - code, ROADMAP, LEDGER, WAKEUP_NOTES, the hand-off file - is committed BEFORE it. The old order ran the gate first and then authored the living-doc edits, so every session shipped doc edits no suite had ever graded. That was not a race; it was the written order. `tests/test_done_gate.py` pins this ordering, so a re-shuffle of these sections goes red instead of quiet.
 
 ### 0. Pre-flight check gate - catch breakage early (NOT the binding gate)
@@ -132,6 +134,8 @@ NEXT SESSION
 Task: <the single next action>
 Context: <key files / endpoints / live-state to probe first>
 Acceptance: <how the next session knows it is done>
+CHECKLIST:
+  - <ID>: <imperative task, one line - the next session's checklist, in order>
 Carried forward: <every un-acted item from the previous hand-off, one line each>
 Do NOT redo: <anything shipped this session that still looks open>
 ```

@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -167,6 +168,24 @@ def write_handoff(text, root=None, intent_path=None):
     return target
 
 
+# FLEET-COMMON item 13 a (FLEET-KIT v7, MAIN 0215): the session counter lives
+# in the hand-off; /done writes n+1. Stamped HERE, by the one tool /done writes
+# the hand-off with, so nobody counts by hand.
+SESSION_LINE = re.compile(r"^SESSION:[ \t]*(\d+)[ \t]*$", re.M)
+_HEADER = "NEXT SESSION\n------------\n"
+
+
+def stamp_session(text, previous):
+    """`text` with exactly one `SESSION: <n+1>` line, n read from `previous`
+    (the hand-off being replaced; none = 0). Under the header when present."""
+    m = SESSION_LINE.search(previous or "")
+    line = f"SESSION: {int(m.group(1)) + 1 if m else 1}"
+    body = re.sub(r"^SESSION:[ \t]*\d+[ \t]*\n?", "", text, flags=re.M)
+    if body.startswith(_HEADER):
+        return _HEADER + line + "\n" + body[len(_HEADER):]
+    return line + "\n" + body
+
+
 def compose_handoff(text, engine=None):
     """The hand-off with its "Operator asks" block rendered FROM the task engine.
 
@@ -200,7 +219,11 @@ def main(argv=None):
         return 0
 
     text = sys.stdin.read() if args.write == "-" else Path(args.write).read_text(encoding="utf-8")
-    text = compose_handoff(text)
+    try:
+        previous = resolve_target().read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        previous = ""
+    text = compose_handoff(stamp_session(text, previous))
     try:
         written = write_handoff(text)
     except ValueError as exc:

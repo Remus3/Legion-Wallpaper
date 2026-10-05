@@ -151,28 +151,71 @@ def test_lock_payload_identifies_the_holder(tmp_path: Path):
     assert rec["pid"] == os.getpid()
 
 
-# ---- one controller per repo ------------------------------------------------
+# ---- the pre-v6 single-controller lock vs. the v6 lanes ----------------------
+# FLEET-KIT v6 (MAIN 2237) lifted "one controller per repo" onto fleet_lanes
+# (cap 3, one worktree + one control dir per lane): tests/test_loop_lanes.py
+# carries the lane arms. What stays here is the OLD lock's liveness rule, which
+# now decides whether a pre-v6 controller is still running - a live one
+# refuses the v6 start (the two layouts never coexist), a dead or expired one
+# does not. Every arm points the controller at a throwaway repo (repo_root) so
+# no lane lock or worktree is ever made in a real checkout.
 
-def test_second_controller_in_the_same_repo_exits_nonzero(tmp_path: Path):
-    """Concurrency ACROSS repos is the goal; within one repo it is corruption.
-
-    The control_dir handshake files are not namespaced, so two controllers in
-    one repo would consume each other's gemini.ready and claude.done.
-    """
+def _tmp_repo(tmp_path: Path) -> Path:
     import subprocess
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    for args in (("init", "-q"), ("config", "user.email", "c@example.invalid"),
+                 ("config", "user.name", "c"), ("commit", "-q", "--allow-empty", "-m", "i")):
+        subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True,
+                       env=env, timeout=60,
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    return repo
+
+
+def _old_lock_cfg(tmp_path: Path, rec: dict) -> Path:
     ctl = tmp_path / "control"
     ctl.mkdir()
     cfg = json.loads((ROOT / "ops" / "loop" / "config.dry.json").read_text(encoding="utf-8"))
-    cfg.update({"control_dir": str(ctl), "max_cycles": 1, "cycle_deadline_sec": 5,
-                "poll_sec": 1, "fixed_directive": "noop", "session_jsonl": ""})
+    cfg.update({"repo_root": str(_tmp_repo(tmp_path)), "control_dir": str(ctl),
+                "max_cycles": 1, "cycle_deadline_sec": 3, "poll_sec": 1,
+                "fixed_directive": "noop", "session_jsonl": ""})
     cfgp = tmp_path / "cfg.json"
     cfgp.write_text(json.dumps(cfg), encoding="utf-8")
+    (ctl / "RUNNING.lock").write_text(json.dumps(rec), encoding="utf-8")
+    return cfgp
 
+
+def _claims_its_lane(tmp_path: Path, cfgp: Path) -> None:
+    import subprocess
+    proc = subprocess.Popen(
+        [sys.executable, str(ROOT / "ops" / "loop" / "loop_controller.py"), str(cfgp)],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    try:
+        ready = tmp_path / "control" / "lane-runs" / "loop" / "run_id.txt"
+        claimed = False
+        for _ in range(300):
+            if ready.is_file():
+                claimed = True
+                break
+            if proc.poll() is not None:
+                break
+            time.sleep(0.1)
+        assert claimed, "a dead or expired old-layout lock must not wedge the repo"
+        lane = tmp_path / "repo" / "ops" / "loop" / "control" / "lanes" / "0.lock"
+        assert json.loads(lane.read_text(encoding="utf-8"))["pid"] == proc.pid
+    finally:
+        proc.kill()
+        proc.wait(timeout=30)
+
+
+def test_second_controller_in_the_same_repo_exits_nonzero(tmp_path: Path):
+    """A LIVE pre-v6 controller still refuses a start: an old-layout lock and a
+    v6 lane lock must never coexist (MAIN 2237 section 3 item 5)."""
+    import subprocess
     # A lock held by THIS process: a live pid that is not the controller's.
-    (ctl / "RUNNING.lock").write_text(
-        json.dumps({"pid": os.getpid(), "run_id": "held", "ts": time.time()}),
-        encoding="utf-8")
-
+    cfgp = _old_lock_cfg(tmp_path, {"pid": os.getpid(), "run_id": "held",
+                                    "ts": time.time()})
     r = subprocess.run([sys.executable, str(ROOT / "ops" / "loop" / "loop_controller.py"),
                         str(cfgp)], capture_output=True, text=True, timeout=120)
     assert r.returncode != 0, "a second controller must refuse to start"
@@ -192,41 +235,10 @@ def test_controller_reclaims_a_lock_whose_pid_was_recycled(tmp_path: Path):
     deadline, so a lock far older than the stale window cannot belong to a live
     run no matter what the pid table says.
     """
-    import subprocess
-    ctl = tmp_path / "control"
-    ctl.mkdir()
-    cfg = json.loads((ROOT / "ops" / "loop" / "config.dry.json").read_text(encoding="utf-8"))
-    cfg.update({"control_dir": str(ctl), "max_cycles": 1, "cycle_deadline_sec": 3,
-                "poll_sec": 1, "fixed_directive": "noop", "session_jsonl": ""})
-    cfgp = tmp_path / "cfg.json"
-    cfgp.write_text(json.dumps(cfg), encoding="utf-8")
-
-    # os.getpid() is unambiguously alive - the point is that aliveness alone
-    # must not be enough when the lock predates any plausible run.
     stale = _load("slots").DEFAULT_STALE_AFTER
-    (ctl / "RUNNING.lock").write_text(
-        json.dumps({"pid": os.getpid(), "run_id": "recycled",
-                    "ts": time.time() - (stale * 4)}),
-        encoding="utf-8")
-
-    proc = subprocess.Popen(
-        [sys.executable, str(ROOT / "ops" / "loop" / "loop_controller.py"), str(cfgp)],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    try:
-        claimed = False
-        for _ in range(150):
-            if (ctl / "run_id.txt").is_file():
-                claimed = True
-                break
-            if proc.poll() is not None:
-                break
-            time.sleep(0.1)
-        assert claimed, "an expired lock must not wedge the repo behind a recycled pid"
-        rec = json.loads((ctl / "RUNNING.lock").read_text(encoding="utf-8"))
-        assert rec["pid"] == proc.pid
-    finally:
-        proc.kill()
-        proc.wait(timeout=30)
+    cfgp = _old_lock_cfg(tmp_path, {"pid": os.getpid(), "run_id": "recycled",
+                                    "ts": time.time() - (stale * 4)})
+    _claims_its_lane(tmp_path, cfgp)
 
 
 def test_controller_still_refuses_a_live_holder_inside_the_stale_window(tmp_path: Path):
@@ -236,20 +248,9 @@ def test_controller_still_refuses_a_live_holder_inside_the_stale_window(tmp_path
     corroboration must not weaken that refusal.
     """
     import subprocess
-    ctl = tmp_path / "control"
-    ctl.mkdir()
-    cfg = json.loads((ROOT / "ops" / "loop" / "config.dry.json").read_text(encoding="utf-8"))
-    cfg.update({"control_dir": str(ctl), "max_cycles": 1, "cycle_deadline_sec": 5,
-                "poll_sec": 1, "fixed_directive": "noop", "session_jsonl": ""})
-    cfgp = tmp_path / "cfg.json"
-    cfgp.write_text(json.dumps(cfg), encoding="utf-8")
-
     stale = _load("slots").DEFAULT_STALE_AFTER
-    (ctl / "RUNNING.lock").write_text(
-        json.dumps({"pid": os.getpid(), "run_id": "held",
-                    "ts": time.time() - (stale * 0.5)}),
-        encoding="utf-8")
-
+    cfgp = _old_lock_cfg(tmp_path, {"pid": os.getpid(), "run_id": "held",
+                                    "ts": time.time() - (stale * 0.5)})
     r = subprocess.run([sys.executable, str(ROOT / "ops" / "loop" / "loop_controller.py"),
                         str(cfgp)], capture_output=True, text=True, timeout=120)
     assert r.returncode != 0, "a live holder inside the window still owns the repo"
@@ -258,38 +259,9 @@ def test_controller_still_refuses_a_live_holder_inside_the_stale_window(tmp_path
 
 def test_controller_reclaims_a_lock_held_by_a_dead_pid(tmp_path: Path):
     """Fail-open: a crashed controller must not lock the repo out forever."""
-    import subprocess
-    ctl = tmp_path / "control"
-    ctl.mkdir()
-    cfg = json.loads((ROOT / "ops" / "loop" / "config.dry.json").read_text(encoding="utf-8"))
-    cfg.update({"control_dir": str(ctl), "max_cycles": 1, "cycle_deadline_sec": 3,
-                "poll_sec": 1, "fixed_directive": "noop", "session_jsonl": ""})
-    cfgp = tmp_path / "cfg.json"
-    cfgp.write_text(json.dumps(cfg), encoding="utf-8")
-    (ctl / "RUNNING.lock").write_text(
-        json.dumps({"pid": 999999999, "run_id": "ghost", "ts": time.time()}),
-        encoding="utf-8")
-
-    # Only the CLAIM is under test, so poll for it and kill - letting the cycle
-    # run to completion would add two minutes of AHK-handshake timeout per run.
-    proc = subprocess.Popen(
-        [sys.executable, str(ROOT / "ops" / "loop" / "loop_controller.py"), str(cfgp)],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    try:
-        claimed = False
-        for _ in range(150):
-            if (ctl / "run_id.txt").is_file():
-                claimed = True
-                break
-            if proc.poll() is not None:
-                break
-            time.sleep(0.1)
-        assert claimed, "a dead holder must not block a new run from claiming the repo"
-        rec = json.loads((ctl / "RUNNING.lock").read_text(encoding="utf-8"))
-        assert rec["pid"] == proc.pid, "the live controller should own the lock now"
-    finally:
-        proc.kill()
-        proc.wait(timeout=30)
+    cfgp = _old_lock_cfg(tmp_path, {"pid": 999999999, "run_id": "ghost",
+                                    "ts": time.time()})
+    _claims_its_lane(tmp_path, cfgp)
 
 
 # ---- named mutexes ---------------------------------------------------------

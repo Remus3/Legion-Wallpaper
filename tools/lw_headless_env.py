@@ -1,6 +1,6 @@
 """LW's binding of MAIN's fleet kit - the ONE path a headless `claude` starts by.
 
-# arch: headless-claude spawn gate - thin adapter over ops/fleet_kit/fleet_headless.py (kit v4), fail closed
+# arch: headless-claude spawn gate - thin adapter over ops/fleet_kit/fleet_headless.py (kit v7), fail closed
 
 MAIN order (kit v3, 2026-10-03; kit v4 the same day): every headless `claude` this tree starts goes
 through `fleet_headless.spawn(...)`, and LW's own proxy-env, probe, budget,
@@ -57,9 +57,11 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -147,17 +149,49 @@ def claude_exe(which=None) -> str:
     return kit.claude_exe() if which is None else kit.claude_exe(which=which)
 
 
+GOVERNOR_ROOT_ENV = "LW_GOVERNOR_ROOT"
+
+
+def governor_root():
+    """The kit v6 governor slot root for spawn(governor=...): None = the kit's
+    default (fleet_lanes.governor_root, %ProgramData%/lw-loop/slots - the
+    bucket slots.py shares). LW_GOVERNOR_ROOT overrides it; the test suite
+    sets it per test (conftest) so no arm ever takes a live slot."""
+    raw = os.environ.get(GOVERNOR_ROOT_ENV)
+    return Path(raw) if raw else None
+
+
+def lanes():
+    """The kit's fleet_lanes, bound through the kit's own binder
+    (fleet_headless._lanes) so every LW caller shares ONE module object."""
+    return kit._lanes()
+
+
+def exec_slot(priority: str, timeout: float | None = None):
+    """ONE governor slot around a long `exec` run (FLEET-KIT v6 ruling: a run
+    that writes code takes one slot at the call). A context manager; raises
+    lanes().SlotTimeout when none frees within timeout. A slot whose holder is
+    killed is reaped by the kit's dead-pid rule."""
+    return lanes().governor_slot(CODE, f"exec-{os.getpid()}", priority,
+                                 governor_root(), timeout=timeout)
+
+
 def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool = False,
           rules_file=None, timeout: float = 3600, extra=(), **params) -> dict:
     """kit.spawn for LW: FLEET_ROOT, code LW, floors in hooks, project scope.
 
     Raises kit.Refused before any launch. `params` reaches kit.spawn's v4
     options (cwd, stdin, return_stderr, persist, session_id, resume, model,
-    effort, log_path, halt_file) and its test seams (url_source, connect, run,
-    exe_source). A timeout does NOT raise: the kit kills the process tree and
-    returns a line with rc None and error "timeout".
+    effort, log_path, halt_file), the v6 governor (governor, governor_timeout,
+    governor_root - defaulted from governor_root() when governor is set) and
+    its test seams (url_source, connect, run, exe_source). A timeout does NOT
+    raise: the kit kills the process tree and returns a line with rc None and
+    error "timeout". A governor slot not won in governor_timeout raises
+    kit.Refused before anything starts.
     """
     params.setdefault("setting_sources", SETTING_SOURCES)
+    if params.get("governor") is not None:
+        params.setdefault("governor_root", governor_root())
     return kit.spawn(FLEET_ROOT, CODE, prompt, note=note, writes_code=writes_code,
                      bare=bare, rules_file=rules_file, timeout=timeout,
                      extra=tuple(extra), floors_in_hooks=True, **params)
@@ -296,6 +330,10 @@ def main(argv: list[str] | None = None, *, log_dir: Path | None = None,
     sp.add_argument("--timeout", type=float, default=3600.0)
     sp.add_argument("extra", nargs=argparse.REMAINDER)
     ex = sub.add_parser("exec", help="run argv through the kit's gate, or refuse")
+    ex.add_argument("--governor", choices=("interactive", "queued"), default=None,
+                    help="hold ONE machine-wide governor slot for the run (code-writing)")
+    ex.add_argument("--governor-timeout", type=float, default=None,
+                    help="seconds to wait for the slot; then REFUSED (78)")
     ex.add_argument("argv", nargs=argparse.REMAINDER)
     args = ap.parse_args(argv)
     seams = {"url_source": url_source, "connect": connect}
@@ -331,16 +369,21 @@ def main(argv: list[str] | None = None, *, log_dir: Path | None = None,
     if not child:
         print("lw_headless_env exec: no command given after --", file=sys.stderr)
         return 2
+    slot = contextlib.ExitStack()
     try:
         env = child_env(**seams)
         if Path(child[0]).stem.lower() == "claude" and not Path(child[0]).is_absolute():
             child[0] = (exe_source or claude_exe)()
+        if args.governor:
+            slot.enter_context(exec_slot(args.governor, args.governor_timeout))
         started = start_run()
-    except HeadlessRefused as exc:
+    except (HeadlessRefused, lanes().SlotTimeout) as exc:
+        slot.close()
         print(f"lw_headless_env: REFUSED {exc}", file=sys.stderr)
         log_refusal(f"exec {Path(child[0]).name}", str(exc), log_dir=log_dir)
         return REFUSED_EXIT
-    rc = _exec(child, env)
+    with slot:
+        rc = _exec(child, env)
     try:
         end_run(started, note=f"exec {Path(child[0]).stem}", model=_flag(child, "--model"),
                 effort=_flag(child, "--effort"), rc=rc)
