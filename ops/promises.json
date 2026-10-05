@@ -36,8 +36,8 @@
    "says": "The LoL wiki Action API stopped answering: re-open the splash-art source decision (LEDGER 72)."},
   {"id": "fleet-kit", "kind": "probe", "settled": "Every headless spawn goes through the",
    "condition": ["python", "tools/lw_promise_probes.py", "fleet_kit_moved"],
-   "deliver_to": "note", "marker": "promise:fleet-kit-v5",
-   "says": "A FLEET-KIT note newer than v4 reached the inbox (or the vendored kit moved): vendor byte-for-byte and act on the two carried v5 gaps."},
+   "deliver_to": "note", "marker": "promise:fleet-kit-v8",
+   "says": "A FLEET-KIT note newer than v7 reached the inbox (or the vendored kit moved): vendor byte-for-byte and act on the carried items (LW fleet_watch extensions, fleet_headless defects LW 1258 A+B)."},
   {"id": "c4-target-date", "kind": "date", "on": "2026-10-09",
    "deliver_to": "note", "marker": "promise:c4-carriers-2026-10-09",
    "says": "RC, CS and SS C4 slots.py target date (2026-10-09) passed: re-hash ops/loop/slots.py in every carrier (own-disk, read-only)."}
