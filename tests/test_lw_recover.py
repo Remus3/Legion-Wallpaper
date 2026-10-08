@@ -557,6 +557,44 @@ def test_load_api_key_reads_and_strips(tmp_path):
     assert lw_recover.load_api_key("SauceNAO", root=str(tmp_path)) == "abc123"
 
 
+# --- SECRETS: the reader goes through the vendored fleet kit (fleet_secrets) --
+def test_kit_secrets_is_the_vendored_fleet_secrets():
+    kit = lw_recover.kit_secrets()
+    expected = Path(lw_recover._repo_root()) / "ops" / "fleet_kit" / "fleet_secrets.py"
+    assert Path(kit.__file__).resolve() == expected.resolve()
+    assert callable(kit.resolve) and issubclass(kit.SecretMissing, Exception)
+
+
+def test_load_api_key_resolves_a_file_ref_through_the_kit(tmp_path, monkeypatch):
+    kit = lw_recover.kit_secrets()
+    seen = []
+
+    def fake_resolve(ref, *a, **kw):
+        seen.append(ref)
+        return "from-kit"
+
+    monkeypatch.setattr(kit, "resolve", fake_resolve)
+    assert lw_recover.load_api_key("SauceNAO", root=str(tmp_path)) == "from-kit"
+    assert seen == [{"file": os.path.join(str(tmp_path), "API-Key-SauceNAO.txt")}]
+
+
+def test_load_api_key_empty_file_returns_none(tmp_path):
+    (tmp_path / "API-Key-SauceNAO.txt").write_text(" \n\n", encoding="ascii")
+    assert lw_recover.load_api_key("SauceNAO", root=str(tmp_path)) is None
+
+
+@pytest.mark.parametrize("exc_name", ["SecretMissing", "SecretRefInvalid"])
+def test_load_api_key_kit_errors_degrade_to_none(tmp_path, monkeypatch, exc_name):
+    kit = lw_recover.kit_secrets()
+    exc = getattr(kit, exc_name)
+
+    def boom(ref, *a, **kw):
+        raise exc("secret ref file:API-Key-SauceNAO.txt is missing or unreadable")
+
+    monkeypatch.setattr(kit, "resolve", boom)
+    assert lw_recover.load_api_key("SauceNAO", root=str(tmp_path)) is None
+
+
 # ===========================================================================
 # run_waterfall  (the driver: stop at first success, log every decision)
 # ===========================================================================

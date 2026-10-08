@@ -127,19 +127,42 @@ def _repo_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load_api_key(name: str, root: Optional[str] = None) -> Optional[str]:
-    """Read API-Key-<name>.txt from the repo root, stripped, or None if absent.
+def kit_secrets():
+    """The vendored fleet kit's fleet_secrets.py (FLEET-KIT v7+), bound by path.
 
-    NEVER raises - a missing or unreadable key file simply yields None, which
-    gates the corresponding tier into its friendly "not configured" branch.
+    ops/fleet_kit is not a package and is byte-pinned (never edited here); the
+    module is pure stdlib, so binding it keeps this file CI-safe.
+    """
+    import importlib.util
+    import sys
+
+    name = "fleet_secrets"
+    mod = sys.modules.get(name)
+    if mod is not None:
+        return mod
+    path = os.path.join(_repo_root(), "ops", "fleet_kit", "fleet_secrets.py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def load_api_key(name: str, root: Optional[str] = None) -> Optional[str]:
+    """Resolve API-Key-<name>.txt at the repo root via the kit, or None.
+
+    The key is a fleet_secrets {"file": <path>} reference: the first non-blank
+    line, stripped (every LW key file is one line). NEVER raises - a missing,
+    unreadable or empty key file (kit SecretMissing / SecretRefInvalid) yields
+    None, which gates the tier into its friendly "not configured" branch; the
+    kit's error text is never surfaced.
     """
     base = root or _repo_root()
     path = os.path.join(base, f"API-Key-{name}.txt")
+    kit = kit_secrets()
     try:
-        with open(path, encoding="ascii", errors="replace") as f:
-            val = f.read().strip()
-        return val or None
-    except OSError:
+        return kit.resolve({"file": path}) or None
+    except (kit.SecretMissing, kit.SecretRefInvalid, TypeError):
         return None
 
 
