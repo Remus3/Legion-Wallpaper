@@ -86,7 +86,7 @@ def test_an_idle_tick_publishes_schema_1_with_next_tick(tmp_path, capsys):
     assert _main(tmp_path, inbox) == 0
     doc = _published()
     assert set(doc) == SCHEMA_1_KEYS
-    assert (doc["schema"], doc["kit"], doc["code"]) == (1, 7, "LW")
+    assert (doc["schema"], doc["kit"], doc["code"]) == (1, he.kit.KIT_VERSION, "LW")
     assert (doc["state"], doc["task"]) == ("idle", "Idle")
     nxt = dt.datetime.fromisoformat(doc["next_tick"])
     assert before + dt.timedelta(minutes=4) < nxt <= dt.datetime.now(dt.UTC) + \

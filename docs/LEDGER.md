@@ -27,6 +27,28 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+276. DONE **2026-10-07 (stale kit-version pin repaired, local tip pushed, triage WIP parked; commits 55c18c8 + branch wip/inbox-responder-triage eb69fef).**
+   Operator ask was "check the inbox and reply if needed"; inbox triage found nothing owed (568
+   notes, responder had seen all 579, 0 new, every MAIN ORDER to LW already committed - kit v8
+   0bc2253, supply-chain acd2335, roster d871a57; no note sent). Two defects surfaced while
+   wrapping. (1) Premise CORRECTED: the local main tip 0bc2253 (vendor FLEET-KIT v8) was NEVER
+   pushed - origin was at 2e6ac2b - and it bumped KIT_VERSION 7->8 in fleet_headless but left
+   tests/test_inbox_status.py::test_an_idle_tick_publishes_schema_1_with_next_tick asserting
+   kit 7, so the local tip was red (CI stayed green only because it never saw 0bc2253). Fixed
+   the pin to assert he.kit.KIT_VERSION so it tracks future bumps rather than a literal
+   (55c18c8). (2) A prior-session WIP in the working tree - tools/lw_inbox_responder.py +285
+   lines (item-14 INBOX-COST triage via fleet_inbox.classify) plus new
+   tests/test_inbox_responder_triage.py - reds 22 existing responder tests (test_inbox_responder,
+   _budget, _runlog, _skips_self_and_terminal); parked on branch wip/inbox-responder-triage
+   (eb69fef) OFF main, DO NOT MERGE until the triage semantics are reconciled against the 22
+   existing responder contracts. Also moved an untracked scratch ops/runtime/edit_resp.py (a
+   sed-style edit helper hardcoding the machine path, tripping the account-path guard
+   test_no_module_resolves_a_path_only_this_machine_has) to the session scratchpad. Verified:
+   ruff clean, hygiene 12/12, drift_guard 0 breach, full suite 4006 passed / 20 skipped (255s).
+   No TDD RED-first (the kit fix repairs an existing test to match shipped code; the WIP park is
+   a git-topology move, not new code). Do-not-redo: 0bc2253 is pushed this session - do not treat
+   it as missing; the responder-triage WIP lives only on wip/inbox-responder-triage, not main.
+
 275. DONE **2026-10-05 (supply chain: dependabot, SHA-pinned actions, hash-pinned pip, CodeQL, read-only token, fuzzing ruled out; responder-authored, commit acd2335).**
    Operator order via MAIN 0300, provenance sha256 03d43065...5ebc9d MATCH (inbox and MAIN outbox,
    6988 B). `.github/dependabot.yml` (pip + github-actions at /, weekly, one group each, no npm:
