@@ -23,7 +23,7 @@ Run this and confirm all four are OK:
 ```powershell
 "GEMINI_API_KEY=$([bool][Environment]::GetEnvironmentVariable('GEMINI_API_KEY','User'))"
 "gemini=$([bool](Get-Command gemini -ErrorAction SilentlyContinue))"
-"ahk=$(Test-Path 'C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe')"
+"ahk=$(Test-Path (Join-Path $env:ProgramFiles 'AutoHotkey\v2\AutoHotkey64.exe'))"
 $w=Get-Process claude -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle}
 "claude_windows=$(@($w).Count) (expect exactly 1 - this session)"
 ```
@@ -35,7 +35,7 @@ LW-GeminiAudit scheduled task is a SEPARATE nightly task, not the loop's interac
 
 ### A2. Launch the loop (detached)
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Legion Wallpaper\ops\loop\launch_loop.ps1" -Mode live
+powershell -NoProfile -ExecutionPolicy Bypass -File "ops\loop\launch_loop.ps1" -Mode live
 ```
 This auto-detects the Claude window PID, writes `ops/loop/control/{target_pid.txt,ahk_mode.txt=live}`,
 starts the AHK bridge + the controller (config.json), and pre-cleans stale sentinels (incl. a
@@ -266,7 +266,7 @@ READ-ONLY - it DECIDES and DIRECTS; the next Claude cycle does every file write.
 "physically implements" anything.
 
 1. SYNCHRONOUS advice (preferred for a question you can resolve mid-cycle without ending it):
-   `powershell -NoProfile -File "C:\Legion Wallpaper\tools\gemini_ask.ps1" -Question "<terse grounded question>"`
+   `powershell -NoProfile -File "tools\gemini_ask.ps1" -Question "<terse grounded question>"`
    Read-only Gemini answers on stdout (also saved to `gemini_io/answer_<id>.md`). Take its recommendation,
    log the choice in the synopsis + WAKEUP_NOTES, and PROCEED. Do not wait/block.
 
