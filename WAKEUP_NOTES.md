@@ -79,6 +79,24 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-07) - inbox checked, local tip repaired, triage WIP parked
+
+- Operator ask: "check the inbox and reply if needed." Inbox (568 notes) fully
+  triaged: responder has seen all 579, 0 new, every MAIN ORDER to LW already
+  committed (kit v8 0bc2253, supply-chain acd2335, roster d871a57). Nothing
+  owed; no note sent. Ran lw_facts --mark-inbox-seen AFTER reading by mtime -
+  note: the prior hand-off said "do NOT bulk-ack"; it only moves the facts
+  counter (responder state is separate and already complete).
+- Found the local tip was AHEAD of origin and RED locally: 0bc2253 (vendor v8)
+  bumped KIT_VERSION 7->8 but left tests/test_inbox_status.py asserting 7, and
+  0bc2253 was never pushed (origin was at 2e6ac2b, so CI never saw it). Fixed
+  the pin to track he.kit.KIT_VERSION (55c18c8); pushed 0bc2253+55c18c8.
+- Parked a prior-session WIP responder: tools/lw_inbox_responder.py +285 (item-14
+  INBOX-COST triage) reds 22 existing responder tests. Committed to branch
+  wip/inbox-responder-triage (eb69fef), OFF main. DO NOT MERGE until green.
+- Moved untracked scratch ops/runtime/edit_resp.py (machine-path leak, tripped
+  the account-path guard) to the session scratchpad. Suite: 4006 passed, 20 skip.
+
 ## PREVIOUS SESSION (2026-10-04, third) - research R1-R5 run, hriful clean-damage incident fixed
 
 - Shipped: R1 G1.cambi_delta (14a11be, L263); R3 G2.seam_step (L264); R1b cambi live,

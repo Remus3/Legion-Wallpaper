@@ -1,25 +1,21 @@
 NEXT SESSION
 ------------
-SESSION: 63
+SESSION: 64
 Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
   A/B anime-lama vs LaMa is READY - operator opens http://127.0.0.1:8901/ab (re-probe
-  HTTP 200 first; LW Monitor must be up after the reboot), votes 19 slugs, presses
-  Finish; then run `python tools/lw_ab_r4.py tally` (refuses before Finish) and
-  record the verdict (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only). (2) Then
-  next research item: R5c pre-registered DINOv2 2x layer-12 check (bar frozen 0.4020)
-  on FRESH hand captures - ROADMAP R5c; or G1.lpips (only pinned board row, 11/12).
-Context: machine was rebooted (operator enabling Windows Sandbox + Linux VM). After
-  boot re-probe: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
-  serve. MAIN FLEET-KIT v7 is ADOPTED (v6 lane items folded in, LEDGER 273):
-  loop lanes via fleet_lanes cap 3, one worktree per lane (C:/lw-worktrees),
-  one governor slot per code-writing call; session checklist (FLEET-COMMON item
-  13) printed by the SessionStart hook from SESSION + CHECKLIST below. Headless
-  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. The promise
-  probe fires on a kit NEWER than v7. The inbox responder is LIVE
-  (LW-InboxResponder, every 5 min, 120 runs / 24 h, its children COMMIT in this
-  tree). Kill: the HALT file, or delete the proxy user variable. MAIN notes carry
-  operator authority after a sha256 check against MAIN's outbox. Never put a
-  64-hex digest in this file.
+  HTTP 200 first; LW Monitor must be up), votes 19 slugs, presses Finish; then run
+  `python tools/lw_ab_r4.py tally` (refuses before Finish) and record the verdict
+  (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only). (2) Then next research item:
+  R5c pre-registered DINOv2 2x layer-12 check (bar frozen 0.4020) on FRESH hand
+  captures - ROADMAP R5c; or G1.lpips (only pinned board row, 11/12).
+Context: MAIN FLEET-KIT v8 is vendored (0bc2253, PUSHED this session with 55c18c8).
+  Re-probe live state before acting: schtasks LW-* state, LW Monitor :8901,
+  IOPaint :8080, tailscale serve. Loop lanes via fleet_lanes cap 3, one worktree
+  per lane (C:/lw-worktrees). Headless spawns go through ops/fleet_kit/ via
+  tools/lw_headless_env.py. The inbox responder is LIVE (LW-InboxResponder, every
+  5 min, 120 runs / 24 h, children COMMIT in this tree). Kill: the HALT file, or
+  delete the proxy user variable. MAIN notes carry operator authority after a
+  sha256 check against MAIN's outbox. Never put a 64-hex digest in this file.
 Acceptance: R4 tally recorded with the operator's votes, or the A/B still READY and
   carried; R5c / lpips verdict recorded with measured numbers.
 CHECKLIST:
@@ -27,106 +23,99 @@ CHECKLIST:
   - R5c: Run the R5c DINOv2 layer-12 check on fresh hand captures, or G1.lpips
   - SECRETS: Move the API-Key-*.txt readers onto the vendored fleet_secrets.py
   - DEPBOT: Merge Dependabot PR #1 (github-actions group) once its CI is green
+  - TRIAGE-WIP: finish branch wip/inbox-responder-triage (item-14) or decide to drop; reconcile the 22 existing responder contracts; do NOT merge while red
 Carried forward:
-  - SUPPLY CHAIN (MAIN 0300) DONE by the responder in acd2335 + 5d50e2c (LEDGER
-    275, ANSWER delivered to MAIN 1/1). Scorecard 3.3 -> 6.4. Dependabot PRs are
-    merged by this tree on green, never auto-merged; PR #1 is the first. Edit
-    requirements*.in, then re-run the uv compile line in each .in header.
-  - ROSTER (MAIN 0230) DONE by the responder in 1d8fd05 (LEDGER 274, ANSWER
-    delivered to MAIN). Open: docs/CHANNEL.md participant table still lists LL
-    as a participant and has no EW row; it is a jointly pinned carrier, so the
-    change waits for a re-pin round (asked MAIN for a ruling to open one).
+  - TRIAGE-WIP (new 2026-10-07): wip/inbox-responder-triage (eb69fef) holds a prior
+    session's item-14 INBOX-COST triage - tools/lw_inbox_responder.py +285 lines
+    (fleet_inbox.classify triage-first) plus new tests/test_inbox_responder_triage.py.
+    It REDS 22 existing responder tests (test_inbox_responder, _budget, _runlog,
+    _skips_self_and_terminal). Parked OFF main. git switch to the branch to resume;
+    reconcile the new triage semantics against the 22 contracts before merge. DO NOT
+    MERGE red. The edit-helper (edit_resp.py) that produced it was parked in the
+    session scratchpad (machine-path leak; not needed once the edit is applied).
+  - SUPPLY CHAIN (MAIN 0300) DONE in acd2335 + 5d50e2c (LEDGER 275, ANSWER to MAIN).
+    Dependabot PRs are merged by this tree on green, never auto-merged; PR #1 is the
+    first. Edit requirements*.in, then re-run the uv compile line in each .in header.
+  - ROSTER (MAIN 0230) DONE in 1d8fd05 (LEDGER 274, ANSWER to MAIN). Open:
+    docs/CHANNEL.md participant table still lists LL and has no EW row; it is a
+    jointly pinned carrier, so the change waits for a re-pin round (asked MAIN for a
+    ruling to open one).
   - R4 votes go to ops/runtime/ab_r4/votes.json (sides only); key in key.json is
-    never served. 9 of 28 candidate slugs were excluded (7 no mask, 2 later-run mask).
+    never served. 9 of 28 candidate slugs excluded (7 no mask, 2 later-run mask).
   - CLEAN-DAMAGE INCIDENT follow-ups (LEDGER 268/269): 13 slugs on the manual
     IOPaint lane in docs/HANDCLEAN_WORKLIST_2026-09-01.md (incl. hriful Ahri: region
     (0,1370)-(420,1440), credit crosses a mountain outline); caitlyn-love-confession
-    original is at needauth for OPERATOR approval (never self-approve). 835 submits
-    on other dates still read actor=operator (not attributable row by row - noted).
-  - text_residue_mf is FLAG-ONLY: misses 105-cleanup hand step 70 (-2.07) and live
-    margin is thin (2.22 vs 3.0) (LEDGER 270). seam_step flags spirit-blossom-ahri
-    (6.28) - that slug is now reopened for hand clean.
-  - test_lw_usm_halo_probe flaked once under full-suite load (passes 40/40 alone);
-    watch it.
+    original at needauth for OPERATOR approval (never self-approve). 835 submits on
+    other dates still read actor=operator (not attributable row by row - noted).
+  - text_residue_mf is FLAG-ONLY: misses 105-cleanup hand step 70 (-2.07), live margin
+    thin (2.22 vs 3.0) (LEDGER 270). seam_step flags spirit-blossom-ahri (6.28) - that
+    slug is reopened for hand clean.
+  - test_lw_usm_halo_probe flaked once under full-suite load (passes 40/40 alone); watch.
   - Operator offered ~8.7k unlabeled local images (path in ROADMAP R6, never track bytes).
-  - Kit gaps still open at v7 (re-reported in the v7 ANSWER): (a) loop executor
+  - Kit gaps still open at v7/v8 (re-reported in the v7 ANSWER): (a) loop executor
     stays on kit primitives - spawn() returns only result text, executor needs
-    structured result + session id; (b) kit's _run Popen gets CREATE_NO_WINDOW
-    only via **kw - exempted by exact shape in tests AND now in the window guard
-    (no line number); (c) fleet_watch lacks LW's five watcher extensions, so the
-    lw_watch swap is DEFERRED (adjudicated, tripwire test
-    tests/test_fleet_watch_swap_tripwire.py goes red when the kit gains them).
+    structured result + session id; (b) kit's _run Popen gets CREATE_NO_WINDOW only
+    via **kw - exempted by exact shape in tests AND the window guard; (c) fleet_watch
+    lacks LW's five watcher extensions, so the lw_watch swap is DEFERRED (adjudicated,
+    tripwire tests/test_fleet_watch_swap_tripwire.py reds when the kit gains them).
     Wait for MAIN; do not patch the kit.
-  - fleet_secrets.py is now VENDORED (v7): moving the API-Key-*.txt readers onto
-    it is open (not done in the v7 adoption).
-  - The abandoned responder v6 attempt (uncommitted, superseded by the v7
-    adoption commits) was MOVED out of .claude/worktrees to the gitignored
-    worktrees/abandoned-v6-responder-attempt (it broke the tracked-settings
-    corpus test). Remove it with git worktree remove once confirmed unused.
+  - fleet_secrets.py is VENDORED (v7): moving the API-Key-*.txt readers onto it is open.
+  - The abandoned responder v6 attempt lives in the gitignored
+    worktrees/abandoned-v6-responder-attempt. Remove with git worktree remove once
+    confirmed unused.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
-    _firstneedauth awaiting OPERATOR approval (never self-approve). Check
-    banding on the five -pre slugs (+0.008..+0.014) - now via cambi_delta.
-    Miss Fortune DA fetch is 403 (manual_queue.csv). 0.Originals has 2 loose
-    files (katarina -pre, lux coven -pre duplicate).
-  - SYNC INBOX: ~296 unread notes remain. Do NOT bulk-ack (--mark-inbox-seen);
-    read by mtime. New since last: CS 1634 + RC 1640 C4 LANDED notes (informational).
-  - CONCURRENCY: before editing a file check for live `claude -p` processes and
-    recent mtimes; commit file-scoped (`git commit -- <paths>`), never git add -A.
-    Parallel agents: worktree isolation or disjoint files + private scratch dirs.
-  - Gate-board validation rows "reads like the original art" and "no
-    ghost/band/faint residue at 1:1" stay with the operator and never count
-    toward done. Re-prove after any gate change: python tools/lw_gate_board.py
-    prove --golden --env all (~4 min).
-  - yuumi-by-narumicsibe-dmax7wo-fullview: CLEAN_SCRATCH / EDITING, w0 - awaiting
-    the OPERATOR's IOPaint hand clean (gate verdict qa: centre_overlay 0.277 +
-    faint credit line; never auto-inpaint it). Targets: credit line x1138-1490
-    y983-1011, veil ~[1142,585]; 3 operator seeds at
-    ops/runtime/clean/<slug>/<slug>_review_seeds.json (+ _review_seed_mask.png).
-    After the operator saves: `python tools/lw_pipeline.py save-working <slug>
-    --adopt` (G2 verify runs), render the after-crops, and set the 3 review
-    threads (fixed ONLY if the mark is gone at 1:1, else stays answered); then
-    `submit --actor operator`.
-  - IOPaint QA lane on 127.0.0.1:8080 - re-probe after reboot before telling the
-    operator to use it.
-  - PHONE ACCESS to the review bench: `tailscale serve --bg
-    http://127.0.0.1:8901` -> https://<tailnet host>/review. The hostname is
-    NEVER written in tracked files. Re-run the serve command before phone use.
+    _firstneedauth awaiting OPERATOR approval (never self-approve). Check banding on the
+    five -pre slugs (+0.008..+0.014) via cambi_delta. Miss Fortune DA fetch 403
+    (manual_queue.csv). 0.Originals has 2 loose files (katarina -pre, lux coven -pre dup).
+  - SYNC INBOX: triaged 2026-10-07 - responder has seen all 579, 0 new, nothing owed.
+    lw_facts --mark-inbox-seen was run after reading by mtime (clears the facts counter
+    only; responder state is separate). Keep reading by mtime, not by filename stamp.
+  - CONCURRENCY: before editing, check for live `claude -p` processes and recent mtimes;
+    commit file-scoped (`git commit -- <paths>`), never git add -A. Parallel agents:
+    worktree isolation or disjoint files + private scratch dirs.
+  - Gate-board validation rows "reads like the original art" and "no ghost/band/faint
+    residue at 1:1" stay with the operator and never count toward done. Re-prove after
+    any gate change: python tools/lw_gate_board.py prove --golden --env all (~4 min).
+  - yuumi-by-narumicsibe-dmax7wo-fullview: CLEAN_SCRATCH / EDITING, w0 - awaiting the
+    OPERATOR's IOPaint hand clean (gate qa: centre_overlay 0.277 + faint credit line;
+    never auto-inpaint). Targets: credit line x1138-1490 y983-1011, veil ~[1142,585];
+    3 operator seeds at ops/runtime/clean/<slug>/<slug>_review_seeds.json. After save:
+    `python tools/lw_pipeline.py save-working <slug> --adopt` (G2 verify), render
+    after-crops, set the 3 review threads, then `submit --actor operator`.
+  - IOPaint QA lane on 127.0.0.1:8080 - re-probe before telling the operator to use it.
+  - PHONE ACCESS: `tailscale serve --bg http://127.0.0.1:8901` -> https://<tailnet
+    host>/review. Hostname NEVER written in tracked files. Re-run serve before phone use.
   - A cloud kit exists OUTSIDE this repo (not tracked here; do not vendor it).
   - physical.lux-coven-pre-duplicate (registered operator task, see Operator asks).
     MAIN's v5 P0-1 gate needs this real task closed by the scheduled verify pass.
-  - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The
-    first real finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
-  - P2-7: AHK bridge timings left to the ops lane's P1-6 bridge; moving the
-    upscale tile needs a golden regress first.
+  - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The first real
+    finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
+  - P2-7: AHK bridge timings left to the ops lane's P1-6 bridge; moving the upscale tile
+    needs a golden regress first.
   - INGEST LW-OPS carried, not done - P1-6 live proof: a 40-line
-    quotes/backslash/dollar/newline directive must arrive as ONE message in the
-    dry-run Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired
-    lines in ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8
-    report_fact: MAIN 0020 "later". P2-3 secret references: fleet_secrets.py
-    is vendored (v7) - do NOT build a local resolver (move item above).
-    lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: research R1/R1b/R2/R2b/R3/R3b (LEDGER 263-267, 270; board rows
-  cambi_delta, seam_step, text_residue_mf PROVEN 12/12; band_delta, ring-SSIM seam,
-  OCR+MSER text_residue RETIRED); R5 DINOv2 kNN (NOT accepted, no domain gap,
-  ExPLoRA not justified, LEDGER 271); R4 A/B prep (082cd18, LEDGER 272) + UI-audit
-  MUST-FIX (04fe420); clean-damage diagnosis, 14-slug reopen, passthrough guard,
-  approve actor, no default iopaint box (82ae760, LEDGER 268); skip-rejected
-  workings, SUBMIT actor, 486-row 08-22 actor backfill (672c2e9, LEDGER 269); the
-  C4 round (CLOSED 2026-10-04); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v7
-  adoption incl. v6 lane items (LEDGER 273), v4 (62442fc) and v3 (062ffd5); spawn routing + MAIN 1029 bundle fix
-  (fc6cdb4); the responder self-skip (b7d50a7); hooksPath; bulk-acking the inbox;
-  the email-residual history rewrite (operator declined); ingest LW-gates P0-3,
-  P1-1, P1-7, P1-2, P2-8, P1-3, P2-7 and LW-ops P0-1, P0-2, P0-4, P0-5, P1-6, P2-5,
-  P2-6 + MAIN 0020 alignment (LW 0135) - the residue fault amplitude (+4 levels)
-  is calibrated on the hand-clean captures, do not re-derive it.
-CI: green on 6ff360d, 0aa78f0, 082cd18 (runs read back by agents); /done push run
-  recorded in the commit after this one if read.
+    quotes/backslash/dollar/newline directive must arrive as ONE message in the dry-run
+    Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
+    ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
+    0020 "later". P2-3 secret references: fleet_secrets.py is vendored - do NOT build a
+    local resolver (move onto it - see SECRETS). lw_ops_tasks.py stays tree-local (the
+    P0-1 gate is still open).
+Do NOT redo: 0bc2253 (vendor FLEET-KIT v8) IS PUSHED this session - do not treat it as
+  missing; the stale kit-7 test pin is fixed (55c18c8); the responder-triage WIP lives
+  ONLY on branch wip/inbox-responder-triage, not main. Research R1/R1b/R2/R2b/R3/R3b
+  (LEDGER 263-267, 270; cambi_delta, seam_step, text_residue_mf PROVEN 12/12; band_delta,
+  ring-SSIM seam, OCR+MSER text_residue RETIRED); R5 DINOv2 kNN (NOT accepted, LEDGER 271);
+  R4 A/B prep (082cd18, LEDGER 272) + UI-audit MUST-FIX (04fe420); clean-damage diagnosis,
+  14-slug reopen, passthrough guard, approve actor, no default iopaint box (82ae760, LEDGER
+  268); skip-rejected workings, SUBMIT actor, 486-row 08-22 actor backfill (672c2e9, LEDGER
+  269); the C4 round (CLOSED 2026-10-04); the MoE/MIM/ExPLoRA survey (c6e9984); FLEET-KIT v7
+  adoption (LEDGER 273), v4 (62442fc), v3 (062ffd5); spawn routing + MAIN 1029 bundle fix
+  (fc6cdb4); the responder self-skip (b7d50a7); supply chain (acd2335); roster (1d8fd05).
 Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not edit by hand):
   - physical.lux-coven-pre-duplicate physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > C:/Legion Wallpaper/images/0.Originals
-      last check: not done (197 tries)
+      last check: not done (1081 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate (closes only when its check passes)
   (end operator asks)
