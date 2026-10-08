@@ -61,7 +61,9 @@ def tools_dir() -> Path:
     override = os.environ.get("LW_TOOLS_DIR")
     if override:
         return Path(override)
-    return Path((os.environ.get("SystemDrive") or "C:") + "\\") / "Tools"
+    # One string, not Path(drive + sep) / "Tools": on POSIX CI that join
+    # yields a mixed-separator "C:" + backslash + "/Tools".
+    return Path((os.environ.get("SystemDrive") or "C:") + "\\Tools")
 
 
 def user_home() -> Path:
