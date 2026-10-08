@@ -27,6 +27,28 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+283. DONE **2026-10-08 (session 67: E-MOVE read back, MIG-1 + move reported to MAIN, CAMPAIGN-IMPORT, DEHARDCODE 40/55).**
+   E-MOVE read back: E:\lw-migrate\RESULT.txt "CUTOVER OK" 00:45; C:\Legion Wallpaper
+   is a Junction -> E:\Legion Wallpaper; LW-CIWatchdog / LW-InboxResponder /
+   LW-Wallpaper / LW-WeeklyHygiene Ready with E: arguments, post-move ticks rc 0
+   (responder 00:56, watchdog + wallpaper 00:58); responder HALT absent; worktree
+   list 1 line. One-shot LW-Cutover-E task Disabled (read back State=Disabled).
+   MAIN note 2026-10-08-0100-from-LW-ANSWER-to-MAIN-batched-1-answers.md (HOP 2,
+   TERMINAL) reached 1/1. CAMPAIGN-IMPORT aa9774a: tools/lw_recover_campaign.py
+   imports `from tools import lw_paths`; test collects alone, 15 passed.
+   DEHARDCODE ed25c00 / 79d201e / 1451ac6: 40 of 55 HARDCODED C: rows from the
+   MAIN 2155 inventory now derive the root (lw_paths.repo_root / sibling_repo,
+   __file__, A_ScriptDir, $env:ProgramFiles); guard tests/test_no_hardcoded_c_paths.py
+   written red first (34 sites). Left 15: C:\Tools x9 (did not move),
+   ProgramData x4 (slots.py byte-pinned across carriers), RC prose x2.
+   TRIAGE-LIVE: ORDER notes escalate to opus work runs (2155, 2237, 2354) and a
+   REPORT got a sonnet/low triage; no ACK/ANSWER note arrived since c509021, so
+   the ack-without-spawn arm is still unobserved live. Full suite exit 0 fresh
+   after the DEHARDCODE commits (agent run: 4058 passed / 0 failed / 20 skipped).
+   Riot Commander is half-moved (E:\Riot Commander exists without .git, live repo
+   still on C:); drift_guard SIBLING_REPO now points beside this repo - matches
+   only while the slots.py copies agree.
+
 282. DONE **2026-10-08 (MIG-1 worktree prune + move to E: staged; operator order in an attended session).**
    Operator said "yes for the move to E:" (attended, session 67). MIG-1:
    abandoned-v6-responder-attempt's 24 uncommitted files WIP-committed on its

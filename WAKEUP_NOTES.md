@@ -79,6 +79,14 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-08, session 67) - move to E: read back, DEHARDCODE 40/55
+
+Commits: aa9774a campaign import fix, ed25c00 / 79d201e / 1451ac6 DEHARDCODE, LEDGER 283.
+Move to E: verified live (junction, 4 tasks on E:, ticks rc 0); MAIN told (0100 note, 1/1).
+Do NOT redo: E-MOVE, MIG-1 report, CAMPAIGN-IMPORT, the 40 derived rows.
+Next: R4 tally once voted; retire junction + C: pre-move copy per LEDGER 283 plan
+(Recycle Bin only); RC half-moved - re-check drift_guard sibling path.
+
 ## PREVIOUS SESSION (2026-10-07, session 64) - GATE / SECRETS / DEPBOT / TRIAGE-WIP landed
 
 - Shipped: 2c6a492 Dependabot PR #1; 9506a9a claimed_green_gate conditional-green fix; a29cbe7

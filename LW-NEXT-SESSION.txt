@@ -1,32 +1,32 @@
 NEXT SESSION
 ------------
-SESSION: 67
+SESSION: 68
 Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
-  A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277) - operator starts
-  LW Monitor, opens http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19
-  slugs, presses Finish; then `python tools/lw_ab_r4.py tally` and record the verdict
-  (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only). (2) READBACK-2237 in a live
-  session. (3) Watch the first live ticks of the item-14 triage responder (c509021).
-Context: main tip pushed this session; triage-first responder (LEDGER 278) is now
-  LIVE on main - first live ticks unobserved. Re-probe live state before acting:
-  schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve. Loop lanes
-  via fleet_lanes cap 3, one worktree per lane (C:/lw-worktrees). Headless spawns go
-  through ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE
-  (LW-InboxResponder, every 5 min, children COMMIT in this tree - check its progress
-  file before editing shared files). Kill: HALT file or delete the proxy user
-  variable. MAIN notes carry operator authority after a sha256 check against MAIN's
-  outbox. Never put a 64-hex digest in this file.
+  A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277; votes.json absent
+  2026-10-08) - operator starts LW Monitor, opens http://127.0.0.1:8901/ab (re-probe
+  HTTP 200 first), votes 19 slugs, presses Finish; then `python tools/lw_ab_r4.py
+  tally` and record the verdict (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only).
+  (2) Retire-the-junction plan (LEDGER 283) step 1-3 read-backs.
+Context: repo now lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction
+  (LEDGER 282/283); pre-move copy C:\Legion Wallpaper.pre-move-20261008 kept. Re-probe
+  live state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080,
+  tailscale serve. Headless spawns go through ops/fleet_kit/ via
+  tools/lw_headless_env.py. Inbox responder LIVE (LW-InboxResponder, every 5 min,
+  children COMMIT in this tree - check its progress file before editing shared
+  files). Kill: HALT file or delete the proxy user variable. MAIN notes carry
+  operator authority after a sha256 check against MAIN's outbox. Never put a 64-hex
+  digest in this file.
 Acceptance: R4 tally recorded with the operator's votes, or still READY and carried;
-  READBACK-2237 read back; triage ticks show ORDER/FIX notes escalate to work runs.
+  READBACK-2237 + KIT-V9-READBACK read back; junction-retirement read-backs recorded.
 CHECKLIST:
-  - E-MOVE: Read E:\lw-migrate\RESULT.txt + cutover.log; confirm session runs from E:\Legion Wallpaper, C: is a junction, 4 LW-* tasks Ready on E: paths, one responder tick green; report MIG-1 prune 5->1 + move to MAIN in ONE note (LEDGER 282)
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
   - READBACK-2237: In a live session trigger claimed_green_gate once; confirm ONE "Stop hook feedback" line, no "Stop hook error" block, model acts on it; confirm the acct2 status line shows and no [Legion] line (LEDGER 279)
-  - TRIAGE-LIVE: Read inbox-responder progress + headless_usage.jsonl; confirm ORDER/FIX escalate and ACK/ANSWER ack with no spawn
+  - KIT-V9-READBACK: Read back session 67's /done: fleet_done.py validate prints DONE and the Stop hook set the tab title (LEDGER 281)
+  - TRIAGE-ACK: Confirm a live ACK/ANSWER note is acked with no spawn in runs.jsonl (ORDER/FIX escalation already seen, LEDGER 283)
+  - RETIRE-JUNCTION: Re-point every external C: target (EXTERNAL table, MAIN 2155), read back, prove one cycle with the junction renamed; pre-move copy to Recycle Bin only after a soak (LEDGER 283)
+  - DEHARDCODE-REST: Decide the 15 left C: rows (C:\Tools x9, ProgramData x4 incl. slots.py fleet change via MAIN, RC prose x2)
+  - RC-HALFMOVE: Re-check drift_guard SIBLING_REPO vs Riot Commander location (E: copy has no .git, live repo on C:)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
-  - CAMPAIGN-IMPORT: Fix tests/test_lw_recover_campaign.py failing to collect alone (import lw_paths, tools/lw_recover_campaign.py:52)
-  - DEHARDCODE: Make the 55 HARDCODED C: rows (MAIN 2205 inventory) derive from lw_paths, then plan junction + C: pre-move copy retirement (Recycle Bin)
-  - KIT-V9-READBACK: In a live session run /done once; confirm fleet_done.py validate prints DONE and the Stop hook sets the tab title (LEDGER 281)
 Carried forward:
   - TRIAGE (LEDGER 278) risks: never run on live mail before merge; a misclassified
     ORDER/FIX gets a sonnet/low triage or an ack instead of a work run; triage runs
@@ -110,7 +110,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 64 shipped and PUSHED - Dependabot PR #1 (2c6a492), GATE
+Do NOT redo: session 67 shipped and PUSHED - E-MOVE read back + MAIN
+  note 0100 (1/1), CAMPAIGN-IMPORT (aa9774a), DEHARDCODE 40/55 (ed25c00, 79d201e,
+  1451ac6), LEDGER 283. Session 64 shipped and PUSHED - Dependabot PR #1 (2c6a492), GATE
   conditional-green fix (9506a9a), LEDGER 277 R4/R5c/G1.lpips (a29cbe7), SECRETS
   reader on fleet_secrets (eb7b02b, no kit gap), TRIAGE-WIP finished and merged
   (c509021, LEDGER 278), MAIN 2237 Stop-gate one-line (4096078, LEDGER 279, responder),
@@ -125,6 +127,6 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > C:/Legion Wallpaper/images/0.Originals
-      last check: not done (1108 tries)
+      last check: not done (1120 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate (closes only when its check passes)
   (end operator asks)
