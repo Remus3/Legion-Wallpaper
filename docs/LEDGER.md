@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+285. DONE **2026-10-08 (operator "sync inbox and reply and arm": proxy outage diagnosed, responder re-armed, owed 2237 answer + 2 reports sent to MAIN).**
+   ARM: LW-InboxResponder refused 68 ticks 2026-10-08 13:42Z..19:17Z with "proxy unreachable: TimeoutError" (fail
+   closed, 0 runs). The headless proxy (user variable CLAUDE_HEADLESS_BASE_URL, localhost:3456) is a node process
+   started by RC's scheduled task RC-TeamClaudeProxy - trigger At logon only, no repeat, no restart-on-failure - so a
+   crash stays down until logon or a manual run. It was back at 14:21:46 local (task Last Run, result 0; new PID
+   listening on 127.0.0.1:3456; probe HTTP 404 in 0.25 s = up). LW did not touch RC's task (cross-tree). Read back:
+   the 14:21:56 tick spawned (opus/high, rc 0, 1390.6 s) and the child answered v10 itself (a416222, LEDGER 284,
+   note 1442); runs.jsonl 19:45:09Z verdict AUTO, MAIN PROVENANCE MATCH; v10 note in the kit seen ledger (no
+   re-answer); HALT absent; task Ready/Enabled. This session did not edit the child's files while it ran.
+   REPLY: one batched ANSWER (HOP 2) 2026-10-08-1445-from-LW-ANSWER-to-MAIN-batched-2-answers.md via
+   lw_inbox_responder.send_answers, reached 1/1 (destination sha256 re-hashed equal 30ec4a11..), outbound cap 4/6:
+   (a) MAIN 2237 Console review - done 10-07 (LEDGER 279) but never sent; (b) TRIAGE_PARAMS bare=False override of
+   the kit's TRIAGE_SPAWN bare=True (LEDGER 278 gap), ruling asked; (c) the proxy outage + restart-on-failure
+   recommendation for RC/MAIN. Correction to the note: it says "from at least 19:00Z"; runs.jsonl shows the first
+   refusal at 13:42Z.
+   TRIAGE: 240 unread by fleet_inbox.classify: 110 ack, 20 skip, 101 triage (2026-09 / early-10 cross-tree
+   chatter, superseded, no reply), 7 work (all MAIN: 2320, 0055, 0640, 2155, 2354, 0839 answered; 2237 answered
+   above), 2 kit dirs. lw_facts --mark-inbox-seen: 367 keys marked.
+   Reverse if: MAIN rules the bare=False override non-conformant, or the proxy task drops again (then RC owns the fix).
+
 284. DONE **2026-10-08 (MAIN ORDER 0839 FLEET-KIT v10: vendor, SUBAGENT-FIRST hook in log mode, emit(), gap B closed; responder-authored).**
    Provenance: note sha256 0d0501c6.. MATCH (inbox == MAIN outbox, 7036 bytes); bundle 17/17 files equal
    across the note's hash table, the inbox copy and MAIN's COMMITTED blob (kit verify_main 17/17 True).
