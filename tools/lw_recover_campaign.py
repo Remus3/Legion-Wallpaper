@@ -49,7 +49,7 @@ from typing import Any, Callable, Dict, List, Optional
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import lw_paths  # noqa: E402  (sibling tool, not a package)
+from tools import lw_paths  # noqa: E402
 
 from tools import lw_recover  # noqa: E402
 
