@@ -79,6 +79,20 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-07, session 64) - GATE / SECRETS / DEPBOT / TRIAGE-WIP landed
+
+- Shipped: 2c6a492 Dependabot PR #1; 9506a9a claimed_green_gate conditional-green fix; a29cbe7
+  LEDGER 277 (R4 unvoted, R5c blocked, G1.lpips no arm clears coven-ashe); eb7b02b SECRETS reader
+  on fleet_secrets; c509021 TRIAGE-WIP item-14 responder merged (LEDGER 278). Responder separately
+  landed 4096078 (MAIN 2237, LEDGER 279). Session record LEDGER 280.
+- Removed .claude/worktrees agent worktrees (they trip test_tracked_settings_is_safe).
+- MAIN 2155 C-drive inventory was answered by the responder at 22:05 (TERMINAL unless a runbook).
+- Removed invalid ".*" allow rule from .claude/settings.local.json (untracked, was being skipped).
+- Next: R4 needs operator votes; R5c needs a fresh IOPaint hand capture; READBACK-2237.
+- Do NOT redo: the four items above; triage is live on main now - watch first live ticks.
+
+---
+
 ## PREVIOUS SESSION (2026-10-07) - inbox checked, local tip repaired, triage WIP parked
 
 - Operator ask: "check the inbox and reply if needed." Inbox (568 notes) fully

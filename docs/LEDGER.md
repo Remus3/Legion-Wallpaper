@@ -27,6 +27,24 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+280. DONE **2026-10-07 (session 64: GATE conditional-green false positive fixed 42ed383/9506a9a; SECRETS reader on fleet_secrets c1a32c3/eb7b02b; Dependabot PR #1 merged 2c6a492; TRIAGE-WIP merged c509021).**
+   GATE: claimed_green_gate GREEN_CLAIM fired on a plan line ("merge PR #1 once its CI is green"); a
+   green phrase now counts only when no once/when/until/till/after/if/unless/wait-for precedes it in
+   its clause; same guard on tests-pass / suite-green / all-green / green-on-sha, live gate and history
+   audit. Known gap (fail-open by the gate's own rule): "after the rerun all tests passed" is not caught.
+   SECRETS: the only API-Key-*.txt reader (tools/lw_recover.py load_api_key) now resolves via the kit's
+   fleet_secrets.resolve({"file": path}); None on missing/blank/error keeps the degraded message; kit
+   reads the first non-blank line only (SauceNAO key is one line). No kit gap. DEPBOT: all checks
+   succeeded, squash-merged. Each branch passed a read-only verifier before merge (GATE: 79 passed on
+   its two files; SECRETS: full suite 4010 passed / 20 skipped; TRIAGE: full suite 4022 passed /
+   20 skipped; its LEDGER 277 collided with main's and was renumbered 278 at merge). Merged-main
+   full suite: 4043 passed / 1 failed / 20 skipped - the 1 was test_tracked_settings_is_safe
+   stale-worktree guard tripping on this session's three leftover agent worktrees; removed with
+   git worktree remove (operator-confirmed, all clean, branches kept); that file then 6 passed.
+   Gap: worktree-isolated agents cannot write progress files to the main checkout (FLEET item 12).
+   Pre-existing: tests/test_lw_recover_campaign.py fails to collect when run alone (import lw_paths
+   at tools/lw_recover_campaign.py:52); passes inside the full suite.
+
 279. DONE **2026-10-07 (MAIN ORDER 2237 Console review: Stop gate -> one feedback line; [Legion] statusLine dropped; responder-authored).**
    Provenance: MAIN note 2026-10-07-2237 sha256
    d447fa7e8963c9ecbfb33db4ee5f348062b888a354e8e8e7d6d0e87228923b8a, read back on the inbox
