@@ -27,6 +27,48 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+286. DONE **2026-10-08 (read-backs: KIT-V9 /done marker PASS, TRIAGE-ACK arm still unobserved, inbox drained 220 -> 0 + stdin shutdown crash fixed, RC half-move closed + no-git guard).**
+   KIT-V9-READBACK PASS. Read back: ops/loop/control/session_done.json = S67, status done,
+   safe_to_clear true, session_id 193a5aac.., commit 2f1b070, handoff_sha256 b9875716.. which equals
+   sha256(`git show 2f1b070:LW-NEXT-SESSION.txt`). Live `fleet_done.py validate --session-id 193a5aac..`
+   now prints `none: HEAD moved after /done` (rc 1) - correct, 2 commits (a416222, 8af8a2d) landed
+   after; validate() with HEAD pinned to 2f1b070 and the 2f1b070 hand-off bytes returns
+   ('DONE', 'S67 safe to clear'). Tab title evidence: session_done.seen = `2026-10-08T06:26:17Z`
+   (== marker `at`), mtime 1.08 s after the marker; stop_hook() writes .seen ONLY on the path that
+   then returns the OSC 2 + OSC 9 `LW DONE S67 - safe to clear` sequence (validated DONE, 0 bg).
+   The hook keeps no other log. Wired: .claude/settings.json:88.
+   TRIAGE-ACK NOT YET OBSERVED. runs.jsonl: 74 cycles carry the `acked` field since 10-05 09:41Z,
+   0 non-empty. ANSWER-class notes DID clear with zero spawn, via the SKIP arm (they mark themselves
+   TERMINAL): cycles 10-05 10:16:56Z (RSC ANSWER), 13:21:57Z (SS ANSWER), 10-08 03:21:56Z (SS ANSWER),
+   each `spawned: []`, no headless_usage row. What produces an acked row: a sibling ACK / INFORMATION /
+   ANSWER / REPORT note WITHOUT a TERMINAL/no-reply token (kit v10 added REPORT to ACK_CLASSES; the
+   SS REPORT 10-05 0841 that cost a sonnet/low triage would now classify ack).
+   INBOX COUNT: BY DESIGN, not a key bug. The report lists only the newest 10 unread
+   (_INBOX_SHOWN) and records only those in sync_inbox_reported.json; --mark-inbox-seen acks
+   seen | reported (never the listing - LEDGER 162 defect), so 367 = 357 prior + 10 shown and the 220
+   never-shown stayed unread. Before draining, fleet_inbox.classify over the 220 (09-20..10-03):
+   3 WORK, all answered (MAIN 0055 -> 1fe3db8, MAIN 0640 -> b7d50a7, MAIN 2320 tally, LEDGER 285),
+   rest ack/skip/triage chatter. Drained via the intended path: 22 rounds of `--inbox-only` (report)
+   then `--mark-inbox-seen`, 220 names shown; read back `0 unread of 587 notes`.
+   BUG FOUND IN THE DRAIN: every --mark-inbox-seen run with an open stdin pipe exited 0xC0000005,
+   "Fatal Python error: _enter_buffered_busy" - the bounded stdin reader's daemon thread parked in
+   sys.stdin.buffer.read() holds the BufferedReader lock that Python 3.14 shutdown needs (the ack had
+   already landed). Same exposure on the UserPromptSubmit hook whenever stdin stays open. Fix:
+   _read_stdin_bounded reads the raw fd with os.read (no Python lock). Red first:
+   test_an_open_stdin_pipe_does_not_crash_interpreter_shutdown failed (1 failed / 23 passed), then
+   24 passed; live `sleep 3 | lw_facts.py --mark-inbox-seen` rc 0.
+   RC-HALFMOVE CLOSED BY RC: read back C:\Riot Commander = Junction -> E:\Riot Commander, E: has .git,
+   both resolve HEAD 0b8511641; drift_guard SIBLING_REPO = lw_paths.sibling_repo -> E:\Riot Commander,
+   status present. Hardened anyway: resolve_sibling_root returns `no-git` for a directory without
+   .git (a half-moved copy), check_shared_loop_files makes it a problem, not a stale compare;
+   tests/test_loop_concurrency.py RC cross-check used a `C:\Riot Commander` literal -> now
+   drift_guard.SIBLING_REPO + the no-git assert; new guard: no tracked code file holds an RC
+   drive literal. Red first: 2 failed / 7 passed, then 9 passed.
+   Verification: ruff clean on 5 files; full tests/ fresh 4088 passed / 0 failed / 19 skipped (working
+   tree also held a parallel agent's uncommitted DEHARDCODE edits); drift_guard 0 breaches;
+   install_git_hooks --check active. Reverse if: a fleet tree legitimately runs as a checkout with no
+   .git (then `no-git` must become a note).
+
 285. DONE **2026-10-08 (operator "sync inbox and reply and arm": proxy outage diagnosed, responder re-armed, owed 2237 answer + 2 reports sent to MAIN).**
    ARM: LW-InboxResponder refused 68 ticks 2026-10-08 13:42Z..19:17Z with "proxy unreachable: TimeoutError" (fail
    closed, 0 runs). The headless proxy (user variable CLAUDE_HEADLESS_BASE_URL, localhost:3456) is a node process

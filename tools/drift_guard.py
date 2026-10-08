@@ -428,7 +428,8 @@ def resolve_sibling_root(configured):
     r"""Locate a sibling repo root, telling a RENAME apart from an ABSENCE.
 
     Returns (path, status) with status one of:
-      present  - the configured path exists
+      present  - the configured path exists and is a git checkout
+      no-git   - it exists but has no .git: a HALF-MOVED copy, not the repo
       renamed  - it does not, but a name-equivalent directory sits beside it
       absent   - nothing resembling it is there (a CI runner, legitimately)
 
@@ -450,7 +451,14 @@ def resolve_sibling_root(configured):
     """
     configured = pathlib.Path(configured)
     if configured.is_dir():
-        return configured, "present"
+        # A directory is not a repo. RC's 2026-10-08 C: -> E: move left the new
+        # copy WITHOUT .git while the live repo was still on the old drive; a
+        # bare is_dir() called it present and the byte-identity check would have
+        # compared stale bytes and stayed green (LEDGER 286). `.git` may be a
+        # directory or, in a linked worktree, a file.
+        if (configured / ".git").exists():
+            return configured, "present"
+        return configured, "no-git"
     parent, want = configured.parent, _name_key(configured.name)
     if not want or not parent.is_dir():
         return None, "absent"
@@ -482,6 +490,13 @@ def check_shared_loop_files() -> None:
             f"sibling repo moved: {SIBLING_REPO} is now {sibling}. Until the "
             f"constant is updated this check compares NOTHING and goes quiet "
             f"rather than red - see resolve_sibling_root."
+        )
+        return
+    if status == "no-git":
+        problems.append(
+            f"sibling repo {SIBLING_REPO} has no .git - a half-moved copy, not "
+            f"the live repo. Comparing it would check stale bytes and stay green; "
+            f"finish the move or point LW_SIBLINGS_DIR at the live checkout."
         )
         return
     if status == "absent":

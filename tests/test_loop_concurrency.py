@@ -810,10 +810,16 @@ def test_riot_commander_agrees_on_the_lane_ceiling():
     # LW's old root through the 2026-09-06 rename and silently stopped
     # comparing anything for three hours while staying green (Amberstone
     # e752e4edc). Genuine absence - a CI runner - still skips.
-    sibling, status = drift_guard.resolve_sibling_root(Path(r"C:\Riot Commander"))
+    # Derived beside this checkout (drift_guard.SIBLING_REPO), never a drive
+    # literal: RC moved C: -> E: on 2026-10-08 (LEDGER 286).
+    sibling, status = drift_guard.resolve_sibling_root(drift_guard.SIBLING_REPO)
     assert status != "renamed", (
         f"Riot Commander moved to {sibling}: this guard is comparing nothing "
         f"until the constant is updated, and would stay green while blind"
+    )
+    assert status != "no-git", (
+        f"{sibling} has no .git - a half-moved copy; comparing it reads stale "
+        f"config and would stay green while blind"
     )
     if status == "absent":
         pytest.skip("Riot Commander tree not present on this machine")

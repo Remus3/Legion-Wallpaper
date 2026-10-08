@@ -618,18 +618,33 @@ def _read_stdin_bounded(cap_bytes: int = _STDIN_CAP_BYTES,
             return b""
     except (OSError, ValueError):
         return b""
-    box: dict[str, bytes] = {}
+    # RAW fd reads, never `stream.read()`: a thread parked inside a
+    # BufferedReader holds that reader's lock, and on Python 3.14 interpreter
+    # shutdown aborts on it ("Fatal Python error: _enter_buffered_busy", exit
+    # 0xC0000005) - measured 2026-10-08, LEDGER 286. os.read holds no Python
+    # lock, so the parked thread really is abandoned harmlessly at exit.
+    try:
+        fd = stream.fileno()
+    except (AttributeError, OSError, ValueError):
+        return b""
+    chunks: list[bytes] = []
 
     def _worker() -> None:
+        got = 0
         try:
-            box["b"] = stream.read(cap_bytes)
+            while got < cap_bytes:
+                b = os.read(fd, cap_bytes - got)
+                if not b:
+                    break
+                chunks.append(b)
+                got += len(b)
         except Exception:  # noqa: BLE001 - a payload read must never raise out
-            box["b"] = b""
+            pass
 
     t = threading.Thread(target=_worker, daemon=True)
     t.start()
     t.join(max(0.05, min(cap_s, _remaining())))
-    return box.get("b", b"")
+    return b"".join(list(chunks))[:cap_bytes]
 
 
 def _session_id_from(payload: bytes) -> str | None:

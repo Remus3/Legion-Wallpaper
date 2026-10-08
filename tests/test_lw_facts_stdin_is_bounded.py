@@ -205,3 +205,41 @@ def test_the_invocation_log_never_raises_on_an_unwritable_path(tmp_path):
     blocker.write_text("not a directory\n", encoding="utf-8")
     F._log_invocation("inbox-only", "abcd1234efgh",
                       log_path=blocker / "nested" / "invocations.log")
+
+
+def test_an_open_stdin_pipe_does_not_crash_interpreter_shutdown():
+    """The parked reader must not take the PROCESS down on its way out.
+
+    Measured 2026-10-08 (LEDGER 286) on Python 3.14: with the daemon thread
+    parked in `sys.stdin.buffer.read()` on a pipe nobody closes, interpreter
+    shutdown cannot take the BufferedReader lock the thread holds and aborts -
+    "Fatal Python error: _enter_buffered_busy", exit 0xC0000005 - AFTER the
+    work was done. Every `--mark-inbox-seen` run from a shell whose stdin is
+    an open pipe exited non-zero although the acknowledgement had landed, and
+    the UserPromptSubmit hook does the same whenever the harness leaves stdin
+    open. "Parked thread, process exits out from under it" only holds if the
+    thread holds no lock the shutdown path needs.
+    """
+    import subprocess
+
+    tools = str(Path(__file__).resolve().parent.parent / "tools")
+    code = ("import sys; sys.path.insert(0, sys.argv[1]); import lw_facts as F; "
+            "F._read_stdin_bounded(cap_bytes=1024, cap_s=0.2); print('ok')")
+    p = subprocess.Popen([sys.executable, "-c", code, tools],
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    try:
+        deadline = time.monotonic() + 30.0
+        while p.poll() is None and time.monotonic() < deadline:
+            time.sleep(0.05)
+        if p.poll() is None:
+            p.kill()
+        out, err = p.stdout.read(), p.stderr.read()
+    finally:
+        p.stdin.close()
+        p.stdout.close()
+        p.stderr.close()
+    assert b"Fatal Python error" not in err, err[:400]
+    assert p.returncode == 0, (p.returncode, err[:400])
+    assert out.strip() == b"ok", out
