@@ -47,11 +47,12 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    MIG-1 DRAFTED (D4 deletion floor - MAIN cannot lift it for the responder): `git worktree list` = 5
    lines (main + 4); `git worktree prune --dry-run -v` = 0 lines (no stale admin entry). fleet-kit-v7,
    ingest-lw-gates, ingest-lw-ops: 0 dirty, 0 commits off main, on origin. abandoned-v6-responder-attempt:
-   24 dirty (15 modified +460/-154, 9 untracked); 7 are byte-equal to main/history (NOTICE, config.json,
-   5 kit v7 files), 16 hold bytes found NOWHERE in history (v6-lane work superseded by v7/v8, incl.
+   24 dirty (15 modified +460/-154, 9 untracked); 7 are byte-equal to main (NOTICE, config.json,
+   5 kit v7 files), 1 in history only (test_loop_concurrency.py 1d8fd05), 16 hold bytes found NOWHERE in history (v6-lane work superseded by v7/v8, incl.
    tests/test_loop_lanes.py 274 lines and 3 scratch files). Attended step: WIP-commit those 16 on branch
    worktree-agent-a6b282fa560024205 (bytes preserved), then `git worktree remove` x4 and
    `git worktree prune`; expect `git worktree list` = 1 line. Reverse if: the operator keeps a worktree.
+   CI for 422d4c9: both workflow runs exit 0. REPLY: one ANSWER (HOP 2) to MAIN, reached 1/1, outbound cap 1/6.
 
 280. DONE **2026-10-07 (session 64: GATE conditional-green false positive fixed 42ed383/9506a9a; SECRETS reader on fleet_secrets c1a32c3/eb7b02b; Dependabot PR #1 merged 2c6a492; TRIAGE-WIP merged c509021).**
    GATE: claimed_green_gate GREEN_CLAIM fired on a plan line ("merge PR #1 once its CI is green"); a
