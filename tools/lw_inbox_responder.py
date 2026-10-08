@@ -86,7 +86,7 @@ responder (MAIN 0310 section 4). Every tick runs the kit's free
   ack    - ACK / INFORMATION / TERMINAL / ANSWER class, or past the hop limit:
            marked seen plus a ledger line, NO spawn and NO note;
   work   - ORDER / FIX / RULING: the child run above, kind="inbox";
-  triage - anything else: ONE run with the kit's TRIAGE_SPAWN (sonnet, effort
+  triage - anything else: ONE run with the kit's triage_spawn_kwargs (sonnet, effort
            low), kind="triage"; `parse_verdict` gives NOREPLY / ACK / ANSWER and
            only ANSWER produces a note - batched per destination, under the
            kit's 6-a-day `OutboundCap`, carrying `HOP: <n>`.
@@ -703,11 +703,11 @@ def spawn_prompt(note_path: Path, provenance: str = "") -> str:
     return f"{prompt} {lw_checklist.child_rule(CHILD_TASK, FIRE_N)}"
 
 
-# The kit's TRIAGE_SPAWN (sonnet, effort low, 300 s) with ONE override: bare
-# False. LW's floors live in its PreToolUse hooks, and the kit itself refuses
-# --bare when floors live in hooks (fleet_headless.check_door), which
-# lw_headless_env.spawn always declares. Recorded in docs/LEDGER.md as a gap.
-TRIAGE_PARAMS = {**fleet_inbox.TRIAGE_SPAWN, "bare": False}
+# Kit v11 ruling R1: the kit's triage_spawn_kwargs(floors_in_hooks) - sonnet,
+# effort low, 300 s, bare = not floors_in_hooks. LW's floors live in its
+# PreToolUse hooks, so True: non-bare, and the flag reaches check_door. The
+# v8-v10 local TRIAGE_PARAMS override is gone (MAIN 1840 section 5).
+TRIAGE_FLOORS_IN_HOOKS = True
 
 
 def _triage(note_path: Path, dry_run: bool, seams: dict) -> Disposition:
@@ -726,7 +726,9 @@ def _triage(note_path: Path, dry_run: bool, seams: dict) -> Disposition:
             body = ""
         line = lw_headless_env.spawn(fleet_inbox.triage_prompt(note_path.name, body),
                                      note=note_path.name, kind="triage", stdin=True,
-                                     halt_file=HALT_PATH, **TRIAGE_PARAMS, **seams)
+                                     halt_file=HALT_PATH,
+                                     **fleet_inbox.triage_spawn_kwargs(TRIAGE_FLOORS_IN_HOOKS),
+                                     **seams)
     except lw_headless_env.HeadlessRefused as exc:
         if not dry_run:
             lw_headless_env.log_refusal("lw_inbox_responder", str(exc))
@@ -735,7 +737,8 @@ def _triage(note_path: Path, dry_run: bool, seams: dict) -> Disposition:
         return Disposition(UNAVAILABLE, "triage",
                            f"could not start claude ({type(exc).__name__})", False)
     if line.get("error") == "timeout":
-        return _auto("triage", f"triage run timed out after {TRIAGE_PARAMS['timeout']}s")
+        return _auto("triage",
+                     f"triage run timed out after {fleet_inbox.TRIAGE_SPAWN['timeout']}s")
     return Disposition(AUTO, "triage",
                        f"triage run rc {line.get('rc')} model {line.get('model')} "
                        f"effort {line.get('effort')} {line.get('duration_s')}s",
@@ -1227,7 +1230,8 @@ def _main(argv: list[str] | None = None) -> int:
             d, kind = decisions[note.key], kinds[note.key]
             if fire:
                 fire.running(f"N{i + 1}", "headless run",
-                             TRIAGE_PARAMS["timeout"] if kind == "triage" else RUN_TIMEOUT_S)
+                             fleet_inbox.TRIAGE_SPAWN["timeout"] if kind == "triage"
+                             else RUN_TIMEOUT_S)
             try:
                 outcome = spawn(args.inbox / note.name, dry_run=args.dry_run, kind=kind)
             except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged

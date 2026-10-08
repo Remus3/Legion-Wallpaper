@@ -178,11 +178,13 @@ def test_an_unclassified_note_gets_exactly_one_triage_run(tmp_path, inbox, spawn
     (call,) = spawns.calls
     assert call["kind"] == "triage"
     assert call["note"] == name
-    for key in ("model", "effort", "timeout"):
-        assert call[key] == fi.TRIAGE_SPAWN[key]
-    # LW's floors live in hooks: the kit refuses --bare with floors_in_hooks
-    # (fleet_headless.check_door), so the one TRIAGE_SPAWN key LW overrides.
-    assert call["bare"] is False
+    # Kit v11 ruling R1: every triage spawn takes the kit's
+    # triage_spawn_kwargs(floors_in_hooks); LW's floors live in hooks, so the
+    # run is non-bare and the flag reaches check_door. No local override.
+    for key, value in fi.triage_spawn_kwargs(True).items():
+        assert call[key] == value, key
+    assert call["bare"] is False and call["floors_in_hooks"] is True
+    assert not hasattr(responder, "TRIAGE_PARAMS")
     assert call["prompt"] == fi.triage_prompt(name, "# From RC - QUESTION\n\nhow many tests?\n")
     assert not call.get("extra")                 # triage does no work
     assert [(s["note"], s["kind"], s["triage"]) for s in payload["spawned"]] == [

@@ -43,6 +43,16 @@ def test_subagent_first_hook_is_wired_once_with_the_ordered_matcher():
     assert SCRIPT in hook["command"]
 
 
+ANCHORED = 'python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_subagent_first.py"'
+
+
+def test_subagent_first_hook_is_the_anchored_fleet_form():
+    """Kit v11 ruling R3 (MAIN 1840): the command is EXACTLY the anchored form,
+    optionally followed by ` || true`; the v10 cwd-relative form is drift."""
+    _, hook = _hits()[0]
+    assert hook["command"] in (ANCHORED, ANCHORED + " || true"), hook["command"]
+
+
 def test_subagent_first_hook_runs_under_an_interpreter_that_keeps_stdout():
     _, hook = _hits()[0]
     assert hook["command"].split()[0] == "python", hook["command"]

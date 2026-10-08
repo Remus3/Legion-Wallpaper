@@ -21,7 +21,7 @@ CI_PYTHON_PIN = "3.14"
 SECTION10_SHA16 = "330b3d9cef5bb833"
 REPO_API = "https://api.github.com/repos/Remus3/Legion-Wallpaper"
 WIKI_API = "https://wiki.leagueoflegends.com/en-us/api.php?action=query&meta=siteinfo&format=json"
-FLEET_KIT_VERSION = 10
+FLEET_KIT_VERSION = 11
 
 
 class Undecided(Exception):

@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 10
+    assert he.kit.KIT_VERSION == 11
 
 
 def test_the_refusal_class_is_the_kits():
@@ -216,6 +216,29 @@ def test_spawn_is_kit_spawn_at_fleet_root_with_lw_code():
     status = json.loads((Path(he.FLEET_ROOT) / he.kit.STATUS_REL).read_text(encoding="ascii"))
     assert status["code"] == "LW" and status["state"] == "idle"
     assert he.budget().used() == 1
+
+
+def test_spawn_takes_the_kits_triage_kwargs_without_a_duplicate_keyword():
+    """Kit v11: fleet_inbox.triage_spawn_kwargs(True) carries floors_in_hooks;
+    the adapter must accept it (not a duplicate-keyword TypeError) and still
+    declare floors in hooks to the kit."""
+    seen = {}
+    import lw_inbox_responder
+    kw = lw_inbox_responder.fleet_inbox.triage_spawn_kwargs(True)
+    line = he.spawn("hello", url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
+                    exe_source=lambda: "claude.exe", **kw)
+    assert line["bare"] is False
+    assert "--bare" not in seen["argv"]
+
+
+def test_spawn_refuses_a_caller_that_denies_floors_in_hooks():
+    """LW's floors live in hooks on every path; floors_in_hooks=False would
+    let --bare through the kit's door, so the adapter refuses it."""
+    seen = {}
+    with pytest.raises(he.HeadlessRefused):
+        he.spawn("x", floors_in_hooks=False, bare=True, url_source=lambda: _URL,
+                 connect=_up, run=_fake_run(seen), exe_source=lambda: "claude.exe")
+    assert seen == {}
 
 
 def test_spawn_refuses_before_launch_when_the_budget_is_spent():

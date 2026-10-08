@@ -177,7 +177,8 @@ def exec_slot(priority: str, timeout: float | None = None):
 
 
 def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool = False,
-          rules_file=None, timeout: float = 3600, extra=(), **params) -> dict:
+          rules_file=None, timeout: float = 3600, extra=(), floors_in_hooks: bool = True,
+          **params) -> dict:
     """kit.spawn for LW: FLEET_ROOT, code LW, floors in hooks, project scope.
 
     Raises kit.Refused before any launch. `params` reaches kit.spawn's v4
@@ -187,8 +188,12 @@ def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool 
     its test seams (url_source, connect, run, exe_source). A timeout does NOT
     raise: the kit kills the process tree and returns a line with rc None and
     error "timeout". A governor slot not won in governor_timeout raises
-    kit.Refused before anything starts.
+    kit.Refused before anything starts. floors_in_hooks is accepted so the
+    kit's triage_spawn_kwargs (v11) can be splatted in; LW's floors live in
+    hooks on every path, so False is refused before anything starts.
     """
+    if not floors_in_hooks:
+        raise HeadlessRefused("LW floors live in hooks; floors_in_hooks=False refused")
     params.setdefault("setting_sources", SETTING_SOURCES)
     if params.get("governor") is not None:
         params.setdefault("governor_root", governor_root())

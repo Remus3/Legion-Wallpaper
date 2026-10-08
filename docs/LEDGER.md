@@ -27,6 +27,40 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+288. DONE **2026-10-08 (MAIN 1840 ORDER: FLEET-KIT v11 vendored (supersedes v10), triage_spawn_kwargs(True) adopted, TRIAGE_PARAMS override gone, anchored hook confirmed; headless responder).**
+   Provenance READ BACK: note sha256 76dd6a66acb86130b4e035b41beb5926b97160215efc1312cbe242279fb43499, 6242 bytes;
+   kit verify_main(note, MAIN outbox) True; MAIN outbox copy sha256 equal. Bundle
+   `2026-10-08-1840-from-MAIN-FLEET-KIT-v11/`: 17/17 files equal across the note's hash table, LW's inbox copy and
+   MAIN's COMMITTED outbox blob (verify_main 17/17 True); bundle MANIFEST.json self-check 16/16.
+   A3 disclosure: every carrier is MAIN's (no sibling carried v11 at read time); the two-INDEPENDENT-carrier arm is
+   met by the verified MAIN note's D8 lift, the same basis as v8-v10 (LEDGER 284).
+   1. VENDOR (A3/A4): 17 files byte-for-byte into ops/fleet_kit/ (write_bytes + atomic replace, sha256 re-read, no CR).
+      Changed 7 (MANIFEST.json, fleet_done, fleet_headless, fleet_inbox, fleet_lanes, fleet_subagent_first,
+      fleet_watch); unchanged 10. MANIFEST sha256 OLD ae3c91ad.. (v10) -> NEW
+      c1dcf5a613b7d765bc1f917d7844ad58e272dd7984f97a632c62f911072259a7 (v11). conformance(root) = [] read back.
+      FLEET-COMMON block in CLAUDE.md re-hashed, equal to the note's
+      9dfb40e3e7e1ca373f04a362229cd6935458f6288cb301b55d79bb840e508337 (unchanged, no CLAUDE.md edit).
+      Pins moved 10 -> 11: tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+      tools/lw_promise_probes.FLEET_KIT_VERSION + tests/test_promise_probe_fleet_kit.py.
+   2. HOOK (step 2, R3): tracked .claude/settings.json already carries EXACTLY
+      `python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_subagent_first.py"`, matcher
+      Bash|PowerShell|Read|Edit|Write|Grep|Glob|NotebookEdit|MultiEdit, timeout 10 - no settings edit. New arm
+      tests/test_fleet_kit_v10_wiring.py::test_subagent_first_hook_is_the_anchored_fleet_form pins the exact string
+      (or the same plus ` || true`). Mode file read back: `log` (v10 progression to deny unchanged).
+   3. TRIAGE (step 3, R1): tools/lw_inbox_responder.py drops TRIAGE_PARAMS = {**TRIAGE_SPAWN, "bare": False};
+      _triage splats fleet_inbox.triage_spawn_kwargs(TRIAGE_FLOORS_IN_HOOKS=True). tools/lw_headless_env.spawn gains a
+      floors_in_hooks keyword (default True) so the splat is not a duplicate-keyword TypeError; False is refused
+      (HeadlessRefused) before anything starts - LW floors live in hooks on every path. TDD: 3 arms red first
+      (AttributeError on v10 / TypeError path), green after.
+      Alternatives: pop floors_in_hooks from the kwargs at the call site (rejected: hides the kit's flag from the
+      adapter, and the ruling says splat it); keep TRIAGE_PARAMS (rejected: MAIN 1840 section 5 orders it gone).
+   Not adopted (no LW consumer): spawn --permission-mode CLI pass-through (LW calls kit.spawn via Python), fleet_watch
+   path-free renders, fleet_done absolute git, fleet_lanes release fields - all arrive with the vendored bytes.
+   fleet_watch tripwire (LEDGER 273) still GREEN: v11 run_source still lacks `prune`, swap stays deferred.
+   SUITE (A2, timeout 1800 s, files-created ceiling 0 outside scratch): run 1 exit 1, 4090 passed / 19 skipped /
+   1 failed (tests/test_promise_probe_fleet_kit.py pinned version 10 - a pin the first sweep missed; moved to 11);
+   run 2 exit 0, 4091 passed / 19 skipped / 0 failed, 0 files created. ruff clean on every touched file.
+
 287. DONE **2026-10-08 (DEHARDCODE-REST 15 rows decided + RETIRE-JUNCTION: LW externals all on E:, junction-off proof cycle green, junction RESTORED for 6 sibling rows; MAIN asked).**
    A. DEHARDCODE-REST, the 15 rows LEDGER 283 left. DERIVED 7: lw_paths.tools_dir() (new; LW_TOOLS_DIR, else
    %SystemDrive%\Tools) now feeds lw_clean_lane.VENV_PY, lw_clean_pass.CLEAN_VENV_PY + WEIGHTS_PATH,
