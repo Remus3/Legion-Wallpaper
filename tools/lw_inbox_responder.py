@@ -77,11 +77,29 @@ UNAVAILABLE, never MATCH. Since kit v4 verify_main hashes MAIN's COMMITTED
 blob, so a copy that matches on disk but is not committed yet (the seconds
 between delivery and MAIN's commit) is UNCOMMITTED: nothing is spawned and the
 note stays unseen, so the next tick checks again (MAIN 1204 section 7 item 4).
+
+CLASSIFY FIRST (FLEET-KIT v8 item 14, MAIN 0310). LW has no separate lane loop
+for mail, so this responder IS the loop for inbox purposes and stays the one
+responder (MAIN 0310 section 4). Every tick runs the kit's free
+`fleet_inbox.classify()` on each unseen note before anything can spawn:
+  skip   - own note / TERMINAL / no-reply: marked seen, nothing else;
+  ack    - ACK / INFORMATION / TERMINAL / ANSWER class, or past the hop limit:
+           marked seen plus a ledger line, NO spawn and NO note;
+  work   - ORDER / FIX / RULING: the child run above, kind="inbox";
+  triage - anything else: ONE run with the kit's TRIAGE_SPAWN (sonnet, effort
+           low), kind="triage"; `parse_verdict` gives NOREPLY / ACK / ANSWER and
+           only ANSWER produces a note - batched per destination, under the
+           kit's 6-a-day `OutboundCap`, carrying `HOP: <n>`.
+lw_watch keeps owning "what did I already answer" (content-addressed keys, so a
+note corrected in place re-fires); the kit's seen ledger is written beside it
+as the mechanical-ack record, never consulted as the gate.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -101,6 +119,24 @@ import split_scan  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 INBOX = ROOT / "moon_sync_inbox"
+# LW's outbound record: every note the parent writes is copied here too.
+OUTBOX = ROOT / "moon_sync_outbox"
+
+
+def _bind_fleet_inbox():
+    """The vendored kit's fleet_inbox.py (kit v8), bound by path; reused if loaded."""
+    mod = sys.modules.get("fleet_inbox")
+    if mod is not None:
+        return mod
+    spec = importlib.util.spec_from_file_location(
+        "fleet_inbox", ROOT / "ops" / "fleet_kit" / "fleet_inbox.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+fleet_inbox = _bind_fleet_inbox()
 
 # SEPARATE from `lw_facts._SEEN` on purpose. That file backs the operator's
 # SessionStart report; a responder writing it would acknowledge mail on the
@@ -212,6 +248,7 @@ class Disposition:
     rule: str
     reason: str
     checked: bool
+    result: str | None = None   # the run's final text (kit line "result"), kit v8 triage
 
 
 def _draft(rule: str, reason: str, *, checked: bool = True) -> Disposition:
@@ -411,10 +448,42 @@ def skip_reason(path: Path) -> str | None:
         return "bundle: a directory, not a note - the note beside it carries the instruction"
     why = lw_headless_env.kit.should_skip(path.name, SELF_CODE, note_head(path))
     if why == "self":
-        return f"self: sender code {SELF_CODE} - a record in LW's own inbox, not mail"
+        return SELF_WHY
     if why == "terminal":
-        return "terminal: the note marks itself terminal or no-reply"
+        return TERMINAL_WHY
     return None
+
+
+SELF_WHY = f"self: sender code {SELF_CODE} - a record in LW's own inbox, not mail"
+TERMINAL_WHY = "terminal: the note marks itself terminal or no-reply"
+
+# kit v8: fleet_inbox.scan hands classify() the note's first 1500 bytes
+# (`scan(..., head_bytes=1500)`); the tick reads the same window.
+INBOX_HEAD_BYTES = 1500
+
+
+def inbox_head(path: Path) -> str:
+    """The note's first INBOX_HEAD_BYTES bytes as text, or "" when unreadable."""
+    try:
+        with path.open("rb") as fh:
+            return fh.read(INBOX_HEAD_BYTES).decode("utf-8", "replace")
+    except OSError:
+        return ""
+
+
+def decide(path: Path):
+    """(fleet_inbox Decision, skip reason or None) for one inbox entry.
+
+    The kit's free `classify()` is the decision (kit v8 item 14). A bundle
+    DIRECTORY is a skip before it ever reaches classify, as before.
+    """
+    if path.is_dir():
+        return (fleet_inbox.Decision(fleet_inbox.SKIP, None, None, "bundle", 1),
+                skip_reason(path))
+    d = fleet_inbox.classify(path.name, SELF_CODE, inbox_head(path))
+    if d.action != fleet_inbox.SKIP:
+        return d, None
+    return d, (SELF_WHY if d.reason == "self" else TERMINAL_WHY)
 
 
 def record_seen(inbox: Path, state_path: Path, notes: list[Note]) -> None:
@@ -598,16 +667,83 @@ def fire_number(runlog: Path) -> int:
         return 1
 
 
+# FLEET-COMMON item 14 (kit v8, MAIN 0310) for the child: the HOP line it must
+# carry, whether it may reply at all (`may_reply`), and the outbound cap, which
+# the child checks and records through this module's CLI.
+_INBOX_COST_RULE = (
+    "INBOX COST (FLEET-COMMON item 14, kit v8): every note you write carries its own "
+    "line `HOP: {hop}`. {reply} Before writing any note whose class is not ORDER, FIX "
+    "or RULING run `python tools/lw_inbox_responder.py --outbound-check <CLASS>`: exit "
+    "0 allows it, exit 1 means today's cap of {cap} outbound notes is spent - write no "
+    "note and put the answer in your final output instead. After writing a note run "
+    "`python tools/lw_inbox_responder.py --outbound-record <note file name> <CLASS> "
+    "<TO>`. Several answers to one destination go in ONE note. Never answer an "
+    "ANSWER, ACK or INFORMATION note."
+)
+
+
+def inbox_cost_rule(note_path: Path) -> str:
+    """The item-14 paragraph for this note: HOP via next_hop, reply via may_reply."""
+    d = fleet_inbox.classify(note_path.name, SELF_CODE, inbox_head(note_path))
+    if fleet_inbox.may_reply(d.cls, d.hop):
+        reply = "You may send ONE reply note."
+    else:
+        reply = ("This note is at the hop limit: do the work, but send NO reply note; "
+                 "put the result in your final output.")
+    return _INBOX_COST_RULE.format(hop=fleet_inbox.next_hop(d.hop), reply=reply,
+                                   cap=fleet_inbox.OUTBOUND_CAP)
+
+
 def spawn_prompt(note_path: Path, provenance: str = "") -> str:
     """The child's prompt. The parent's MAIN digest, when computed, is appended,
-    then the item-13 checklist rule for the child."""
+    then the item-14 inbox-cost rule and the item-13 checklist rule."""
     prompt = _PROMPT.format(note=note_path.as_posix())
     prompt = f"{prompt} {provenance}" if provenance else prompt
+    prompt = f"{prompt} {inbox_cost_rule(note_path)}"
     return f"{prompt} {lw_checklist.child_rule(CHILD_TASK, FIRE_N)}"
 
 
+# The kit's TRIAGE_SPAWN (sonnet, effort low, 300 s) with ONE override: bare
+# False. LW's floors live in its PreToolUse hooks, and the kit itself refuses
+# --bare when floors live in hooks (fleet_headless.check_door), which
+# lw_headless_env.spawn always declares. Recorded in docs/LEDGER.md as a gap.
+TRIAGE_PARAMS = {**fleet_inbox.TRIAGE_SPAWN, "bare": False}
+
+
+def _triage(note_path: Path, dry_run: bool, seams: dict) -> Disposition:
+    """ONE cheap look at a note classify() could not place (kind="triage").
+
+    The verdict is NOT parsed here: the run's text rides back on
+    `Disposition.result` and the tick calls `fleet_inbox.parse_verdict`.
+    """
+    try:
+        if dry_run:
+            lw_headless_env.resolve(seams.get("url_source"), seams.get("connect"))
+            return _auto("triage", f"dry run, would triage {note_path.name}")
+        try:
+            body = note_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            body = ""
+        line = lw_headless_env.spawn(fleet_inbox.triage_prompt(note_path.name, body),
+                                     note=note_path.name, kind="triage", stdin=True,
+                                     halt_file=HALT_PATH, **TRIAGE_PARAMS, **seams)
+    except lw_headless_env.HeadlessRefused as exc:
+        if not dry_run:
+            lw_headless_env.log_refusal("lw_inbox_responder", str(exc))
+        return Disposition(UNAVAILABLE, "triage", f"headless spawn refused: {exc}", True)
+    except OSError as exc:
+        return Disposition(UNAVAILABLE, "triage",
+                           f"could not start claude ({type(exc).__name__})", False)
+    if line.get("error") == "timeout":
+        return _auto("triage", f"triage run timed out after {TRIAGE_PARAMS['timeout']}s")
+    return Disposition(AUTO, "triage",
+                       f"triage run rc {line.get('rc')} model {line.get('model')} "
+                       f"effort {line.get('effort')} {line.get('duration_s')}s",
+                       True, line.get("result"))
+
+
 def spawn(note_path: Path, dry_run: bool = False, *,
-          kit_seams: dict | None = None) -> Disposition:
+          kit_seams: dict | None = None, kind: str = "inbox") -> Disposition:
     """One headless run for one note, through `kit.spawn`. Waits for it.
 
     The kit refuses BEFORE anything starts (proxy unset / non-loopback / down,
@@ -620,8 +756,13 @@ def spawn(note_path: Path, dry_run: bool = False, *,
     (`halt_file`), so a HALT that lands between the tick's check and the launch
     still refuses; the prompt goes on stdin, so no note path length can hit the
     kit's argv ceiling.
+
+    kind (kit v8): "inbox" is this work run (ORDER / FIX / RULING); "triage"
+    is the one sonnet/low look at an unclassified note (`_triage`).
     """
     seams = dict(kit_seams or {})
+    if kind == "triage":
+        return _triage(note_path, dry_run, seams)
     provenance = main_provenance(note_path)
     tail = f"; {provenance}" if provenance else ""
     if f": {UNCOMMITTED} " in provenance and not dry_run:
@@ -639,7 +780,7 @@ def spawn(note_path: Path, dry_run: bool = False, *,
                                      governor_timeout=SLOT_WAIT_S if governor else None,
                                      timeout=RUN_TIMEOUT_S, extra=RESPONDER_EXTRA,
                                      stdin=True, halt_file=HALT_PATH,
-                                     **seams)
+                                     kind="inbox", **seams)
     except lw_headless_env.HeadlessRefused as exc:
         if not dry_run:
             lw_headless_env.log_refusal("lw_inbox_responder", str(exc))
@@ -651,6 +792,61 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         return _auto("spawn", f"kit.spawn run timed out after {RUN_TIMEOUT_S}s{tail}")
     return _auto("spawn", f"kit.spawn run rc {line.get('rc')} model {line.get('model')} "
                           f"effort {line.get('effort')} {line.get('duration_s')}s{tail}")
+
+
+# ---------------------------------------------------------------------------
+# Outbound (kit v8 item 14): triage answers, batched, capped, HOP-stamped
+# ---------------------------------------------------------------------------
+
+def carrier_inbox(code: str | None, carriers_path: Path | None = None) -> Path | None:
+    """`code`'s inbox from the gitignored carrier row, or None (no row / no dir)."""
+    path = CARRIERS_PATH if carriers_path is None else carriers_path
+    try:
+        inbox = Path(json.loads(path.read_text(encoding="utf-8"))[code]["inbox"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return inbox if inbox.is_dir() else None
+
+
+def send_answers(dest: str | None, parts: list[tuple[str, str, int]]) -> dict:
+    """ONE batched ANSWER note to `dest` for parts = [(note, text, incoming hop)].
+
+    Sent only when the kit's OutboundCap allows it, the output filter passes
+    every part and the carrier row names the destination. Written atomically
+    into LW's outbox (the outbound record) and the destination inbox, never
+    over an existing note; the destination copy is re-hashed (reached N/M) and
+    only then recorded against the cap. A held answer keeps its text in the
+    returned record, which the cycle's run-log line carries.
+    """
+    answers = [{"note": n, "text": t} for n, t, _h in parts]
+    rec = {"to": dest, "parts": len(parts), "sent": False, "answers": answers}
+    cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
+    if not cap.allow("ANSWER"):
+        return {**rec, "why": f"outbound cap: {cap.used()}/{cap.cap} notes today"}
+    hits = [h for _n, t, _h in parts for h in filter_reply(t)]
+    if hits:
+        return {**rec, "answers": [], "why": f"output filter: {', '.join(hits)}"}
+    inbox = carrier_inbox(dest)
+    if inbox is None:
+        return {**rec, "why": f"no carrier row for {dest} - the parent cannot reach it"}
+    hop_n = max(fleet_inbox.next_hop(h) for _n, _t, h in parts)
+    clean = [(n, t.encode("ascii", "replace").decode("ascii")) for n, t, _h in parts]
+    name, body, _names = fleet_inbox.batch_note(SELF_CODE, dest, clean, hop_n=hop_n)
+    data = body.encode("ascii")
+    targets = [OUTBOX / name, inbox / name]
+    if any(t.exists() for t in targets):
+        return {**rec, "why": f"{name} already exists - a note is never overwritten"}
+    for t in targets:
+        t.parent.mkdir(parents=True, exist_ok=True)
+        tmp = t.with_name(t.name + ".tmp")
+        tmp.write_bytes(data)
+        tmp.replace(t)
+    want = hashlib.sha256(data).hexdigest()
+    reached = sum(1 for t in targets[1:] if hashlib.sha256(t.read_bytes()).hexdigest() == want)
+    if reached:
+        cap.record(name, "ANSWER", dest, parts=len(parts))
+    return {**rec, "sent": bool(reached), "note": name, "hop": hop_n,
+            "reached": f"{reached}/{len(targets) - 1}"}
 
 
 def halted(halt_path: Path) -> str | None:
@@ -861,6 +1057,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="append-only record of what each non-idle cycle did")
     ap.add_argument("--print-register-command", action="store_true",
                     help="print the scheduled-task registration for the OPERATOR to run")
+    ap.add_argument("--outbound-check", metavar="CLASS", default=None,
+                    help="kit v8 outbound cap: exit 0 if a note of CLASS may go out "
+                         "today, 1 if the cap is spent (ORDER/FIX/RULING exempt)")
+    ap.add_argument("--outbound-record", nargs=3, metavar=("NOTE", "CLASS", "TO"),
+                    default=None, help="record one written note against the cap")
     return ap
 
 
@@ -890,7 +1091,8 @@ def job_status(payload: dict) -> tuple[str, str]:
         return "failed", f"seen-state corrupt: {payload['state_corrupt']}"
     if "fetch_failed" in payload:
         return "partial", f"inbox unreadable: {payload['fetch_failed']}"
-    for key in ("deliver_error", "operator_tasks_error", "status_error", "runlog_error"):
+    for key in ("deliver_error", "operator_tasks_error", "status_error", "runlog_error",
+                "ledger_error"):
         if payload.get(key):
             return "partial", f"{key}: {payload[key]}"
     refused = [s for s in payload.get("spawned") or [] if s.get("verdict") != AUTO]
@@ -923,6 +1125,20 @@ def _main(argv: list[str] | None = None) -> int:
         print("\nNot run from here. Registering a scheduled task is D5 in the "
               "deny set this responder obeys, so it stays an operator act.")
         return 0
+
+    if args.outbound_check or args.outbound_record:
+        cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
+        if args.outbound_record:
+            name, cls, to = args.outbound_record
+            doc = cap.record(name, cls.upper(), to.upper())
+            print(json.dumps({"recorded": doc is not None, "used": cap.used(),
+                              "cap": cap.cap}))
+            return 0 if doc is not None else 1
+        cls = args.outbound_check.upper()
+        ok = cap.allow(cls)
+        print(json.dumps({"allow": ok, "cls": cls, "used": cap.used(), "cap": cap.cap,
+                          "exempt": cls in fleet_inbox.EXEMPT}))
+        return 0 if ok else 1
 
     if not args.once:
         ap.error("nothing to do: pass --once or --print-register-command")
@@ -959,22 +1175,41 @@ def _main(argv: list[str] | None = None) -> int:
         ctx["entries"] = {n.key: n for n in entries}
         return [n.key for n in entries]
 
+    def _mark(path: Path, d, verdict=None) -> None:
+        """The kit's mechanical-ack ledger line (fleet_inbox.mark_seen); never the failure."""
+        if args.dry_run:
+            return
+        try:
+            fleet_inbox.mark_seen(lw_headless_env.FLEET_ROOT, path, d, verdict)
+        except (OSError, ValueError) as exc:
+            ctx["ledger_error"] = f"{type(exc).__name__}: {exc}"
+
     def deliver(keys: list[str], confirm) -> list[str]:
         notes = [ctx["entries"][k] for k in keys]
         ctx["notes"] = notes
-        # Self and terminal notes are sorted out BEFORE the cap, so a burst of
-        # them never takes a slot from real mail. Marked seen, never spawned.
-        skipped, mail = [], []
+        # CLASSIFY FIRST (kit v8 item 14). Skips and acks are sorted out BEFORE
+        # the cap, so a burst of them never takes a slot from real mail; both
+        # are marked seen and NEVER spawn. Work and triage notes share the cap.
+        skipped, acked, mail, decisions = [], [], [], {}
         for note in notes:
-            why = skip_reason(args.inbox / note.name)
-            if why is None:
-                mail.append(note)
-            else:
+            d, why = decide(args.inbox / note.name)
+            decisions[note.key] = d
+            if d.action == fleet_inbox.SKIP:
                 skipped.append((note, why))
+            elif d.action == fleet_inbox.ACK:
+                acked.append((note, d))
+            else:
+                mail.append(note)
         capped, budget = within_budget(mail)
-        ctx.update(skipped=skipped, mail=mail, capped=capped, budget=budget, spawned=[])
-        if skipped:
-            confirm([n.key for n, _why in skipped])
+        ctx.update(skipped=skipped, acked=acked, mail=mail, capped=capped, budget=budget,
+                   spawned=[], outbound=[])
+        quiet = [n for n, _why in skipped] + [n for n, _d in acked]
+        if quiet:
+            confirm([n.key for n in quiet])
+            for n in quiet:
+                _mark(args.inbox / n.name, decisions[n.key])
+        kinds = {n.key: ("triage" if decisions[n.key].action == fleet_inbox.TRIAGE
+                         else "inbox") for n in capped}
         fire = None
         if capped and not args.dry_run:
             global FIRE_N
@@ -982,29 +1217,50 @@ def _main(argv: list[str] | None = None) -> int:
             ctx["checklist"] = []
             fire = lw_checklist.Fire(
                 lw_headless_env.FLEET_ROOT, FIRE_TASK, FIRE_N,
-                [(f"N{i + 1}", f"Answer {n.name}"[:lw_checklist.kit_checklist().TASK_MAX])
+                [(f"N{i + 1}", f"{'Triage' if kinds[n.key] == 'triage' else 'Answer'} "
+                               f"{n.name}"[:lw_checklist.kit_checklist().TASK_MAX])
                  for i, n in enumerate(capped)],
                 log=ctx["checklist"].append, kit=lw_headless_env.kit)
             fire.start()
+        answers: dict = {}
         for i, note in enumerate(capped):
+            d, kind = decisions[note.key], kinds[note.key]
             if fire:
-                fire.running(f"N{i + 1}", "headless run", RUN_TIMEOUT_S)
+                fire.running(f"N{i + 1}", "headless run",
+                             TRIAGE_PARAMS["timeout"] if kind == "triage" else RUN_TIMEOUT_S)
             try:
-                outcome = spawn(args.inbox / note.name, dry_run=args.dry_run)
+                outcome = spawn(args.inbox / note.name, dry_run=args.dry_run, kind=kind)
             except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged
                 outcome = Disposition(UNAVAILABLE, "spawn",
                                       f"spawn raised {type(exc).__name__} - not run", False)
-            ctx["spawned"].append({"note": note.name, "verdict": outcome.verdict,
-                                   "reason": outcome.reason, "checked": outcome.checked})
+            entry = {"note": note.name, "kind": kind, "verdict": outcome.verdict,
+                     "reason": outcome.reason, "checked": outcome.checked}
             # Seen AT ONCE, not at the end of the tick: each run is synchronous
             # and can take an hour, and a tick that dies after it must not
             # re-spawn it. A dry run confirms too, but persists nothing.
             if outcome.verdict == AUTO:
+                verdict = None
+                if kind == "triage" and not args.dry_run:
+                    verdict, answer = fleet_inbox.parse_verdict(outcome.result)
+                    entry["triage"] = verdict
+                    if verdict == "ANSWER" and fleet_inbox.may_reply(d.cls, d.hop):
+                        answers.setdefault(d.sender, []).append((note.name, answer, d.hop))
                 confirm([note.key])
+                _mark(args.inbox / note.name, d, verdict)
+            ctx["spawned"].append(entry)
             if fire:
                 fire.complete(f"N{i + 1}")
         if fire:
             fire.close()
+        # ONE note per destination per tick (fleet_inbox.batch_note).
+        for dest, parts in answers.items():
+            try:
+                ctx["outbound"].append(send_answers(dest, parts))
+            except (OSError, ValueError) as exc:
+                ctx["outbound"].append({"to": dest, "sent": False, "parts": len(parts),
+                                        "why": f"{type(exc).__name__}: {exc}",
+                                        "answers": [{"note": n, "text": t}
+                                                    for n, t, _h in parts]})
         return {"delivered": []}            # every advance went through confirm()
 
     def alert(source: str, count: int, detail: str):
@@ -1055,11 +1311,15 @@ def _main(argv: list[str] | None = None) -> int:
         _capped, ctx["budget"] = within_budget([])
     spawned = ctx.get("spawned", [])
     skips = [{"note": n.name, "reason": why} for n, why in ctx.get("skipped", [])]
+    acks = [{"note": n.name, "reason": d.reason} for n, d in ctx.get("acked", [])]
+    outbound = ctx.get("outbound", [])
     deferred = len(ctx.get("mail", [])) - len(ctx.get("capped", []))
     budget = ctx["budget"]
     payload = {"new_notes": len(notes), "dry_run": args.dry_run,
-               "deferred": deferred, "skipped": skips, "spawned": spawned,
-               "budget": budget}
+               "deferred": deferred, "skipped": skips, "acked": acks, "spawned": spawned,
+               "outbound": outbound, "budget": budget}
+    if ctx.get("ledger_error"):
+        payload["ledger_error"] = ctx["ledger_error"]
     if res["outcome"] == "deliver-failed" and res.get("detail"):
         payload["deliver_error"] = res["detail"]
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
@@ -1067,8 +1327,8 @@ def _main(argv: list[str] | None = None) -> int:
     if notes and not args.dry_run:
         extra = {"checklist": ctx["checklist"]} if ctx.get("checklist") else {}
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),
-                      deferred=deferred, skipped=skips, spawned=spawned, budget=budget,
-                      **extra)
+                      deferred=deferred, skipped=skips, acked=acks, spawned=spawned,
+                      outbound=outbound, budget=budget, **extra)
     if not args.dry_run:
         # Refused = this tick tried and launched nothing; the notes stay unseen.
         refused = bool(spawned) and not any(s["verdict"] == AUTO for s in spawned)
