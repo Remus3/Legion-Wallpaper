@@ -27,6 +27,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+279. DONE **2026-10-07 (MAIN ORDER 2237 Console review: Stop gate -> one feedback line; [Legion] statusLine dropped; responder-authored).**
+   Provenance: MAIN note 2026-10-07-2237 sha256
+   d447fa7e8963c9ecbfb33db4ee5f348062b888a354e8e8e7d6d0e87228923b8a, read back on the inbox
+   copy (4504 bytes) and matched to MAIN's outbox copy by the parent responder. Item A (D5 hook
+   output, MAIN-authorized): tools/claimed_green_gate.py now emits exit 0 + one stdout line
+   {"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"claimed_green_gate:
+   <code> x1 - read <report>"}}; no stderr, no top-level decision/reason. Full reason goes
+   atomically to ops/runtime/claimed_green_gate/last_finding.txt (env
+   LW_CLAIMED_GREEN_REPORT_DIR overrides; tests point it at a temp dir). Findings, arm logic,
+   stop_hook_active guard and the retrospective CLI unchanged. Tests: decision_of() now holds
+   EVERY fired test to the shape (one line, <= 160 chars, report path present, report carries
+   the reason); +2 tests (shape + report-only reason; clean path prints nothing, writes no
+   report). Failing-first: 24 failed / 30 passed before the gate change. Read back after the
+   change: a fired gate with the production path printed 1 stdout line, 110-char
+   additionalContext, 0 stderr bytes, exit 0. Live-pane read-back (one "Stop hook feedback"
+   line, model acts on it) needs an interactive session: OPEN. Item B: deleted only the
+   "statusLine" key (lines 23-26, CRLF kept) from gitignored .claude/settings.local.json;
+   read back: key absent, 13 keys remain, every other key/value and order identical (parsed
+   compare); sha256 433100c5... -> 5db9013a.... Pane read-back (acct2 line, no [Legion]) needs
+   the next interactive session: OPEN. Reverse if: the operator wants the red-X dump back, or a
+   documented Stop mode hides a blocking hook entirely.
 278. DONE **2026-10-07 (TRIAGE-WIP finished: item-14 classify-first responder reconciled with the 22 red contracts; branch lw/triage-wip-finish, merged to main by the main session after verifier PASS).**
    Decision: FINISH, not drop. Evidence: the WIP (eb69fef) merged main cleanly; of the 22 reds,
    19 were ONE root cause - every responder test fake had the pre-v8 signature

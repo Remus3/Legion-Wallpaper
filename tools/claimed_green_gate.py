@@ -9,9 +9,13 @@ payload carries BOTH halves of the question - `last_assistant_message` is the
 claim and `transcript_path` is the evidence.
 
 Contract (official hook docs, see docs/MCP_LIFT_DIVE_2026-08-01.md section 3):
-  - a block is exit 0 with top-level {"decision": "block", "reason": ...}, and
-    the reason IS fed back to the model, which is what makes this a gate rather
-    than a log line
+  - a finding is exit 0 with ONE line of {"hookSpecificOutput": {"hookEventName":
+    "Stop", "additionalContext": ...}}. It is fed back to the model and keeps
+    the conversation going exactly like a block, which is what makes this a
+    gate rather than a log line, but the pane shows one "Stop hook feedback"
+    line instead of a "Stop hook error" dump (MAIN ORDER 2026-10-07 2237,
+    operator Console review). The line is <= 160 chars - gate, finding code,
+    count, report path - and the full reason lives in the report file only
   - `stop_hook_active` is COOPERATIVE. The harness does NOT cap the loop; a hook
     that always blocks wedges the session forever. Reading it first is the
     single most important line in this file.
@@ -32,6 +36,7 @@ disabled gate catches nothing. Every ambiguous case here is a test.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shlex
 import sys
@@ -404,8 +409,41 @@ def _user_text(transcript: Path) -> str:
     return "\n".join(chunks)
 
 
+REPORT_ENV = "LW_CLAIMED_GREEN_REPORT_DIR"   # tests point it at a temp dir
+REPORT_DIR = Path(__file__).resolve().parents[1] / "ops" / "runtime" / "claimed_green_gate"
+REPORT_NAME = "last_finding.txt"
+FEEDBACK_MAX = 160
+
+
+def _report_path() -> Path:
+    override = os.environ.get(REPORT_ENV)
+    return (Path(override) if override else REPORT_DIR) / REPORT_NAME
+
+
+def _write_report(reason: str) -> Path:
+    """The full reason, atomically. The feedback line only names this file."""
+    path = _report_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_bytes((reason.rstrip() + "\n").encode("ascii", "replace"))
+    tmp.replace(path)
+    return path
+
+
+def feedback_line(reason: str, report: Path) -> str:
+    """`claimed_green_gate: <code> x1 - read <report>`, one line, <= 160 chars.
+
+    Every reason starts `<code>: ...`, and evaluate() returns at most one.
+    """
+    code = reason.split(":", 1)[0].strip() or "finding"
+    line = " ".join(f"claimed_green_gate: {code} x1 - read {report}".split())
+    return line[:FEEDBACK_MAX]
+
+
 def _block(reason: str) -> int:
-    json.dump({"decision": "block", "reason": reason}, sys.stdout)
+    line = feedback_line(reason, _write_report(reason))
+    json.dump({"hookSpecificOutput": {"hookEventName": "Stop",
+                                      "additionalContext": line}}, sys.stdout)
     sys.stdout.write("\n")
     return 0
 

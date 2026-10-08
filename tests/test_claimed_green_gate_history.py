@@ -315,14 +315,18 @@ def _cli(*args, stdin=""):
                           capture_output=True, text=True)
 
 
-def test_the_hook_path_still_works_with_no_argv_and_a_stdin_payload(tmp_path):
+def test_the_hook_path_still_works_with_no_argv_and_a_stdin_payload(
+        tmp_path, monkeypatch):
     # The regression that adding a CLI invites: argparse eating the hook mode.
+    monkeypatch.setenv(gate.REPORT_ENV, str(tmp_path / "report"))
     t = _transcript(tmp_path, _claim("tests pass"))
     payload = json.dumps({"last_assistant_message": "all tests pass",
                           "transcript_path": str(t)})
     done = _cli(stdin=payload)
     assert done.returncode == 0
-    assert json.loads(done.stdout)["decision"] == "block"
+    spec = json.loads(done.stdout)["hookSpecificOutput"]
+    assert spec["hookEventName"] == "Stop"
+    assert spec["additionalContext"].startswith("claimed_green_gate: claim-no-run")
 
 
 def test_audit_mode_reports_and_never_fails_the_caller(tmp_path):

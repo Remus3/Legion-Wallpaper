@@ -7,7 +7,10 @@ Contract under test, from the official hook docs (docs/MCP_LIFT_DIVE_2026-08-01
 section 3, Item B):
   - input arrives as JSON on stdin with `stop_hook_active`,
     `last_assistant_message` and `transcript_path`
-  - a block is exit 0 with top-level {"decision": "block", "reason": ...}
+  - a finding is exit 0 with ONE line of {"hookSpecificOutput": {"hookEventName":
+    "Stop", "additionalContext": <one line>}} - shown as "Stop hook feedback",
+    not a "Stop hook error" dump (MAIN ORDER 2026-10-07 2237); the full reason
+    goes to a report file the line names
   - `stop_hook_active` is COOPERATIVE - the harness does not cap the loop, so an
     always-block hook wedges the session forever. This is the single most
     important test in the file.
@@ -16,13 +19,30 @@ section 3, Item B):
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
 
 GATE = Path(__file__).resolve().parents[1] / "tools" / "claimed_green_gate.py"
+REPORT_ENV = "LW_CLAIMED_GREEN_REPORT_DIR"
+
+
+@pytest.fixture(autouse=True)
+def report_dir(monkeypatch):
+    """Every fired gate writes its report here, never into the live ops/runtime.
+
+    mkdtemp, not tmp_path: the feedback line carries the full report path and
+    must stay <= 160 chars, and pytest's tmp_path alone can approach that.
+    """
+    path = Path(tempfile.mkdtemp(prefix="cgg"))
+    monkeypatch.setenv(REPORT_ENV, str(path))
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def _line(**kw) -> str:
@@ -112,9 +132,30 @@ def run_gate(payload: dict) -> subprocess.CompletedProcess:
 
 
 def decision_of(proc: subprocess.CompletedProcess) -> dict:
+    """{} when clean; else {"decision": "block", "reason", "line", "report"}.
+
+    Every fired path is held to the feedback shape here, so each existing block
+    test also proves it: one stdout line, exit 0, no stderr, no top-level
+    decision/reason, and a report file that carries the full reason.
+    """
     if not proc.stdout.strip():
         return {}
-    return json.loads(proc.stdout)
+    assert proc.returncode == 0
+    assert proc.stderr == ""
+    lines = proc.stdout.strip().splitlines()
+    assert len(lines) == 1, proc.stdout
+    out = json.loads(lines[0])
+    assert set(out) == {"hookSpecificOutput"}, out
+    spec = out["hookSpecificOutput"]
+    assert spec["hookEventName"] == "Stop"
+    line = spec["additionalContext"]
+    assert "\n" not in line and len(line) <= 160, line
+    assert line.startswith("claimed_green_gate: ")
+    report = Path(os.environ[REPORT_ENV]) / "last_finding.txt"
+    assert str(report) in line, line
+    reason = report.read_text(encoding="ascii")
+    return {"decision": "block", "reason": line + "\n" + reason,
+            "line": line, "report": reason}
 
 
 PASSING = "1537 passed, 16 skipped in 42.10s"
@@ -251,6 +292,31 @@ def test_claim_with_no_run_blocks(tmp_path):
     decision = decision_of(proc)
     assert decision["decision"] == "block"
     assert "claim-no-run" in decision["reason"]
+
+
+def test_fired_gate_is_one_feedback_line_and_the_report_holds_the_reason(
+        tmp_path, report_dir):
+    """MAIN ORDER 2026-10-07 2237: the pane gets one feedback line, not a dump."""
+    transcript = _transcript(tmp_path, _user_text("fix it"))
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "Done - all tests pass.",
+                     "transcript_path": str(transcript)})
+    decision = decision_of(proc)
+    report = report_dir / "last_finding.txt"
+    assert decision["line"] == f"claimed_green_gate: claim-no-run x1 - read {report}"
+    # the full reason is in the report, and ONLY there
+    assert "python -m pytest -q" in decision["report"]
+    assert "python -m pytest -q" not in decision["line"]
+    assert '"decision"' not in proc.stdout and '"reason"' not in proc.stdout
+
+
+def test_clean_path_prints_nothing_and_writes_no_report(tmp_path, report_dir):
+    transcript = _transcript(tmp_path, _user_text("go"))
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "Wrote the docs.",
+                     "transcript_path": str(transcript)})
+    assert (proc.returncode, proc.stdout, proc.stderr) == (0, "", "")
+    assert not (report_dir / "last_finding.txt").exists()
 
 
 def test_claim_with_passing_run_allows(tmp_path):
