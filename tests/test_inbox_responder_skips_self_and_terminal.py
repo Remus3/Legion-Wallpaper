@@ -81,7 +81,7 @@ def spawns(monkeypatch):
     """Every note the cycle tried to spawn on. Never a real process."""
     calls: list[str] = []
 
-    def _fake(path, dry_run=False):
+    def _fake(path, dry_run=False, kind="inbox"):
         calls.append(Path(path).name)
         return responder._auto("spawn", "fake pid")
 
@@ -182,17 +182,21 @@ def test_a_marker_only_head_line_produces_zero_spawns(tmp_path, inbox, spawns, m
     "# From RC - ACK: received, terminal",
     "# From CS - ACK: received. No reply.",
 ])
-def test_a_title_sentence_mentioning_terminal_now_spawns(tmp_path, inbox, spawns, title):
-    """PINNED v4 TRADE-OFF (MAIN 1204 defect 2): a sentence is not a marker.
-    These skipped under v3's substring rule; under v4 they spawn. A rule change
-    that skips them again must change this arm on purpose."""
+def test_a_title_sentence_mentioning_terminal_is_acked_not_skipped(tmp_path, inbox, spawns,
+                                                                    title):
+    """PINNED v4 TRADE-OFF (MAIN 1204 defect 2): a sentence is not a marker, so
+    these are still NOT skipped as terminal. CHANGED ON PURPOSE by FLEET-KIT v8
+    item 14 (MAIN 0310): the note's class is ACK, and an ACK-family note gets a
+    mechanical ack (marked seen + kit ledger line), never a spawn - "never
+    answer an answer". Under v4 alone these spawned."""
     name = "2026-10-03-0910-from-RC-ACK-received.md"
     _write(inbox, name, f"{title}\n\nbody\n")
 
     record = _run(tmp_path, inbox)
 
-    assert spawns == [name]
+    assert spawns == []
     assert record["skipped"] == []
+    assert [a["note"] for a in record["acked"]] == [name]
 
 
 def test_the_three_live_notes_together_spawn_nothing(tmp_path, inbox, spawns):

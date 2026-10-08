@@ -543,7 +543,7 @@ def test_a_refused_note_stays_unseen(tmp_path, capsys, monkeypatch):
                     "--inbox", str(inbox), "--state", str(state)])
     capsys.readouterr()
     (inbox / "2026-10-02-0001-from-RC-fresh.md").write_text("fresh", encoding="utf-8")
-    monkeypatch.setattr(responder, "spawn", lambda p, dry_run=False: responder.Disposition(
+    monkeypatch.setattr(responder, "spawn", lambda p, dry_run=False, kind="inbox": responder.Disposition(
         responder.UNAVAILABLE, "spawn", "headless spawn refused: x unset", True))
     responder.main(["--once", "--runlog", str(runlog),
                     "--inbox", str(inbox), "--state", str(state)])
@@ -1478,7 +1478,7 @@ def test_a_bundle_directory_is_skipped_never_spawned(tmp_path, capsys, monkeypat
     capsys.readouterr()
     calls = []
 
-    def _spawn(path, dry_run=False):
+    def _spawn(path, dry_run=False, kind="inbox"):
         calls.append(Path(path).name)
         return responder._auto("spawn", "fake")
 

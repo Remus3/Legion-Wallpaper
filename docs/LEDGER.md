@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+277. DONE **2026-10-07 (TRIAGE-WIP finished: item-14 classify-first responder reconciled with the 22 red contracts; branch lw/triage-wip-finish, NOT merged to main by the builder).**
+   Decision: FINISH, not drop. Evidence: the WIP (eb69fef) merged main cleanly; of the 22 reds,
+   19 were ONE root cause - every responder test fake had the pre-v8 signature
+   spawn(path, dry_run=False) and raised TypeError on the new kind= keyword (the tick caught it
+   as UNAVAILABLE, so nothing recorded). Fix: the fakes take kind="inbox" (the triage path is
+   still a call to responder.spawn, so the contracts that an ordinary note reaches a headless
+   run all hold - now as a sonnet/low triage run). The remaining 3 were a deliberate semantic
+   change the arm itself said must be changed "on purpose": a note whose class is ACK/ANSWER
+   with "terminal" only in a title sentence is still NOT skipped (v4 trade-off kept) but is now
+   ACKED (marked seen + kit ledger line, zero spawns) per item 14 "never answer an answer";
+   renamed test_a_title_sentence_mentioning_terminal_is_acked_not_skipped. No production logic
+   changed beyond the WIP. Alternatives: drop (rejected - item 14 is a MAIN kit-v8 order and
+   the WIP was complete, only its contracts lagged); a kind-only-for-triage call-shape shim
+   (rejected - hides the new kind contract from the fakes). GAP recorded: TRIAGE_PARAMS
+   overrides the kit's TRIAGE_SPAWN bare=True with bare=False because LW's floors live in hooks
+   (kit check_door refuses --bare there). Verified: responder + inbox + headless + fleet +
+   checklist tests 307 passed; ruff + py_compile clean; full suite in the branch commit body.
+   Reverse if: MAIN withdraws item 14, or a live tick shows triage misclassifying ORDER/FIX mail.
+
 276. DONE **2026-10-07 (stale kit-version pin repaired, local tip pushed, triage WIP parked; commits 55c18c8 + branch wip/inbox-responder-triage eb69fef).**
    Operator ask was "check the inbox and reply if needed"; inbox triage found nothing owed (568
    notes, responder had seen all 579, 0 new, every MAIN ORDER to LW already committed - kit v8
