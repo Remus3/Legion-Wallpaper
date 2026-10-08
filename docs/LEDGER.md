@@ -27,6 +27,33 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+282. DONE **2026-10-08 (MIG-1 worktree prune + move to E: staged; operator order in an attended session).**
+   Operator said "yes for the move to E:" (attended, session 67). MIG-1:
+   abandoned-v6-responder-attempt's 24 uncommitted files WIP-committed on its
+   own branch (d65067f, local only, not pushed - unreviewed), then all 4
+   in-tree worktrees removed and pruned; read back `git worktree list` 5 -> 1
+   line; branches kept. Move: E: is a SECOND physical disk (disk 1, C: is
+   disk 0), 1777 GB free. Pre-seed robocopy C: -> E:\Legion Wallpaper copied
+   133850 files / 70.0 GB (124 failures, all in the worktrees removed
+   mid-copy; the final /MIR purges them). Cutover follows the SS precedent
+   (E:\ss-migrate, C:\Substrate is a junction since 00:27): script
+   E:\lw-migrate\cutover.ps1 (outside git, PS 5.1 ParseFile 0 errors, ASCII,
+   LF) HALTs the responder, disables the 4 LW-* tasks, waits up to 45 min for
+   the operator to close every Claude session in the C: folder, renames C:
+   to "Legion Wallpaper.pre-move-20261008" (renamed, never deleted), mirrors
+   from the frozen copy, checks HEAD + git fsck on E: (rollback rename on any
+   failure), leaves a C: junction -> E: so every hardcoded C: path (55
+   HARDCODED rows from the 2205 inventory) keeps resolving, re-points
+   core.hooksPath, the 4 task actions, 4 Desktop shortcuts and the Claude
+   per-project store (C--Legion-Wallpaper -> E--Legion-Wallpaper, both
+   accounts), re-enables the tasks and writes E:\lw-migrate\RESULT.txt.
+   Alternatives rejected: copy-without-junction (breaks 55 hardcoded rows
+   at once); waiting for MAIN's runbook (operator ordered it now; SS already
+   cut over the same way). FUTURE: de-hardcode the 55 rows, then the junction
+   and the C: pre-move copy can go (Recycle Bin, after a week of green ticks).
+   Reverse: delete the junction, rename the pre-move copy back, re-point the
+   tasks to C:.
+
 281. DONE **2026-10-08 (MAIN ORDER 2354 FLEET-KIT v9: vendor, /done marker, Stop hook, display keys; MIG-1 prune DRAFTED; responder-authored).**
    Provenance: note sha256 6b22e992.. MATCH (inbox == MAIN outbox, 5071 bytes); bundle 16/16 files equal
    across the note's hash table, the inbox copy, MAIN's outbox disk copy and MAIN's COMMITTED blob.

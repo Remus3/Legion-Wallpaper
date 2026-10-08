@@ -19,12 +19,13 @@ Context: main tip pushed this session; triage-first responder (LEDGER 278) is no
 Acceptance: R4 tally recorded with the operator's votes, or still READY and carried;
   READBACK-2237 read back; triage ticks show ORDER/FIX notes escalate to work runs.
 CHECKLIST:
+  - E-MOVE: Read E:\lw-migrate\RESULT.txt + cutover.log; confirm session runs from E:\Legion Wallpaper, C: is a junction, 4 LW-* tasks Ready on E: paths, one responder tick green; report MIG-1 prune 5->1 + move to MAIN in ONE note (LEDGER 282)
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
   - READBACK-2237: In a live session trigger claimed_green_gate once; confirm ONE "Stop hook feedback" line, no "Stop hook error" block, model acts on it; confirm the acct2 status line shows and no [Legion] line (LEDGER 279)
   - TRIAGE-LIVE: Read inbox-responder progress + headless_usage.jsonl; confirm ORDER/FIX escalate and ACK/ANSWER ack with no spawn
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - CAMPAIGN-IMPORT: Fix tests/test_lw_recover_campaign.py failing to collect alone (import lw_paths, tools/lw_recover_campaign.py:52)
-  - MIG-1: Attended: WIP-commit the 16 unique files in worktrees/abandoned-v6-responder-attempt on its branch, then git worktree remove x4 + prune; read back git worktree list = 1 line (LEDGER 281)
+  - DEHARDCODE: Make the 55 HARDCODED C: rows (MAIN 2205 inventory) derive from lw_paths, then plan junction + C: pre-move copy retirement (Recycle Bin)
   - KIT-V9-READBACK: In a live session run /done once; confirm fleet_done.py validate prints DONE and the Stop hook sets the tab title (LEDGER 281)
 Carried forward:
   - TRIAGE (LEDGER 278) risks: never run on live mail before merge; a misclassified
@@ -71,9 +72,9 @@ Carried forward:
     Wait for MAIN; do not patch the kit.
   - FLEET-KIT v9 vendored by the responder 2026-10-08 (422d4c9, LEDGER 281): /done's
     last act is fleet_done.py mark; Stop hook fleet_done.py stop-hook; display keys
-    live only in account settings. MIG-1 worktree prune DRAFTED (D4 floor) - see the
-    MIG-1 checklist item; 3 worktrees clean, abandoned-v6 holds 16 unique files.
-    MAIN moves the repo to E: later; nothing else changes now.
+    live only in account settings. MIG-1 DONE session 67
+    (abandoned-v6 WIP on its branch d65067f, local only; worktree list 5 -> 1).
+    Repo moved to E: by operator order session 67 (LEDGER 282); C: is a junction.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
