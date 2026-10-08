@@ -90,8 +90,8 @@ RUNTIME_CLEAN = ROOT + r"\ops\runtime\clean"
 
 SYS_PY = lw_paths.system_python()
 PIPELINE = TOOLS + r"\lw_pipeline.py"
-CLEAN_VENV_PY = r"C:\Tools\lw-clean\venv\Scripts\python.exe"
-WEIGHTS_PATH = r"C:\Tools\lw-clean\yolo11x-train28-best.pt"
+CLEAN_VENV_PY = str(lw_paths.tools_dir() / "lw-clean" / "venv" / "Scripts" / "python.exe")
+WEIGHTS_PATH = str(lw_paths.tools_dir() / "lw-clean" / "yolo11x-train28-best.pt")
 
 # CREATE_NO_WINDOW: 0 on non-Windows so the module still imports/tests in CI.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)

@@ -28,7 +28,9 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-VENV_PY = r"C:\Tools\lw-clean\venv\Scripts\python.exe"
+import lw_paths  # noqa: E402  (path shim above)
+
+VENV_PY = str(lw_paths.tools_dir() / "lw-clean" / "venv" / "Scripts" / "python.exe")
 WORKER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       "lw_clean_iopaint.py")
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)

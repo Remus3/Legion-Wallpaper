@@ -27,6 +27,45 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+287. DONE **2026-10-08 (DEHARDCODE-REST 15 rows decided + RETIRE-JUNCTION: LW externals all on E:, junction-off proof cycle green, junction RESTORED for 6 sibling rows; MAIN asked).**
+   A. DEHARDCODE-REST, the 15 rows LEDGER 283 left. DERIVED 7: lw_paths.tools_dir() (new; LW_TOOLS_DIR, else
+   %SystemDrive%\Tools) now feeds lw_clean_lane.VENV_PY, lw_clean_pass.CLEAN_VENV_PY + WEIGHTS_PATH,
+   lw_upscale.NCNN_EXE_DEFAULT (inline mirror, keeps its PIL+numpy+stdlib import contract; a test pins it equal
+   to the resolver) and tests/test_lw_recover_replay MOCKD default; the two RC prose rows in ops/loop/config.gate.json
+   + config.p5.json now forbid "the Riot Commander tree (wherever it lives)" - RC itself moved to E: since 283, so a
+   drive-pinned prohibition would have stopped fencing it. KEPT 8: 4 .claude/commands prose lines (cleaning-pass:20,
+   first-pass:21, pipeline-status:40-41) document the real install location; ops/loop/slots.py:40 (byte-identical
+   across 5 carriers - not edited alone; derive-from-%ProgramData% proposed to MAIN for the next joint round) and
+   the 3 config*.json _lanes_note prose lines that mirror it (reword when slots.py changes, never before).
+   Alternatives: keep all C:\Tools literals (rejected: 5 copies of one machine fact, no override); derive tools from
+   repo_root (rejected: C:\Tools did not move). TDD: tests/test_lw_paths_tools_dir.py written first, 5 failed red,
+   6 pass green (override, system-drive default, C: fallback, every site follows LW_TOOLS_DIR in a fresh child,
+   upscale inline == resolver, no tracked .py assigns a C:\Tools literal).
+   B. RETIRE-JUNCTION. Read back, all already on E: (the 282 cutover did them): LW-CIWatchdog / LW-InboxResponder /
+   LW-Wallpaper / LW-WeeklyHygiene actions + working dirs; Desktop 0.Originals, LW-NEXT-SESSION (target + wd),
+   Wallpaper repo, LW Monitor (args + wd); LW Run Dashboard is a Chrome app (no path); core.hooksPath; worktree
+   list 1 line. 0 LW env vars (User + Machine), 0 HKCU/HKLM Run entries, no tailscale serve config, 0 hits in
+   either account's settings.json. FIXED: account-1 ~/.claude.json had NO E: project entry (only 3 C: spellings) -
+   added "E:/Legion Wallpaper" as a copy of the C: entry (trust True) and prepended the E: path to githubRepoPaths
+   (backup .claude.json.bak-2026-10-08-lw-junction287; read back after 20 s: E: key present). Account 2 already had
+   both; plugin projectPath rows already have E: twins in both accounts (C: rows left, inert). LW-Cutover-E stays
+   Disabled (one-shot, points at E:\lw-migrate; retire with the pre-move copy). LW-WeeklyHygiene NOT triggered: it
+   spawns a headless doc-editing claude that commits into this tree while two agents work here; its path derives
+   from $PSScriptRoot. PROOF: junction renamed C:\Legion Wallpaper -> .junction-off 18:31:20 local, restored 18:37:13.
+   In the window, runlog: LW-InboxResponder 23:31:56Z + 23:36:56Z ok, LW-Wallpaper 23:31:57Z + 23:34:57Z ok,
+   LW-CIWatchdog 23:32Z + 23:36Z halted (its own HALT, by design), every Last Result 0; full suite fresh with the
+   junction off exit 0, 4088 passed / 19 skipped; files written in the window naming the C: root: 0 new (one old
+   line in operator_tasks/events.jsonl). No sibling outbox wrote a note in the window. WHY RESTORED: 6 rows in other
+   trees still address LW at the C: root - RC + RSC ops/moon_sync_repos.json (gitignored, 2 rows each), SS
+   ops/loop/control/channel_roster.json (gitignored), LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN
+   tests/test_fleet_kit_v6_lanes.py:108 (would SKIP silently). Leaving it off would break every inbound note.
+   Gitignored LW records (images manifests, data/recovery/hashes.json, ops/runtime censuses) still carry C: paths:
+   history, not config; hashes.json is a Tier-0 cache to re-key when it is next rebuilt.
+   C. NOTE: 2026-10-08-1837-from-LW-REPORT-to-MAIN-junction-retire-blocked-by-6-sibling-rows-on-LW-old-root-slots-py-
+   derive-proposal.md (HOP 1, REPORT, 2 requests), reached 1/1 (sha256 12871030.. re-hashed equal), cap 5/6.
+   Pre-move copy C:\Legion Wallpaper.pre-move-20261008 untouched (soak). Reverse if: the junction may be retired
+   once all 6 sibling rows read back on E: (rename, soak, then Recycle Bin with the pre-move copy).
+
 286. DONE **2026-10-08 (read-backs: KIT-V9 /done marker PASS, TRIAGE-ACK arm still unobserved, inbox drained 220 -> 0 + stdin shutdown crash fixed, RC half-move closed + no-git guard).**
    KIT-V9-READBACK PASS. Read back: ops/loop/control/session_done.json = S67, status done,
    safe_to_clear true, session_id 193a5aac.., commit 2f1b070, handoff_sha256 b9875716.. which equals

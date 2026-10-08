@@ -29,7 +29,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
 import lw_recover  # noqa: E402
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "deviantart")
-MOCKD = os.environ.get("LW_MOCKD_BIN", r"C:\Tools\mockd\mockd.exe")
+import lw_paths  # noqa: E402
+
+MOCKD = os.environ.get("LW_MOCKD_BIN",
+                       str(lw_paths.tools_dir() / "mockd" / "mockd.exe"))
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 # The recorded pair. `pebano1/1337184659` is the SOURCE_RECOVERY 2.2 worked

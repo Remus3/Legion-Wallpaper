@@ -229,8 +229,14 @@ ASPECT_TOL = 0.02
 DEFAULT_TILE = 512
 DEFAULT_OVERLAP = 32
 
-# Default ncnn fallback executable location on the Legion machine.
-NCNN_EXE_DEFAULT = r"C:\Tools\realesrgan\realesrgan-ncnn-vulkan.exe"
+# Default ncnn fallback executable location on the Legion machine, under the
+# shared tools root. Mirrors tools/lw_paths.tools_dir() (LW_TOOLS_DIR, else
+# %SystemDrive%\Tools) inline rather than importing it, to keep this module's
+# PIL + numpy + stdlib import contract under .venv-upscale; a test pins the two
+# equal (tests/test_lw_paths_tools_dir.py).
+_TOOLS_DIR = _Path(os.environ.get("LW_TOOLS_DIR")
+                   or (os.environ.get("SystemDrive") or "C:") + "\\Tools")
+NCNN_EXE_DEFAULT = str(_TOOLS_DIR / "realesrgan" / "realesrgan-ncnn-vulkan.exe")
 
 # CREATE_NO_WINDOW: Legion focus-steal rule - always pass it so a background
 # subprocess does not flash a console window or steal focus. getattr guard so

@@ -51,6 +51,19 @@ def sibling_repo(name: str) -> Path:
     return (Path(base) if base else repo_root().parent) / name
 
 
+def tools_dir() -> Path:
+    """The shared machine tools root (lw-clean venv + YOLO weights, realesrgan,
+    mockd). `LW_TOOLS_DIR` when set, else `%SystemDrive%\\Tools`.
+
+    It did NOT move with the repo on 2026-10-08 (it is machine-wide, on the
+    system drive), so it is derived from the system drive, not from repo_root().
+    """
+    override = os.environ.get("LW_TOOLS_DIR")
+    if override:
+        return Path(override)
+    return Path((os.environ.get("SystemDrive") or "C:") + "\\") / "Tools"
+
+
 def user_home() -> Path:
     """The operator profile directory. USERPROFILE, then Path.home()."""
     return Path(os.environ.get("USERPROFILE") or Path.home())
