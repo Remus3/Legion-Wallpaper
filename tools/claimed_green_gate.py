@@ -53,6 +53,27 @@ GREEN_CLAIM = re.compile(
     re.I | re.X,
 )
 
+# A green phrase governed by a conditional IN THE SAME CLAUSE is a plan, not a
+# claim: "Merge Dependabot PR #1 once its CI is green" blocked a Stop on
+# 2026-10-07. The cue must sit between the last clause boundary and the match,
+# so "After the push, CI is green." is still a claim (the comma closes the
+# conditional clause) and a real claim elsewhere in the turn still counts.
+CONDITIONAL_CUE = re.compile(
+    r"\b(once|when(ever)?|until|till|after|if|unless|wait(ing)?\s+for)\b",
+    re.I,
+)
+_CLAUSE_BOUNDARY = re.compile(r"[.;:,!?\n]")
+
+
+def _claims_green(text: str) -> bool:
+    """True when at least one green phrase is NOT inside a conditional clause."""
+    for match in GREEN_CLAIM.finditer(text):
+        before = _CLAUSE_BOUNDARY.split(text[:match.start()])[-1]
+        if not CONDITIONAL_CUE.search(before):
+            return True
+    return False
+
+
 # A turn that REPORTS failures is not a turn CLAIMING green, even though the
 # count line it quotes contains "N passed". The retrospective sweep caught this
 # repo's own TDD reports - "Failing-first confirmed (12 failed / 4 passed)" -
@@ -421,7 +442,7 @@ def assess_claim(actions: list, claim: str):
 
     Returns None when the claim is not green or when the evidence backs it.
     """
-    if not isinstance(claim, str) or not GREEN_CLAIM.search(claim):
+    if not isinstance(claim, str) or not _claims_green(claim):
         return None
     if RED_REPORT.search(claim) or HEDGED.search(claim):
         return None
@@ -474,7 +495,7 @@ def evaluate(payload: dict) -> str | None:
         return bypass
 
     claim = payload.get("last_assistant_message")
-    if not isinstance(claim, str) or not GREEN_CLAIM.search(claim):
+    if not isinstance(claim, str) or not _claims_green(claim):
         return None
 
     if WAIVER.search(_user_text(transcript)):
@@ -505,7 +526,7 @@ def _audit(transcript: Path):
         if kind == "action":
             actions.append(event)
             continue
-        if (not GREEN_CLAIM.search(event) or RED_REPORT.search(event)
+        if (not _claims_green(event) or RED_REPORT.search(event)
                 or HEDGED.search(event)):
             continue
         claims += 1
