@@ -98,7 +98,7 @@ DEFAULT_STRAY_KEY = "C--LegionWallpaper"
 LIVE_WINDOW_S = 120
 
 #: Backups land here, one `<uuid>.canon.bak` per unioned file.
-DEFAULT_BACKUP_DIR = Path(r"C:\Legion Wallpaper\ops\runtime\transcript_union")
+DEFAULT_BACKUP_DIR = Path(__file__).resolve().parents[1] / "ops" / "runtime" / "transcript_union"
 
 
 class Refusal(Exception):

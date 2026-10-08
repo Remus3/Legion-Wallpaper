@@ -11,7 +11,7 @@
 # `claude -p` invocation pattern (RC lineage: tools/headless_run.ps1).
 #
 # Usage (manual):
-#   powershell -ExecutionPolicy Bypass -File "C:\Legion Wallpaper\tools\weekly_hygiene_run.ps1"
+#   powershell -ExecutionPolicy Bypass -File "<repo root>\tools\weekly_hygiene_run.ps1"
 
 # No -Model parameter since fleet kit v3 (2026-10-03): the kit picks the model
 # from writes_code, and this pass is relocate-only trims + a staleness scan,

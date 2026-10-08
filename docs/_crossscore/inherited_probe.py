@@ -20,7 +20,8 @@ import re
 import subprocess
 import sys
 
-RSC = r"C:\Resin Compute"
+# RSC is a sibling tree beside LW's root (docs/_crossscore -> parents[2]).
+RSC = str(pathlib.Path(__file__).resolve().parents[3] / "Resin Compute")
 ROWS = pathlib.Path(RSC) / "docs" / "REFUTATION_ROWS.md"
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))

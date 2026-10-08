@@ -19,7 +19,7 @@ import html
 import json
 import os
 
-RUNTIME = r"C:\Legion Wallpaper\ops\runtime\clean"
+RUNTIME = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ops", "runtime", "clean")
 
 
 def load_record(slug, runtime=RUNTIME):

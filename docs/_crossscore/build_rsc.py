@@ -9,7 +9,9 @@ import collections
 import pathlib
 import re
 
-SRC = pathlib.Path(r"C:\Resin Compute\docs\REFUTATION_ROWS.md")
+# RSC is a sibling tree beside LW's root (docs/_crossscore -> parents[2]).
+SRC = (pathlib.Path(__file__).resolve().parents[3] / "Resin Compute" / "docs"
+       / "REFUTATION_ROWS.md")
 OUT = pathlib.Path(__file__).parent
 
 KEEP = ("citation", "claim", "refutation", "artifact", "ledgered",

@@ -461,7 +461,8 @@ def resolve_sibling_root(configured):
 
 
 SHARED_LOOP_FILES = ("ops/loop/slots.py", "ops/loop/winmutex.py")
-SIBLING_REPO = pathlib.Path(r"C:\Riot Commander")
+# Derived beside this checkout, never a drive literal (2026-10-08 C: -> E: move).
+SIBLING_REPO = lw_paths.sibling_repo("Riot Commander")
 
 
 def check_shared_loop_files() -> None:

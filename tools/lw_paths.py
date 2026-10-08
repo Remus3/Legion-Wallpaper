@@ -34,6 +34,23 @@ from pathlib import Path
 PINNED_PYTHON_DIR = "Python314"
 
 
+def repo_root() -> Path:
+    """This checkout's root, from this file's location - never a drive literal.
+
+    The 2026-10-08 C: -> E: move left C: as a junction, and every tracked
+    drive-letter spelling of this root silently depended on it.
+    `tests/test_no_hardcoded_c_paths.py` keeps new literals out.
+    """
+    return Path(__file__).resolve().parent.parent
+
+
+def sibling_repo(name: str) -> Path:
+    """A sibling fleet tree (e.g. "Riot Commander"), assumed to sit beside this
+    one. `LW_SIBLINGS_DIR` overrides the parent directory for a split layout."""
+    base = os.environ.get("LW_SIBLINGS_DIR")
+    return (Path(base) if base else repo_root().parent) / name
+
+
 def user_home() -> Path:
     """The operator profile directory. USERPROFILE, then Path.home()."""
     return Path(os.environ.get("USERPROFILE") or Path.home())

@@ -39,7 +39,7 @@ import json
 import os
 import sys
 
-ROOT = r"C:\Legion Wallpaper"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STAGES = (
     os.path.join(ROOT, "images", "3.Cleaning Scratch"),
     os.path.join(ROOT, "images", "4.Cleaning Done"),

@@ -55,7 +55,7 @@ from lw_g1_gate import DEFAULT_G1_THRESHOLDS, verdict  # noqa: E402
 # --------------------------------------------------------------------------
 # Paths (Legion machine, mirrored from the validated seed scripts).
 # --------------------------------------------------------------------------
-ROOT = r"C:\Legion Wallpaper"
+ROOT = str(lw_paths.repo_root())
 TOOLS = ROOT + r"\tools"
 IMAGES = ROOT + r"\images"
 FIRST_SCRATCH = IMAGES + r"\1.First Pass Scratch"

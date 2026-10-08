@@ -10,10 +10,8 @@ import collections
 import pathlib
 
 SCRATCH = pathlib.Path(__file__).parent / "_crossscore"
-RC_ROWS = pathlib.Path(
-    r"C:\Legion Wallpaper\moon_sync_inbox"
-    r"\2026-09-13-from-RC-REFUTATION_COST_ROWS_PINNED.md"
-)
+RC_ROWS = (pathlib.Path(__file__).resolve().parents[1] / "moon_sync_inbox"
+           / "2026-09-13-from-RC-REFUTATION_COST_ROWS_PINNED.md")
 
 IN_FAMILY = {
     "GATE-EXISTING", "GATE-ABSENT", "GATE-FIRED-IGNORED",

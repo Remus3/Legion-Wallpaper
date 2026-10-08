@@ -10,9 +10,8 @@ import re
 import pathlib
 import collections
 
-SRC = pathlib.Path(
-    r"C:\Legion Wallpaper\moon_sync_inbox"
-    r"\2026-09-13-from-RC-REFUTATION_COST_ROWS_PINNED.md")
+SRC = (pathlib.Path(__file__).resolve().parents[2] / "moon_sync_inbox"
+       / "2026-09-13-from-RC-REFUTATION_COST_ROWS_PINNED.md")
 OUT = pathlib.Path(__file__).parent
 
 KEEP = ("entry", "claim", "quote", "refuter", "uncertain", "pin_gap")

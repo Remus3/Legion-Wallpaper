@@ -74,9 +74,10 @@ def _lint_python() -> str:
         return exe
 
 
-# Anchor for the Legion Wallpaper repo - final fallback when the root cannot
+# Anchor for the Legion Wallpaper repo (derived from this file, never a
+# drive literal) - final fallback when the root cannot
 # be resolved from the command or the hook's CWD.
-_LW_ROOT = r"C:\Legion Wallpaper"
+_LW_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def fallback_root() -> str:
@@ -84,12 +85,13 @@ def fallback_root() -> str:
 
     `CLAUDE_PROJECT_DIR` is what the harness exports into every hook process
     (measured on CLI 2.1.251), so it names the tree actually being edited. It is
-    tried BEFORE the literal, which stays as the genuine final resort: this gate
-    also runs from `.githooks/pre-commit`, from a test fixture and by hand, and
-    the arms above it (`-C <path>` in the command, then `git rev-parse
-    --show-toplevel` in the hook's CWD) already answer correctly whenever there
-    is a repository at all. Removing the literal would leave the no-git-at-all
-    case with nothing, which is why it is kept rather than replaced.
+    tried BEFORE this file's own checkout, which stays as the genuine final
+    resort: this gate also runs from `.githooks/pre-commit`, from a test fixture
+    and by hand, and the arms above it (`-C <path>` in the command, then `git
+    rev-parse --show-toplevel` in the hook's CWD) already answer correctly
+    whenever there is a repository at all. The last rung used to be a C: drive
+    literal; since the 2026-10-08 move to E: it is derived from `__file__`, so
+    the no-git-at-all case still has an answer and it is the right tree.
     """
     return os.environ.get("CLAUDE_PROJECT_DIR") or _LW_ROOT
 
