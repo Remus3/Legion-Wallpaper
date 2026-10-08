@@ -124,7 +124,7 @@ def test_a_spawning_cycle_is_recorded(tmp_path, monkeypatch):
     _baseline(tmp_path, inbox)
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "pid 4242"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "pid 4242"))
 
     assert _run(tmp_path, inbox) == 0
 
@@ -143,7 +143,7 @@ def test_the_record_carries_the_rule_and_whether_the_gate_could_check(tmp_path, 
     inbox = _inbox(tmp_path, "2026-09-11-0001-from-RC-hello.md")
     _baseline(tmp_path, inbox)
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
-    monkeypatch.setattr(responder, "spawn", lambda p, dry_run=False: responder.Disposition(
+    monkeypatch.setattr(responder, "spawn", lambda p, dry_run=False, kind="inbox": responder.Disposition(
         responder.UNAVAILABLE, "spawn", "claude CLI is not on PATH", False))
 
     _run(tmp_path, inbox)
@@ -164,7 +164,7 @@ def test_every_record_carries_a_real_utc_timestamp(tmp_path, monkeypatch):
     _baseline(tmp_path, inbox)
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "pid 1"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "pid 1"))
     before = dt.datetime.now(dt.UTC).replace(microsecond=0)
 
     _run(tmp_path, inbox)
@@ -184,7 +184,7 @@ def test_a_deferred_remainder_is_recorded(tmp_path, monkeypatch):
     for i in range(responder.MAX_SPAWNS_PER_CYCLE + 2):
         (inbox / f"2026-09-11-001{i}-from-CS-burst-{i}.md").write_text("x\n", encoding="utf-8")
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "pid 1"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "pid 1"))
 
     _run(tmp_path, inbox)
 
@@ -246,7 +246,7 @@ def test_a_dry_run_writes_nothing(tmp_path, monkeypatch):
     _baseline(tmp_path, inbox)
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "would launch"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "would launch"))
 
     assert _run(tmp_path, inbox, "--dry-run") == 0
 
@@ -266,7 +266,7 @@ def test_an_unwritable_log_does_not_stop_the_cycle(tmp_path, monkeypatch):
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
     spawned: list[Path] = []
 
-    def _spawn(path, dry_run=False):
+    def _spawn(path, dry_run=False, kind="inbox"):
         spawned.append(path)
         return responder._auto("spawn", "pid 7")
 
@@ -290,7 +290,7 @@ def test_a_log_failure_is_reported_and_never_read_as_a_clean_cycle(tmp_path, cap
     capsys.readouterr()
     (inbox / "2026-09-11-0002-from-CS-second.md").write_text("x\n", encoding="utf-8")
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "pid 7"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "pid 7"))
     monkeypatch.setattr(responder, "_append_runlog",
                         lambda *a, **k: (_ for _ in ()).throw(OSError("read-only fs")))
 
@@ -310,7 +310,7 @@ def test_the_log_appends_and_never_rewrites(tmp_path, monkeypatch):
     inbox = _inbox(tmp_path, "2026-09-11-0000-from-RC-baseline.md")
     _baseline(tmp_path, inbox)
     monkeypatch.setattr(responder, "spawn",
-                        lambda p, dry_run=False: responder._auto("spawn", "pid 1"))
+                        lambda p, dry_run=False, kind="inbox": responder._auto("spawn", "pid 1"))
 
     for i in range(3):
         (inbox / f"2026-09-11-000{i + 1}-from-CS-n{i}.md").write_text("x\n", encoding="utf-8")

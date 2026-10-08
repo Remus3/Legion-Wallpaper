@@ -59,7 +59,7 @@ def spawns(monkeypatch):
     """Every note the cycle tried to spawn on, in order. Never a real process."""
     seen: list[str] = []
 
-    def _fake(path, dry_run=False):
+    def _fake(path, dry_run=False, kind="inbox"):
         seen.append(Path(path).name)
         return responder._auto("spawn", "fake pid")
 
