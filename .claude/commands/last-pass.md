@@ -6,7 +6,7 @@ description: Stage 4 last pass - fresh-eyes regression against ALL prior milesto
 > 1. **Spec first:** a Plan/design subagent emits the regression plan (which milestones exist per slug, which comparisons run) BEFORE any verdicts; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, the actual milestone files on disk) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-image regression subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-comparison reruns may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 2.8: fresh-eyes regression, no new editing beyond reverts), `docs/research/AUDIT_GATES.md` (gate ladder 5.1, milestone regression 5.4). This stage is an AUDIT with revert authority, not an editing stage - if something regressed, revert to the milestone that had it right; do not craft new fixes here.
 

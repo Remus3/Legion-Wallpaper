@@ -27,6 +27,39 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+284. DONE **2026-10-08 (MAIN ORDER 0839 FLEET-KIT v10: vendor, SUBAGENT-FIRST hook in log mode, emit(), gap B closed; responder-authored).**
+   Provenance: note sha256 0d0501c6.. MATCH (inbox == MAIN outbox, 7036 bytes); bundle 17/17 files equal
+   across the note's hash table, the inbox copy and MAIN's COMMITTED blob (kit verify_main 17/17 True).
+   VENDOR: 17 files byte-for-byte (cp, sha256 re-read 17/17 = MANIFEST v10); MANIFEST.json sha256
+   cbc8b7de.. -> ae3c91ad..; common block a8de1743.. -> 9dfb40e3.. (banner: no quick-read exception)
+   re-embedded byte-identical. Pins 9 -> 10: test_fleet_kit_conformance, test_headless_env,
+   test_promise_probe_fleet_kit, tools/lw_promise_probes.FLEET_KIT_VERSION.
+   HOOK (new tests/test_fleet_kit_v10_wiring.py, red first: 2 failed / 1 passed): PreToolUse matcher
+   `Bash|PowerShell|Read|Edit|Write|Grep|Glob|NotebookEdit|MultiEdit`,
+   `python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_subagent_first.py"`, timeout 10. DECISION: `python`
+   not `pythonw` (a deny is a JSON decision on stdout; pythonw discards stdout) and $CLAUDE_PROJECT_DIR
+   anchoring (test_hook_commands_are_env_anchored) instead of the order's bare relative path - same
+   project-relative script. Mode file `ops/loop/control/subagent_first.mode` = `log`; it and the jsonl
+   are gitignored by the existing `ops/loop/control/*` rule (check-ignore pattern column read back).
+   Live read-back: a probe call logged `would-deny` thread main mode log, exit 0, no stdout.
+   CAVEAT for the 3-session deny count: this responder run was spawned by the v9 kit (no
+   FLEET_SUBAGENT_FIRST=off), so its own main-thread calls logged ~49 would-deny rows on 2026-10-08;
+   they are a headless run, not interactive work, and do not count. New arm: every LW headless child
+   gets FLEET_SUBAGENT_FIRST=off from kit v10 child_env, a parent `deny` included (v9 kit: 0 hits).
+   STEP 4: all 22 .claude/commands/*.md SUBAGENT-FIRST blocks lose their item-4 inline exception and
+   dispatch the whole skill to ONE sub-agent (two new arms in the v10 wiring test, red first).
+   STEP 5: tools/lw_checklist._out prints through kit fleet_checklist.emit() (cp1252 -> "[ ]", no
+   stdout -> nothing); arm red on the old code, green on the new. No headless path off the kit
+   (conformance [] and every LW spawn already goes through kit.spawn / child_env).
+   GAP B CLOSED: kit _run now passes a literal creationflags= (its parameter, default _NO_WINDOW).
+   tools/lw_window_guard resolves a Name through the innermost enclosing def's parameter default
+   (a no-default parameter shadows a module constant and fails closed); the kit-file exemption is
+   retired. 4 new resolver arms + 1 kit-file arm, red first (5 of 6 new/changed arms failed).
+   WATCH TRIPWIRE fired as designed: kit run_source gained partial, confirm_arg, baseline, persist
+   (+ FlatSeenState) but NOT `prune`; swap stays deferred (LEDGER 273) and the tripwire is re-armed on
+   `prune`. Suite: first run exit 1 (4 failed, 4066 passed, 19 skipped: the 3 gap-B arms + tripwire),
+   after the fixes exit 0, 4076 passed, 19 skipped. ANSWER to MAIN in one note (HOP: 2).
+
 283. DONE **2026-10-08 (session 67: E-MOVE read back, MIG-1 + move reported to MAIN, CAMPAIGN-IMPORT, DEHARDCODE 40/55).**
    E-MOVE read back: E:\lw-migrate\RESULT.txt "CUTOVER OK" 00:45; C:\Legion Wallpaper
    is a Junction -> E:\Legion Wallpaper; LW-CIWatchdog / LW-InboxResponder /

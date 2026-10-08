@@ -8,9 +8,13 @@ and an UNAVAILABLE note (kit delivery is all-or-nothing), swallow the CI
 watchdog's first red sha (the kit always baselines), write state on dry runs,
 and raise WatchStateCorrupt on both live state files.
 
-This test is GREEN while the vendored kit lacks the extensions, and goes RED the
-day a kit fleet_watch.run_source gains them - the signal to re-open the swap
-(migrate the two state files, read each caller back live, delete lw_watch.py).
+Kit v10 (MAIN 0839) fired the first tripwire: run_source gained partial,
+confirm_arg, baseline and persist (plus FlatSeenState for the legacy flat seen
+file). It still lacks `prune` (LW keeps seen pruned to the live source), so the
+swap stays deferred and the tripwire is RE-ARMED on the one missing extension:
+GREEN while the kit lacks `prune`, RED the day it lands - the signal to re-open
+the swap (migrate the two state files, read each caller back live, retire
+lw_watch.py; the retirement is a deletion and goes to the Recycle Bin).
 """
 from __future__ import annotations
 
@@ -20,6 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTENSIONS = ("baseline", "persist", "prune", "confirm_arg")
+KIT_V10_CARRIES = ("partial", "confirm_arg", "baseline", "persist")
+STILL_MISSING = ("prune",)
 
 
 def _kit_watch():
@@ -36,9 +42,15 @@ def test_lw_still_carries_its_own_watcher_with_the_extensions():
         assert f"{name}:" in lw or f"{name}=" in lw, name
 
 
-def test_the_kit_watcher_still_lacks_the_extensions_else_reopen_the_swap():
+def test_the_kit_watcher_carries_what_v10_shipped():
     params = inspect.signature(_kit_watch().run_source).parameters
-    gained = [n for n in EXTENSIONS if n in params]
+    assert [n for n in KIT_V10_CARRIES if n not in params] == []
+    assert hasattr(_kit_watch(), "FlatSeenState")
+
+
+def test_the_kit_watcher_still_lacks_prune_else_reopen_the_swap():
+    params = inspect.signature(_kit_watch().run_source).parameters
+    gained = [n for n in STILL_MISSING if n in params]
     assert gained == [], (
         f"kit fleet_watch.run_source gained {gained}: re-open the deferred swap "
         f"(LEDGER 273) - migrate the responder and CI-watchdog state files, read "

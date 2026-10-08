@@ -6,7 +6,7 @@ description: Stage 5 end review - deep audit of the 5-milestone set in 8.End Rev
 > 1. **Spec first:** a Plan/design subagent emits the audit plan (slugs queued, milestone completeness, which checks run, vision-audit budget) BEFORE any verdicts; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, the actual 8.End Review sets on disk) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-slug audit subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any PASS/FAIL is recorded.
-> 4. Trivial single-slug re-audits may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (T7 FINALIZE, T7r demotion, FM-10/FM-12), `docs/research/AUDIT_GATES.md` (G3 vision audit section 4, ladder 5.1, ledger 5.2). This is the deep audit of all five milestones TOGETHER: drift across stages, regression vs `_firstinitial` intent, watermark recurrence.
 

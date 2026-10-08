@@ -6,7 +6,7 @@ description: Stage 1 first pass - best-source selection, ONE AI upscale (Illustr
 > 1. **Spec first:** a Plan/design subagent emits the per-image plan (chosen source, upscaler, scale factor, USM params) BEFORE any processing; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, actual file dimensions) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-image worker subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-image reruns may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 2.8, T3/T4), `docs/research/UPSCALE_TOOLCHAIN.md` (model ladder + install), `docs/research/AUDIT_GATES.md` (G1 gate, section 5.1). Stage doctrine: NEVER double-resample (the old pipeline's softness bug) - exactly ONE AI upscale then exactly ONE Lanczos downscale.
 

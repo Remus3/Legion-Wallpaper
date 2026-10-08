@@ -4,7 +4,7 @@
 > 1. **Spec first:** a Plan/design subagent (or the Gemini director) emits the spec/plan BEFORE any code; verify it vs ground truth (grep cited file:line, `ops/runtime/health.json` when it exists, git) - never scaffold on assumptions.
 > 2. **New session:** interview the Gemini director (or the operator if Gemini is down) for intent + acceptance criteria, re-probe live state, THEN build.
 > 3. **Act via subagents:** worktree-isolated build agents on disjoint files (sole merger) + a read-only `verifier` subagent gate before any merge or "done".
-> 4. Trivial one-line cosmetic edits may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol" + memory `feedback_subagent_first_protocol`.
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 One self-contained pass: select the next LW batch, implement it, prove it green,
 bump the version, ship it, verify live, hand off. Run end to end without stopping

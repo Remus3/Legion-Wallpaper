@@ -6,7 +6,7 @@ description: Pipeline status board - run lw_pipeline scan + status, show per-sta
 > 1. **Spec first:** status reporting is read-only, so the spec step collapses to grounding - every number in the board comes from a live probe (`tools/lw_pipeline.py scan`/`status`, `ops/runtime/pipeline_state.json`, directory listings), never from memory or a stale doc.
 > 2. **New session:** re-probe live state before summarizing; never carry counts forward from a prior session or another agent's report.
 > 3. **Act via subagents:** a single read-only probe subagent may gather the board in parallel slices; anything MUTATING that this board surfaces (anomaly fixes, intakes) is spun off to the owning stage command, not done inline here.
-> 4. This command inlines freely - it is trivial-read territory (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception, a read-only status board included. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (scan/status CLI, anomaly classes, state file 4.2), `docs/research/LW_MONITOR_SPEC.md` (monitor). This command is READ-ONLY on pipeline folders: the only write is lw_pipeline's atomic refresh of `ops/runtime/pipeline_state.json`. It never fixes anomalies itself - it routes them.
 

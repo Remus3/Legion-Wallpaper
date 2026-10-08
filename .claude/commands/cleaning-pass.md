@@ -6,7 +6,7 @@ description: Stage 2 cleaning pass - watermark/artifact removal via the detect -
 > 1. **Spec first:** a Plan/design subagent emits the per-image plan (detections found, proposed masks, inpaint engine) BEFORE any pixel changes; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, the actual detection overlays) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-image worker subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-mask reruns may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/CLEANING_INPAINT.md` (stack + install), `docs/research/AUDIT_GATES.md` (G2 gate, 1.3 + 3.4), `docs/research/PIPELINE_STATE_MACHINE.md` (T2/T3/T4). Stage doctrine: SCALPEL, not sledgehammer - masked inpainting only, no full-image regeneration, ever. **NEVER inpaint without a mask.**
 

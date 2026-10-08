@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 9
+    assert he.kit.KIT_VERSION == 10
 
 
 def test_the_refusal_class_is_the_kits():
@@ -544,3 +544,12 @@ def test_cli_exec_no_free_slot_refuses_78_and_runs_nothing(monkeypatch, tmp_path
 def test_headless_run_ps1_asks_for_one_interactive_slot():
     text = (ROOT / "tools" / "headless_run.ps1").read_text(encoding="ascii")
     assert '"exec", "--governor", "interactive"' in text
+
+
+def test_every_lw_headless_child_is_exempt_from_the_subagent_first_hook():
+    """Kit v10 (MAIN 0839): a headless child runs with FLEET_SUBAGENT_FIRST=off,
+    so the PreToolUse hook never denies its tools once the mode moves to deny.
+    A parent that inherited `deny` must not leak it into the child."""
+    env = he.child_env({"PATH": "x", "FLEET_SUBAGENT_FIRST": "deny"},
+                       url_source=lambda: _URL, connect=_up)
+    assert env["FLEET_SUBAGENT_FIRST"] == "off"

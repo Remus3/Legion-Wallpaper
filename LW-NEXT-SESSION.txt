@@ -27,6 +27,8 @@ CHECKLIST:
   - DEHARDCODE-REST: Decide the 15 left C: rows (C:\Tools x9, ProgramData x4 incl. slots.py fleet change via MAIN, RC prose x2)
   - RC-HALFMOVE: Re-check drift_guard SIBLING_REPO vs Riot Commander location (E: copy has no .git, live repo on C:)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
+  - SAF-DENY: SUBAGENT-FIRST hook: after 3 interactive sessions whose ops/loop/control/subagent_first.jsonl shows no would-deny row for undispatchable work, write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3, expected 2026-10-10; ignore the 2026-10-08 headless rows, LEDGER 284)
+  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`; v10 carries the other four, LEDGER 284)
 Carried forward:
   - TRIAGE (LEDGER 278) risks: never run on live mail before merge; a misclassified
     ORDER/FIX gets a sonnet/low triage or an ack instead of a work run; triage runs

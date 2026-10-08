@@ -6,7 +6,7 @@ description: lw-gen generator sidecar entry - generate League-champion splash-ar
 > 1. **Spec first:** a Plan/design subagent emits the per-batch plan (subject, style, resolution, QA thresholds, regen budget) BEFORE any generation; verify it vs ground truth (`tools/lw_pipeline.py status`, `docs/GENERATOR_SIDECAR_PLAN.md`, the actual brief JSON, `tools/lw_gen_config.json`) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline + GPU state, THEN act.
 > 3. **Act via subagents:** per-batch worker subagents on disjoint batch dirs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-brief reruns may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 This is a THIN dispatcher for the lw-gen sidecar. The durable spec is
 `docs/GENERATOR_SIDECAR_PLAN.md` (OPERATOR DECISIONS section 9 are LOCKED); model

@@ -199,3 +199,21 @@ def test_claude_md_names_the_counter_and_the_code_paths_below_the_block():
     for path in ("tools/lw_checklist.py", "LW-NEXT-SESSION.txt", "ops/loop/loop_controller.py",
                  "tools/lw_inbox_responder.py"):
         assert path in tail, path
+
+
+# ---------------------------------------------------------------- kit v10 emit()
+
+def test_cli_output_goes_through_the_kit_emit_on_a_cp1252_console(monkeypatch):
+    """MAIN 0839 step 5: checklist printing uses fleet_checklist.emit(). A cp1252
+    console gets the kit's "[ ]" box instead of mojibake or a raise."""
+    import io
+    raw = io.BytesIO()
+    monkeypatch.setattr(sys, "stdout", io.TextIOWrapper(raw, encoding="cp1252", newline="\n"))
+    lc._out(f"{BOX} T1: do it")
+    sys.stdout.flush()
+    assert raw.getvalue().decode("cp1252") == "[ ] T1: do it\n"
+
+
+def test_cli_output_with_no_stdout_prints_nothing_and_does_not_raise(monkeypatch):
+    monkeypatch.setattr(sys, "stdout", None)
+    lc._out(f"{BOX} T1: do it")

@@ -48,12 +48,10 @@ def _load_guard():
 
 guard = _load_guard()
 
-# The ONE forwarding site LW cannot edit: MAIN's vendored fleet kit (kit v4,
-# byte-pinned) runs claude through `_run`, whose Popen takes `**kw` - the flag
-# arrives in that dict from `spawn` (`"creationflags": _NO_WINDOW`), so no
-# literal keyword sits at the call. The AST sweep cannot see through `**kw`;
-# the two runtime arms below prove the value instead (spawn puts it in kw,
-# _run forwards kw to Popen). Reported to MAIN as a kit gap with the v4 ANSWER.
+# Kit gap B (reported to MAIN with the v4 ANSWER) is CLOSED in kit v10 (MAIN
+# 0839): `_run` passes a literal `creationflags=` to Popen, bound to its own
+# parameter whose default is `_NO_WINDOW`; the resolver follows that default.
+# The runtime arms below still prove spawn hands the flag to `_run`.
 KIT_PATH = "ops/fleet_kit/fleet_headless.py"
 SCAN_DIRS = guard.SCAN_DIRS
 SPAWN_FUNCS = guard.SPAWN_FUNCS
@@ -77,10 +75,12 @@ def _spawn_sites():
                 tree = ast.parse(py.read_text(encoding="utf-8", errors="replace"))
             except SyntaxError:  # a syntax error is py_compile's job, not ours
                 continue
-            consts = _module_consts(tree)
+            module = _module_consts(tree)
+            scoped = guard._scoped_consts(tree, module)
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
                     continue
+                consts = scoped.get(id(node), module)
                 f = node.func
                 is_spawn = (isinstance(f, ast.Attribute) and f.attr in SPAWN_FUNCS
                             and isinstance(f.value, ast.Name)
@@ -103,8 +103,6 @@ def test_there_are_spawn_sites_to_check():
                          _spawn_sites(),
                          ids=lambda v: str(v) if isinstance(v, (str, int)) else "")
 def test_spawn_site_sets_create_no_window(path, lineno, flags, consts):
-    if path == KIT_PATH and flags is None and _forwards_kwargs(path, lineno):
-        pytest.skip("kit forwarding site: proved at runtime by the kit arms below")
     assert flags is not None, (
         f"{path}:{lineno} spawns a subprocess with no creationflags - under "
         f"pythonw.exe this flashes a console window on the operator's desktop")
@@ -114,19 +112,9 @@ def test_spawn_site_sets_create_no_window(path, lineno, flags, consts):
         f"anyway - which is why the substring check could not see this.")
 
 
-def _forwards_kwargs(path, lineno):
-    tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
-    return any(isinstance(n, ast.Call) and n.lineno == lineno
-               and any(k.arg is None for k in n.keywords) for n in ast.walk(tree))
-
-
-def test_only_one_kit_site_is_proved_at_runtime_instead():
-    """Guard the exemption: a second flagless kit site must not hide behind it."""
-    sites = [(s[0], s[1]) for s in _spawn_sites() if s[0] == KIT_PATH and s[2] is None]
-    exempt = [s for s in sites if _forwards_kwargs(*s)]
-    flagless_kit = sites
-    assert len(exempt) == 1
-    assert flagless_kit == exempt
+def test_no_kit_site_is_flagless_since_v10():
+    """Kit v10 closed gap B: the kit file holds no flagless spawn site at all."""
+    assert [s[1] for s in _spawn_sites() if s[0] == KIT_PATH and s[2] is None] == []
 
 
 def _kit():
@@ -221,17 +209,51 @@ def test_resolver_follows_module_level_constants(src, expected):
 
 
 def test_the_session_start_guard_reports_no_spawn_site_on_this_tree():
-    """The SessionStart window guard applies the SAME single kit exemption as
-    this suite (kit gap B: _run's Popen takes creationflags via **kw, proved at
-    runtime above). Before kit v7 the guard flagged it at every session start."""
+    """The SessionStart window guard resolves every site on this tree, the kit's
+    `_run` included (its parameter default since kit v10; no exemption)."""
     assert guard.check_spawns() == []
 
 
 def test_the_guard_exemption_is_the_one_kit_forwarding_site_only(tmp_path, monkeypatch):
-    """Guard the exemption: a flagless **kw spawn OUTSIDE the kit is still flagged."""
+    """A flagless **kw spawn outside the kit is flagged (the kit file too, below)."""
     d = tmp_path / "tools"
     d.mkdir()
     (d / "x.py").write_text("import subprocess\n\ndef f(**kw):\n"
                             "    subprocess.Popen(['a'], **kw)\n", encoding="ascii")
     monkeypatch.setattr(guard, "ROOT", tmp_path)
     assert guard.check_spawns() == ["tools/x.py:4"]
+
+
+# ---- kit v10: the forwarding gap is closed, so the exemption is retired -----
+# MAIN 0839 (LW 1258 B): `_run` now passes a literal `creationflags=` to Popen,
+# bound to its own parameter whose default is `_NO_WINDOW`. The resolver follows
+# a Name to the innermost enclosing def's parameter default; a parameter with no
+# default (or a 0 default) shadows any module constant and fails closed.
+
+@pytest.mark.parametrize("src,expected", [
+    ("def f(cf=subprocess.CREATE_NO_WINDOW):\n"
+     "    subprocess.Popen(['a'], creationflags=cf)\n", []),
+    ("def f(cf=0):\n"
+     "    subprocess.Popen(['a'], creationflags=cf)\n", ["tools/x.py:5"]),
+    ("cf = subprocess.CREATE_NO_WINDOW\n"
+     "def f(cf):\n"
+     "    subprocess.Popen(['a'], creationflags=cf)\n", ["tools/x.py:6"]),
+    ("def f(*, cf=0x08000000):\n"
+     "    def g(cf=0):\n"
+     "        subprocess.Popen(['a'], creationflags=cf)\n", ["tools/x.py:6"]),
+])
+def test_resolver_follows_the_enclosing_parameter_default(tmp_path, monkeypatch, src, expected):
+    d = tmp_path / "tools"
+    d.mkdir()
+    (d / "x.py").write_text("import subprocess\n\n\n" + src, encoding="ascii")
+    monkeypatch.setattr(guard, "ROOT", tmp_path)
+    assert guard.check_spawns() == expected
+
+
+def test_a_flagless_kwargs_spawn_in_the_kit_file_is_no_longer_exempt(tmp_path, monkeypatch):
+    d = tmp_path / "ops" / "fleet_kit"
+    d.mkdir(parents=True)
+    (d / "fleet_headless.py").write_text("import subprocess\n\ndef f(**kw):\n"
+                                         "    subprocess.Popen(['a'], **kw)\n", encoding="ascii")
+    monkeypatch.setattr(guard, "ROOT", tmp_path)
+    assert guard.check_spawns() == ["ops/fleet_kit/fleet_headless.py:4"]

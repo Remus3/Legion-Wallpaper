@@ -6,7 +6,7 @@ description: Stage 0 intake - scan images/0.Originals for new files (stability g
 > 1. **Spec first:** a Plan/design subagent emits the batch plan (which files, which slugs, which recovery tier per file) BEFORE any mutation; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, a directory listing of `images\0.Originals`) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-image or per-tier worker subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-file intakes may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (T1 INTAKE, slugging 2.5, eligibility gate FM-07), `docs/research/SOURCE_RECOVERY.md` (recovery tiers). All mutations go through `tools/lw_pipeline.py` (single-writer rule) - this command NEVER renames, copies, or deletes pipeline files by hand.
 

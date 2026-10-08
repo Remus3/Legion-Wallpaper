@@ -6,7 +6,7 @@ description: Stage 3 final pass - masked anime-face/eye repair (ComfyUI headless
 > 1. **Spec first:** a Plan/design subagent emits the per-image plan (detected faces/eyes, proposed repair masks, deband regions, resize op) BEFORE any pixel changes; verify it vs ground truth (`tools/lw_pipeline.py status`, `ops/runtime/pipeline_state.json`, actual detection crops) - never scaffold on assumptions.
 > 2. **New session:** confirm intent + acceptance criteria with the operator (or the Gemini director), re-probe live pipeline state, THEN act.
 > 3. **Act via subagents:** per-image worker subagents on disjoint slugs (sole merger) + a read-only `verifier` subagent gate before any "done" claim.
-> 4. Trivial single-image reruns may inline (refines R9). See `CLAUDE.md` "Subagent-First Protocol".
+> 4. **Kit v10 (MAIN 0839):** no inline exception. The main session dispatches this whole skill to ONE sub-agent and relays only its final line; the kit hook `ops/fleet_kit/fleet_subagent_first.py` enforces it. See `CLAUDE.md` FLEET-COMMON banner.
 
 Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 2.8), `docs/research/UPSCALE_TOOLCHAIN.md` (face-repair doctrine), `docs/research/CLEANING_INPAINT.md` (SD inpaint tier), `docs/research/AUDIT_GATES.md` (G1/G2 + 3.5 eye checks). Stage doctrine: polish only - eyes/irises/skin, banding/color, exact-dimension conformance. Diffusion inpainting CHANGES content, so this stage is always human-gated.
 

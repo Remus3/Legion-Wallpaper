@@ -64,13 +64,11 @@ EXPECTED_INTERACTIVE = {
     "RC-Supervisor": "Win32 + overlay ownership",
 }
 SCAN_DIRS = ("tools", "ops")
-# The ONE spawn site LW cannot edit: MAIN's vendored kit runs claude through
-# fleet_headless._run, whose Popen gets creationflags only via **kw (spawn puts
-# CREATE_NO_WINDOW in that dict). The AST cannot see through **kw; the flag is
-# proved at runtime by tests/test_no_console_flash.py. Exempt by exact shape -
-# that file, flagless, forwarding **kw - and never by line number, which moves
-# with every kit version (kit gap B, reported to MAIN since the v4 ANSWER).
-KIT_FORWARDING_FILE = "ops/fleet_kit/fleet_headless.py"
+# Kit gap B is CLOSED in kit v10 (MAIN 0839): fleet_headless._run passes a
+# literal creationflags= to Popen, bound to its own parameter whose default is
+# _NO_WINDOW. The resolver follows that parameter default (_scoped_consts), so
+# the old flagless-**kw exemption for the kit file is retired - no file is
+# exempt any more.
 
 
 def _run(args, timeout=6):
@@ -147,6 +145,37 @@ def _module_consts(tree):
     return out
 
 
+def _param_defaults(fn):
+    """Parameter NAME -> default node (None when the parameter has no default)."""
+    a = fn.args
+    pos = a.posonlyargs + a.args
+    out = {p.arg: None for p in pos + a.kwonlyargs}
+    for p, d in zip(pos[len(pos) - len(a.defaults):], a.defaults, strict=True):
+        out[p.arg] = d
+    for p, d in zip(a.kwonlyargs, a.kw_defaults, strict=True):
+        out[p.arg] = d
+    for p in (a.vararg, a.kwarg):
+        if p is not None:
+            out[p.arg] = None
+    return out
+
+
+def _scoped_consts(tree, module):
+    """id(Call) -> module constants overlaid with the INNERMOST enclosing def's
+    parameter defaults. A parameter shadows a module constant; one with no
+    default maps to None and so fails closed. ast.walk is breadth-first, so an
+    inner def is visited after its outer one and its overlay wins."""
+    scoped = {}
+    for fn in ast.walk(tree):
+        if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            local = dict(module)
+            local.update(_param_defaults(fn))
+            for n in ast.walk(fn):
+                if isinstance(n, ast.Call):
+                    scoped[id(n)] = local
+    return scoped
+
+
 def resolves_to_flag(node, consts, depth=0):
     """True only when `node` provably carries CREATE_NO_WINDOW.
 
@@ -194,10 +223,12 @@ def check_spawns():
                 tree = ast.parse(py.read_text(encoding="utf-8", errors="replace"))
             except (OSError, SyntaxError):
                 continue
-            consts = _module_consts(tree)
+            module = _module_consts(tree)
+            scoped = _scoped_consts(tree, module)
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
                     continue
+                consts = scoped.get(id(node), module)
                 f = node.func
                 if not (isinstance(f, ast.Attribute) and f.attr in SPAWN_FUNCS
                         and isinstance(f.value, ast.Name)
@@ -207,11 +238,7 @@ def check_spawns():
                               if k.arg == "creationflags"), None)
                 if flags is not None and resolves_to_flag(flags, consts):
                     continue
-                rel = py.relative_to(ROOT).as_posix()
-                if (rel == KIT_FORWARDING_FILE and flags is None
-                        and any(k.arg is None for k in node.keywords)):
-                    continue
-                misses.append(f"{rel}:{node.lineno}")
+                misses.append(f"{py.relative_to(ROOT).as_posix()}:{node.lineno}")
     return misses
 
 

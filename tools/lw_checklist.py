@@ -191,9 +191,10 @@ def child_rule(task: str, run_n: int) -> str:
 # ---------------------------------------------------------------- CLI
 
 def _out(text: str) -> None:
-    data = (text + "\n").encode("utf-8")
+    # Kit v10 (MAIN 0839 step 5): emit() never raises, gives a cp1252 console
+    # "[ ]" for the box, and prints nothing when pythonw has no stdout.
+    kit_checklist().emit(text)
     try:
-        sys.stdout.buffer.write(data)
         sys.stdout.flush()
     except (AttributeError, OSError, ValueError):
         pass
