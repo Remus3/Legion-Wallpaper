@@ -26,7 +26,23 @@ import sys
 import time
 from pathlib import Path
 
-SLOT_ROOT = Path(r"C:\ProgramData\lw-loop\slots")
+
+
+def _slot_root() -> Path:
+    """The governor's own DEFAULT_ROOT, read from the shared slots.py.
+
+    One source for the value: a second literal here could drift from the file
+    the loops actually coordinate through, and this probe would then watch an
+    empty directory and report no contention on no evidence.
+    """
+    src = Path(__file__).resolve().parent / "slots.py"
+    spec = importlib.util.spec_from_file_location("_lw_slots_for_p5", src)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.DEFAULT_ROOT
+
+
+SLOT_ROOT = _slot_root()
 TS = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})")
 
 

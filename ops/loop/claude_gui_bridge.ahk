@@ -18,7 +18,9 @@ SetTitleMatchMode 2
 ; Live mode with a missing/empty target_hwnd.txt ABORTS the bridge outright.
 ; Exits when control\STOP appears.
 
-CTL := "C:\Legion Wallpaper\ops\loop\control"
+; This script lives in ops\loop, so its control dir is derived from A_ScriptDir,
+; never a drive literal (the repo moved C: -> E: on 2026-10-08).
+CTL := A_ScriptDir "\control"
 READY := CTL "\gemini.ready"
 TYPED := CTL "\typed.flag"
 STOPF := CTL "\STOP"

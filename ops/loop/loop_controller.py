@@ -146,6 +146,12 @@ def _cfg_path(key, default):
 ROOT = _cfg_path("repo_root", Path(__file__).resolve().parents[2])
 CTL = _cfg_path("control_dir", Path(__file__).resolve().parent / "control")
 CTL.mkdir(parents=True, exist_ok=True)
+# The tracked configs no longer spell repo_root / control_dir out (they were
+# C: drive literals until the 2026-10-08 move to E:); the derived values above
+# are handed on so every downstream cfg.get("repo_root") (executor.py) sees the
+# real checkout rather than ".".
+CFG.setdefault("repo_root", str(ROOT))
+CFG.setdefault("control_dir", str(CTL))
 # FLEET-KIT v6 (MAIN 2237): main() re-points ROOT at this run's lane worktree
 # and CTL at this lane's own control dir. MAIN_ROOT / ROOT_CTL keep the main
 # tree's: lane locks, the governor slot's repo key and the operator's
@@ -1085,6 +1091,8 @@ def session_files():
     pin = CFG.get("session_jsonl")
     if pin:
         p = Path(pin)
+        if not p.is_absolute():  # a tracked config pins it repo-relative
+            p = MAIN_ROOT / p
         return [p, *list((d / p.stem / "subagents").glob("*.jsonl"))]
     tops = sorted(d.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
     if not tops:

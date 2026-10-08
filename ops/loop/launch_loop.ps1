@@ -14,7 +14,7 @@ $py = if (Test-Path $pinned) { $pinned } else { (Get-Command python).Source }
 # tests/test_guard_scripts_resolve_this_checkout.py).
 $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $ctl = "$root\ops\loop\control"
-$ahk = "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
+$ahk = Join-Path $env:ProgramFiles "AutoHotkey\v2\AutoHotkey64.exe"
 $bridge = "$root\ops\loop\claude_gui_bridge.ahk"
 $ctrl = "$root\ops\loop\loop_controller.py"
 $stub = "$root\ops\loop\claude_stub.py"
