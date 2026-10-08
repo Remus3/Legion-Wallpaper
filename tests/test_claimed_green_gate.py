@@ -177,6 +177,60 @@ def test_green_claims_are_recognized(tmp_path, claim):
     assert decision_of(proc).get("decision") == "block", claim
 
 
+# A green phrase governed by a conditional in the SAME clause is a plan, not a
+# claim. Live false positive 2026-10-07: a checklist line "Merge Dependabot PR
+# #1 once its CI is green" blocked a Stop. The sibling patterns (tests pass,
+# suite green, all green, green on <sha>) share the same root cause.
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Merge Dependabot PR #1 once its CI is green",
+        "Merge it when CI is green.",
+        "Hold the push until CI is green.",
+        "Tag the release after CI is green.",
+        "Merge only if CI is green.",
+        "Next: wait for CI green, then merge.",
+        "Ship it once the tests pass.",
+        "Restart when the full suite is green.",
+        "Close the lane once all green.",
+        "Deploy when it is green on 58ff889.",
+    ],
+)
+def test_conditional_green_phrasing_is_not_a_claim(tmp_path, text):
+    transcript = _transcript(tmp_path, _user_text("go"))
+    proc = run_gate(
+        {
+            "stop_hook_active": False,
+            "last_assistant_message": text,
+            "transcript_path": str(transcript),
+        }
+    )
+    assert decision_of(proc) == {}, text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "CI is green.",
+        "CI green on abc1234.",
+        "CI is green; merge PR #1 once Dependabot rebases.",
+        "Merge PR #1 once its CI is green. CI is green on abc1234.",
+        "After the push, CI is green.",
+        "Once more: all tests pass.",
+    ],
+)
+def test_real_claim_beside_a_conditional_still_blocks(tmp_path, text):
+    transcript = _transcript(tmp_path, _user_text("go"))
+    proc = run_gate(
+        {
+            "stop_hook_active": False,
+            "last_assistant_message": text,
+            "transcript_path": str(transcript),
+        }
+    )
+    assert decision_of(proc).get("decision") == "block", text
+
+
 # --- detector: claim-no-run -------------------------------------------------
 
 
