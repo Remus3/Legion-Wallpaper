@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+277. DONE **2026-10-07 (R4 still unvoted; R5c blocked on fresh hand captures; G1.lpips arm-swap probe: no FR arm clears coven-ashe, ack stands; docs-only).**
+   R4 PREMISE: `tools/lw_ab_r4.py` reads votes from `ops/runtime/ab_r4/votes.json` (_votes, lw_ab_r4.py:197-201)
+   and tally refuses until finished (lw_ab_r4.py:247). READ BACK: votes.json ABSENT, `lw_ab_r4.py status` =
+   "0/19 voted, finished=False"; http://127.0.0.1:8901/ab refused the connection (LW Monitor down). Not tallied;
+   carried. R5c PREMISE: hand captures live in ops/runtime/clean/handedits/ (105, 107, dgk8f92, 209); newest file
+   2026-08-22 18:27, all already scored in R5 (LEDGER 271). No fresh captures -> the frozen-bar (0.4020) check is
+   not runnable; carried until the operator saves a new IOPaint step capture. G1.lpips (the hand-off's alternative):
+   scratch probe (outside the tree) in .venv-metrics, cuda, via the live `lw_g1_gate.fr_metrics` (GPU mutex inside),
+   RC-live CLEAR, ~2 GPU-min; 12 golden frames, clean vs `fault_downup(LPIPS_DOWNUP=4)` (fault NOT rescaled), arms
+   lpips-alex (live) / lpips-vgg / dists at the live common scale. RESULT: alex reproduces the ack exactly - 11/12,
+   coven-ashe 0.0367 -> 0.0592 (bar 0.12), others 0.126-0.227. vgg: 10/12 at 0.12 (dfzypp1 0.111, coven-ashe) and
+   clean already 0.118 / 0.106 / 0.129 on fiora2 / inkshadow / coven-ashe (FP risk). dists: fault max 0.1543,
+   coven-ashe and fiora2 under any shared bar. On coven-ashe the fault scores LOWER than clean under vgg
+   (0.129 -> 0.108) and dists (0.077 -> 0.057): the 1192x670 source carries no detail above the down-up cutoff, so
+   at common scale the faulted output is CLOSER to the soft reference. DECISION: no network swap clears the row;
+   gate code and config/gate_board_ack.json untouched (alternatives: swap to vgg/dists - rejected, worse; NA or
+   rescale the subject - forbidden by adjudication Q2). The ack's clears_when is unreachable for any FR arm at the
+   ADR-007 basis on this subject; G1.lap_ratio keeps ladder coverage. Reopens only via a new ADR changing the G1
+   FR measurement basis, or a no-reference detail arm proven on the golden set.
+
 276. DONE **2026-10-07 (stale kit-version pin repaired, local tip pushed, triage WIP parked; commits 55c18c8 + branch wip/inbox-responder-triage eb69fef).**
    Operator ask was "check the inbox and reply if needed"; inbox triage found nothing owed (568
    notes, responder had seen all 579, 0 new, every MAIN ORDER to LW already committed - kit v8
