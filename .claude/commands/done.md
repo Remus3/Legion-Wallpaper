@@ -198,7 +198,15 @@ python tools/done_gate.py verify-push
 
 ### 9. Final line - nothing else
 
-Print exactly one line:
+Last act before the chat line (FLEET-COMMON item 15, MAIN FLEET-KIT v9, 2026-10-07): once the commit and the hand-off are READ BACK, write the kit's /done marker - the signal of record the Stop hook and status surfaces validate:
+
+```
+python ops/fleet_kit/fleet_done.py mark --session <n> --status done
+```
+
+`<n>` is this session's number (the `SESSION:` line before section 6 stamped n+1). A step that stopped the ritual calls it instead with `--status failed --reason "<step>"`. The marker reads HEAD and hashes the hand-off itself; any later commit or hand-off edit invalidates it, so nothing is committed after it.
+
+Then print exactly one line:
 
 ```
 Done ritual complete, safe to clear

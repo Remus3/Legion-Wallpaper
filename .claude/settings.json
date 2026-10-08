@@ -72,6 +72,11 @@
             "type": "command",
             "command": "pythonw \"$CLAUDE_PROJECT_DIR/tools/claimed_green_gate.py\"",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "pythonw \"$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_done.py\" stop-hook",
+            "timeout": 10
           }
         ]
       }

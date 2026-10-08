@@ -90,6 +90,9 @@ restart_trigger.txt
 # Track only the .gitkeep placeholder so the control dir exists on checkout.
 ops/loop/control/*
 !ops/loop/control/.gitkeep
+# kit v9 /done marker (MAIN 2354): explicit, so narrowing the glob above never tracks it
+ops/loop/control/session_done.json
+ops/loop/control/session_done.seen
 
 # Sync staging
 tmp/

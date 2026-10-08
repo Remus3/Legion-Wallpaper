@@ -27,6 +27,32 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+281. DONE **2026-10-08 (MAIN ORDER 2354 FLEET-KIT v9: vendor, /done marker, Stop hook, display keys; MIG-1 prune DRAFTED; responder-authored).**
+   Provenance: note sha256 6b22e992.. MATCH (inbox == MAIN outbox, 5071 bytes); bundle 16/16 files equal
+   across the note's hash table, the inbox copy, MAIN's outbox disk copy and MAIN's COMMITTED blob.
+   A3 note: every carrier is MAIN's (no sibling carried v9 yet), so the two-independent-carrier arm is
+   met by the verified MAIN note's D8 lift, as for v8 (0bc2253) - recorded, not silently assumed.
+   VENDOR: 15 files + MANIFEST into ops/fleet_kit/ byte-for-byte (index blobs 15/15 vs manifest);
+   MANIFEST.json sha256 cbc8b7de..; common block ecd56ed8.. -> a8de1743.. (item 15 CLI DISPLAY)
+   re-embedded byte-identical. Pins 8 -> 9: test_fleet_kit_conformance, test_headless_env,
+   test_promise_probe_fleet_kit, tools/lw_promise_probes.FLEET_KIT_VERSION.
+   WIRING (new tests/test_fleet_kit_v9_wiring.py, red first: 2 failed / 3 passed): Stop hook
+   `pythonw "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_done.py" stop-hook` beside claimed_green_gate;
+   done.md section 9 runs `fleet_done.py mark --session <n> --status done|failed` before the one chat
+   line; session_done.json/.seen gitignored explicitly (already under ops/loop/control/*). Smoke: the
+   stop-hook on a no-marker input wrote 0 bytes, exit 0.
+   DISPLAY KEYS: tracked settings.json had none; gitignored settings.local.json had theme,
+   spinnerTipsEnabled (top level AND under permissions) and prefersReducedMotion - all 4 removed, read
+   back 0 forbidden keys in both files; pre-edit copy kept gitignored under ops/runtime/inbox_responder/.
+   MIG-1 DRAFTED (D4 deletion floor - MAIN cannot lift it for the responder): `git worktree list` = 5
+   lines (main + 4); `git worktree prune --dry-run -v` = 0 lines (no stale admin entry). fleet-kit-v7,
+   ingest-lw-gates, ingest-lw-ops: 0 dirty, 0 commits off main, on origin. abandoned-v6-responder-attempt:
+   24 dirty (15 modified +460/-154, 9 untracked); 7 are byte-equal to main/history (NOTICE, config.json,
+   5 kit v7 files), 16 hold bytes found NOWHERE in history (v6-lane work superseded by v7/v8, incl.
+   tests/test_loop_lanes.py 274 lines and 3 scratch files). Attended step: WIP-commit those 16 on branch
+   worktree-agent-a6b282fa560024205 (bytes preserved), then `git worktree remove` x4 and
+   `git worktree prune`; expect `git worktree list` = 1 line. Reverse if: the operator keeps a worktree.
+
 280. DONE **2026-10-07 (session 64: GATE conditional-green false positive fixed 42ed383/9506a9a; SECRETS reader on fleet_secrets c1a32c3/eb7b02b; Dependabot PR #1 merged 2c6a492; TRIAGE-WIP merged c509021).**
    GATE: claimed_green_gate GREEN_CLAIM fired on a plan line ("merge PR #1 once its CI is green"); a
    green phrase now counts only when no once/when/until/till/after/if/unless/wait-for precedes it in
