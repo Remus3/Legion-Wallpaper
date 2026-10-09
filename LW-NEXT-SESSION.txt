@@ -1,41 +1,47 @@
 NEXT SESSION
 ------------
-SESSION: 68
+SESSION: 69
 Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
-  A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277; votes.json absent
-  2026-10-08) - operator starts LW Monitor, opens http://127.0.0.1:8901/ab (re-probe
-  HTTP 200 first), votes 19 slugs, presses Finish; then `python tools/lw_ab_r4.py
-  tally` and record the verdict (LEDGER + ROADMAP R4; ADR-009 engine REPLACE only).
-  (2) Retire-the-junction plan (LEDGER 283) step 1-3 read-backs.
-Context: repo now lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction
-  (LEDGER 282/283); pre-move copy C:\Legion Wallpaper.pre-move-20261008 kept. Re-probe
-  live state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080,
-  tailscale serve. Headless spawns go through ops/fleet_kit/ via
-  tools/lw_headless_env.py. Inbox responder LIVE (LW-InboxResponder, every 5 min,
-  children COMMIT in this tree - check its progress file before editing shared
-  files). Kill: HALT file or delete the proxy user variable. MAIN notes carry
-  operator authority after a sha256 check against MAIN's outbox. Never put a 64-hex
-  digest in this file.
+  A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277) - operator starts LW
+  Monitor, opens http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19 slugs,
+  presses Finish; then `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER +
+  ROADMAP R4; ADR-009 engine REPLACE only). (2) Watch the inbox for the 6 sibling
+  re-point confirmations (RETIRE-JUNCTION, LEDGER 287).
+Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (LEDGER
+  282/283/287); pre-move copy C:\Legion Wallpaper.pre-move-20261008 kept untouched;
+  LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live state before
+  acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
+  RC-TeamClaudeProxy on localhost:3456 (logon-only, no restart-on-failure; was down
+  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v11 (LEDGER 288). Headless
+  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE
+  (LW-InboxResponder, every 5 min, children COMMIT in this tree - check its progress
+  file before editing shared files). Kill: HALT file or delete the proxy user
+  variable. MAIN notes carry operator authority after a sha256 check against MAIN's
+  outbox. Never put a 64-hex digest in this file.
 Acceptance: R4 tally recorded with the operator's votes, or still READY and carried;
-  READBACK-2237 + KIT-V9-READBACK read back; junction-retirement read-backs recorded.
+  junction renamed off for the soak once all 6 re-points are confirmed; TRIAGE-ACK and
+  the READBACK-2237 status-line half read back.
 CHECKLIST:
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
-  - READBACK-2237: In a live session trigger claimed_green_gate once; confirm ONE "Stop hook feedback" line, no "Stop hook error" block, model acts on it; confirm the acct2 status line shows and no [Legion] line (LEDGER 279)
-  - KIT-V9-READBACK: Read back session 67's /done: fleet_done.py validate prints DONE and the Stop hook set the tab title (LEDGER 281)
-  - TRIAGE-ACK: Confirm a live ACK/ANSWER note is acked with no spawn in runs.jsonl (ORDER/FIX escalation already seen, LEDGER 283)
-  - RETIRE-JUNCTION: Re-point every external C: target (EXTERNAL table, MAIN 2155), read back, prove one cycle with the junction renamed; pre-move copy to Recycle Bin only after a soak (LEDGER 283)
-  - DEHARDCODE-REST: Decide the 15 left C: rows (C:\Tools x9, ProgramData x4 incl. slots.py fleet change via MAIN, RC prose x2)
-  - RC-HALFMOVE: Re-check drift_guard SIBLING_REPO vs Riot Commander location (E: copy has no .git, live repo on C:)
+  - RETIRE-JUNCTION: Watch inbox for the 6 sibling re-point confirmations (RC+RSC moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN tests/test_fleet_kit_v6_lanes.py:108; note 1837), then rename the junction off for the soak, then Recycle-Bin the pre-move copy (LEDGER 287)
+  - TRIAGE-ACK: Confirm a live non-TERMINAL ACK/INFORMATION/REPORT note is acked with no spawn in runs.jsonl (ANSWER notes clear via the TERMINAL skip, LEDGER 286)
+  - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (feedback-line half PASSED session 68, LEDGER 289)
+  - GATE-SUBAGENT-FP: Fix claimed_green_gate false positive - it cannot see subagent pytest runs (ROADMAP, LEDGER 289); TDD first
+  - SAF-DENY: SUBAGENT-FIRST hook: session 68 = clean interactive session 1 of 3 (2 quick-read Bash would-deny rows on the main thread); after 3 clean interactive sessions write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
-  - SAF-DENY: SUBAGENT-FIRST hook: after 3 interactive sessions whose ops/loop/control/subagent_first.jsonl shows no would-deny row for undispatchable work, write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3, expected 2026-10-10; ignore the 2026-10-08 headless rows, LEDGER 284)
-  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`; v10 carries the other four, LEDGER 284)
+  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
 Carried forward:
-  - TRIAGE (LEDGER 278) risks: never run on live mail before merge; a misclassified
-    ORDER/FIX gets a sonnet/low triage or an ack instead of a work run; triage runs
-    share the 120/24h budget; TRIAGE_PARAMS overrides kit bare=True with bare=False
-    (LW floors in hooks) - recorded, NOT yet reported to MAIN; send_answers +
-    OutboundCap covered only by the branch's own tests. wip/inbox-responder-triage
-    (eb69fef) and lw/triage-wip-finish branches kept.
+  - CI for the session 68 wrap commit: confirmed after this file was committed; re-check
+    `gh run list --limit 1` at session start.
+  - DEHARDCODE-REST DONE (LEDGER 287); open: slots.py ProgramData change requested of
+    MAIN (byte-identical carrier contract - never edit alone).
+  - TRIAGE (LEDGER 278) risks: a misclassified ORDER/FIX gets a sonnet/low triage or an
+    ack instead of a work run; triage runs share the 120/24h budget; TRIAGE_PARAMS
+    override gone with v11 triage_spawn_kwargs(True) (LEDGER 288); bare=False ruling
+    asked of MAIN in the 1445 answer. wip/inbox-responder-triage (eb69fef) and
+    lw/triage-wip-finish branches kept.
+  - MAIN 1445 answer misstates the proxy outage start as 19:00Z; actual 13:42Z (LEDGER
+    285/289) - correct it in the next batched MAIN note.
   - GATE (LEDGER 280) known gap: "after the rerun all tests passed" no longer caught
     (fail-open by design).
   - FLEET item-12 gap: worktree-isolated subagents cannot write progress files to the
@@ -47,13 +53,11 @@ Carried forward:
     clean; no FR arm clears it; reopens only via a new ADR on the G1 FR basis or a
     no-reference detail arm proven on the golden set.
   - SUPPLY CHAIN (MAIN 0300) DONE (LEDGER 275). Dependabot PRs are merged by this tree
-    on green, never auto-merged; PR #1 merged 2c6a492. Edit requirements*.in, then
-    re-run the uv compile line in each .in header.
+    on green, never auto-merged. Edit requirements*.in, then re-run the uv compile line
+    in each .in header.
   - ROSTER (MAIN 0230) DONE in 1d8fd05 (LEDGER 274). Open: docs/CHANNEL.md participant
     table still lists LL and has no EW row; jointly pinned carrier, waits for a re-pin
     round (asked MAIN for a ruling to open one).
-  - MAIN 2155 C-drive path inventory ANSWERED by the responder 2026-10-07 22:05
-    (TERMINAL unless MAIN sends the move runbook).
   - R4 votes go to ops/runtime/ab_r4/votes.json (sides only); key in key.json is
     never served. 9 of 28 candidate slugs excluded (7 no mask, 2 later-run mask).
   - CLEAN-DAMAGE INCIDENT follow-ups (LEDGER 268/269): 13 slugs on the manual
@@ -66,25 +70,22 @@ Carried forward:
     slug is reopened for hand clean.
   - test_lw_usm_halo_probe flaked once under full-suite load (passes 40/40 alone); watch.
   - Operator offered ~8.7k unlabeled local images (path in ROADMAP R6, never track bytes).
-  - Kit gaps still open at v7/v8: (a) loop executor stays on kit primitives - spawn()
-    returns only result text, executor needs structured result + session id; (b) kit's
-    _run Popen gets CREATE_NO_WINDOW only via **kw - exempted by exact shape in tests
-    AND the window guard; (c) fleet_watch lacks LW's five watcher extensions, so the
-    lw_watch swap is DEFERRED (tripwire tests/test_fleet_watch_swap_tripwire.py).
-    Wait for MAIN; do not patch the kit.
-  - FLEET-KIT v9 vendored by the responder 2026-10-08 (422d4c9, LEDGER 281): /done's
-    last act is fleet_done.py mark; Stop hook fleet_done.py stop-hook; display keys
-    live only in account settings. MIG-1 DONE session 67
-    (abandoned-v6 WIP on its branch d65067f, local only; worktree list 5 -> 1).
-    Repo moved to E: by operator order session 67 (LEDGER 282); C: is a junction.
+  - Kit gaps still open: (a) loop executor stays on kit primitives - spawn() returns
+    only result text, executor needs structured result + session id; (b) closed at
+    v10 (LEDGER 284); (c) fleet_watch lacks LW's watcher extensions, lw_watch swap
+    DEFERRED (tripwire tests/test_fleet_watch_swap_tripwire.py). Wait for MAIN; do not
+    patch the kit.
+  - /done's last act is fleet_done.py mark; Stop hook fleet_done.py stop-hook; display
+    keys live only in account settings (kit v9, LEDGER 281). MIG-1 abandoned-v6 WIP on
+    branch d65067f, local only.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
   - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
     _firstneedauth awaiting OPERATOR approval (never self-approve). Check banding on the
     five -pre slugs (+0.008..+0.014) via cambi_delta. Miss Fortune DA fetch 403
     (manual_queue.csv). 0.Originals has 2 loose files (katarina -pre, lux coven -pre dup).
-  - SYNC INBOX: facts counter shows 236 unread of 583 (counter only; responder state
-    separate). Keep reading by mtime, not by filename stamp.
+  - SYNC INBOX: drained 220 -> 0 session 68 (mark clears only shown notes). Keep
+    reading by mtime, not by filename stamp.
   - CONCURRENCY: before editing, check for live `claude -p` processes, the responder's
     progress file and recent mtimes; commit file-scoped (`git commit -- <paths>`), never
     git add -A. Parallel agents: worktree isolation or disjoint files + private scratch.
@@ -101,8 +102,11 @@ Carried forward:
   - PHONE ACCESS: `tailscale serve --bg http://127.0.0.1:8901` -> https://<tailnet
     host>/review. Hostname NEVER written in tracked files. Re-run serve before phone use.
   - A cloud kit exists OUTSIDE this repo (not tracked here; do not vendor it).
-  - physical.lux-coven-pre-duplicate (registered operator task, see Operator asks).
-    MAIN's v5 P0-1 gate needs this real task closed by the scheduled verify pass.
+  - physical.lux-coven-pre-duplicate-2 (registered operator task, see Operator asks):
+    the original task FALSE-CLOSED 23:31Z during the junction-off proof (C: path check);
+    re-opened with an E: path (LEDGER 289). Before retiring the junction, re-point any
+    other C:-path verify argv in ops/runtime/operator_tasks. MAIN's v5 P0-1 gate needs
+    this real task closed by the scheduled verify pass.
   - Stage ledger (P1-1) has no live run yet: no slug is past cleaning. The first real
     finalize writes ops/runtime/stage_ledger/<slug>.json - read it.
   - P2-7: AHK bridge timings left to the ops lane's P1-6 bridge; moving the upscale tile
@@ -112,23 +116,23 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 67 shipped and PUSHED - E-MOVE read back + MAIN
-  note 0100 (1/1), CAMPAIGN-IMPORT (aa9774a), DEHARDCODE 40/55 (ed25c00, 79d201e,
-  1451ac6), LEDGER 283. Session 64 shipped and PUSHED - Dependabot PR #1 (2c6a492), GATE
-  conditional-green fix (9506a9a), LEDGER 277 R4/R5c/G1.lpips (a29cbe7), SECRETS
-  reader on fleet_secrets (eb7b02b, no kit gap), TRIAGE-WIP finished and merged
-  (c509021, LEDGER 278), MAIN 2237 Stop-gate one-line (4096078, LEDGER 279, responder),
-  session record LEDGER 280. Earlier: FLEET-KIT v8 (0bc2253); kit-pin fix (55c18c8);
-  Research R1/R1b/R2/R2b/R3/R3b (LEDGER 263-267, 270); R5 DINOv2 kNN (NOT accepted,
-  LEDGER 271); R4 A/B prep (082cd18, LEDGER 272) + UI-audit MUST-FIX (04fe420);
-  clean-damage diagnosis + guards (82ae760, LEDGER 268); actor backfill (672c2e9,
-  LEDGER 269); the C4 round (CLOSED 2026-10-04); MoE/MIM/ExPLoRA survey (c6e9984);
+Do NOT redo: session 68 shipped and PUSHED - v10 vendor (a416222, LEDGER 284), MAIN
+  1445 batched answer + proxy outage record (8af8a2d, LEDGER 285), KIT-V9-READBACK PASS
+  + RC-HALFMOVE + lw_facts stdin fix (1db7f65, LEDGER 286), DEHARDCODE-REST + junction
+  off-cycle proof (21a210b, 8f4ed93, LEDGER 287), FLEET-KIT v11 + KIT-V11 read back
+  (a3515d6, LEDGER 288), READBACK-2237 feedback-line half PASS + wrap (LEDGER 289).
+  Session 67 - E-MOVE, CAMPAIGN-IMPORT (aa9774a), DEHARDCODE 40/55, LEDGER 283. Session
+  64 - Dependabot PR #1 (2c6a492), GATE fix (9506a9a), LEDGER 277, SECRETS (eb7b02b),
+  TRIAGE-WIP (c509021, LEDGER 278), MAIN 2237 (4096078, LEDGER 279), LEDGER 280.
+  Earlier: FLEET-KIT v8 (0bc2253); kit-pin fix (55c18c8); Research R1-R3b (LEDGER
+  263-267, 270); R5 NOT accepted (LEDGER 271); R4 A/B prep (082cd18, LEDGER 272) +
+  UI-audit MUST-FIX (04fe420); clean-damage guards (82ae760, LEDGER 268); actor backfill
+  (672c2e9, LEDGER 269); C4 round CLOSED 2026-10-04; MoE/MIM/ExPLoRA survey (c6e9984);
   FLEET-KIT v7 (LEDGER 273), v4 (62442fc), v3 (062ffd5); spawn routing (fc6cdb4);
   responder self-skip (b7d50a7); supply chain (acd2335); roster (1d8fd05).
 Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not edit by hand):
-  - physical.lux-coven-pre-duplicate physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03)
+  - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
-      open first: File Explorer > C:/Legion Wallpaper/images/0.Originals
-      last check: not done (1120 tries)
-      close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate (closes only when its check passes)
+      open first: File Explorer > E:/Legion Wallpaper/images/0.Originals
+      close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   (end operator asks)

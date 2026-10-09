@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+289. DONE **2026-10-08 (session 68 wrap: inbox sync, proxy outage, read-backs, junction proof; docs-only).**
+   Session 68 work is recorded item by item in LEDGER 284-288; this entry records only the wrap.
+   1. INBOX: v10 vendored by the responder (a416222, LEDGER 284); batched answer to MAIN 1445 (2237 answer,
+      TRIAGE_PARAMS bare=False ruling asked, proxy outage) - CORRECTION: the note says the outage started 19:00Z,
+      actual 13:42Z (LEDGER 285, 8af8a2d). Proxy RC-TeamClaudeProxy (localhost:3456, logon-only, no
+      restart-on-failure) was down 13:42Z-19:17Z and recovered on its own; responder ARMED, read back.
+   2. LEDGER 286 (1db7f65): KIT-V9-READBACK PASS; RC-HALFMOVE DONE; lw_facts stdin crash fixed; inbox 220->0.
+      TRIAGE-ACK still unobserved live - ANSWER notes clear via the TERMINAL skip; needs a non-TERMINAL
+      ACK/INFORMATION/REPORT note. CARRIED.
+   3. LEDGER 287 (21a210b, 8f4ed93): DEHARDCODE-REST DONE (7 derived, 8 kept with reason). RETIRE-JUNCTION:
+      off-cycle proof PASSED 18:31-18:37, junction RESTORED; soak BLOCKED on 6 sibling rows (RC+RSC
+      moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12,
+      MAIN tests/test_fleet_kit_v6_lanes.py:108); note 1837 to MAIN reached 1/1. CARRIED.
+   4. LEDGER 288 (a3515d6): FLEET-KIT v11 vendored, answer 1857 1/1, CI green; KIT-V11 read back PASS.
+   5. READBACK-2237 half PASS: claimed_green_gate fired once as ONE "Stop hook additional context" line, no
+      error block, model acted on it. Status-line half (acct2 status line, no [Legion] line) NOT verified -
+      CARRIED. NEW: the gate reported "no pytest run ... not in a subagent" although two subagents ran the full
+      suite - it cannot see subagent runs (false positive); filed ROADMAP GATE-SUBAGENT-FP.
+   6. SAF-DENY: subagent_first.jsonl read back - this session's interactive main thread logged 2 would-deny
+      rows (Bash, 18:46-18:47 local, quick reads); the 74 main rows at 14:23-14:44 sit in the v10-adoption
+      window (ignored per LEDGER 284). Session 68 counts as clean session 1 of 3.
+   7. NEW at /done: operator task physical.lux-coven-pre-duplicate FALSE-CLOSED by the scheduled verify at
+      2026-10-08T23:31:56Z - inside the junction-off proof window; its check tests a C: path. The file is
+      still in images/0.Originals (read back by ls). Re-opened as physical.lux-coven-pre-duplicate-2 with an
+      E: path check (`lw_ops_tasks.py pending` read back). Any C:-path verify argv false-closes when the
+      junction is retired - RETIRE-JUNCTION must re-point them first.
+   8. /done gate: ruff clean; hygiene 12 passed; full suite 4091 passed / 19 skipped; drift_guard 0 breaches.
+
 288. DONE **2026-10-08 (MAIN 1840 ORDER: FLEET-KIT v11 vendored (supersedes v10), triage_spawn_kwargs(True) adopted, TRIAGE_PARAMS override gone, anchored hook confirmed; headless responder).**
    Provenance READ BACK: note sha256 76dd6a66acb86130b4e035b41beb5926b97160215efc1312cbe242279fb43499, 6242 bytes;
    kit verify_main(note, MAIN outbox) True; MAIN outbox copy sha256 equal. Bundle

@@ -79,6 +79,15 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-08, session 68) - inbox sync, v10/v11, junction proof, read-backs
+
+Commits: a416222 v10 (responder), 8af8a2d LEDGER 285, 1db7f65 LEDGER 286, 21a210b / 8f4ed93
+LEDGER 287, a3515d6 v11 (LEDGER 288); wrap LEDGER 289.
+Proxy down 13:42Z-19:17Z, self-recovered; responder armed. KIT-V9 / KIT-V11 read back PASS.
+Do NOT redo: RC-HALFMOVE, DEHARDCODE-REST, KIT-V9-READBACK, v11 vendor.
+Next: R4 tally once voted; RETIRE-JUNCTION waits on 6 sibling re-points; TRIAGE-ACK and the
+READBACK-2237 status-line half; GATE-SUBAGENT-FP (ROADMAP).
+
 ## PREVIOUS SESSION (2026-10-08, session 67) - move to E: read back, DEHARDCODE 40/55
 
 Commits: aa9774a campaign import fix, ed25c00 / 79d201e / 1451ac6 DEHARDCODE, LEDGER 283.
