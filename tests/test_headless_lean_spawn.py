@@ -15,8 +15,8 @@ pins the `rc-main` model alias the proxy answers with 404. Every LW path runs
 explicit --model, so no alias ever decides a run.
 
 Model on the responder is the kit's (`pick_model(writes_code)`); effort is the
-kit's `pick_effort(note)` on a reply-only run and `high` on a code-writing run
-(kit v3 gap 6, closed by kit v4 `effort=`). LW maps the KIND token to
+kit's `pick_effort(note)` on a reply-only run and `medium` on a code-writing run
+(kit v3 gap 6, closed by kit v4 `effort=`; high until MAIN REPO-REVIEW perf 2.3). LW maps the KIND token to
 writes_code.
 """
 from __future__ import annotations
@@ -199,8 +199,9 @@ def test_an_unknown_or_unparseable_kind_is_treated_as_code_writing():
     assert responder.writes_code(Path("note.md")) is True
 
 
-def test_a_code_writing_run_keeps_high_effort():
-    assert _routed("2026-10-03-0912-from-MAIN-ORDER-ALL-x.md") == ("opus", "high")
+def test_a_code_writing_run_uses_medium_effort():
+    """MAIN REPO-REVIEW perf 2.3 (2026-10-09): high -> medium on code runs."""
+    assert _routed("2026-10-03-0912-from-MAIN-ORDER-ALL-x.md") == ("opus", "medium")
 
 
 # --------------------------------------------------------------------------

@@ -664,6 +664,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests.
   - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep.
   - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).
+  - RRF-T1 (INFERRED, 2026-10-09): 6 tests in tests/test_headless_lean_spawn.py go red while the LIVE ops/runtime/inbox_responder/HALT file exists - the responder's halt check reads real state; point it at tmp_path in those tests (fleet_test_guard declared roots).
   - RRF-3.4: absolute checkout path and account username -> `<repo>` / `%USERPROFILE%` placeholders (done.md, headless-upgrade.md, sync-all-md.md, OPERATIONS.md, the golden-set plan).
 
 - **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).

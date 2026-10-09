@@ -27,6 +27,61 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+292. DONE **2026-10-09 (MAIN 2246 REPO-REVIEW ORDER sections 2-8: GH-HYGIENE history rewrite + force push, perf and README fixes, sidecar line, repo-review driver queued; attended session 69).**
+   Provenance READ BACK: the ORDER note re-hashes 781c0faf... and `fleet_headless.verify_main` against MAIN's outbox = True.
+   OPERATOR CONFIRMATION (attended session 2026-10-09, operator's own words, answering (1) confirm the history
+   rewrite + force push of the ORDER's sections 2-8 and (2) remove the `Claude-Session:` trailer from e601e50 and any
+   other AI/bot trailer in that rewrite): "1 yes; 2. yes remove". This lifts the D1 (history rewrite) and D2
+   (force push to the public remote) floors that a MAIN note alone cannot.
+   STALE RESPONDER (found first): the 2026-10-08 23:07 responder child (kit.spawn rc 0, 625.8 s) left
+   progress/responder-run.json at 40 pct step A2 (gated suite on 937d745) since 23:02 - 2x its eta long past, its
+   owner no live claude session, its claims released - so DEAD. It had done: section 1 (v13 937d745, answered in
+   the 2026-10-09-0000 LW note) and the hand-off commit 3b62ee4; it had drafted, not launched, the section 8 driver
+   (gitignored ops/loop/control/repo-review-launch.py + repo-review-prompt.md, no launch log, no headless usage line).
+   Nothing redone.
+   1. SECTION 3.1 first (ordinary commit 22a8ee9 -> rewritten a109d9c): the account and org UUID in
+      docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md:106-107 -> `<account-uuid>` / `<org-uuid>`; NEW guard
+      tests/test_no_account_uuid.py (keyed UUID after account/org uuid-or-id keys, every tracked file, all-zero
+      allowed; red first, then 13 passed).
+   2. SECTION 4 REWRITE, ONLY through ops/fleet_kit/fleet_rewrite.py. Responder paused with
+      ops/runtime/inbox_responder/HALT (loop STOP and ci_watchdog HALT already present); no linked worktree; tree
+      clean; no other live claims. Replace values in the LOCAL gitignored ops/loop/control/rewrite-replace.txt.
+      plan f7f7b61d648d: 759 commits scanned, 7 to rewrite (ai-or-bot-author 1, claude-trailer 6,
+      non-operator-committer 1, trailer 1), replace #1 / #2 2 commits each, 0 HEAD hits.
+      BACKUP: `fleet_rewrite.py bundle` -> E:\Sidecars\LW\Rewrite-backup\Legion-Wallpaper-pre-rewrite-20261009-074911.bundle,
+      10 refs, verified, sha256 0b0f3d56f5c6eef5f9eb609af71ed159abf78b9616385eb725ac9d7c9c4a2c85.
+      TWO KIT DEFECTS (reported to MAIN, kit not edited): (a) a stale .git/filter-repo/already_ran (> 1 day, from the
+      2026-09-07 rewrite) makes filter-repo block on an interactive Y/N prompt - the run hung ~10 min with nothing
+      changed; killed, the old state dir moved aside to .git/filter-repo-prev-2026-09-07, re-run with stdin /dev/null;
+      (b) filter-repo then rewrote every ref but exited 1, and `run` raised before restoring the remotes it saves -
+      origin was re-added by hand, result.json never written. Repo checked after: `git fsck` clean, reflog expired +
+      `git gc --prune=now` (filter-repo's own cleanup step).
+      RESULT: 155 shas changed (153 on main, 2 on local side branches), 0 dropped, HEAD tree a1db95f identical before
+      and after; old main 22a8ee9 (remote 3b62ee4) -> a109d9c. Map: docs/_archive/2026-10-09-sha-rewrite-map.md
+      (keyed on the pre-rewrite shas; 0 overlap with the 09-07 map, so never chained). Re-plan after: 760 scanned,
+      0 to rewrite, 0 replace hits; `fleet_identity.py check main` = 758 commits clean; `git log main` authors and
+      committers = 758 operator only.
+      FORCE PUSH: first refused by branch protection (GH006); allow_force_pushes lifted for ONE push via the API,
+      `git push --force-with-lease=main:3b62ee4 origin main` through fleet_gitlock (pre-push identity hook passed),
+      protection restored and READ BACK allow_force_pushes false, enforce_admins true, allow_deletions false.
+      READ BACK: `git ls-remote origin main` = a109d9c = local HEAD; CI ci 37934300889 + codeql 37934300786 success
+      on a109d9c; contributors API = 1 entry (Remus3 758); remote branches = main only (the dependabot branch was
+      already gone; refs/pull/1/head is GitHub's read-only PR ref). No tags, releases or environments.
+   3. SECTIONS 2 / 3 / 5 (commit 1992f05): done.md section 0 Tier-1 preflight + no blocking gh run watch (2.2);
+      responder RUN_TIMEOUT_S 1800, CODE_EFFORT medium, pinned by tests/test_responder_perf_budget.py (2.3);
+      nightly CI skips a sha already green on push, CodeQL push `paths:` python + workflows (2.4); CLAUDE.md push at
+      /done and one-suite-per-sha (2.5, 2.7); README badges dropped, no sibling count, trailer wording (3.5);
+      GEMINI.md kept, consumer = the gemini CLI loop director (3.6); hand-off drops the retired pre-move copy plan
+      (5). FILED: ROADMAP REPO-REVIEW-FOLLOW rows RRF-2.1, 2.3b, 2.6, 2.8, 2.9, 2.10, 3.2, 3.3, 3.4. Section 6: no
+      LW action. Section 7: nothing.
+   4. SECTION 8: driver label repo-review, kind build, progress ops/loop/control/progress/repo-review.json,
+      launched through tools/lw_headless_env.spawn (the fleet kit) by the gitignored repo-review-launch.py.
+   7 tests in tests/test_headless_lean_spawn.py went red on the first gated run: 6 because the LIVE responder HALT
+   file was read by the tests (filed RRF-T1), 1 pinning the old high effort (updated to medium).
+   VERIFY (Tier-2): see the follow-up commit's gated run; install_git_hooks --check OK; drift_guard 0 breaches; ruff clean.
+   Decision: rewrite now (alternatives: fix-forward only - rejected, the operator confirmed the rewrite and the
+   UUID class needs the history scrub). Reverse if: the operator makes the repo private (then the scrub is moot).
+
 291. DONE **2026-10-08 (FLEET-KIT v13 vendored from MAIN's COMMITTED staged bundle 2128 - no v13 ORDER sent yet; identity hooks wired; session 69).**
    Provenance READ BACK: bundle `2026-10-08-2128-from-MAIN-FLEET-KIT-v13/` read from MAIN's outbox (not delivered to
    LW's inbox; MAIN ROADMAP KIT-13: "bundle staged, NO note sent"); verify_main 23/23 True against MAIN's HEAD blob.

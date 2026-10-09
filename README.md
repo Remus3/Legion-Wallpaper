@@ -62,7 +62,7 @@ _Probed live 2026-10-03. A static status table goes stale, so the machine-readab
 | **Built, not yet exercised end to end** | Final pass, last pass and end review are coded, tested and gated, but no image has been carried through to delivery yet |
 | **Corpus** | 737 tracked illustrations on one Windows workstation: 517 through cleaning, 70 in cleaning scratch, 142 in first pass, 8 outside the active stages |
 | **Approval** | First-pass results wait for the operator. An agent never approves its own output |
-| **Code** | 101 tools, 177 test files, 3,506 collected tests, 13 ADRs, 243 ledger items, 670+ commits |
+| **Code** (re-probed 2026-10-09) | 120 tools, 225 test files, about 4,160 collected tests, 13 ADRs, 292 ledger items, 760+ commits |
 | **Autonomy** | Phase A (shadow). Promotion needs a window of 50 or more operator-reviewed images |
 
 ## What is next
