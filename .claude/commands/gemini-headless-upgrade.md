@@ -75,7 +75,7 @@ proceed. Caveman ULTRA output default (compress ~90 percent; code/paths/numbers 
   parallel per task, each ONE slice on a DISJOINT file set. Dispatch concurrent agents in a
   SINGLE message with multiple Agent blocks (true concurrency).
 - Merge order: the foundational / version-bump slice (TBD) FIRST, then dependents, living-docs
-  sync LAST. Merge via `git -C "C:/Legion Wallpaper" merge --no-ff origin/<branch>` (CWD hazard:
+  sync LAST. Merge via `git -C "<repo>" merge --no-ff origin/<branch>` (CWD hazard:
   the shell CWD persists between Bash calls; a merge fired from a worktree dir lands wrong).
 - VERIFIER GATE before any merge (ground truth, not the slice agent's word): dispatch the
   read-only `verifier` subagent with the claim + cited test cmd + cited files. Merge only on

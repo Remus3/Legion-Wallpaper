@@ -163,25 +163,25 @@ REM The live task ALSO carries <Hidden>true</Hidden>, which schtasks flags
 REM cannot express; to restore that, export the XML, insert the element and
 REM re-register with /Create /XML /F. This flag form alone will not set it.
 schtasks /Create /TN "LW-WeeklyHygiene" /SC WEEKLY /D SUN /ST 04:17 /F ^
-  /TR "powershell -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File \"C:\Legion Wallpaper\tools\weekly_hygiene_run.ps1\""
+  /TR "powershell -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File \"<repo>\tools\weekly_hygiene_run.ps1\""
 
 REM BLOCKED ON SCRIPT - ops\lw_supervisor.py does not exist
 schtasks /Create /TN "LW-Supervisor" /SC ONLOGON /RL HIGHEST /F ^
-  /TR "\"pythonw\" \"C:\Legion Wallpaper\ops\lw_supervisor.py\""
+  /TR "\"pythonw\" \"<repo>\ops\lw_supervisor.py\""
 
 REM REGISTERED 2026-08-02 - by its OWN tool, not by schtasks flags.
 REM A bare `/SC ONSTART /RI 2` is REJECTED outright ("/RI ... not applicable for
 REM the scheduled types: ONSTART, ONLOGON, ONIDLE, ONEVENT"), the same wall
 REM lw_wallpaper_rotate hit, so the trigger goes through XML:
-python "C:\Legion Wallpaper\tools\ci_watchdog.py" --install
-python "C:\Legion Wallpaper\tools\ci_watchdog.py" --uninstall
+python "<repo>\tools\ci_watchdog.py" --install
+python "<repo>\tools\ci_watchdog.py" --uninstall
 
 REM Inspect without acting (prints CI state, stored attempts, halt, decision):
-python "C:\Legion Wallpaper\tools\ci_watchdog.py" --status
+python "<repo>\tools\ci_watchdog.py" --status
 
 REM RETIRED 2026-08-02 by gemini-removal - do NOT run this
 REM schtasks /Create /TN "LW-GeminiAudit" /SC DAILY /ST 03:30 /F ^
-REM   /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\Legion Wallpaper\tools\gemini_audit.ps1\""
+REM   /TR "powershell -NoProfile -ExecutionPolicy Bypass -File \"<repo>\tools\gemini_audit.ps1\""
 ```
 
 Unregister (the kill path for anything armed above):
@@ -193,8 +193,8 @@ schtasks /Delete /TN "LW-WeeklyHygiene" /F
 `LW-Wallpaper` is registered by its own tool, not by hand:
 
 ```
-python "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" install
-python "C:\Legion Wallpaper\tools\lw_wallpaper_rotate.py" uninstall
+python "<repo>\tools\lw_wallpaper_rotate.py" install
+python "<repo>\tools\lw_wallpaper_rotate.py" uninstall
 ```
 
 It writes a Task Scheduler XML (`ops/runtime/lw_wallpaper_task.xml`) and

@@ -341,7 +341,7 @@ def test_done_ritual_binds_after_every_authored_edit_and_before_the_push():
     text = _done_doc()
     bind_at = text.index("tools/done_gate.py bind")
     verify_at = text.index("tools/done_gate.py verify-push")
-    push_at = text.index("git -C \"C:/Legion Wallpaper\" push origin")
+    push_at = text.index("git -C \"<repo>\" push origin")
     docs_at = text.index("### 4b. Living-doc sync")
     handoff_at = text.index("tools/lw_next_session.py --write")
 

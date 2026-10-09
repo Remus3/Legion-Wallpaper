@@ -22,7 +22,7 @@ Versioning is cheap; lost work is not. The operator never passes up a commit + p
 
 This run is a PRE-FLIGHT: it exists so a broken suite is found before you spend the session's tail writing docs. It licenses the commit in section 1 and nothing else. The run that licenses the PUSH is section 7, against the fully committed tree.
 
-- Identify the files authored this session: `git -C "C:/Legion Wallpaper" status -s`.
+- Identify the files authored this session: `git -C "<repo>" status -s`.
 - Run the cheap local gate on the touched surface:
   - `python -m ruff check .` (must report ALL CHECKS PASSED)
   - `python -m py_compile <each touched .py>` (syntax - silent-crash guard per CLAUDE.md hard rule)
@@ -49,7 +49,7 @@ Until such a package exists: skip this section.
 
 **Race guards (FLEET-COMMON 16, MAIN FLEET-KIT v12, 2026-10-08):** every commit and push in this ritual runs through the kit's per-tree git lock - `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git commit -F <msgfile>` and `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git push origin <branch>` - and every WHOLE-suite run through the machine-wide suite gate - `python ops/fleet_kit/fleet_suite_gate.py run --owner <id> -- python -m pytest tests/ -q` (the section-7 binding gate runs its own suite check through it). `<id>` is your claim owner; the claims hook denies a bare `git commit` / `git push` / whole suite and its deny reason names the id to pass.
 
-- `git -C "C:/Legion Wallpaper" status -s`
+- `git -C "<repo>" status -s`
 - If output is empty: skip to section 2.
 - Otherwise:
   - **Audit before staging**: refuse to auto-commit any path matching `*SECRET*`, `*HANDSHAKE*`, `*PIVOT*`, `*REPLY*`, `*TOKEN*`, `*KEY*`, `.env*`, `local_paths.json`, or anything that looks like credentials. If matched: stop and ask the operator before proceeding.
@@ -68,11 +68,11 @@ Do NOT push here. The push is section 7, after everything else this session auth
 
 ### 3. LW restart pending
 
-- Check `C:/Legion Wallpaper/restart_trigger.txt` - if non-empty, the LW runtime may still be reloading. Confirm `ops/runtime/health.json` shows `alive=true` AND `last_reload_ok=true` before declaring done. (Skip if `ops/runtime/health.json` does not exist yet - no LW runtime is live until the product is defined.)
+- Check `<repo>/restart_trigger.txt` - if non-empty, the LW runtime may still be reloading. Confirm `ops/runtime/health.json` shows `alive=true` AND `last_reload_ok=true` before declaring done. (Skip if `ops/runtime/health.json` does not exist yet - no LW runtime is live until the product is defined.)
 
 ### 4. WAKEUP_NOTES update
 
-- The next session will bootstrap from `C:/Legion Wallpaper/WAKEUP_NOTES.md` + `MEMORY.md` + git log. Make sure tomorrow-you can pick up cleanly.
+- The next session will bootstrap from `<repo>/WAKEUP_NOTES.md` + `MEMORY.md` + git log. Make sure tomorrow-you can pick up cleanly.
 - Append a short entry (<=20 lines) describing this session's work: commits shipped, key decisions, what's next. Don't rewrite history; just append.
 - Note explicitly any blockers or things tomorrow-you should NOT redo (e.g. "fix X already shipped in <sha> - don't re-investigate").
 
@@ -107,7 +107,7 @@ Keep WAKEUP_NOTES.md to last 2-3 full sessions only. Headless spawn overhead gro
 Run the auto-prune helper:
 
 ```
-python "C:/Legion Wallpaper/scripts/wakeup_prune.py" --keep 3
+python "<repo>/scripts/wakeup_prune.py" --keep 3
 ```
 
 This moves any session block past the 3 most recent into `docs/history_notes.md` (newest-first, atomic write). It is a no-op when WAKEUP_NOTES already has <=3 sessions, so always-safe to run. Add `--dry-run` first if you want to preview what would move.
@@ -159,7 +159,7 @@ The gate that licenses the push, and the only one. Section 0 ran before the sess
 
 **Nothing may be authored between this gate and the push.** Edit a file after binding and the receipt is void: commit the edit and bind again.
 
-- Everything from sections 1 and 4-6 must already be committed. `git -C "C:/Legion Wallpaper" status -s` must print NOTHING.
+- Everything from sections 1 and 4-6 must already be committed. `git -C "<repo>" status -s` must print NOTHING.
 - Bind the gate:
 
 ```
@@ -167,7 +167,7 @@ python tools/done_gate.py bind
 ```
 
   It refuses (exit 2) a dirty tree, or a tree that moved while the checks ran, and exits 1 when a check goes red. Only on exit 0 does it write `ops/runtime/done_gate.json` recording the graded sha. The checks are the section-0 set run against the committed tree: `ruff check .`, `pytest tests/ -q`, `tools/drift_guard.py`.
-- Push: `git -C "C:/Legion Wallpaper" log @{u}.. --oneline` to list what is going, then `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git -C "C:/Legion Wallpaper" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual. Only ask the operator if the push fails (auth, conflict, hook).
+- Push: `git -C "<repo>" log @{u}.. --oneline` to list what is going, then `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git -C "<repo>" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual. Only ask the operator if the push fails (auth, conflict, hook).
 - Prove the pushed tree IS the graded tree:
 
 ```
