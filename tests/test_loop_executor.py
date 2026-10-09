@@ -335,7 +335,7 @@ def worktree_pair(tmp_path: Path):
     main = tmp_path / "main"
     (main / ".githooks").mkdir(parents=True)
     (main / "tools").mkdir()
-    for name in ("pre-commit", "commit-msg"):
+    for name in ("pre-commit", "commit-msg", "pre-push"):  # pre-push: kit v13
         dst = main / ".githooks" / name
         dst.write_text((ROOT / ".githooks" / name).read_text(encoding="utf-8"),
                        encoding="utf-8", newline="\n")
@@ -395,7 +395,7 @@ def test_worktree_gate_is_inert_when_hookspath_is_an_unrelated_dir(worktree_pair
     main, wt = worktree_pair
     rogue = tmp_path / "rogue"
     rogue.mkdir()
-    for name in ("pre-commit", "commit-msg"):
+    for name in ("pre-commit", "commit-msg", "pre-push"):  # pre-push: kit v13
         (rogue / name).write_text((ROOT / ".githooks" / name).read_text(
             encoding="utf-8"), encoding="utf-8", newline="\n")
     _git_in(main, "config", "core.hooksPath", str(rogue))

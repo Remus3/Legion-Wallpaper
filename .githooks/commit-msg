@@ -27,6 +27,15 @@ if [ -z "$PY" ] || ! command -v "$PY" >/dev/null 2>&1; then
     PY=python
 fi
 
+# Fleet kit v13 (FLEET-COMMON 17): strip AI / bot attribution lines FIRST, so
+# the checks below read the cleaned message. Never rejects a commit (the kit's
+# fail-open design; the pre-push identity check is the hard gate) - but LOUD,
+# never a silent or-true: drift_guard bans silent suppression in a hook, and a strip
+# that failed must say so.
+if ! "$PY" "$ROOT/ops/fleet_kit/fleet_identity.py" commit-msg "$1"; then
+    echo "commit-msg: fleet_identity strip FAILED - commit not refused; pre-push will check" >&2
+fi
+
 "$PY" "$ROOT/tools/precommit_msg_check.py" "$1" || exit 1
 
 # Banned-glyph scan + operator policy 2026-06-03 (strip the Claude co-author

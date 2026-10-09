@@ -1,0 +1,23 @@
+#!/bin/sh
+# Legion Wallpaper pre-push hook - fleet kit v13 (FLEET-COMMON 17, GH-HYGIENE
+# ruling 2026-10-08): refuse a push whose range carries a non-operator author
+# or committer, or an AI / bot attribution line. The operator identity set is
+# read ONLY from this clone's LOCAL git config key fleet.operatorIdent (never a
+# tracked file); with no value set the kit refuses every push.
+#
+# Install per-clone with:
+#   git config core.hooksPath .githooks
+
+ROOT="$(git rev-parse --show-toplevel)"
+# Interpreter resolution: same three arms as pre-commit / commit-msg (no
+# account name spelled out - this file is tracked in a PUBLIC repo).
+PY="${PYTHON:-}"
+if [ -z "$PY" ] && [ -n "$LOCALAPPDATA" ]; then
+    PY="$(printf '%s' "$LOCALAPPDATA" | tr '\\' '/')/Programs/Python/Python314/python.exe"
+fi
+if [ -z "$PY" ] || ! command -v "$PY" >/dev/null 2>&1; then
+    PY=python
+fi
+
+"$PY" "$ROOT/ops/fleet_kit/fleet_identity.py" pre-push "$@" || exit 1
+exit 0

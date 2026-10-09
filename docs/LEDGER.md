@@ -27,6 +27,60 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+291. DONE **2026-10-08 (FLEET-KIT v13 vendored from MAIN's COMMITTED staged bundle 2128 - no v13 ORDER sent yet; identity hooks wired; session 69).**
+   Provenance READ BACK: bundle `2026-10-08-2128-from-MAIN-FLEET-KIT-v13/` read from MAIN's outbox (not delivered to
+   LW's inbox; MAIN ROADMAP KIT-13: "bundle staged, NO note sent"); verify_main 23/23 True against MAIN's HEAD blob.
+   Decision: adopt now on the operator's relayed order to catch up (alternatives: wait for the ORDER - rejected,
+   the bundle is committed and verified; partial adoption - rejected, conformance is all-or-nothing). Reverse if:
+   MAIN's v13 ORDER ships different bytes - then re-vendor from it.
+   1. VENDOR: 23 files byte-for-byte (atomic replace, re-read equal, no CR); changed 10 (cli_display.json,
+      FLEET-COMMON.md, fleet_claims, fleet_gitlock, fleet_headless, fleet_suite_gate, MANIFEST.json, NOTICE; new
+      fleet_identity, fleet_rewrite). MANIFEST sha256 1311801a0f5c5ee17150d56b438fb0038a92efeb2b8e13ba02c79da2457f74e0.
+      FLEET-COMMON block re-embedded, re-hashed fb6c129a73d1e1d8bee60367b4f4f74d39bb4051bdef0f56afd24d88e9a6f02b
+      (item 5 Desktop shortcut dropped, 16a owner rule, 16c 2 slots + FIFO, NEW item 17). conformance(root) = [].
+      Pins 12 -> 13 in 3 tests + lw_promise_probes.FLEET_KIT_VERSION.
+   2. IDENTITY HOOKS (FLEET-COMMON 17): .githooks/commit-msg runs `fleet_identity.py commit-msg "$1"` FIRST,
+      fail-open but loud (`if ! ...; then echo >&2; fi`) instead of the docstring's `|| true`, because drift_guard
+      bans silent suppression in a hook (decision; MAIN's drift regex (f) still matches). NEW .githooks/pre-push
+      (100755) runs `fleet_identity.py pre-push "$@" || exit 1`. install_git_hooks.IDENTITY_REQUIRED makes --check
+      (and drift_guard) require both. Local-only config `fleet.operatorIdent` set to the tree's existing commit
+      identity (never tracked). Probe read back: the commit-msg hook stripped a Claude-Session trailer from a sample
+      message, rc 0. `fleet_identity.py check` over origin/main~3..origin/main flags e601e50 (claude-trailer) - that
+      commit was pushed before the pre-push hook existed; history rewrite stays operator-gated (D1), not done.
+   3. KIT DEFECT still open in v13: flagless spawns at fleet_gitlock.py:171 (pgrep) and :425 (runner),
+      fleet_suite_gate.py:316 (runner); strict-xfail pins moved; reported to MAIN.
+   4. NEW tests/test_fleet_kit_v13_identity.py (6 arms, red first 4/5, green after). First gated v13 run: 46
+      failed - conftest's _atomic_write guard lacked v13's verify= kwarg (passes extra args through now) and 3
+      temp-repo hook fixtures lacked pre-push (added); the failing files reran green.
+   5. MAIN 2246 ORDER (REPO-REVIEW, section 1 = kit v13) arrived 22:46 with the same bundle (verify_main True,
+      23/23 byte-equal to what was vendored). Its step 5 done here: ops/loop/control/identity.jsonl gitignored
+      (+1 arm). fleet.operatorIdent covers the one operator ident in all history (others: dependabot, GitHub).
+      Sections 2-8 stay with the live LW responder run (repo-review driver), not this commit.
+   6. SUITE (gated, v13, rerun): 4121 passed, 19 skipped, 3 xfailed, 1 failed + 1 error. The failure is the
+      known test_lw_usm_halo_probe torch worker crash under load (0xC0000005); the error is fleet_test_guard
+      seeing ops/loop/control/repo-review-prompt.md, written by the LIVE responder at 22:59, not by a test.
+      Both files rerun green alone (69/69 with the identity, gitignore and wakeup arms).
+
+290. DONE **2026-10-08 (MAIN 2031 ORDER: FLEET-KIT v12 race guards vendored e601e50 - abandoned responder adoption completed; session 69).**
+   Provenance READ BACK: verify_main(note, MAIN outbox) True; bundle 21/21 verify_main True; LW kit hashes equal
+   the note's table 21/21. Safety: the responder run that started it (progress responder-run.json, 20:44, eta 900 s)
+   was stale > 2x eta with no LW claude/python child alive, so its uncommitted edits were reviewed and completed.
+   1. VENDOR: 21 files, MANIFEST 781996ac966c11cb83d357afc39ac634d7d9ae6cdd39e7282b0ddb2309bd600d, FLEET-COMMON block
+      5bf10722.. read back equal. Hooks wired EXACTLY: PreToolUse `Edit|Write|NotebookEdit|MultiEdit|Bash|PowerShell`
+      `python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_claims.py" hook`, SubagentStop
+      `python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_claims.py" release-hook`, timeout 10 each; subagent-first kept.
+      5 runtime paths gitignored explicitly; fleet_test_guard installed (env_roots = lw_race_guards.ENV_ROOTS).
+   2. ROUTING: tools/lw_race_guards.py; ci_watchdog push under git_lock; done_gate / pytest_guard /
+      lw_false_red_probe / truth_gate suites via the gate (re-entry inside a held slot runs direct); NEW
+      lw_race_guards.CHILD_RULE appended to the responder child prompt and the executor sdk prompt (3 arms red first).
+   3. WINDOW GUARD: kit v12 has 3 flagless spawn sites; the guard has no sanctioned kit exemption (retired at v10),
+      so the kit is NOT edited and the guard NOT allowlisted - test_no_console_flash pins the exact set as strict
+      xfails (tripwire both ways); reported to MAIN as a defect.
+   4. SUITE (gated, --slots 2 because a sibling's stalled suite held slot 0): 4110 passed, 19 skipped, 3 xfailed,
+      2 failed - both "declared hook script not tracked" (fleet_claims.py untracked); green after `git add` (rerun
+      3/3 + 9/9). A 30-min-old 0-byte .git/index.lock (no LW git alive) was removed by hand before staging.
+      Pushed e601e50; CI ci + codeql success read back.
+
 289. DONE **2026-10-08 (session 68 wrap: inbox sync, proxy outage, read-backs, junction proof; docs-only).**
    Session 68 work is recorded item by item in LEDGER 284-288; this entry records only the wrap.
    1. INBOX: v10 vendored by the responder (a416222, LEDGER 284); batched answer to MAIN 1445 (2237 answer,

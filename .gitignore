@@ -100,6 +100,8 @@ ops/loop/control/locks/
 ops/loop/control/claims.jsonl
 ops/loop/control/claims.mode
 ops/loop/control/gitlock.jsonl
+# Fleet kit v13 (MAIN 2246 section 1 step 5; FLEET-COMMON 17): identity hook log.
+ops/loop/control/identity.jsonl
 
 # Sync staging
 tmp/

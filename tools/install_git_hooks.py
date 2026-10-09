@@ -56,6 +56,13 @@ REQUIRED = {
     "commit-msg": "precommit_gate.py\" --message-file",
 }
 
+# Fleet kit v13 (FLEET-COMMON 17): the identity hooks, checked the same way.
+# A second table, not a second needle per REQUIRED row, so each gap is named.
+IDENTITY_REQUIRED = {
+    "commit-msg": "fleet_identity.py\" commit-msg",
+    "pre-push": "fleet_identity.py\" pre-push",
+}
+
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(repo), *args], capture_output=True,
@@ -125,7 +132,7 @@ def check(repo: Path) -> list[str]:
     # fall back to this tree's copy when the active dir is not the gate at all.
     gate_dir = active_res if armed else candidates[0]
 
-    for name, needle in REQUIRED.items():
+    for name, needle in [*REQUIRED.items(), *IDENTITY_REQUIRED.items()]:
         f = gate_dir / name
         if not f.is_file():
             problems.append(f"MISSING {HOOKS_DIRNAME}/{name}")

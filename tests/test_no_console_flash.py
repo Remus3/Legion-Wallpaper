@@ -61,17 +61,18 @@ _module_consts = guard._module_consts
 resolves_to_flag = guard.resolves_to_flag
 
 
-# Kit v12 (MAIN 2031) ships three flagless spawn sites LW may not patch
-# (FLEET-COMMON 11): fleet_gitlock's pgrep probe and its git runner, and the
-# suite gate's suite runner. Reported to MAIN as a kit defect (LEDGER 290). The
+# Kit v12 (MAIN 2031) shipped three flagless spawn sites LW may not patch
+# (FLEET-COMMON 11) and kit v13 (bundle 2128) still carries them, moved:
+# fleet_gitlock's pgrep probe and its git runner, and the suite gate's suite
+# runner. Reported to MAIN as a kit defect (LEDGER 290). The
 # guard itself keeps NO exemption - it still prints them at session start; this
 # pin only keeps the suite honest about exactly which kit sites are known. It
 # is a tripwire both ways: a new flagless site anywhere fails, and so does a kit
 # release that fixes one (then shrink the set).
 KNOWN_KIT_SPAWN_GAPS = {
-    "ops/fleet_kit/fleet_gitlock.py:157",
-    "ops/fleet_kit/fleet_gitlock.py:370",
-    "ops/fleet_kit/fleet_suite_gate.py:252",
+    "ops/fleet_kit/fleet_gitlock.py:171",
+    "ops/fleet_kit/fleet_gitlock.py:425",
+    "ops/fleet_kit/fleet_suite_gate.py:316",
 }
 
 

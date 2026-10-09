@@ -121,12 +121,13 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
     original = kit._atomic_write
     hits: list[str] = []
 
-    def _guarded(path, text):
-        # progress/ too (kit v7 write_progress, item-13 checklists).
+    def _guarded(path, text, *args, **kw):
+        # progress/ too (kit v7 write_progress, item-13 checklists). Extra
+        # arguments pass through (kit v13 added verify= for write_progress).
         if Path(path).resolve().parent in (real, real / "progress"):
             hits.append(str(path))
             raise RuntimeError("test arm wrote a live fleet-kit file")
-        return original(path, text)
+        return original(path, text, *args, **kw)
 
     monkeypatch.setattr(kit, "_atomic_write", _guarded)
     yield

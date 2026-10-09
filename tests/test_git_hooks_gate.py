@@ -186,7 +186,7 @@ def wired(repo: Path) -> Path:
     """
     (repo / ".githooks").mkdir()
     (repo / "tools").mkdir()
-    for name in ("pre-commit", "commit-msg"):
+    for name in ("pre-commit", "commit-msg", "pre-push"):  # pre-push: kit v13
         dst = repo / ".githooks" / name
         dst.write_text((ROOT / ".githooks" / name).read_text(encoding="utf-8"),
                        encoding="utf-8", newline="\n")
