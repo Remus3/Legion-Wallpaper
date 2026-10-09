@@ -51,6 +51,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_race_guards  # noqa: E402  (sibling tool, not a package)
+
 # CREATE_NO_WINDOW: 0 on non-Windows so the module still imports/tests in CI.
 # Windows-only flag; every spawn carries it (no console flash on Legion).
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
@@ -65,6 +68,14 @@ DEFAULT_CHECKS: list[list[str]] = [
     [sys.executable, "-m", "pytest", "tests/", "-q"],
     [sys.executable, "tools/drift_guard.py"],
 ]
+
+
+def default_checks(env: dict | None = None) -> list[list[str]]:
+    """DEFAULT_CHECKS with the whole suite run through the kit's suite gate
+    (FLEET-COMMON 16c, MAIN 2031); unwrapped when already inside a held slot."""
+    own = lw_race_guards.owner("done_gate", env)
+    return [lw_race_guards.gate_argv(c, own, env) if "pytest" in c else list(c)
+            for c in DEFAULT_CHECKS]
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
@@ -152,7 +163,7 @@ def bind(repo: Path, receipt: Path, checks: list[list[str]] | None = None,
     while the checks ran). Exit 1 = the tree was gradeable and a check failed.
     Only exit 0 licenses the push.
     """
-    checks = DEFAULT_CHECKS if checks is None else checks
+    checks = default_checks() if checks is None else checks
 
     dirt = tree_dirt(repo)
     if dirt:

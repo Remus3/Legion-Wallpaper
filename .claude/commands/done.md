@@ -48,6 +48,8 @@ Until such a package exists: skip this section.
 
 ### 1. Auto-commit any pending changes
 
+**Race guards (FLEET-COMMON 16, MAIN FLEET-KIT v12, 2026-10-08):** every commit and push in this ritual runs through the kit's per-tree git lock - `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git commit -F <msgfile>` and `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git push origin <branch>` - and every WHOLE-suite run through the machine-wide suite gate - `python ops/fleet_kit/fleet_suite_gate.py run --owner <id> -- python -m pytest tests/ -q` (the section-7 binding gate runs its own suite check through it). `<id>` is your claim owner; the claims hook denies a bare `git commit` / `git push` / whole suite and its deny reason names the id to pass.
+
 - `git -C "C:/Legion Wallpaper" status -s`
 - If output is empty: skip to section 2.
 - Otherwise:
@@ -55,7 +57,7 @@ Until such a package exists: skip this section.
   - **Frozen-file guard**: per `CLAUDE.md`, several files require explicit user approval before editing. If any modified path is in the frozen list, stop and ask - auto-commit is too dangerous here. Frozen list lives at the top of CLAUDE.md.
   - Stage only the changes you authored this session (`git add <specific files>`). Do NOT use `git add -A` - accidentally commits .env / runtime junk.
   - Draft a one-line commit message summarising the session's work (1-2 sentences, "why" over "what"). If multiple distinct themes: list them as bullets in the body.
-  - Commit with NO Claude co-author trailer - the `Co-Authored-By: Claude ... <noreply@anthropic.com>` line is banned repo-wide (CLAUDE.md hard rule, operator policy 2026-06-03). `.githooks/commit-msg` -> `precommit_gate.py --message-file` strips it if the harness appends one anyway; do not add it back.
+  - Commit through the git lock (`fleet_gitlock.py run --owner <id> -- git commit -F <msgfile>`), with NO Claude co-author trailer - the `Co-Authored-By: Claude ... <noreply@anthropic.com>` line is banned repo-wide (CLAUDE.md hard rule, operator policy 2026-06-03). `.githooks/commit-msg` -> `precommit_gate.py --message-file` strips it if the harness appends one anyway; do not add it back.
   - If pre-commit hooks fail: fix and create a new commit (never `--amend`).
 
 Do NOT push here. The push is section 7, after everything else this session authors has been committed and graded.
@@ -166,7 +168,7 @@ python tools/done_gate.py bind
 ```
 
   It refuses (exit 2) a dirty tree, or a tree that moved while the checks ran, and exits 1 when a check goes red. Only on exit 0 does it write `ops/runtime/done_gate.json` recording the graded sha. The checks are the section-0 set run against the committed tree: `ruff check .`, `pytest tests/ -q`, `tools/drift_guard.py`.
-- Push: `git -C "C:/Legion Wallpaper" log @{u}.. --oneline` to list what is going, then `git -C "C:/Legion Wallpaper" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual. Only ask the operator if the push fails (auth, conflict, hook).
+- Push: `git -C "C:/Legion Wallpaper" log @{u}.. --oneline` to list what is going, then `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git -C "C:/Legion Wallpaper" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual. Only ask the operator if the push fails (auth, conflict, hook).
 - Prove the pushed tree IS the graded tree:
 
 ```

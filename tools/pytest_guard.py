@@ -22,6 +22,10 @@ import os
 import py_compile
 import subprocess
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_race_guards  # noqa: E402  (sibling tool, not a package)
 
 # Hooks run under windowless pythonw.exe; a console-subsystem child (python /
 # ruff / git) would otherwise get a fresh console allocated - an on-screen +
@@ -56,7 +60,11 @@ def _collect_paths(payload: dict) -> list:
 def _full_suite() -> int:
     try:
         proc = subprocess.run(
-            [sys.executable, "-m", "pytest", "-x", "--ff", "-q"],
+            # Whole suite: through the kit's suite gate (FLEET-COMMON 16c);
+            # a hook must not hang an hour on a busy box, so 600 s, then
+            # the gate fails closed and the tail below says why.
+            lw_race_guards.gate_argv([sys.executable, "-m", "pytest", "-x", "--ff", "-q"],
+                                     lw_race_guards.owner("pytest_guard"), timeout=600),
             capture_output=True,
             text=True,
             creationflags=_NO_WINDOW,

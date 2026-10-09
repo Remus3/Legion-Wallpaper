@@ -464,7 +464,21 @@ def sdk_prompt(cycle: int, body: str, src: str) -> str:
         "/gemini-headless-upgrade and Read the file ops/loop/control/directive.md and "
         "fully execute it now. No questions; auto-pick the recommended option and proceed."
     )
-    return f"{head}\n\n{FINAL_STEP}\n"
+    return f"{head}\n\n{_race_guards_module().CHILD_RULE}\n\n{FINAL_STEP}\n"
+
+
+def _race_guards_module():
+    """Bind tools/lw_race_guards.py BY PATH (kit v12 adapter; FLEET-COMMON 16),
+    reusing a copy that is already loaded."""
+    if "lw_race_guards" in sys.modules:
+        return sys.modules["lw_race_guards"]
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "lw_race_guards", Path(__file__).resolve().parents[2] / "tools" / "lw_race_guards.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 class SdkExecutor:

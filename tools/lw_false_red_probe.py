@@ -21,6 +21,9 @@ import shutil
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import lw_race_guards  # noqa: E402  (sibling tool, not a package)
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "ops" / "runtime" / "false_red_probe"
 NO_WINDOW = 0x08000000
@@ -44,7 +47,9 @@ def path_without_git(env: dict[str, str]) -> str:
 def run_suite(env: dict[str, str], tag: str) -> dict:
     log = OUT / f"suite_{tag}.txt"
     proc = subprocess.run(
-        [sys.executable, "-m", "pytest", "tests/", "-q", "--no-header", "-p", "no:cacheprovider"],
+        lw_race_guards.gate_argv(
+            [sys.executable, "-m", "pytest", "tests/", "-q", "--no-header", "-p", "no:cacheprovider"],
+            lw_race_guards.owner("false_red_probe", env), env),
         cwd=ROOT,
         env=env,
         capture_output=True,

@@ -93,6 +93,13 @@ ops/loop/control/*
 # kit v9 /done marker (MAIN 2354): explicit, so narrowing the glob above never tracks it
 ops/loop/control/session_done.json
 ops/loop/control/session_done.seen
+# Fleet kit v12 race guards (MAIN 2031; FLEET-COMMON 16): runtime state,
+# already under ops/loop/control/* above, named explicitly per the ORDER.
+ops/loop/control/claims/
+ops/loop/control/locks/
+ops/loop/control/claims.jsonl
+ops/loop/control/claims.mode
+ops/loop/control/gitlock.jsonl
 
 # Sync staging
 tmp/

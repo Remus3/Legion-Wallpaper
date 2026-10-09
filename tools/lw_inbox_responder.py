@@ -694,13 +694,21 @@ def inbox_cost_rule(note_path: Path) -> str:
                                    cap=fleet_inbox.OUTBOUND_CAP)
 
 
+def _race_guards():
+    """tools/lw_race_guards.py (kit v12 adapter), imported on first use."""
+    import lw_race_guards
+    return lw_race_guards
+
+
 def spawn_prompt(note_path: Path, provenance: str = "") -> str:
     """The child's prompt. The parent's MAIN digest, when computed, is appended,
-    then the item-14 inbox-cost rule and the item-13 checklist rule."""
+    then the item-14 inbox-cost rule, the item-13 checklist rule and the
+    item-16 race-guard rule."""
     prompt = _PROMPT.format(note=note_path.as_posix())
     prompt = f"{prompt} {provenance}" if provenance else prompt
     prompt = f"{prompt} {inbox_cost_rule(note_path)}"
-    return f"{prompt} {lw_checklist.child_rule(CHILD_TASK, FIRE_N)}"
+    prompt = f"{prompt} {lw_checklist.child_rule(CHILD_TASK, FIRE_N)}"
+    return f"{prompt} {_race_guards().CHILD_RULE}"
 
 
 # Kit v11 ruling R1: the kit's triage_spawn_kwargs(floors_in_hooks) - sonnet,

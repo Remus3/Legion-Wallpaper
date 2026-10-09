@@ -37,7 +37,7 @@ def _tree(tmp_path, version, notes):
 def test_the_probe_pins_the_vendored_version():
     pp = _probes()
     man = json.loads((ROOT / "ops" / "fleet_kit" / "MANIFEST.json").read_text(encoding="utf-8"))
-    assert pp.FLEET_KIT_VERSION == man["version"] == 11
+    assert pp.FLEET_KIT_VERSION == man["version"] == 12
 
 
 def test_older_kit_notes_in_the_inbox_do_not_fire(tmp_path, monkeypatch):
@@ -53,8 +53,8 @@ def test_a_newer_kit_note_fires_and_clears_once_vendored(tmp_path, monkeypatch):
     root = _tree(tmp_path, pp.FLEET_KIT_VERSION, [f"ORDER FLEET-KIT-v{newer} ships"])
     monkeypatch.setattr(pp, "ROOT", root)
     assert pp.fleet_kit_moved() is True
-    # Two-digit versions are newer too.
-    (root / "moon_sync_inbox" / "n0.md").write_text("FLEET-KIT-v12", encoding="utf-8")
+    # Two-digit versions are newer too (not a literal: the pin itself is two-digit now).
+    (root / "moon_sync_inbox" / "n0.md").write_text("FLEET-KIT-v99", encoding="utf-8")
     assert pp.fleet_kit_moved() is True
     # Clears: the note is gone (or vendored and the pin moved) - no fire.
     (root / "moon_sync_inbox" / "n0.md").write_text("FLEET-KIT-v3", encoding="utf-8")

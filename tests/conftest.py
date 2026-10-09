@@ -53,6 +53,26 @@ except Exception:                           # noqa: BLE001 - guard only
 
 import pytest
 
+# FLEET-KIT v12 test guard (MAIN 2031 step 6; FLEET-COMMON 16d): the session
+# FAILS when a test changed live tree state (ops/loop/control, the sync inbox
+# and outbox), and every env var LW reads to locate a runtime root
+# (lw_race_guards.ENV_ROOTS) points at tmp_path for every test. LW adds one
+# ignore glob to the kit's: headless_budget.json(.lock) is rewritten by a LIVE
+# headless spawn (the PT5M responder) on its own schedule; a test writing it
+# is already caught at the kit writer by _the_live_fleet_files_are_never_written.
+import sys as _sys  # noqa: E402
+
+_ROOT = Path(__file__).resolve().parents[1]
+for _p in (_ROOT / "ops" / "fleet_kit", _ROOT / "tools"):
+    if str(_p) not in _sys.path:
+        _sys.path.insert(0, str(_p))
+import fleet_test_guard  # noqa: E402
+import lw_race_guards  # noqa: E402
+
+fleet_test_guard.install(
+    globals(), root=_ROOT, env_roots=lw_race_guards.ENV_ROOTS,
+    ignore=fleet_test_guard.IGNORE + ("ops/loop/control/headless_budget.json*",))
+
 
 @pytest.fixture(autouse=True)
 def _unpatch_pil_image_open():

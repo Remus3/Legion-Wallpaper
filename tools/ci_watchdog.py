@@ -51,6 +51,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+import lw_race_guards  # noqa: E402  (sibling tool, not a package)
 STATE_DIR = ROOT / "ops" / "runtime" / "ci_watchdog"
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
@@ -401,7 +403,10 @@ def do_fix_pass(sha, runs, attempt, tg, *, model, dry_run, fix_timeout, env_seam
         if after == before:
             log(f"no commit made (claude ok={ok}) - nothing to push. tail: {out[-300:]}")
             return False
-        r = run(["git", "push", "-u", "origin", branch], cwd=wt, timeout=300)
+        # Per-tree git lock (FLEET-COMMON 16a, MAIN 2031): the worktree shares
+        # the main checkout's lock, so this push never races a commit there.
+        with lw_race_guards.git_lock(wt, lw_race_guards.owner("ci_watchdog"), "push"):
+            r = run(["git", "push", "-u", "origin", branch], cwd=wt, timeout=300)
         if r.returncode != 0:
             log(f"push failed: {r.stderr.strip()[:300]}")
             return False

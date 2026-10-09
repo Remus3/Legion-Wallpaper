@@ -30,6 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import lw_paths  # noqa: E402  (sibling tool, not a package)
 import slice_orchestrator as so  # noqa: E402  (sibling tool, not a package)
+import lw_race_guards  # noqa: E402  (sibling tool, not a package)
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPORT = ROOT / "ops" / "runtime" / "truth_gate_report.json"
@@ -85,8 +86,11 @@ def parse_pytest_summary(text):
 def run_suite_fresh(cmd, out_path):
     """Run the suite, tee output to a file, read the FILE back (stale-pipe guard)."""
     out_path = Path(out_path)
+    # Whole suite through the kit's suite gate (FLEET-COMMON 16c, MAIN 2031);
+    # obs["cmd"] keeps the suite command the claim named.
+    gated = lw_race_guards.gate_shell(cmd, lw_race_guards.owner("truth_gate"))
     with open(out_path, "w", encoding="utf-8", errors="replace") as fh:
-        proc = subprocess.run(cmd, shell=True, cwd=str(ROOT),
+        proc = subprocess.run(gated, shell=True, cwd=str(ROOT),
                               stdout=fh, stderr=subprocess.STDOUT,
                               creationflags=NO_WINDOW)
     text = out_path.read_text(encoding="utf-8", errors="replace")
