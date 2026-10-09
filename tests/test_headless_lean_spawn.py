@@ -75,6 +75,24 @@ def _carries_lean(argv: list) -> bool:
     return any(argv[i:i + len(lean)] == lean for i in range(len(argv)))
 
 
+_LIVE_HALT = responder.HALT_PATH
+
+
+@pytest.fixture(autouse=True)
+def _no_live_halt(monkeypatch, tmp_path):
+    """RRF-T1 (REPO-REVIEW 2026-10-09): `responder.spawn` hands HALT_PATH to the
+    kit as `halt_file`, read at call time. Pointed at the LIVE
+    ops/runtime/inbox_responder/HALT, six tests here went red whenever the
+    operator's kill switch was set. Point it at an absent tmp path instead."""
+    monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "inbox_responder" / "HALT")
+
+
+def test_a_live_halt_never_reaches_these_tests(tmp_path):
+    assert responder.HALT_PATH != _LIVE_HALT
+    assert tmp_path in responder.HALT_PATH.parents
+    assert not responder.HALT_PATH.exists()
+
+
 def test_the_lean_set_is_the_kits_and_never_bare():
     lean = list(lw_headless_env.LEAN_ARGS)
     assert "--strict-mcp-config" in lean
