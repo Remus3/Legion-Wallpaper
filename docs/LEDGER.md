@@ -27,6 +27,26 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+293. DONE **2026-10-09 (MAIN 0930 FLEET-KIT v14 adopted, e102758; responder child died mid-suite, finished by the session 69 wrap).**
+   Provenance READ BACK: the parent responder recorded MAIN PROVENANCE MATCH for the 0930 ORDER (runs.jsonl 14:37:25Z).
+   DEAD RESPONDER: the 09:27 child (session 65384deb, kit.spawn rc 0, 626.7 s, num_turns 2) dispatched a background
+   agent and exited at 09:37:25; the agent died with it. progress/responder-run.json froze at 65 pct step N3 (suite)
+   at 09:34:35; its orphaned gated suite (slot-0 pid 32172) ran on with no reader and ended 09:44:48. Claims released,
+   no live owner, so DEAD. It had drafted every v14 edit (21 files) but committed nothing and answered nothing.
+   READ BACK before committing: all 22 kit files + MANIFEST.json cmp-equal to the delivered bundle; MANIFEST sha256 =
+   the ORDER's section 1 value; KIT_VERSION 14; conformance() == [] (marker lines alone). Step 3.4 APPLIED
+   (conftest pins FLEET_SIDECAR_ROOT=""); step 3.3 applied (extra_ignore). v14 closed the three kit spawn sites:
+   KNOWN_KIT_SPAWN_GAPS is empty, lw_window_guard follows only a **quiet_inherit() splat (KIT-SPAWN-GAP done).
+   One defect in the drafted edits, fixed: the new test_the_suite_pins_the_sidecar_root_off asserted on
+   os.environ.get directly, which test_assert_never_renders_the_environ refuses (public repo); bound to a local.
+   Gated suite (fleet_suite_gate) before the fix: 4153 passed, 19 skipped, 1 failed (that test); affected files after:
+   223 passed. ruff clean.
+   GH-HYGIENE survey (fleet_identity check --history --by-class): main 760 commits, every class 0, RESULT no trigger
+   tier; all 10 local side branches the same (0 flagged). Session 69 main thread: 0 SUBAGENT-FIRST would-deny rows
+   (clean interactive session 2 of 3 for SAF-DENY).
+   OBSERVED, not fixed: logs/2026-10-09.log carries "run budget exhausted (120/120)" refusals at times a suite ran
+   while the live budget file held 6 starts - likely a test writing the live log; filed in the hand-off.
+
 292. DONE **2026-10-09 (MAIN 2246 REPO-REVIEW ORDER sections 2-8: GH-HYGIENE history rewrite + force push, perf and README fixes, sidecar line, repo-review driver queued; attended session 69).**
    Provenance READ BACK: the ORDER note re-hashes 781c0faf... and `fleet_headless.verify_main` against MAIN's outbox = True.
    OPERATOR CONFIRMATION (attended session 2026-10-09, operator's own words, answering (1) confirm the history
