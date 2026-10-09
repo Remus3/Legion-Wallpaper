@@ -10,8 +10,6 @@
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg)](https://www.python.org/)
 [![platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6.svg)](#requirements)
-[![decisions: 13 ADRs](https://img.shields.io/badge/decisions-13%20ADRs-6f42c1.svg)](docs/adr/)
-[![tests: 3.5k](https://img.shields.io/badge/tests-3.5k-2ea44f.svg)](tests/)
 
 </div>
 
@@ -83,7 +81,7 @@ The headline items:
   agree today, and nothing makes them agree tomorrow.
 - **Package the process as the deliverable.** Pipeline, gate ladder, rubric,
   golden-set protocol and manifests. Never the images.
-- **The tooling-tier lane.** Five sibling agent projects each audited their own
+- **The tooling-tier lane.** Sibling agent projects each audited their own
   history for "done" claims that a later session refuted, then asked what share
   a better gate or a tighter contract would have caught. Four landed on 78 to 83
   percent; one dissents hard at 31. No tooling gets built until that
@@ -137,7 +135,7 @@ flowchart LR
 - **Subagent first.** The main session plans, dispatches and reports. Work beyond
   a one-line fix runs in background subagents that write a progress file as they
   go, so status is read from a file, never by interrupting the worker.
-- **Cross-repo note sync, end to end.** This repo is one of six sibling projects
+- **Cross-repo note sync, end to end.** This repo is one of several sibling projects
   on the same machine that talk through a file-based channel
   ([`docs/CHANNEL.md`](docs/CHANNEL.md)). Notes land in a gitignored inbox; shared
   files are pinned by sha256 and a change lands only when every carrier reports
@@ -151,7 +149,9 @@ flowchart LR
   runs per rolling 24 hours and writes a live status file. Each lane has a HALT
   file as its kill switch. Details: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 - **Gates over good intentions.** `.githooks/` blocks banned glyphs and net-new
-  lint on staged lines and strips agent co-author trailers; CI re-runs the full
+  lint on staged lines; the fleet kit's identity hooks strip AI or bot
+  co-author / sign-off trailers at commit time and the pre-push hook refuses a
+  range holding a non-operator author or committer; CI re-runs the full
   suite, including the publication guards, on every push to `main`.
 
 ## Decisions are written down, including the wrong ones

@@ -8,8 +8,14 @@
 name: codeql
 
 on:
+  # MAIN REPO-REVIEW perf 2.4 (2026-10-09): CodeQL ran on every push (261 in
+  # 38 days). A push now fires it only when analysed code changed: python files
+  # or the workflows themselves. PR, weekly schedule and dispatch stay whole.
   push:
     branches: [main]
+    paths:
+      - '**/*.py'
+      - '.github/workflows/**'
   pull_request:
     branches: [main]
   schedule:

@@ -8,7 +8,8 @@ Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 b
   ROADMAP R4; ADR-009 engine REPLACE only). (2) Watch the inbox for the 6 sibling
   re-point confirmations (RETIRE-JUNCTION, LEDGER 287).
 Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (LEDGER
-  282/283/287); pre-move copy C:\Legion Wallpaper.pre-move-20261008 kept untouched;
+  282/283/287); pre-move copy retired by the operator 2026-10-08 (gone; its cutover HALT
+  sentinel kept at E:\Sidecars\LW\Rollback-unique, MAIN 2246 s5);
   LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live state before
   acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
   RC-TeamClaudeProxy on localhost:3456 (logon-only, no restart-on-failure; was down
@@ -25,14 +26,14 @@ Acceptance: R4 tally recorded with the operator's votes, or still READY and carr
   the READBACK-2237 status-line half read back.
 CHECKLIST:
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
-  - RETIRE-JUNCTION: Watch inbox for the 6 sibling re-point confirmations (RC+RSC moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN tests/test_fleet_kit_v6_lanes.py:108; note 1837), then rename the junction off for the soak, then Recycle-Bin the pre-move copy (LEDGER 287)
+  - RETIRE-JUNCTION: Watch inbox for the 6 sibling re-point confirmations (RC+RSC moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN tests/test_fleet_kit_v6_lanes.py:108; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
   - TRIAGE-ACK: Confirm a live non-TERMINAL ACK/INFORMATION/REPORT note is acked with no spawn in runs.jsonl (ANSWER notes clear via the TERMINAL skip, LEDGER 286)
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (feedback-line half PASSED session 68, LEDGER 289)
   - GATE-SUBAGENT-FP: Fix claimed_green_gate false positive - it cannot see subagent pytest runs (ROADMAP, LEDGER 289); TDD first
   - SAF-DENY: SUBAGENT-FIRST hook: session 68 = clean interactive session 1 of 3 (2 quick-read Bash would-deny rows on the main thread); after 3 clean interactive sessions write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
-  - REPO-REVIEW: Confirm the LW responder finished MAIN 2246 sections 2-8 (GH-HYGIENE rewrite APPROVED + force push, audits, sidecars, atlas, repo-review driver progress/repo-review.json) and its ANSWER reached MAIN; section 1 answered in the 2026-10-09-0000 LW note (LEDGER 291)
+  - REPO-REVIEW-DRIVER: Read ops/loop/control/progress/repo-review.json and docs/REPO_REVIEW_FINDINGS_2026-10-08.md from the queued MAIN 2246 s8 driver (label repo-review) and send its result in the next batched MAIN ANSWER; sections 1-7 answered (LEDGER 292)
   - KIT-SPAWN-GAP: When MAIN ships CREATE_NO_WINDOW at fleet_gitlock.py:171/:425 and fleet_suite_gate.py:316, drop the strict-xfail pins in tests/test_no_console_flash.py (reported in the 2026-10-09-0000 note, LEDGER 290-291)
 Carried forward:
   - CI for the session 68 wrap commit: confirmed after this file was committed; re-check

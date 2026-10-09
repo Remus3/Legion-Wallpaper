@@ -655,6 +655,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Open items - High priority
 
+- **TODO REPO-REVIEW-FOLLOW: MAIN 2246 known findings left to the section 8 driver (LEDGER 292, 2026-10-09).** Done in the attended session: 3.1 (UUID scrub + `tests/test_no_account_uuid.py`), 3.5 (badges, trailer wording), 3.6 (GEMINI.md kept: the gemini CLI that directs the loop (`ops/loop/loop_controller.py`) auto-loads a root GEMINI.md as its context; also cited by `docs/ORCHESTRATION_PLAN.md`), 2.2 (done.md Tier-1 preflight, no blocking `gh run watch`), 2.3 timeout 1800 / effort medium, 2.4 (nightly skip-if-green, CodeQL push `paths:`), 2.5 + 2.7 (CLAUDE.md push and one-suite-per-sha rules), section 4 rewrite + force push. FILED here, each its own slice with TDD:
+  - RRF-2.1: hash-pinned pytest-xdist + pytest-timeout (120), `-n auto --dist loadfile`, `serial` mark on test_loop_concurrency / test_gpu_mutex_wiring / test_loop_lanes / test_lw_httpd for a `-n0` pass, markers slow / subprocess / git, one `--durations=25` file.
+  - RRF-2.3b: deterministic `tools/lw_kit_adopt.py` (copy bundle, verify hashes, re-embed block, conformance, kit tests) first; model only for the residual at sonnet/medium.
+  - RRF-2.6: one lazy autouse fixture (or a session root with per-test subdirs) instead of six autouse tmp_path fixtures in tests/conftest.py.
+  - RRF-2.8: one answer channel per ORDER (child reply OR the tick's batched answer, not both).
+  - RRF-2.9: flip subagent_first to deny - tracked as hand-off item SAF-DENY.
+  - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests.
+  - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep.
+  - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).
+  - RRF-3.4: absolute checkout path and account username -> `<repo>` / `%USERPROFILE%` placeholders (done.md, headless-upgrade.md, sync-all-md.md, OPERATIONS.md, the golden-set plan).
+
 - **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
   - DONE R1 CAMBI mlc=5 (LEDGER 263): ACCEPTED. Output-only mlc=5 ranks posterize_8 above clean 12/12 (one absolute bar 11/12); default mlc=2 7/12 (bar 3/12). Shipped as the delta vs the source resized to output size: clean max 1.21, banded min 3.00 -> new row G1.cambi_delta (flag > 2.0) PROVEN 12/12; live needauth census 0/131 flagged (max 1.74).
   - DONE R1b (LEDGER 265): `lw_first_pass.compute_cambi_delta` feeds `assemble_metrics(..., cambi_delta)` live (None + log line without ffmpeg, never gated); G1.band_delta board row + its ack entry retired together; band_delta kept as `info_metrics` (USM census) and as a verdict rule for `lw_clean_fr` only.

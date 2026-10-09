@@ -197,7 +197,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 
 ## Verification tiers
 - Tier-0 cosmetic: Edit + `py_compile`. Tier-1 one module: `py_compile` + its tests. Tier-2 schema / engine / core contract (when in doubt, classify up): full `tests/` + restart.
-- Run a suite once, trust exit code + result file; re-run only after an edit or a demonstrable pipe glitch.
+- Run a suite once, trust exit code + result file; re-run only after an edit or a demonstrable pipe glitch. One full suite per committed tree sha (MAIN REPO-REVIEW perf 2.7): `done_gate.json`'s graded sha is the cache; a verifier re-runs the cited tests plus `--lf`, not the whole suite again.
 - Tier-2: before claiming green, re-run fresh, `ls` every cited test file, report this run's counts; never carry a subagent's count forward - the `verifier` subagent re-checks.
 - Verify external state live (keys, PIDs, "X is broken") before asserting it.
 - Text-first: files via Read/Edit/Write/Grep/Glob; state via `ops/runtime/health.json`; visual tools only for rendered pixels (escape hatch `ops/runtime/allow_visual.flag`). Skip screenshots for backend/doc changes.
@@ -216,12 +216,12 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 ## Session
 - Session checklist (FLEET-COMMON item 13, kit v7): the counter is the `SESSION: <n>` line in `LW-NEXT-SESSION.txt` (stamped n+1 by `tools/lw_next_session.py --write` at /done); tasks come from its `CHECKLIST:` section. Printers: SessionStart hook `tools/lw_checklist.py session-start` (interactive); `ops/loop/loop_controller.py` per cycle into `progress/lane-<i>.json` (main checkout); `tools/lw_inbox_responder.py` per tick into `progress/inbox-responder.json`, and its child prompt (plus the CI-fix prompt) carries `lw_checklist.child_rule`.
 - /done: tests, commit, push, append the item to `docs/LEDGER.md` (never CLAUDE.md), confirm CI green, rewrite `LW-NEXT-SESSION.txt` carrying forward every un-acted item, commit it; chat output only per FLEET-COMMON item 5. CLAUDE.md is CI size-budgeted (< 60 KB, `drift_guard`).
-- Push every verified-green commit to origin main; CI runs only the tip of a push.
+- Push verified-green commits to origin main at /done and at the end of a responder or driver run - one push, not one per commit (MAIN REPO-REVIEW perf 2.5); CI runs only the tip of a push.
 
 ## Settled - do not re-litigate
 One line each; reasoning and evidence in `docs/claude-md-history.md` (and the cited LEDGER/ADR). "Reverse if" names what would reopen it.
 - LW inherits the Riot Commander operating system 1:1 (ADR-001). Reverse if: a new ADR supersedes ADR-001.
-- Repo PUBLIC under Apache-2.0 (LEDGER 88): no image bytes, keys or personal email tracked; history rewritten 3x - resolve old shas via the 09-07 map FIRST, never chain maps; a force-push does not purge GitHub objects. Reverse if: the operator makes the repo private.
+- Repo PUBLIC under Apache-2.0 (LEDGER 88): no image bytes, keys or personal email tracked; history rewritten 4x - resolve an old sha in the 10-09 map first (it covers only shas from 2026-09-20 on), else the 09-07 map, never chain maps (LEDGER 292); a force-push does not purge GitHub objects. Reverse if: the operator makes the repo private.
 - Pipeline folder scheme (ADR-003). Reverse if: a new operator-designed ADR.
 - Primary upscaler IllustrationJaNai V3 detail DAT2 (ADR-004); V1 DAT2 fallback. Reverse if: a golden A/B sweep beats V3 on MS-SSIM/LPIPS/halo.
 - Artist signatures are REMOVED (ADR-005). Reverse if: the private-use boundary (RESTORATION_PLAN section 10) changes.

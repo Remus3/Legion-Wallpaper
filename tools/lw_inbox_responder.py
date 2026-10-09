@@ -614,11 +614,11 @@ RESPONDER_EXTRA = ("--permission-mode", "bypassPermissions")
 
 # Seconds one responder run may take. On expiry the kit kills the whole process
 # tree and returns a usage line with rc None and error "timeout" (kit v4).
-RUN_TIMEOUT_S = 3600
+RUN_TIMEOUT_S = 1800  # MAIN REPO-REVIEW perf 2.3 (was 3600)
 
 # Effort for a code-writing run (kit v4 `effort=`); a reply-only run keeps the
 # kit's own pick_effort.
-CODE_EFFORT = "high"
+CODE_EFFORT = "medium"  # MAIN REPO-REVIEW perf 2.3 (was high)
 
 
 def writes_code(note_path: Path) -> bool:

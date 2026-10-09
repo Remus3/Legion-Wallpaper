@@ -71,13 +71,30 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # MAIN REPO-REVIEW perf 2.4 (2026-10-09): the nightly re-tested an
+    # already-green sha 38 of 38 times. actions: read lets the first step
+    # ask whether a push run of this workflow already passed on github.sha.
+    permissions:
+      contents: read
+      actions: read
     steps:
+      - name: skip a sha already green on push
+        id: seen
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci --commit "$GITHUB_SHA" --event push --status success --json databaseId --jq length || echo 0)
+          if [ "${n:-0}" -gt 0 ]; then echo skip=true >> "$GITHUB_OUTPUT"; echo "sha already green on push - nightly skipped"; fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.seen.outputs.skip != 'true'
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.seen.outputs.skip != 'true'
         with:
           python-version: "3.14"
           cache: pip
       - name: Install test deps
+        if: steps.seen.outputs.skip != 'true'
         run: |
           # requirements.txt is dev-toolchain-only for now (pytest + ruff) -
           # the tree is pure stdlib so far. When runtime deps appear they go
@@ -91,6 +108,7 @@ jobs:
           # unhashed download left in the job.
           pip install --require-hashes -r requirements.txt
       - name: arm the git-hook gate
+        if: steps.seen.outputs.skip != 'true'
         run: |
           # Same reason as the check job's copy of this step: core.hooksPath is
           # LOCAL config and is never cloned, so the tracked .githooks gate is
@@ -103,6 +121,7 @@ jobs:
           python tools/install_git_hooks.py
           python tools/install_git_hooks.py --check
       - name: py_compile sweep
+        if: steps.seen.outputs.skip != 'true'
         run: |
           # Same sweep as the check job - see the comment there.
           python - <<'PY'
@@ -125,8 +144,10 @@ jobs:
           print(f"OK: {count} .py files compile clean")
           PY
       - name: ruff lint
+        if: steps.seen.outputs.skip != 'true'
         run: ruff check .
       - name: Full test suite
+        if: steps.seen.outputs.skip != 'true'
         run: |
           # Same surface as the check job for now - the split exists so the
           # nightly can absorb slow/full product suites (TBD - product not
