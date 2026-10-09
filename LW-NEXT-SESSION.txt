@@ -12,7 +12,9 @@ Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (L
   LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live state before
   acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
   RC-TeamClaudeProxy on localhost:3456 (logon-only, no restart-on-failure; was down
-  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v11 (LEDGER 288). Headless
+  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v13 (LEDGER 290-291): commit/push via fleet_gitlock.py
+  run --owner <session_id>.<agent_id>, whole suites via fleet_suite_gate.py, identity
+  hooks in .githooks (commit-msg strips, pre-push refuses). Headless
   spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE
   (LW-InboxResponder, every 5 min, children COMMIT in this tree - check its progress
   file before editing shared files). Kill: HALT file or delete the proxy user
@@ -30,6 +32,8 @@ CHECKLIST:
   - SAF-DENY: SUBAGENT-FIRST hook: session 68 = clean interactive session 1 of 3 (2 quick-read Bash would-deny rows on the main thread); after 3 clean interactive sessions write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
+  - REPO-REVIEW: Confirm the LW responder finished MAIN 2246 sections 2-8 (GH-HYGIENE rewrite APPROVED + force push, audits, sidecars, atlas, repo-review driver progress/repo-review.json) and its ANSWER reached MAIN; section 1 answered in the 2026-10-09-0000 LW note (LEDGER 291)
+  - KIT-SPAWN-GAP: When MAIN ships CREATE_NO_WINDOW at fleet_gitlock.py:171/:425 and fleet_suite_gate.py:316, drop the strict-xfail pins in tests/test_no_console_flash.py (reported in the 2026-10-09-0000 note, LEDGER 290-291)
 Carried forward:
   - CI for the session 68 wrap commit: confirmed after this file was committed; re-check
     `gh run list --limit 1` at session start.
@@ -40,8 +44,6 @@ Carried forward:
     override gone with v11 triage_spawn_kwargs(True) (LEDGER 288); bare=False ruling
     asked of MAIN in the 1445 answer. wip/inbox-responder-triage (eb69fef) and
     lw/triage-wip-finish branches kept.
-  - MAIN 1445 answer misstates the proxy outage start as 19:00Z; actual 13:42Z (LEDGER
-    285/289) - correct it in the next batched MAIN note.
   - GATE (LEDGER 280) known gap: "after the rerun all tests passed" no longer caught
     (fail-open by design).
   - FLEET item-12 gap: worktree-isolated subagents cannot write progress files to the
