@@ -34,7 +34,6 @@ CHECKLIST:
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
   - REPO-REVIEW-DRIVER: Read ops/loop/control/progress/repo-review.json and docs/REPO_REVIEW_FINDINGS_2026-10-08.md from the queued MAIN 2246 s8 driver (label repo-review) and send its result in the next batched MAIN ANSWER; sections 1-7 answered (LEDGER 292)
-  - KIT-SPAWN-GAP: When MAIN ships CREATE_NO_WINDOW at fleet_gitlock.py:171/:425 and fleet_suite_gate.py:316, drop the strict-xfail pins in tests/test_no_console_flash.py (reported in the 2026-10-09-0000 note, LEDGER 290-291)
 Carried forward:
   - CI for the session 68 wrap commit: confirmed after this file was committed; re-check
     `gh run list --limit 1` at session start.

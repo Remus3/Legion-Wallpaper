@@ -39,6 +39,12 @@ from pathlib import Path
 
 os.environ.setdefault("YOLO_AUTOINSTALL", "false")
 
+# FLEET-KIT v14 (MAIN 0930 step 3.4): fleet_lanes.worktree_path() reads the user
+# variable FLEET_SIDECAR_ROOT (process env first; an EMPTY value turns it off).
+# Pin it off so lane tests never depend on the machine's value
+# (tests/test_loop_lanes.py::test_the_suite_pins_the_sidecar_root_off).
+os.environ["FLEET_SIDECAR_ROOT"] = ""
+
 if not os.environ.get("PYTEST_DEBUG_TEMPROOT"):
     _temproot = Path(tempfile.gettempdir()) / "pytest-legion-wallpaper"
     _temproot.mkdir(exist_ok=True)          # pytest mkdirs only the child
@@ -60,6 +66,7 @@ import pytest
 # ignore glob to the kit's: headless_budget.json(.lock) is rewritten by a LIVE
 # headless spawn (the PT5M responder) on its own schedule; a test writing it
 # is already caught at the kit writer by _the_live_fleet_files_are_never_written.
+# Kit v14 adds it to IGNORE itself; extra_ignore ADDS (v14 step 3.3), harmless.
 import sys as _sys  # noqa: E402
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -71,7 +78,7 @@ import lw_race_guards  # noqa: E402
 
 fleet_test_guard.install(
     globals(), root=_ROOT, env_roots=lw_race_guards.ENV_ROOTS,
-    ignore=fleet_test_guard.IGNORE + ("ops/loop/control/headless_budget.json*",))
+    extra_ignore=("ops/loop/control/headless_budget.json*",))
 
 
 @pytest.fixture(autouse=True)

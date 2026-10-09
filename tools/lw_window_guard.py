@@ -209,6 +209,34 @@ def resolves_to_flag(node, consts, depth=0):
     return False
 
 
+# Kit v14 (MAIN 0930): fleet_gitlock.quiet_inherit() returns subprocess kwargs
+# whose creationflags is CREATE_NO_WINDOW when there is no visible console (the
+# pythonw case that flashes) and 0 inside a visible one (the child shares it).
+# A spawn that splats exactly that call is followed; the runtime value is pinned
+# by tests/test_no_console_flash.py. Any other **splat still fails closed.
+QUIET_KWARGS_FUNCS = {"quiet_inherit"}
+
+
+def spawn_flags(call):
+    """The node carrying a spawn's creationflags, or None.
+
+    An explicit `creationflags=` keyword wins (so `creationflags=0` beside the
+    splat still fails). Otherwise a `**quiet_inherit()` / `**mod.quiet_inherit()`
+    splat maps to a synthetic CREATE_NO_WINDOW attribute."""
+    explicit = next((k.value for k in call.keywords if k.arg == "creationflags"), None)
+    if explicit is not None:
+        return explicit
+    for k in call.keywords:
+        v = k.value
+        if k.arg is None and isinstance(v, ast.Call) and not v.args and not v.keywords:
+            f = v.func
+            name = f.id if isinstance(f, ast.Name) else (
+                f.attr if isinstance(f, ast.Attribute) else None)
+            if name in QUIET_KWARGS_FUNCS:
+                return ast.Attribute(value=ast.Name(id="subprocess"), attr=FLAG_NAME)
+    return None
+
+
 def check_spawns():
     """B - subprocess call sites whose creationflags do not resolve to the flag."""
     misses = []
@@ -234,8 +262,7 @@ def check_spawns():
                         and isinstance(f.value, ast.Name)
                         and f.value.id == "subprocess"):
                     continue
-                flags = next((k.value for k in node.keywords
-                              if k.arg == "creationflags"), None)
+                flags = spawn_flags(node)
                 if flags is not None and resolves_to_flag(flags, consts):
                     continue
                 misses.append(f"{py.relative_to(ROOT).as_posix()}:{node.lineno}")

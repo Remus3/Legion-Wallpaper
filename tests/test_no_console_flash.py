@@ -62,18 +62,12 @@ resolves_to_flag = guard.resolves_to_flag
 
 
 # Kit v12 (MAIN 2031) shipped three flagless spawn sites LW may not patch
-# (FLEET-COMMON 11) and kit v13 (bundle 2128) still carries them, moved:
-# fleet_gitlock's pgrep probe and its git runner, and the suite gate's suite
-# runner. Reported to MAIN as a kit defect (LEDGER 290). The
-# guard itself keeps NO exemption - it still prints them at session start; this
-# pin only keeps the suite honest about exactly which kit sites are known. It
-# is a tripwire both ways: a new flagless site anywhere fails, and so does a kit
-# release that fixes one (then shrink the set).
-KNOWN_KIT_SPAWN_GAPS = {
-    "ops/fleet_kit/fleet_gitlock.py:171",
-    "ops/fleet_kit/fleet_gitlock.py:425",
-    "ops/fleet_kit/fleet_suite_gate.py:316",
-}
+# (FLEET-COMMON 11); kit v13 still carried them (LEDGER 290). Kit v14 (MAIN 0930)
+# CLOSED them: fleet_gitlock's git runner and the suite gate's suite runner pass
+# `**quiet_inherit()`, the pgrep probe a literal flag. The guard follows that
+# splat (spawn_flags) and the runtime arm below proves its value, so the pin set
+# is EMPTY. It stays a tripwire: a new flagless site anywhere fails.
+KNOWN_KIT_SPAWN_GAPS: set[str] = set()
 
 
 def _spawn_sites():
@@ -102,8 +96,7 @@ def _spawn_sites():
                             and f.value.id == "subprocess")
                 if not is_spawn:
                     continue
-                flags = next((k.value for k in node.keywords
-                              if k.arg == "creationflags"), None)
+                flags = guard.spawn_flags(node)
                 sites.append((py.relative_to(ROOT).as_posix(),
                               node.lineno, flags, consts))
     return sites
@@ -237,8 +230,8 @@ def test_resolver_follows_module_level_constants(src, expected):
 
 def test_the_session_start_guard_reports_no_spawn_site_on_this_tree():
     """The SessionStart window guard resolves every site on this tree, the kit's
-    `_run` included (its parameter default since kit v10; no exemption), except
-    the pinned kit-defect sites above."""
+    `_run` included (its parameter default since kit v10; no exemption) and the
+    v14 `**quiet_inherit()` sites (no pinned kit-defect site remains)."""
     assert set(guard.check_spawns()) == KNOWN_KIT_SPAWN_GAPS
 
 
@@ -285,3 +278,40 @@ def test_a_flagless_kwargs_spawn_in_the_kit_file_is_no_longer_exempt(tmp_path, m
                                          "    subprocess.Popen(['a'], **kw)\n", encoding="ascii")
     monkeypatch.setattr(guard, "ROOT", tmp_path)
     assert guard.check_spawns() == ["ops/fleet_kit/fleet_headless.py:4"]
+
+
+# ---- kit v14: `**quiet_inherit()` is followed, and only that splat ----------
+
+@pytest.mark.parametrize("src,expected", [
+    ('subprocess.run(["x"], **quiet_inherit())', True),
+    ('subprocess.run(["x"], **gitlock.quiet_inherit())', True),
+    ('subprocess.run(["x"], **kw)', False),
+    ('subprocess.run(["x"], **other())', False),
+    ('subprocess.run(["x"], **quiet_inherit)', False),
+    ('subprocess.run(["x"], creationflags=0, **quiet_inherit())', False),
+])
+def test_guard_follows_only_the_quiet_inherit_splat(src, expected):
+    call = next(n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Call)
+                and isinstance(n.func, ast.Attribute) and n.func.attr == "run")
+    assert resolves_to_flag(guard.spawn_flags(call), {}) is expected
+
+
+def _gitlock():
+    spec = importlib.util.spec_from_file_location(
+        "fleet_gitlock_flash", ROOT / "ops/fleet_kit/fleet_gitlock.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_quiet_inherit_carries_the_flag_when_there_is_no_console():
+    """The runtime fact the splat rule rests on: with no visible console (the
+    pythonw case that flashes) the kwargs carry CREATE_NO_WINDOW; in a visible
+    console the child shares it (0, nothing to flash)."""
+    gl = _gitlock()
+    assert gl.quiet_inherit(console=True)["creationflags"] == 0
+    hidden = gl.quiet_inherit(console=False)["creationflags"]
+    if sys.platform == "win32":
+        assert hidden == subprocess.CREATE_NO_WINDOW
+    else:
+        assert hidden == 0

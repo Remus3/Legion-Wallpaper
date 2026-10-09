@@ -310,3 +310,13 @@ def test_a_run_writes_its_lane_checklist_in_the_main_tree_not_the_worktree(tmp_p
     finally:
         proc.kill()
         proc.wait(timeout=30)
+
+
+def test_the_suite_pins_the_sidecar_root_off():
+    """Kit v14 (MAIN 0930 step 3.4): fleet_lanes.worktree_path() moves lanes
+    under the user variable FLEET_SIDECAR_ROOT when set. The lane tests above
+    expect <parent>/lw-worktrees/lane-<i>, so conftest pins the variable to ""
+    (off) and the suite never depends on the machine's value."""
+    import os
+    sidecar_root = os.environ.get("FLEET_SIDECAR_ROOT")
+    assert sidecar_root == ""

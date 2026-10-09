@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 13
+    assert he.kit.KIT_VERSION == 14
 
 
 def test_the_refusal_class_is_the_kits():
