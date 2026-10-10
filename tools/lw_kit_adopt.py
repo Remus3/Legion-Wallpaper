@@ -67,7 +67,11 @@ def verify_bundle(bundle):
     for f in sorted(bundle.iterdir()):
         if f.is_file() and f.name != MANIFEST and f.name not in files:
             problems.append(f"bundle file not in manifest: {f.name}")
-    if files.get(COMMON) != man.get("common_block_sha256"):
+    if COMMON not in files:
+        # Without this, a bundle lacking both FLEET-COMMON.md and
+        # common_block_sha256 passed (None == None).
+        problems.append(f"bundle manifest does not list {COMMON}")
+    elif files[COMMON] != man.get("common_block_sha256"):
         problems.append(f"common_block_sha256 != sha256({COMMON})")
     return problems
 

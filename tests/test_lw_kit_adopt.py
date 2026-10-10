@@ -119,3 +119,13 @@ def test_embed_into_live_claude_md_is_identity():
     text = (ROOT / "CLAUDE.md").read_bytes().decode("ascii")
     block = (ROOT / "ops" / "fleet_kit" / "FLEET-COMMON.md").read_bytes().decode("ascii")
     assert ka.embed_block(text, block) == text
+
+
+def test_verify_bundle_requires_the_common_block_file(tmp_path):
+    """A bundle without FLEET-COMMON.md (and no common_block_sha256) must not
+    verify clean: embed_block would have nothing to splice."""
+    b = _bundle(tmp_path, files={"fleet_x.py": "X = 1\n"})
+    man = json.loads((b / "MANIFEST.json").read_text(encoding="ascii"))
+    man.pop("common_block_sha256")
+    (b / "MANIFEST.json").write_text(json.dumps(man), encoding="ascii")
+    assert "bundle manifest does not list FLEET-COMMON.md" in ka.verify_bundle(b)
