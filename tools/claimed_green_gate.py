@@ -322,12 +322,13 @@ def _part_payload(part: dict) -> dict:
             "interrupted": False, "code": code}
 
 
-def _shape(payload: dict, command: str) -> dict:
+def _shape(payload: dict, command: str, ts=None) -> dict:
     return {
         "command": command,
         "output": str(payload.get("stdout") or "") + str(payload.get("stderr") or ""),
         "code": payload.get("code"),
         "interrupted": payload.get("interrupted"),
+        "ts": ts if isinstance(ts, str) and ts else None,
     }
 
 
@@ -370,7 +371,8 @@ def _iter_events(transcript: Path):
             command = tool_input.get("command")
             if not isinstance(command, str) or not command.strip():
                 continue
-            yield "action", _shape(results.get(part.get("id"), same_entry), command)
+            yield "action", _shape(results.get(part.get("id"), same_entry), command,
+                                   entry.get("timestamp"))
         if texts:
             yield "claim", "\n".join(texts)
 
@@ -380,6 +382,38 @@ def _iter_actions(transcript: Path):
     for kind, event in _iter_events(transcript):
         if kind == "action":
             yield event
+
+
+def _subagent_transcripts(transcript: Path) -> list:
+    """The session's subagent files: <dir>/<sid>/subagents/**/agent-*.jsonl.
+
+    Measured on disk 2026-10-10: the main transcript is <dir>/<sid>.jsonl and
+    every subagent writes its OWN file beside it, never into the main one. The
+    main file therefore holds no subagent tool call, and a gate that read only
+    transcript_path accused a session whose suite two subagents had run
+    (LEDGER 289, GATE-SUBAGENT-FP).
+    """
+    root = transcript.parent / transcript.stem / "subagents"
+    try:
+        return sorted(p for p in root.rglob("*.jsonl") if p.is_file())
+    except OSError:
+        return []
+
+
+def _session_actions(transcript: Path) -> list:
+    """Main-thread actions plus every subagent's, in time order.
+
+    Entries carry an ISO-8601 UTC `timestamp`, which sorts as a string. When
+    any action lacks one the order cannot be proven, so the main thread keeps
+    its file order and subagent actions follow it - the ambiguous case leans
+    toward the later (subagent) evidence, which is the gate's allow-bias.
+    """
+    actions = list(_iter_actions(transcript))
+    for path in _subagent_transcripts(transcript):
+        actions.extend(_iter_actions(path))
+    if actions and all(a.get("ts") for a in actions):
+        actions.sort(key=lambda a: a["ts"])
+    return actions
 
 
 def _user_text(transcript: Path) -> str:
@@ -539,7 +573,7 @@ def evaluate(payload: dict) -> str | None:
     if WAIVER.search(_user_text(transcript)):
         return None
 
-    found = assess_claim(actions, claim)
+    found = assess_claim(_session_actions(transcript), claim)
     return found[1] if found else None
 
 

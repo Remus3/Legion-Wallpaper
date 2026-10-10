@@ -365,6 +365,101 @@ def test_run_in_a_subagent_counts(tmp_path):
     assert decision_of(proc) == {}
 
 
+# --- GATE-SUBAGENT-FP (LEDGER 289): subagent runs live in SEPARATE files ------
+# Measured on disk 2026-10-10: the main transcript is <project>/<sid>.jsonl and
+# each subagent writes <project>/<sid>/subagents/agent-<id>.jsonl, every line
+# isSidechain=true. The main file carries none of the subagent's tool calls, so
+# a gate that reads only transcript_path cannot see a subagent's pytest run.
+
+
+def _session(tmp_path: Path, main_lines, subagents: dict) -> Path:
+    sid = "0f0f0f0f-1111-2222-3333-444444444444"
+    main = tmp_path / f"{sid}.jsonl"
+    main.write_text("\n".join(main_lines) + "\n", encoding="utf-8")
+    sub_dir = tmp_path / sid / "subagents"
+    sub_dir.mkdir(parents=True)
+    for agent_id, lines in subagents.items():
+        (sub_dir / f"agent-{agent_id}.jsonl").write_text(
+            "\n".join(lines) + "\n", encoding="utf-8")
+        (sub_dir / f"agent-{agent_id}.meta.json").write_text(
+            '{"agentType": "general-purpose"}', encoding="utf-8")
+    return main
+
+
+def _sidechain_bash(command: str, stdout: str, tool_id: str, ts: str,
+                    is_error: bool = False) -> list:
+    """The measured subagent shape: no entry-level toolUseResult, output on
+    the tool_result part as `content` with `is_error`."""
+    return [
+        _line(type="assistant", isSidechain=True, timestamp=ts,
+              message={"role": "assistant", "content": [
+                  {"type": "tool_use", "id": tool_id, "name": "Bash",
+                   "input": {"command": command}}]}),
+        _line(type="user", isSidechain=True, timestamp=ts,
+              message={"role": "user", "content": [
+                  {"type": "tool_result", "tool_use_id": tool_id,
+                   "content": stdout, "is_error": is_error}]}),
+    ]
+
+
+def test_run_only_in_a_subagent_file_counts(tmp_path):
+    """The session-68 false positive: only a subagent ran the suite."""
+    main = _session(
+        tmp_path,
+        [_user_text("fix it"), _assistant_bash("git status --short")],
+        {"a1b2c3": _sidechain_bash("python -m pytest -q", PASSING,
+                                   "toolu_s1", "2026-10-10T10:00:00.000Z")},
+    )
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "Done - 1537 passed, 16 skipped.",
+                     "transcript_path": str(main)})
+    assert decision_of(proc) == {}
+
+
+def test_red_run_only_in_a_subagent_file_still_blocks(tmp_path):
+    """Seeing subagent runs must not blind the gate: a red one is still red."""
+    main = _session(
+        tmp_path,
+        [_user_text("fix it")],
+        {"a1b2c3": _sidechain_bash("python -m pytest -q", FAILING, "toolu_s1",
+                                   "2026-10-10T10:00:00.000Z", is_error=True)},
+    )
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "All tests pass now.",
+                     "transcript_path": str(main)})
+    assert "claim-vs-fail" in decision_of(proc)["reason"]
+
+
+def test_main_and_subagent_runs_are_ordered_by_timestamp(tmp_path):
+    """A main-thread red run AFTER a subagent's green one is the last word."""
+    red = _paired_bash("python -m pytest -q", stdout=FAILING, tool_id="toolu_m1")
+    red = [json.dumps(dict(json.loads(x), timestamp="2026-10-10T11:00:00.000Z"))
+           for x in red]
+    main = _session(
+        tmp_path,
+        [_user_text("fix it"), *red],
+        {"a1b2c3": _sidechain_bash("python -m pytest -q", PASSING, "toolu_s1",
+                                   "2026-10-10T10:00:00.000Z")},
+    )
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "All tests pass now.",
+                     "transcript_path": str(main)})
+    assert "claim-vs-fail" in decision_of(proc)["reason"]
+
+
+def test_no_run_anywhere_still_blocks_with_a_subagents_dir(tmp_path):
+    main = _session(
+        tmp_path,
+        [_user_text("fix it")],
+        {"a1b2c3": _sidechain_bash("git log -1", "abc", "toolu_s1",
+                                   "2026-10-10T10:00:00.000Z")},
+    )
+    proc = run_gate({"stop_hook_active": False,
+                     "last_assistant_message": "Done - all tests pass.",
+                     "transcript_path": str(main)})
+    assert "claim-no-run" in decision_of(proc)["reason"]
+
+
 # --- detector: claim-vs-fail ------------------------------------------------
 
 
