@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+306. DONE **2026-10-10 (RRF-2.3b nit: adopt(run_tests=True) TypeError; 4539cf9).**
+   `(run_tests or run_kit_tests)(...)` called the bool True. FIX: a callable is called, True / None run
+   run_kit_tests (looked up at call time, so monkeypatchable), False skips. TDD: new parametrized
+   test_adopt_run_tests_true_or_none_uses_run_kit_tests FAILED on [True] with TypeError at
+   tools/lw_kit_adopt.py:223 before the fix. Verified: tests/test_lw_kit_adopt.py 23 passed, ruff clean,
+   py_compile clean. Reverse if: none (bug fix).
+
+305. DONE **2026-10-10 (RRF-2.3b slice 2: lw_kit_adopt CLI chain; 3f6a9cd, merged 69944d6).**
+   adopt(bundle, root) chains verify -> version (refuse downgrade) -> embed marker check -> copy -> re-embed
+   CLAUDE.md -> conformance (loaded fresh from the COPIED kit) -> kit tests; each stage stops the chain and
+   nothing is written before verify/version/embed pass. CLI `adopt <bundle> [--root R] [--no-tests]` and
+   `check [--root R]`, one JSON result, exit 0/1/2. Red kit tests after a clean copy are the residual for a
+   model. Built in worktree worktree-agent-a53db3a31066d933d; verifier PASS (107 passed, ruff clean); --no-ff
+   merge, no conflicts. BY DESIGN: the tree's KIT_VERSION pin test means a v16 adoption stops at the
+   kit-tests stage - that red is the residual, not a copy failure. REMAINING (RRF-2.3b): the responder
+   hand-off of only the residual at sonnet/medium.
+
 304. DONE **2026-10-10 (SAF-DENY / RRF-2.9: SUBAGENT-FIRST hook flipped to deny; local control file, docs-only).**
    Session 71 = clean interactive session 3 of 3 (sessions 68, 69 were 1 and 2; hung session 70 not counted):
    READ BACK ops/loop/control/subagent_first.jsonl rows since 2026-10-10T09:00 = 148, all thread=sub
