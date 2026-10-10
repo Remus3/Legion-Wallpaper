@@ -1,14 +1,15 @@
 NEXT SESSION
 ------------
-SESSION: 72
-Task: RRF-2.3b remainder first (CLI chaining verify/copy/embed with fleet_headless.conformance()
-  + the kit tests; responder hands only the residual to sonnet/medium). Then the
-  OPERATOR-FACING QUEUE (read-only prep, never self-approve): (1) R4 blind A/B anime-lama vs
-  LaMa READY but UNVOTED (0/19, LEDGER 277) - operator starts LW Monitor, opens
-  http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19 slugs, presses Finish; then
-  `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER + ROADMAP R4; ADR-009 engine
-  REPLACE only). (2) Watch the inbox for the remaining sibling re-point confirmations
-  (RETIRE-JUNCTION, LEDGER 287).
+SESSION: 73
+Task: RRF-2.3b residual first (responder hand-off of only the adopt() residual at
+  sonnet/medium; slices 1-2 merged), then LEDGER-ASCII. Then the OPERATOR-FACING QUEUE
+  (read-only prep, never self-approve): (1) R4 blind A/B anime-lama vs LaMa READY but
+  UNVOTED (0/19 re-probed 2026-10-10 via `python tools/lw_ab_r4.py status`, votes.json
+  absent; LEDGER 277) - operator starts LW Monitor, opens http://127.0.0.1:8901/ab
+  (re-probe HTTP 200 first), votes 19 slugs, presses Finish; then
+  `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER + ROADMAP R4; ADR-009
+  engine REPLACE only). (2) Watch the inbox for the remaining sibling re-point
+  confirmations (RETIRE-JUNCTION, LEDGER 287).
 Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (LEDGER
   282/283/287); pre-move copy retired by the operator 2026-10-08 (gone; its cutover HALT
   sentinel kept at E:\Sidecars\LW\Rollback-unique, MAIN 2246 s5);
@@ -16,31 +17,34 @@ Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (L
   acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
   RC-TeamClaudeProxy on localhost:3456. Fleet kit is v15 (30b1040): commit/push via
   fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via fleet_suite_gate.py,
-  identity hooks in .githooks. SUBAGENT-FIRST is now ARMED: ops/loop/control/subagent_first.mode
+  identity hooks in .githooks. SUBAGENT-FIRST is ARMED: ops/loop/control/subagent_first.mode
   = deny (LEDGER 304) - the main thread only dispatches. Headless spawns go through
   ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE (LW-InboxResponder, every
   5 min, children COMMIT in this tree - check its progress file before editing shared files).
   Kill: HALT file or delete the proxy user variable. MAIN notes carry operator authority after
   a sha256 check against MAIN's outbox. Never put a 64-hex digest in this file.
-Acceptance: RRF-2.3b CLI + conformance landed with tests; R4 tally recorded with the operator's
-  votes, or still READY and carried; junction renamed off for the soak once all re-points are
-  confirmed; READBACK-2237 status-line half read back; MAIN told deny is armed.
+Acceptance: RRF-2.3b residual handed to the responder path with a test; LEDGER-ASCII fixed
+  and the guard gap explained/closed; R4 tally recorded with the operator's votes, or still
+  READY and carried; junction renamed off for the soak once all re-points are confirmed;
+  READBACK-2237 status-line half read back; MAIN told deny is armed.
 CHECKLIST:
-  - RRF-2.3b: Finish RRF-2.3b - CLI chaining verify_bundle/copy_bundle/embed_block with fleet_headless.conformance() + the kit tests, then the responder hand-off of only the residual at sonnet/medium (slice 1 merged bf8df10, LEDGER 299)
+  - RRF-2.3b: Hand only the adopt() residual to the responder at sonnet/medium (slice 1 bf8df10 LEDGER 299, slice 2 merge 69944d6 + fix 4539cf9 LEDGER 305/306 DONE; KIT_VERSION==15 pin test makes a v16 adoption stop at the kit-tests stage by design)
+  - LEDGER-ASCII: Replace the one pre-existing non-ASCII char in docs/LEDGER.md (UTF-8 e-acute near byte 771160, not in sweep exclusions) with ASCII and find why the hygiene guard missed it
   - SAF-DENY-NOTE: Tell MAIN in the next batched note that subagent_first.mode = deny is armed (session 71 = clean 3 of 3, LEDGER 304; kit v10 step 3 / RRF-2.9); if a main-thread deny blocks legitimate operator work, write `log` back and record why
-  - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
-  - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6 re-pointed; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
-  - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator visual; feedback-line half PASSED session 68, LEDGER 289; not answered session 71)
-  - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, reached 1/1, LEDGER 303); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
+  - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally; 0/19 at 2026-10-10)
+  - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6 re-pointed, no new inbox notes since 2026-10-09-2155; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
+  - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator visual; feedback-line half PASSED session 68, LEDGER 289; not answered sessions 71-72)
+  - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, reached 1/1, LEDGER 303; no reply and kit still v15 at session 72); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_FINDINGS_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
   - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.1 xdist+timeout+markers, RRF-2.6 one lazy autouse fixture, RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.3b above; RRF-T1, RRF-3.4, RRF-2.9 done)
 Carried forward:
-  - Session 71 wrap: the wrap push carries 6 recovery commits (c239499..5ad428c) plus the wrap
+  - Session 72 wrap: the wrap push carries 3f6a9cd, 69944d6, 4539cf9, 0b7c00d plus the wrap
     docs commit; its CI run id is created after this file is committed - re-check
     `gh run list --branch main --limit 2` and `gh run view <id> --json conclusion` at session
-    start. Session 70 wrap CI 38063333688 = success. Other unmerged branches left untouched:
+    start. Session 72 pre-flight: full suite 4205 passed / 19 skipped on 0b7c00d. Merged
+    worktree agent-a53db3a31066d933d removed. Other unmerged branches left untouched:
     worktree-agent-a6b282fa560024205 (MIG-1 WIP b29005e) and
     dependabot/github_actions/github-actions-25c580fd63 (6617a85, merge on green per
     SUPPLY CHAIN rule). No git stash.
@@ -125,14 +129,15 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 71 - RRF-2.3b slice 1 merged (bf8df10, review fix 9d82cc1, LEDGER 299),
-  LOG-LEAK-2 merged (508a4cd / d21c994, LEDGER 300) - read back via git log on main; full suite
-  4192 passed / 19 skipped on 508a4cd. Closed with LEDGER lines: SPAWN-BG-DEATH (kit v15
-  fleet_headless.py:308-310, LEDGER 301), TRIAGE-ACK (runs.jsonl 2721/2743, LEDGER 302),
-  GATE-FIFO (note sent, LEDGER 303), SAF-DENY (mode = deny read back, LEDGER 304).
+Do NOT redo: session 72 - RRF-2.3b slice 2 merged (builder 3f6a9cd, merge 69944d6,
+  verifier PASS 107 passed) + adopt(run_tests=True) fix 4539cf9 (23 passed), LEDGER 305/306 +
+  ROADMAP in 0b7c00d - read back via git log on main and ROADMAP.md:660. Session 71 -
+  RRF-2.3b slice 1 merged (bf8df10, review fix 9d82cc1, LEDGER 299), LOG-LEAK-2 merged
+  (508a4cd / d21c994, LEDGER 300); closed SPAWN-BG-DEATH (LEDGER 301), TRIAGE-ACK (LEDGER
+  302), GATE-FIFO (note sent, LEDGER 303), SAF-DENY (mode = deny, LEDGER 304).
   Session 70 - GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296), LOG-LEAK
   (f096a69, merge 740e5fc, LEDGER 297), FLEET-KIT v15 vendor (30b1040), worktree-corpus guard
-  (c85d29b); read back via git log at the session 70 wrap (LEDGER 298). Session 69 - FLEET-KIT v14 vendored + read back (e102758, LEDGER 293;
+  (c85d29b); LEDGER 298. Session 69 - FLEET-KIT v14 vendored + read back (e102758, LEDGER 293;
   KIT-SPAWN-GAP closed by v14, xfail pins gone); identity history survey 0 flagged on
   main + 10 local branches; MAIN 2246 sections 1-8 answered, rewrite + force push
   (LEDGER 292). Session 68 shipped and PUSHED - v10 vendor (a416222, LEDGER 284), MAIN
@@ -153,6 +158,6 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > E:/Legion Wallpaper/images/0.Originals
-      last check: not done (446 tries)
+      last check: not done (453 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   (end operator asks)

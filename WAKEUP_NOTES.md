@@ -79,6 +79,17 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-10, session 72) - RRF-2.3b slice 2 landed
+
+Commits: 3f6a9cd builder / 69944d6 merge RRF-2.3b slice 2 (lw_kit_adopt CLI chains
+verify/copy/embed + conformance + kit tests; verifier PASS 107 passed), 4539cf9 fix
+adopt(run_tests=True) TypeError (TDD, 23 passed), 0b7c00d ROADMAP + LEDGER 305/306.
+Probed: R4 0/19 voted (votes.json absent); RETIRE-JUNCTION still 3/6; kit still v15.
+Do NOT redo: RRF-2.3b slices 1-2. KIT_VERSION==15 pin test stops a v16 adoption at the
+kit-tests stage by design.
+Next: RRF-2.3b responder hand-off of the adopt() residual (sonnet/medium); LEDGER-ASCII
+(one UTF-8 e-acute in docs/LEDGER.md the hygiene guard missed); R4 tally once voted.
+
 ## PREVIOUS SESSION (2026-10-10, session 71) - recovery merges, four items closed
 
 Commits: bf8df10 RRF-2.3b slice 1 merge (c239499 + review fix 9d82cc1), 508a4cd LOG-LEAK-2
