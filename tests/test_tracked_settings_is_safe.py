@@ -198,6 +198,13 @@ def test_a_stale_worktree_copy_cannot_answer_for_a_deleted_script(tmp_path):
     names = _tracked_script_names()
     walked = {p.name for p in ROOT.rglob("*.py") if "__pycache__" not in p.parts}
     assert names <= walked, "ls-files found a name the tree does not have"
-    stray = [p for p in ROOT.glob(".claude/worktrees/*/**/*.py")]
+    # Only names that exist SOLELY under a worktree can prove a leak: a live
+    # linked worktree of this repo legitimately carries every tracked name, so
+    # intersecting all worktree names with the corpus went red whenever any
+    # sibling agent worktree existed (measured 2026-10-10, LEDGER 295).
+    wt = ROOT / ".claude" / "worktrees"
+    outside = {p.name for p in ROOT.rglob("*.py")
+               if "__pycache__" not in p.parts and wt not in p.parents}
+    stray = [p for p in wt.glob("*/**/*.py") if p.name not in outside]
     assert not (({p.name for p in stray}) & names), (
         "a worktree copy is inside the guard's corpus: " f"{stray[:3]}")
