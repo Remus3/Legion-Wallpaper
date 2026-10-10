@@ -27,6 +27,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+300. DONE **2026-10-10 (LOG-LEAK-2: one LW_LOG_DIR seam for every repo-logs writer; d21c994, merged 508a4cd).**
+   ROOT CAUSE: the 07:21 full suite wrote lw_g1_gate "cambi degraded" and lw_upscale winmutex lines into the LIVE
+   logs/ daily log; LOG-LEAK (297) had fixed only log_refusal. FIX: env LW_LOG_DIR (blank = unset), resolver
+   lw_paths.log_dir(), read at call time by every writer defaulting to <repo>/logs (8 gpu_log/_log_error writers,
+   wallpaper_rotate, monitor + rundash default log files, 3 .ps1); venv-child modules mirror it inline;
+   LW_HEADLESS_LOG_DIR renamed to LW_LOG_DIR in lw_race_guards.ENV_ROOTS. PREMISE VERIFIED: owner agent pid 15704
+   gone, its claim not live (fleet_claims.live False, 1712 s stale) before touching the worktree. The dead agent's
+   uncommitted diff was reviewed, run (tests/test_log_dir_never_leaks.py + test_log_refusal_never_leaks 23 passed;
+   touched-module suites 494 passed / 4 skipped), .ps1 parsed clean by powershell.exe 5.1 ParseFile, staged blobs
+   ASCII + LF; committed as-is. Worktree agent-a373841bb001e6085 + branch removed. Reverse if: a new tools/ writer
+   builds a logs/ path without the seam (the static backstop test fails first).
+
+299. DONE **2026-10-10 (RRF-2.3b slice 1 review + merge: lw_kit_adopt verify/copy/embed; c239499 + 9d82cc1, merged bf8df10).**
+   Review of c239499 against its tests and the ROADMAP row found one defect: a bundle whose manifest listed neither
+   FLEET-COMMON.md nor common_block_sha256 verified clean (None == None). TDD: test_verify_bundle_requires_the_
+   common_block_file red, then verify_bundle reports "bundle manifest does not list FLEET-COMMON.md" (9d82cc1);
+   tests/test_lw_kit_adopt.py 11 passed; live ops/fleet_kit verifies []. ROADMAP conflict resolved to the merged
+   row. Worktree agent-a165ab2a2943363bc + branch removed. Full suite after both merges (508a4cd, via
+   fleet_suite_gate): 4192 passed / 19 skipped, exit 0. REMAINING (ROADMAP RRF-2.3b): CLI chaining with
+   fleet_headless.conformance() + kit tests, residual hand-off at sonnet/medium.
+
 298. DONE **2026-10-10 (session 70 wrap after a hung interactive session; docs-only).** The
    interactive session hung (machine restart ~10:02 local); a recovery agent ran /done.
    Read back: GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296) and LOG-LEAK (f096a69,
