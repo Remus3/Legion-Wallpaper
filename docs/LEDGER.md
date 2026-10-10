@@ -27,6 +27,29 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+297. DONE **2026-10-10 (LOG-LEAK: headless refusals in tests never reach the live logs/; f096a69, merged 740e5fc).**
+   ROOT CAUSE: lw_headless_env.log_refusal defaults to LOG_DIR (the live repo logs/); the responder, loop executor,
+   loop oracle and CI watchdog call it without log_dir, and 2 test arms
+   (test_inbox_responder::test_a_spent_budget_launches_nothing, test_loop_executor_sdk::
+   test_a_spent_kit_budget_stops_the_cycle_and_spawns_nothing) drove a refusal without patching it, as could any
+   child interpreter - so "headless spawn refused: run budget exhausted (120/120)" landed in logs/2026-10-09.log
+   at suite times while the live budget held 6 starts. FIX: env seam LW_HEADLESS_LOG_DIR (empty = unset, read at
+   call time by default_log_dir(); production unchanged), declared in lw_race_guards.ENV_ROOTS so fleet_test_guard
+   points it at tmp_path for every test and child; conftest also patches LOG_DIR for FLEET_TEST_GUARD=off; per-arm
+   patches moved onto the seam. TDD: tests/test_log_refusal_never_leaks.py red 4/5 before, green after. Suite
+   counts and the live-log read-back are in the merge session's report. Reverse if: log_refusal gains a caller
+   that resolves its dir outside default_log_dir().
+
+296. DONE **2026-10-10 (GATE-SUBAGENT-FP: claimed_green_gate reads subagent transcripts; 568f8c9, merged 3db19c7).**
+   ROOT CAUSE: the live Stop gate judged a green claim only against <sid>.jsonl (transcript_path); Claude Code
+   writes each subagent run to <sid>/subagents/agent-<id>.jsonl (measured on disk 2026-10-10), so a suite run only
+   by a subagent was invisible and the gate fired claim-no-run falsely (LEDGER 289). FIX: evaluate() assesses the
+   claim against main + every subagent transcript, ordered by entry timestamp when all carry one (else main
+   first, subagents after). TDD: 4 new tests (subagent-only green allows, subagent red still blocks, timestamp
+   ordering, no run anywhere still blocks), 2 red first. RESIDUAL (not fixed): the --audit / --history replay
+   paths and the no-verify check still read the main transcript only. Reverse if: Claude Code moves subagent
+   transcripts back into the parent file.
+
 295. DONE **2026-10-10 (test defect: worktree-corpus guard went red whenever a live agent worktree existed).**
    tests/test_tracked_settings_is_safe.py::test_a_stale_worktree_copy_cannot_answer_for_a_deleted_script
    intersected EVERY .py name under .claude/worktrees/ with the tracked corpus; a live linked worktree of this repo
