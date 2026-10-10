@@ -71,6 +71,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 KIT_PATH = ROOT / "ops" / "fleet_kit" / "fleet_headless.py"
 LOG_DIR = ROOT / "logs"
+# Env seam for log_refusal's default dir, read at call time (empty = unset). A
+# declared runtime root (lw_race_guards.ENV_ROOTS), so the suite's refusals - in
+# process or in a child interpreter - land under tmp_path, never the live logs/.
+LOG_DIR_ENV = "LW_HEADLESS_LOG_DIR"
 CODE = "LW"
 REFUSED_EXIT = 78  # EX_CONFIG
 TIMEOUT_EXIT = 124
@@ -267,6 +271,12 @@ def _flag(argv: list, name: str) -> str:
 # Logging
 # ---------------------------------------------------------------------------
 
+def default_log_dir() -> Path:
+    """log_refusal's default dir: $LW_HEADLESS_LOG_DIR when non-empty, else LOG_DIR."""
+    env = os.environ.get(LOG_DIR_ENV, "").strip()
+    return Path(env) if env else Path(LOG_DIR)
+
+
 def log_refusal(caller: str, reason: str, log_dir: Path | None = None) -> None:
     """Append ONE line to logs/YYYY-MM-DD.log. Never raises, never logs a URL.
 
@@ -277,7 +287,7 @@ def log_refusal(caller: str, reason: str, log_dir: Path | None = None) -> None:
     safe = _URLISH.sub("[url]", f"{caller}: headless spawn refused: {reason}")
     now = dt.datetime.now()
     line = f"{now:%Y-%m-%d %H:%M:%S} lw_headless_env {safe}\n"
-    target_dir = Path(log_dir) if log_dir is not None else LOG_DIR
+    target_dir = Path(log_dir) if log_dir is not None else default_log_dir()
     try:
         target_dir.mkdir(parents=True, exist_ok=True)
         with open(target_dir / f"{now:%Y-%m-%d}.log", "a", encoding="utf-8") as fh:

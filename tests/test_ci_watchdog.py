@@ -239,7 +239,7 @@ def _isolate_logs(monkeypatch, tmp_path: Path):
     """Keep the gate's two log writes out of the live runtime + logs trees."""
     monkeypatch.setattr(cw, "STATE_DIR", tmp_path / "state")
     he = cw._bind_headless_env()
-    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setenv(he.LOG_DIR_ENV, str(tmp_path / "logs"))
 
 
 def test_a_refused_proxy_attempts_nothing(monkeypatch, tmp_path: Path):

@@ -502,7 +502,7 @@ def test_a_timed_out_run_is_auto_not_retried():
 
 @pytest.mark.parametrize("seams", [{"url": None}, {"up": False}], ids=["unset", "down"])
 def test_a_refused_proxy_launches_nothing(monkeypatch, tmp_path, seams):
-    monkeypatch.setattr(responder.lw_headless_env, "LOG_DIR", tmp_path)
+    monkeypatch.setenv(responder.lw_headless_env.LOG_DIR_ENV, str(tmp_path))
     seen = {}
     outcome = responder.spawn(Path("moon_sync_inbox/note.md"),
                               kit_seams=_kit_seams(seen, **seams))
@@ -1432,7 +1432,7 @@ def test_the_responder_hands_the_kit_its_halt_file(monkeypatch, tmp_path):
     halt = tmp_path / "HALT"
     halt.write_text("stop", encoding="utf-8")
     monkeypatch.setattr(responder, "HALT_PATH", halt)
-    monkeypatch.setattr(responder.lw_headless_env, "LOG_DIR", tmp_path)
+    monkeypatch.setenv(responder.lw_headless_env.LOG_DIR_ENV, str(tmp_path))
     seen = {}
     outcome = responder.spawn(Path("moon_sync_inbox/2026-10-03-from-RC-REVIEW-x.md"),
                               kit_seams=_kit_seams(seen))
