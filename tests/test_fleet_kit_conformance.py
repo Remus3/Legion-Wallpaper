@@ -32,5 +32,5 @@ def test_fleet_kit_conformance():
 
 
 def test_fleet_kit_version_is_the_one_main_shipped():
-    """v14 per MAIN committed bundle 0930 (v13 2128, v12 2031); a new version lands only as a MAIN FLEET-KIT-vN note."""
-    assert _kit().KIT_VERSION == 14
+    """v15 per MAIN committed bundle 2055 (v14 0930, v13 2128, v12 2031); a new version lands only as a MAIN FLEET-KIT-vN note."""
+    assert _kit().KIT_VERSION == 15

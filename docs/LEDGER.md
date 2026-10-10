@@ -27,6 +27,32 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+295. DONE **2026-10-10 (test defect: worktree-corpus guard went red whenever a live agent worktree existed).**
+   tests/test_tracked_settings_is_safe.py::test_a_stale_worktree_copy_cannot_answer_for_a_deleted_script
+   intersected EVERY .py name under .claude/worktrees/ with the tracked corpus; a live linked worktree of this repo
+   carries every tracked name, so the v15 gated suite went 1 red while two sibling agent worktrees were live. Now only
+   names that exist SOLELY under a worktree count as a leak (the false-GREEN it guards is still caught: a deleted
+   script surviving only in a worktree). READ BACK: 6/6 in the file with both worktrees present. Reverse if: the
+   corpus helper stops using git ls-files.
+
+294. DONE **2026-10-10 (MAIN 2055 FLEET-KIT v15 adopted; responder child vendored 2026-10-09 and died uncommitted, finished attended).**
+   DEAD CHILD: the 2026-10-09 20:57 responder child (kit.spawn rc 0, 623.5 s) vendored and re-pinned, then died at
+   its gated-suite step (progress responder-run.json frozen, marked abandoned by MAIN cleanup 2026-10-10); no live
+   LW agent held the files. The attended session re-hashed every file against the bundle (23/23 equal), re-ran
+   verify_main (note + 23/23 True), conformance and the gated suite, then committed.
+   Provenance READ BACK: verify_main True for the ORDER note and 23/23 bundle files against MAIN's committed
+   outbox; MANIFEST.json sha256 equals the ORDER's section 1 value; manifest version 15.
+   VENDORED: all 22 kit files + MANIFEST.json copied byte-for-byte; 5 changed vs v14 (claims, headless, identity,
+   lanes, suite_gate). conformance() == [] read back. Version pins 14 -> 15 (test_fleet_kit_conformance,
+   test_headless_env, test_promise_probe_fleet_kit, tools/lw_promise_probes.FLEET_KIT_VERSION).
+   Step 3 (drift g): stray fleet_suite_gate.py copies outside ops/fleet_kit/ = 0 tracked or untracked-unignored
+   (one copy inside a live, gitignored agent worktree under .claude/worktrees/ - a linked checkout, not drift). Step 4: no exact child_env dict
+   assert existed; test_the_child_env_is_the_kits_and_a_copy now pins CLAUDE_CODE_DISABLE_BACKGROUND_TASKS == "1".
+   Step 5: conftest already pins FLEET_SIDECAR_ROOT="" (no change). v15 child_env closes SPAWN-BG-DEATH on the kit
+   side: a -p child's sub-agents now run in the foreground. Reverse if: a MAIN FLEET-KIT-v16 note.
+   GATED SUITE (fleet_suite_gate, 180 s slot wait): 4153 passed, 19 skipped, 1 failed (245.7 s); the one failure
+   was environmental (LEDGER 295), green after its fix (6/6 in its file, re-run).
+
 293. DONE **2026-10-09 (MAIN 0930 FLEET-KIT v14 adopted, e102758; responder child died mid-suite, finished by the session 69 wrap).**
    Provenance READ BACK: the parent responder recorded MAIN PROVENANCE MATCH for the 0930 ORDER (runs.jsonl 14:37:25Z).
    DEAD RESPONDER: the 09:27 child (session 65384deb, kit.spawn rc 0, 626.7 s, num_turns 2) dispatched a background

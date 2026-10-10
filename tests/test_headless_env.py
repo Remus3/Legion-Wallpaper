@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 14
+    assert he.kit.KIT_VERSION == 15
 
 
 def test_the_refusal_class_is_the_kits():
@@ -177,6 +177,8 @@ def test_the_child_env_is_the_kits_and_a_copy():
     env = he.child_env(base, url_source=lambda: _URL, connect=_up)
     assert env["ANTHROPIC_BASE_URL"] == _URL
     assert env["KEEP"] == "1"
+    # Kit v15 (MAIN 2055): a -p child runs every sub-agent in the foreground.
+    assert env["CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"] == "1"
     assert not set(he.kit.STRIP_EXACT) & set(env)
     assert "CLAUDE_CODE_USE_BEDROCK" not in env
     assert "ANTHROPIC_BASE_URL" not in base, "the base dict must be copied"
