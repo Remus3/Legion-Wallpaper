@@ -13,6 +13,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
@@ -235,6 +237,16 @@ def test_adopt_kit_test_failure_is_the_residual(tmp_path):
                    run_tests=lambda r, f: (1, "FAILED tests/test_x.py::test_pin"))
     assert res["ok"] is False and res["stage"] == "tests"
     assert res["residual"] and "FAILED tests/test_x.py::test_pin" in res["residual"][0]
+
+
+@pytest.mark.parametrize("flag", [True, None])
+def test_adopt_run_tests_true_or_none_uses_run_kit_tests(tmp_path, monkeypatch, flag):
+    """run_tests=True / None both mean the default runner, never a call on a bool."""
+    root, calls = _live_root(tmp_path), []
+    monkeypatch.setattr(ka, "run_kit_tests", _ok_tests(calls))
+    res = ka.adopt(_live_bundle(tmp_path), root, run_tests=flag)
+    assert res["ok"] is True and res["stage"] == "done"
+    assert len(calls) == 1 and calls[0][0] == root
 
 
 def test_adopt_embed_refusal_is_reported(tmp_path):

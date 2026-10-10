@@ -188,7 +188,8 @@ def adopt(bundle, root, run_tests=None, conformance_fn=None):
     copy, re-embed CLAUDE.md, conformance, kit tests. Returns _result(...).
 
     Nothing is written unless verify, version and the CLAUDE.md marker check
-    all pass. run_tests=False skips the kit tests; None runs run_kit_tests."""
+    all pass. run_tests=False skips the kit tests; True / None runs run_kit_tests;
+    a callable is called instead."""
     bundle, root = Path(bundle), Path(root)
     problems = verify_bundle(bundle)
     if problems:
@@ -220,7 +221,8 @@ def adopt(bundle, root, run_tests=None, conformance_fn=None):
         return _result(False, "conformance", problems)
     if run_tests is False:
         return _result(True, "done")
-    rc, tail = (run_tests or run_kit_tests)(root, kit_test_files(root))
+    runner = run_tests if callable(run_tests) else run_kit_tests  # True / None -> default
+    rc, tail = runner(root, kit_test_files(root))
     if rc != 0:
         return _result(False, "tests", [f"kit tests rc={rc}"], [f"kit tests rc={rc}: {tail}"])
     return _result(True, "done")
