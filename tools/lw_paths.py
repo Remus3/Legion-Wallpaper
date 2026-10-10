@@ -66,6 +66,23 @@ def tools_dir() -> Path:
     return Path((os.environ.get("SystemDrive") or "C:") + "\\Tools")
 
 
+# LOG-LEAK-2 (2026-10-10): the ONE env seam for every writer that defaults to
+# the repo's logs/ dir. Declared in lw_race_guards.ENV_ROOTS, so the test guard
+# points it at tmp_path for every test and every child interpreter. A writer
+# that runs in a venv child unable to import this module mirrors log_dir()
+# inline; tests/test_log_dir_never_leaks.py pins every writer.
+LOG_DIR_ENV = "LW_LOG_DIR"
+
+
+def log_dir(default: str | os.PathLike[str] | None = None) -> Path:
+    """The daily-log dir, resolved at CALL time: $LW_LOG_DIR when non-blank,
+    else `default` (a module's own constant), else `<repo>/logs`."""
+    env = os.environ.get(LOG_DIR_ENV, "").strip()
+    if env:
+        return Path(env)
+    return Path(default) if default is not None else repo_root() / "logs"
+
+
 def user_home() -> Path:
     """The operator profile directory. USERPROFILE, then Path.home()."""
     return Path(os.environ.get("USERPROFILE") or Path.home())

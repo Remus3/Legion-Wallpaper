@@ -71,10 +71,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 KIT_PATH = ROOT / "ops" / "fleet_kit" / "fleet_headless.py"
 LOG_DIR = ROOT / "logs"
-# Env seam for log_refusal's default dir, read at call time (empty = unset). A
-# declared runtime root (lw_race_guards.ENV_ROOTS), so the suite's refusals - in
-# process or in a child interpreter - land under tmp_path, never the live logs/.
-LOG_DIR_ENV = "LW_HEADLESS_LOG_DIR"
+# Env seam for log_refusal's default dir, read at call time (empty = unset): the
+# repo-wide LW_LOG_DIR (lw_paths.LOG_DIR_ENV, mirrored here because the loop
+# binds this module by path). A declared runtime root (lw_race_guards.ENV_ROOTS),
+# so the suite's refusals - in process or in a child interpreter - land under
+# tmp_path, never the live logs/ (LOG-LEAK, generalized by LOG-LEAK-2).
+LOG_DIR_ENV = "LW_LOG_DIR"
 CODE = "LW"
 REFUSED_EXIT = 78  # EX_CONFIG
 TIMEOUT_EXIT = 124
@@ -272,7 +274,7 @@ def _flag(argv: list, name: str) -> str:
 # ---------------------------------------------------------------------------
 
 def default_log_dir() -> Path:
-    """log_refusal's default dir: $LW_HEADLESS_LOG_DIR when non-empty, else LOG_DIR."""
+    """log_refusal's default dir: $LW_LOG_DIR when non-empty, else LOG_DIR."""
     env = os.environ.get(LOG_DIR_ENV, "").strip()
     return Path(env) if env else Path(LOG_DIR)
 

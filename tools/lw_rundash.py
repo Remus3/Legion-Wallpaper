@@ -76,6 +76,14 @@ CONFIG_PATH = ROOT / "ops" / "loop" / "config.json"
 PAGE_PATH = ROOT / "web" / "rundash.html"
 RUNDASH_LOG = ROOT / "logs" / "lw_rundash.log"
 
+
+def default_log_file() -> Path:
+    """lw_rundash.log under $LW_LOG_DIR when non-blank, else RUNDASH_LOG - resolved at
+    call time (lw_paths.log_dir mirrored; LOG-LEAK-2)."""
+    env = os.environ.get("LW_LOG_DIR", "").strip()
+    return Path(env) / "lw_rundash.log" if env else RUNDASH_LOG
+
+
 # The durable half of the fleet, written by tools/lw_agent_mirror.py. The
 # transcript dir below is reaped without warning; this survives it, so an agent
 # missing from the source is served from here rather than vanishing off the board.
@@ -804,7 +812,7 @@ def main(argv=None):
                     help="read ops/runtime state from this dir instead (a verify copy "
                          "made by tools/lw_verify_snapshot.py)")
     args = ap.parse_args(argv)
-    setup_logging(Path(args.log_file) if args.log_file else RUNDASH_LOG)
+    setup_logging(Path(args.log_file) if args.log_file else default_log_file())
     url = f"http://{HOST}:{args.port}/"
 
     def factory():

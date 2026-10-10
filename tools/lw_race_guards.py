@@ -54,8 +54,9 @@ ENV_ROOTS = {
     "LW_GOVERNOR_ROOT": "governor/slots",
     "LW_BRIDGE_JOURNAL": "bridge/sends.jsonl",
     "LW_CLAIMED_GREEN_REPORT_DIR": "claimed_green",
-    # lw_headless_env.log_refusal's daily log (LOG-LEAK 2026-10-10).
-    "LW_HEADLESS_LOG_DIR": "logs",
+    # Every writer that defaults to the repo logs/ dir (lw_paths.log_dir):
+    # LOG-LEAK (headless refusals) generalized by LOG-LEAK-2 (2026-10-10).
+    "LW_LOG_DIR": "logs",
 }
 
 

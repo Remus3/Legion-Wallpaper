@@ -125,7 +125,7 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
     tmp = request.getfixturevalue("tmp_path")
     monkeypatch.setattr(he, "FLEET_ROOT", tmp / "fleet_root")
     # LOG-LEAK: log_refusal's default daily log. The env seam
-    # (LW_HEADLESS_LOG_DIR, a declared runtime root) already points here; this
+    # (LW_LOG_DIR, a declared runtime root) already points here; this
     # covers FLEET_TEST_GUARD=off, where the kit guard sets no env roots.
     monkeypatch.setattr(he, "LOG_DIR", tmp / "logs")
     kit = he.kit

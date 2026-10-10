@@ -17,6 +17,11 @@ param(
 $ErrorActionPreference = "Stop"
 Set-Location $RepoRoot
 $logAbs = Join-Path $RepoRoot "logs\gemini_audit.log"
+# LW_LOG_DIR (lw_paths.log_dir) outranks: the test guard points it at tmp (LOG-LEAK-2).
+if ($env:LW_LOG_DIR -and $env:LW_LOG_DIR.Trim()) {
+  New-Item -ItemType Directory -Force -Path $env:LW_LOG_DIR.Trim() | Out-Null
+  $logAbs = Join-Path $env:LW_LOG_DIR.Trim() "gemini_audit.log"
+}
 function Fail($msg, $code) {
   # Log the reason + exit with the intended code. NB: Write-Error under
   # $ErrorActionPreference='Stop' TERMINATES before `exit N`, masking the real

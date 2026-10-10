@@ -656,7 +656,8 @@ def _log_error(exc: Exception) -> None:
         import datetime
 
         root = _repo_root()
-        logs = os.path.join(root, "logs")
+        # LW_LOG_DIR: lw_paths.log_dir() mirrored inline (LOG-LEAK-2).
+        logs = os.environ.get("LW_LOG_DIR", "").strip() or os.path.join(root, "logs")
         os.makedirs(logs, exist_ok=True)
         stamp = datetime.datetime.now().strftime("%Y-%m-%d")
         with open(os.path.join(logs, f"{stamp}.log"), "a", encoding="utf-8") as fo:
