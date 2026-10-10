@@ -38,6 +38,8 @@ $Orchestrator = Join-Path $Root "tools\slice_orchestrator.py"
 $HeadlessEnv = Join-Path $Root "tools\lw_headless_env.py"
 $RefusedExit = 78
 $LogDir = Join-Path $Root "logs"
+# LW_LOG_DIR (lw_paths.log_dir) outranks: the test guard points it at tmp (LOG-LEAK-2).
+if ($env:LW_LOG_DIR -and $env:LW_LOG_DIR.Trim()) { $LogDir = $env:LW_LOG_DIR.Trim() }
 
 # A caller-supplied retry count is still bounded here: an unattended wrapper that
 # can be told to retry forever is a spin loop burning the operator's quota.

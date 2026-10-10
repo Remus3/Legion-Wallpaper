@@ -96,7 +96,10 @@ def _gpu_log(msg):
     """
     try:
         stamp = _datetime.datetime.now()
-        log_dir = _Path(__file__).resolve().parent.parent / "logs"
+        # LW_LOG_DIR: lw_paths.log_dir() mirrored inline (venv child, no lw_paths
+        # import); tests/test_log_dir_never_leaks.py pins it (LOG-LEAK-2).
+        log_dir = _Path(os.environ.get("LW_LOG_DIR", "").strip()
+                        or _Path(__file__).resolve().parent.parent / "logs")
         log_dir.mkdir(parents=True, exist_ok=True)
         with open(log_dir / f"{stamp:%Y-%m-%d}.log", "a", encoding="utf-8") as fo:
             fo.write(f"{stamp:%H:%M:%S} [{_GPU_TAG}] {msg}\n")

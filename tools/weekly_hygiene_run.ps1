@@ -50,6 +50,11 @@ if (Test-Path -LiteralPath $halt) {
 
 $stamp = Get-Date -Format "yyyy-MM-dd"
 $log   = Join-Path $repo "logs\weekly_hygiene_$stamp.log"
+# LW_LOG_DIR (lw_paths.log_dir) outranks: the test guard points it at tmp (LOG-LEAK-2).
+if ($env:LW_LOG_DIR -and $env:LW_LOG_DIR.Trim()) {
+    New-Item -ItemType Directory -Force -Path $env:LW_LOG_DIR.Trim() | Out-Null
+    $log = Join-Path $env:LW_LOG_DIR.Trim() "weekly_hygiene_$stamp.log"
+}
 
 # PROMISE WATCH (ingest P1-3): keep the CLAUDE.md "Reverse if" promises
 # without anyone remembering. Posts once per marker to

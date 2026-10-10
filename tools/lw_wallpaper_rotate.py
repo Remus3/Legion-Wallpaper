@@ -75,8 +75,9 @@ def _log(msg: str) -> None:
     """
     try:
         stamp = datetime.now()
-        LOG_DIR.mkdir(parents=True, exist_ok=True)
-        with open(LOG_DIR / f"{stamp:%Y-%m-%d}.log", "a", encoding="utf-8") as fo:
+        log_dir = lw_paths.log_dir(LOG_DIR)  # $LW_LOG_DIR outranks (LOG-LEAK-2)
+        log_dir.mkdir(parents=True, exist_ok=True)
+        with open(log_dir / f"{stamp:%Y-%m-%d}.log", "a", encoding="utf-8") as fo:
             fo.write(f"{stamp:%H:%M:%S} [lw_wallpaper_rotate] {msg}\n")
     except OSError:
         pass

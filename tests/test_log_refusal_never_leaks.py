@@ -9,8 +9,8 @@ also patching LOG_DIR wrote "headless spawn refused: run budget exhausted
 test_a_spent_budget_launches_nothing and
 test_a_spent_kit_budget_stops_the_cycle_and_spawns_nothing, one line each).
 
-The guard is suite-wide, not per-arm: the env seam LW_HEADLESS_LOG_DIR is a
-declared runtime root (lw_race_guards.ENV_ROOTS -> tmp_path for every test,
+The guard is suite-wide, not per-arm: the env seam LW_LOG_DIR (LW_HEADLESS_LOG_DIR
+until LOG-LEAK-2 made it repo-wide) is a declared runtime root (lw_race_guards.ENV_ROOTS -> tmp_path for every test,
 inherited by child interpreters), and conftest also points LOG_DIR at tmp_path
 for the case where the kit test guard is switched off.
 """

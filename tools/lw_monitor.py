@@ -65,6 +65,14 @@ AB_PAGE_PATH = ROOT / "web" / "ab_r4.html"
 DEFAULT_IMAGE_ROOTS = [ROOT / "images"]
 MONITOR_LOG = ROOT / "logs" / "lw_monitor.log"
 
+
+def default_log_file() -> Path:
+    """lw_monitor.log under $LW_LOG_DIR when non-blank, else MONITOR_LOG - resolved at
+    call time (lw_paths.log_dir mirrored; LOG-LEAK-2)."""
+    env = os.environ.get("LW_LOG_DIR", "").strip()
+    return Path(env) / "lw_monitor.log" if env else MONITOR_LOG
+
+
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8901
 STUCK_S = 900.0
@@ -789,7 +797,7 @@ def main(argv=None):
     ap.add_argument("--monitor-log", default=None,
                     help="lw_monitor.log path override (tests inject a temporary one)")
     args = ap.parse_args(argv)
-    setup_logging(Path(args.monitor_log) if args.monitor_log else MONITOR_LOG)
+    setup_logging(Path(args.monitor_log) if args.monitor_log else default_log_file())
     image_roots = [Path(r) for r in args.images_root] if args.images_root else list(DEFAULT_IMAGE_ROOTS)
     state_path = resolve_state_path(args)
     url = f"http://{HOST}:{args.port}/"
