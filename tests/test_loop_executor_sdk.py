@@ -98,7 +98,7 @@ def test_the_child_gets_the_proxy_url(tmp_path: Path):
 
 def test_a_refused_proxy_stops_the_cycle_and_spawns_nothing(tmp_path: Path, monkeypatch):
     he = executor._headless_env_module()
-    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setenv(he.LOG_DIR_ENV, str(tmp_path / "logs"))
     marker = tmp_path / "spawned.txt"
     script = tmp_path / "must_not_run.py"
     script.write_text(f"open(r'{marker}', 'w').write('x')\n", encoding="utf-8")
@@ -121,7 +121,7 @@ def test_the_gate_is_not_a_config_key(tmp_path: Path, monkeypatch):
     """No cfg value can switch the gate off: with no injected seam, a refused
     resolution still refuses whatever the config says."""
     he = executor._headless_env_module()
-    monkeypatch.setattr(he, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setenv(he.LOG_DIR_ENV, str(tmp_path / "logs"))
     monkeypatch.setattr(he, "child_env", lambda *a, **k: (_ for _ in ()).throw(
         he.HeadlessRefused("CLAUDE_HEADLESS_BASE_URL unset")))
     marker = tmp_path / "spawned.txt"

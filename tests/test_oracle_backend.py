@@ -194,7 +194,7 @@ def test_a_refused_proxy_fails_the_claude_oracle_call_without_spawning(monkeypat
     logged, ran = [], []
     seen = {}
     _seam_spawn(monkeypatch, _kit_seams(seen, url=None))
-    monkeypatch.setattr(he, "LOG_DIR", tmp_path)
+    monkeypatch.setenv(he.LOG_DIR_ENV, str(tmp_path))
     monkeypatch.setattr(lc, "log", logged.append)
     monkeypatch.setattr(lc, "CFG", {})
     monkeypatch.setattr(lc.time, "sleep", lambda *_a: ran.append("sleep"))
