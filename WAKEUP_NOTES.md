@@ -79,6 +79,17 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-10, session 70) - GATE-SUBAGENT-FP + LOG-LEAK landed; session hung
+
+Commits: 568f8c9 / 3db19c7 GATE-SUBAGENT-FP (LEDGER 296), f096a69 / 740e5fc LOG-LEAK (LEDGER 297),
+549bb6e ledger, c85d29b worktree-corpus guard, 30b1040 FLEET-KIT v15; wrap LEDGER 298.
+Interactive session hung (machine restarted ~10:02 local); /done run by a recovery agent.
+Open from the dead session: RRF-2.3b slice 1 c239499 on unmerged branch
+worktree-agent-a165ab2a2943363bc (clean worktree, NOT merged); LOG-LEAK-2 follow-up
+uncommitted in locked worktree agent-a373841bb001e6085 (19 files, its agent pid gone).
+Do NOT redo: GATE-SUBAGENT-FP, LOG-LEAK, kit v15 vendor.
+Next: review + merge RRF-2.3b slice 1 and LOG-LEAK-2; R4 tally once voted; RETIRE-JUNCTION.
+
 ## PREVIOUS SESSION (2026-10-08, session 68) - inbox sync, v10/v11, junction proof, read-backs
 
 Commits: a416222 v10 (responder), 8af8a2d LEDGER 285, 1db7f65 LEDGER 286, 21a210b / 8f4ed93

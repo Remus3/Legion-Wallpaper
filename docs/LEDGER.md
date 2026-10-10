@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+298. DONE **2026-10-10 (session 70 wrap after a hung interactive session; docs-only).** The
+   interactive session hung (machine restart ~10:02 local); a recovery agent ran /done.
+   Read back: GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296) and LOG-LEAK (f096a69,
+   merge 740e5fc, LEDGER 297) on main via git log; dropped from the checklist. Recovery
+   findings: (a) RRF-2.3b slice 1 c239499 sits on unmerged branch
+   worktree-agent-a165ab2a2943363bc (worktree clean) - the dead /done was mid "merge RRF-2.3b
+   part 1"; NOT merged blind, carried as RRF-2.3b-MERGE. (b) LOG-LEAK-2 follow-up (19 files
+   modified + tests/test_log_dir_never_leaks.py untracked) is uncommitted in locked worktree
+   agent-a373841bb001e6085 (lock pid 15704 gone); progress log-leak-2.json marked failed
+   "session hung"; carried as LOG-LEAK-2. (c) worktree-agent-a6b282fa560024205 (MIG-1 WIP) and
+   the dependabot github-actions branch stay unmerged, untouched. No stash. 7 commits were
+   unpushed; pushed with this wrap. Pre-flight: ruff clean, drift_guard 0 breaches, pytest
+   --lf ran the full set 4163 passed 19 skipped. SAF-DENY: session 70 hung, not counted as
+   clean session 3.
+
 297. DONE **2026-10-10 (LOG-LEAK: headless refusals in tests never reach the live logs/; f096a69, merged 740e5fc).**
    ROOT CAUSE: lw_headless_env.log_refusal defaults to LOG_DIR (the live repo logs/); the responder, loop executor,
    loop oracle and CI watchdog call it without log_dir, and 2 test arms

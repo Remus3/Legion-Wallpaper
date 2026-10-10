@@ -1,7 +1,8 @@
 NEXT SESSION
 ------------
-SESSION: 70
-Task: OPERATOR-FACING QUEUE first (read-only prep, never self-approve): (1) R4 blind
+SESSION: 71
+Task: RECOVERY first: session 70 hung (machine restart ~10:02 local 2026-10-10); review
+  and merge RRF-2.3b slice 1 and LOG-LEAK-2 (see CHECKLIST). Then OPERATOR-FACING QUEUE (read-only prep, never self-approve): (1) R4 blind
   A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277) - operator starts LW
   Monitor, opens http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19 slugs,
   presses Finish; then `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER +
@@ -13,7 +14,7 @@ Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (L
   LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live state before
   acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
   RC-TeamClaudeProxy on localhost:3456 (logon-only, no restart-on-failure; was down
-  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v14 (LEDGER 293): commit/push via fleet_gitlock.py
+  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v15 (30b1040; v14 LEDGER 293): commit/push via fleet_gitlock.py
   run --owner <session_id>.<agent_id>, whole suites via fleet_suite_gate.py, identity
   hooks in .githooks (commit-msg strips, pre-push refuses). Headless
   spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE
@@ -23,21 +24,27 @@ Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (L
   outbox. Never put a 64-hex digest in this file.
 Acceptance: R4 tally recorded with the operator's votes, or still READY and carried;
   junction renamed off for the soak once all 6 re-points are confirmed; TRIAGE-ACK and
-  the READBACK-2237 status-line half read back; MAIN drift reads LW OK v14.
+  the READBACK-2237 status-line half read back; MAIN drift reads LW OK v15.
 CHECKLIST:
+  - RRF-2.3b-MERGE: Review and merge RRF-2.3b slice 1 c239499 (tools/lw_kit_adopt.py verify/copy/embed) from unmerged branch worktree-agent-a165ab2a2943363bc (worktree .claude/worktrees/agent-a165ab2a2943363bc, clean); the hung session 70 /done was mid-merge - verifier gate first, then git worktree remove (LEDGER 298)
+  - LOG-LEAK-2: Finish the LOG-LEAK follow-up left UNCOMMITTED in locked worktree .claude/worktrees/agent-a373841bb001e6085 (19 modified files: tests/conftest.py, tools/lw_paths.py, lw_headless_env.py, lw_monitor.py, gen/clean/upscale tools, 3 .ps1, + untracked tests/test_log_dir_never_leaks.py; agent pid 15704 dead, progress log-leak-2.json marked failed at 80 pct 'flakes re-run green alone'); diff it, run its tests, commit + merge, then unlock + remove the worktree (LEDGER 298)
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
   - RETIRE-JUNCTION: Watch inbox for the 6 sibling re-point confirmations (RC+RSC moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN tests/test_fleet_kit_v6_lanes.py:108; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
   - TRIAGE-ACK: Confirm a live non-TERMINAL ACK/INFORMATION/REPORT note is acked with no spawn in runs.jsonl (ANSWER notes clear via the TERMINAL skip, LEDGER 286)
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (feedback-line half PASSED session 68, LEDGER 289)
-  - GATE-SUBAGENT-FP: Fix claimed_green_gate false positive - it cannot see subagent pytest runs (ROADMAP, LEDGER 289); TDD first
-  - SAF-DENY: SUBAGENT-FIRST hook: sessions 68 and 69 = clean interactive sessions 1 and 2 of 3 (session 69: 0 main-thread would-deny rows); after session 70 is clean write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3 / RRF-2.9, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
+  - SAF-DENY: SUBAGENT-FIRST hook: sessions 68 and 69 = clean interactive sessions 1 and 2 of 3 (session 69: 0 main-thread would-deny rows); after the next clean interactive session (session 70 HUNG / interrupted - not counted as clean 3; counter stays 2 of 3) write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3 / RRF-2.9, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
   - REPO-REVIEW-DRIVER: RUNNING-OR-DEAD - read ops/loop/control/progress/repo-review.json (last 25 pct step RR-REVIEW 09:35, eta 8000 s) and docs/REPO_REVIEW_FINDINGS_2026-10-08.md; its headless parent exited 09:38:07 with 1 background subagent killed by the system (same death as the v14 child, LEDGER 293) - if the file is stale past 2x eta and no claims owner is live, treat it as dead and relaunch or finish by hand; never touch its claimed files while live; send its result in the next batched MAIN ANSWER (LEDGER 292)
   - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.1 xdist+timeout+markers, RRF-2.3b lw_kit_adopt.py, RRF-2.6 one lazy autouse fixture, RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-T1 744df9d and RRF-3.4 bc3b9c2 done by the driver; RRF-2.9 = SAF-DENY)
   - SPAWN-BG-DEATH: A kit.spawn child that dispatches a background agent and ends its turn exits and kills that agent (v14 child 09:37, repo-review parent 09:38); make LW child prompts run their work in the foreground (or wait for the agent) and track MAIN's reply on the kit side (reported in the v14 ANSWER)
-  - LOG-LEAK: Find what writes "headless spawn refused: run budget exhausted (120/120)" into the LIVE logs/2026-10-09.log at suite times (08:06, 09:16, 09:40) while the live budget held 6 starts - likely a test missing a tmp log root; TDD first
 Carried forward:
+  - Session 70 wrap: 7 previously unpushed commits (568f8c9..549bb6e) pushed with the wrap;
+    CI run for the wrap push is recorded under CI below - re-check `gh run view <id> --json
+    conclusion` at session start. Other unmerged branches left untouched:
+    worktree-agent-a6b282fa560024205 (MIG-1 WIP b29005e) and
+    dependabot/github_actions/github-actions-25c580fd63 (6617a85, merge on green per
+    SUPPLY CHAIN rule). No git stash.
   - CI for the session 69 wrap commit and the v14 ANSWER to MAIN 0930: both happen after
     this file is committed; re-check `gh run list --limit 2` and the newest
     moon_sync_outbox/*from-LW-ANSWER* note (reached 1/1) at session start.
@@ -122,7 +129,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 69 - FLEET-KIT v14 vendored + read back (e102758, LEDGER 293;
+Do NOT redo: session 70 - GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296), LOG-LEAK
+  (f096a69, merge 740e5fc, LEDGER 297), FLEET-KIT v15 vendor (30b1040), worktree-corpus guard
+  (c85d29b); read back via git log at the session 70 wrap (LEDGER 298). Session 69 - FLEET-KIT v14 vendored + read back (e102758, LEDGER 293;
   KIT-SPAWN-GAP closed by v14, xfail pins gone); identity history survey 0 flagged on
   main + 10 local branches; MAIN 2246 sections 1-8 answered, rewrite + force push
   (LEDGER 292). Session 68 shipped and PUSHED - v10 vendor (a416222, LEDGER 284), MAIN
@@ -143,6 +152,6 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > E:/Legion Wallpaper/images/0.Originals
-      last check: not done (155 tries)
+      last check: not done (432 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   (end operator asks)
