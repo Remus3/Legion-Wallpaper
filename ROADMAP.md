@@ -660,7 +660,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - RRF-2.3b: deterministic `tools/lw_kit_adopt.py` (copy bundle, verify hashes, re-embed block, conformance, kit tests) first; model only for the residual at sonnet/medium. SLICE 1 DONE + MERGED 2026-10-10 (c239499 + review fix 9d82cc1, LEDGER 299): `verify_bundle` (requires FLEET-COMMON.md listed) / `copy_bundle` (refuses before any write, manifest copied last) / `embed_block`, `tests/test_lw_kit_adopt.py` (11). REMAINING: CLI chaining them with `fleet_headless.conformance()` + the kit tests, and the responder hand-off of only the residual at sonnet/medium.
   - RRF-2.6: one lazy autouse fixture (or a session root with per-test subdirs) instead of six autouse tmp_path fixtures in tests/conftest.py.
   - RRF-2.8: one answer channel per ORDER (child reply OR the tick's batched answer, not both).
-  - RRF-2.9: flip subagent_first to deny - tracked as hand-off item SAF-DENY.
+  - RRF-2.9: flip subagent_first to deny - DONE 2026-10-10 (session 71 = clean 3 of 3, mode = deny, LEDGER 304).
   - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests.
   - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep.
   - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).

@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+304. DONE **2026-10-10 (SAF-DENY / RRF-2.9: SUBAGENT-FIRST hook flipped to deny; local control file, docs-only).**
+   Session 71 = clean interactive session 3 of 3 (sessions 68, 69 were 1 and 2; hung session 70 not counted):
+   READ BACK ops/loop/control/subagent_first.jsonl rows since 2026-10-10T09:00 = 148, all thread=sub
+   decision=allow, 0 main-thread would-deny rows. Wrote `deny` into ops/loop/control/subagent_first.mode
+   (gitignored; read back `deny`). MAIN is told in the next batched note (the GATE-FIFO note had already gone).
+   Reverse if: main-thread deny rows block legitimate operator work - write `log` back.
+
+303. DONE **2026-10-10 (GATE-FIFO: fleet_suite_gate 10:51 slot grant cleared; latent mixed-slots hole reported; docs-only).**
+   The 10:51 slot-1 grant to the Clockspeed gate (pid 8096) was NOT a defect: its ticket (10:25:45.78) predates
+   LW's (10:25:53.76) and acquire deletes the winner's ticket (fleet_suite_gate.py:324), so a later queue listing
+   showed LW as oldest. Latent weakness reproduced in scratch: FIFO breaks when callers use differing
+   --slots/FLEET_SUITE_SLOTS (lines 114-120, 304, 197-200; lane path 309-312 bypasses the queue); no tree sets
+   either today. Header line 3 says v14 in a v15 file. Sent to MAIN as INFORMATION note
+   2026-10-10-1120-from-LW-INFORMATION-to-MAIN-suite-gate-FIFO-incident-cleared-latent-mixed-slots-hole.md,
+   destination copy re-hashed: reached 1/1 (OutboundCap 2/6 today). Kit not patched locally (FLEET-COMMON 11).
+   Reverse if: MAIN ships a kit fix - then re-read the gate and close the carried watch.
+
+302. DONE **2026-10-10 (TRIAGE-ACK: live ack with zero spawns read back; docs-only).**
+   ops/runtime/inbox_responder/runs.jsonl:2721 and :2743 (2026-10-09) each ack one ANSWER note with reason
+   "never answer an answer", spawned [] and outbound [] - the triage ack path runs live with no headless spawn.
+   Reverse if: a later ACK/INFORMATION note shows a non-empty spawned list.
+
+301. DONE **2026-10-10 (SPAWN-BG-DEATH closed kit-side by FLEET-KIT v15; docs-only).**
+   ops/fleet_kit/fleet_headless.py:308-310 (KIT-15) sets the child env flag that makes a -p child run foreground
+   only, so a kit.spawn child no longer exits with a background sub-agent still running.
+   No LW-side change needed. Reverse if: a headless child is again seen exiting
+   with a background agent killed.
+
 300. DONE **2026-10-10 (LOG-LEAK-2: one LW_LOG_DIR seam for every repo-logs writer; d21c994, merged 508a4cd).**
    ROOT CAUSE: the 07:21 full suite wrote lw_g1_gate "cambi degraded" and lw_upscale winmutex lines into the LIVE
    logs/ daily log; LOG-LEAK (297) had fixed only log_refusal. FIX: env LW_LOG_DIR (blank = unset), resolver

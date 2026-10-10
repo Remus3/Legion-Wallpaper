@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-10, session 71) - recovery merges, four items closed
+
+Commits: bf8df10 RRF-2.3b slice 1 merge (c239499 + review fix 9d82cc1), 508a4cd LOG-LEAK-2
+merge (d21c994), 5ad428c LEDGER 299/300; full suite 4192 passed / 19 skipped on 508a4cd.
+Closed (LEDGER 301-304): SPAWN-BG-DEATH (kit v15 child env flag), TRIAGE-ACK (live
+0-spawn acks, runs.jsonl 2721/2743), GATE-FIFO (10:51 grant not a defect; latent
+mixed-slots hole sent to MAIN as INFORMATION, reached 1/1), SAF-DENY (session 71 = clean
+3 of 3; subagent_first.mode = deny).
+Do NOT redo: RRF-2.3b slice 1, LOG-LEAK-2, the GATE-FIFO note.
+Next: RRF-2.3b remainder (CLI chaining + conformance + kit tests); tell MAIN deny is armed
+in the next batched note; R4 tally once voted; RETIRE-JUNCTION.
+
 ## PREVIOUS SESSION (2026-10-10, session 70) - GATE-SUBAGENT-FP + LOG-LEAK landed; session hung
 
 Commits: 568f8c9 / 3db19c7 GATE-SUBAGENT-FP (LEDGER 296), f096a69 / 740e5fc LOG-LEAK (LEDGER 297),

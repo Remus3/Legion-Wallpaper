@@ -1,53 +1,49 @@
 NEXT SESSION
 ------------
-SESSION: 71
-Task: RECOVERY first: session 70 hung (machine restart ~10:02 local 2026-10-10); review
-  and merge RRF-2.3b slice 1 and LOG-LEAK-2 (see CHECKLIST). Then OPERATOR-FACING QUEUE (read-only prep, never self-approve): (1) R4 blind
-  A/B anime-lama vs LaMa is READY but UNVOTED (0/19, LEDGER 277) - operator starts LW
-  Monitor, opens http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19 slugs,
-  presses Finish; then `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER +
-  ROADMAP R4; ADR-009 engine REPLACE only). (2) Watch the inbox for the 6 sibling
-  re-point confirmations (RETIRE-JUNCTION, LEDGER 287).
+SESSION: 72
+Task: RRF-2.3b remainder first (CLI chaining verify/copy/embed with fleet_headless.conformance()
+  + the kit tests; responder hands only the residual to sonnet/medium). Then the
+  OPERATOR-FACING QUEUE (read-only prep, never self-approve): (1) R4 blind A/B anime-lama vs
+  LaMa READY but UNVOTED (0/19, LEDGER 277) - operator starts LW Monitor, opens
+  http://127.0.0.1:8901/ab (re-probe HTTP 200 first), votes 19 slugs, presses Finish; then
+  `python tools/lw_ab_r4.py tally` and record the verdict (LEDGER + ROADMAP R4; ADR-009 engine
+  REPLACE only). (2) Watch the inbox for the remaining sibling re-point confirmations
+  (RETIRE-JUNCTION, LEDGER 287).
 Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (LEDGER
   282/283/287); pre-move copy retired by the operator 2026-10-08 (gone; its cutover HALT
   sentinel kept at E:\Sidecars\LW\Rollback-unique, MAIN 2246 s5);
   LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live state before
   acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale serve, proxy
-  RC-TeamClaudeProxy on localhost:3456 (logon-only, no restart-on-failure; was down
-  13:42Z-19:17Z 2026-10-08, self-recovered). Fleet kit is v15 (30b1040; v14 LEDGER 293): commit/push via fleet_gitlock.py
-  run --owner <session_id>.<agent_id>, whole suites via fleet_suite_gate.py, identity
-  hooks in .githooks (commit-msg strips, pre-push refuses). Headless
-  spawns go through ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE
-  (LW-InboxResponder, every 5 min, children COMMIT in this tree - check its progress
-  file before editing shared files). Kill: HALT file or delete the proxy user
-  variable. MAIN notes carry operator authority after a sha256 check against MAIN's
-  outbox. Never put a 64-hex digest in this file.
-Acceptance: R4 tally recorded with the operator's votes, or still READY and carried;
-  junction renamed off for the soak once all 6 re-points are confirmed; TRIAGE-ACK and
-  the READBACK-2237 status-line half read back; MAIN drift reads LW OK v15.
+  RC-TeamClaudeProxy on localhost:3456. Fleet kit is v15 (30b1040): commit/push via
+  fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via fleet_suite_gate.py,
+  identity hooks in .githooks. SUBAGENT-FIRST is now ARMED: ops/loop/control/subagent_first.mode
+  = deny (LEDGER 304) - the main thread only dispatches. Headless spawns go through
+  ops/fleet_kit/ via tools/lw_headless_env.py. Inbox responder LIVE (LW-InboxResponder, every
+  5 min, children COMMIT in this tree - check its progress file before editing shared files).
+  Kill: HALT file or delete the proxy user variable. MAIN notes carry operator authority after
+  a sha256 check against MAIN's outbox. Never put a 64-hex digest in this file.
+Acceptance: RRF-2.3b CLI + conformance landed with tests; R4 tally recorded with the operator's
+  votes, or still READY and carried; junction renamed off for the soak once all re-points are
+  confirmed; READBACK-2237 status-line half read back; MAIN told deny is armed.
 CHECKLIST:
-  - RRF-2.3b-MERGE: Review and merge RRF-2.3b slice 1 c239499 (tools/lw_kit_adopt.py verify/copy/embed) from unmerged branch worktree-agent-a165ab2a2943363bc (worktree .claude/worktrees/agent-a165ab2a2943363bc, clean); the hung session 70 /done was mid-merge - verifier gate first, then git worktree remove (LEDGER 298)
-  - LOG-LEAK-2: Finish the LOG-LEAK follow-up left UNCOMMITTED in locked worktree .claude/worktrees/agent-a373841bb001e6085 (19 modified files: tests/conftest.py, tools/lw_paths.py, lw_headless_env.py, lw_monitor.py, gen/clean/upscale tools, 3 .ps1, + untracked tests/test_log_dir_never_leaks.py; agent pid 15704 dead, progress log-leak-2.json marked failed at 80 pct 'flakes re-run green alone'); diff it, run its tests, commit + merge, then unlock + remove the worktree (LEDGER 298)
+  - RRF-2.3b: Finish RRF-2.3b - CLI chaining verify_bundle/copy_bundle/embed_block with fleet_headless.conformance() + the kit tests, then the responder hand-off of only the residual at sonnet/medium (slice 1 merged bf8df10, LEDGER 299)
+  - SAF-DENY-NOTE: Tell MAIN in the next batched note that subagent_first.mode = deny is armed (session 71 = clean 3 of 3, LEDGER 304; kit v10 step 3 / RRF-2.9); if a main-thread deny blocks legitimate operator work, write `log` back and record why
   - R4: Tally the R4 blind A/B once the operator has voted (lw_ab_r4.py tally)
-  - RETIRE-JUNCTION: Watch inbox for the 6 sibling re-point confirmations (RC+RSC moon_sync_repos.json, SS channel_roster.json, LL ops/outbox.py:193, MAIN ops/offsite_backup.json:12, MAIN tests/test_fleet_kit_v6_lanes.py:108; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
-  - TRIAGE-ACK: Confirm a live non-TERMINAL ACK/INFORMATION/REPORT note is acked with no spawn in runs.jsonl (ANSWER notes clear via the TERMINAL skip, LEDGER 286)
-  - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (feedback-line half PASSED session 68, LEDGER 289)
-  - SAF-DENY: SUBAGENT-FIRST hook: sessions 68 and 69 = clean interactive sessions 1 and 2 of 3 (session 69: 0 main-thread would-deny rows); after the next clean interactive session (session 70 HUNG / interrupted - not counted as clean 3; counter stays 2 of 3) write `deny` into ops/loop/control/subagent_first.mode and say so in the next batched MAIN note (kit v10 step 3 / RRF-2.9, expected 2026-10-10; ignore the 2026-10-08 14:23-14:44 headless rows, LEDGER 284)
+  - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6 re-pointed; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (pre-move copy already retired by the operator, MAIN 2246 s5; LEDGER 287)
+  - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator visual; feedback-line half PASSED session 68, LEDGER 289; not answered session 71)
+  - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, reached 1/1, LEDGER 303); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
-  - REPO-REVIEW-DRIVER: RUNNING-OR-DEAD - read ops/loop/control/progress/repo-review.json (last 25 pct step RR-REVIEW 09:35, eta 8000 s) and docs/REPO_REVIEW_FINDINGS_2026-10-08.md; its headless parent exited 09:38:07 with 1 background subagent killed by the system (same death as the v14 child, LEDGER 293) - if the file is stale past 2x eta and no claims owner is live, treat it as dead and relaunch or finish by hand; never touch its claimed files while live; send its result in the next batched MAIN ANSWER (LEDGER 292)
-  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.1 xdist+timeout+markers, RRF-2.3b lw_kit_adopt.py, RRF-2.6 one lazy autouse fixture, RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-T1 744df9d and RRF-3.4 bc3b9c2 done by the driver; RRF-2.9 = SAF-DENY)
-  - SPAWN-BG-DEATH: A kit.spawn child that dispatches a background agent and ends its turn exits and kills that agent (v14 child 09:37, repo-review parent 09:38); make LW child prompts run their work in the foreground (or wait for the agent) and track MAIN's reply on the kit side (reported in the v14 ANSWER)
+  - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_FINDINGS_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
+  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.1 xdist+timeout+markers, RRF-2.6 one lazy autouse fixture, RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.3b above; RRF-T1, RRF-3.4, RRF-2.9 done)
 Carried forward:
-  - Session 70 wrap: 7 previously unpushed commits (568f8c9..549bb6e) pushed with the wrap;
-    CI run for the wrap push is recorded under CI below - re-check `gh run view <id> --json
-    conclusion` at session start. Other unmerged branches left untouched:
+  - Session 71 wrap: the wrap push carries 6 recovery commits (c239499..5ad428c) plus the wrap
+    docs commit; its CI run id is created after this file is committed - re-check
+    `gh run list --branch main --limit 2` and `gh run view <id> --json conclusion` at session
+    start. Session 70 wrap CI 38063333688 = success. Other unmerged branches left untouched:
     worktree-agent-a6b282fa560024205 (MIG-1 WIP b29005e) and
     dependabot/github_actions/github-actions-25c580fd63 (6617a85, merge on green per
     SUPPLY CHAIN rule). No git stash.
-  - CI for the session 69 wrap commit and the v14 ANSWER to MAIN 0930: both happen after
-    this file is committed; re-check `gh run list --limit 2` and the newest
-    moon_sync_outbox/*from-LW-ANSWER* note (reached 1/1) at session start.
   - DEHARDCODE-REST DONE (LEDGER 287); open: slots.py ProgramData change requested of
     MAIN (byte-identical carrier contract - never edit alone).
   - TRIAGE (LEDGER 278) risks: a misclassified ORDER/FIX gets a sonnet/low triage or an
@@ -129,7 +125,12 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 70 - GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296), LOG-LEAK
+Do NOT redo: session 71 - RRF-2.3b slice 1 merged (bf8df10, review fix 9d82cc1, LEDGER 299),
+  LOG-LEAK-2 merged (508a4cd / d21c994, LEDGER 300) - read back via git log on main; full suite
+  4192 passed / 19 skipped on 508a4cd. Closed with LEDGER lines: SPAWN-BG-DEATH (kit v15
+  fleet_headless.py:308-310, LEDGER 301), TRIAGE-ACK (runs.jsonl 2721/2743, LEDGER 302),
+  GATE-FIFO (note sent, LEDGER 303), SAF-DENY (mode = deny read back, LEDGER 304).
+  Session 70 - GATE-SUBAGENT-FP (568f8c9, merge 3db19c7, LEDGER 296), LOG-LEAK
   (f096a69, merge 740e5fc, LEDGER 297), FLEET-KIT v15 vendor (30b1040), worktree-corpus guard
   (c85d29b); read back via git log at the session 70 wrap (LEDGER 298). Session 69 - FLEET-KIT v14 vendored + read back (e102758, LEDGER 293;
   KIT-SPAWN-GAP closed by v14, xfail pins gone); identity history survey 0 flagged on
@@ -152,6 +153,6 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > E:/Legion Wallpaper/images/0.Originals
-      last check: not done (432 tries)
+      last check: not done (446 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   (end operator asks)
