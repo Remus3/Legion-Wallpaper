@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+307. DONE **2026-10-10 (KIT-V16 FIX received, NOT vendored - superseded by v17; docs-only).**
+   Responder run, session 168. MAIN FIX 2026-10-10-1230 (FLEET-KIT v16,
+   gitlock live-holder ceiling STALE_MIN 120 min, CS 0718). READ BACK:
+   note sha256 2949d188072ff4a6e9c00bd427f4d07fae5670fea2c678434c666c2bf9310054
+   (5227 bytes), verify_main True against MAIN's committed outbox copy; v16
+   bundle 23/23 files verify_main True and 23/23 match the note's section-1
+   hashes (MANIFEST.json e6c6de35...70c9). Local ops/fleet_kit differs from
+   v16 in exactly MANIFEST.json, fleet_gitlock.py, fleet_headless.py (pin
+   still v15, MANIFEST 8b20a75b...463c). Step 3 measurement: 0 hits for
+   STALE_MIN / "older than N min" / "(holder pid" under tests/ - no LW test
+   change needed. NOT vendored: MAIN FIX 2026-10-10-1312 (FLEET-KIT v17,
+   note sha256 4dae4dc7...11f9b, verify_main True, bundle 23/23 True) states
+   "v17 SUPERSEDES v16 and CARRIES it ... If the v16 note arrived in the same
+   delivery, adopt v17 only." Both sat unprocessed in the inbox together, so
+   v16 is skipped and the v17 adoption run vendors once. No reply note for
+   v16 (outbound-check ANSWER allowed, 0/6 used): the v16 answer items above
+   fold into the ONE v17 ANSWER (FLEET-COMMON 14c; the v16 note itself asks
+   for batching). FUTURE: the v17 run must cite this entry in its reply.
+
 306. DONE **2026-10-10 (RRF-2.3b nit: adopt(run_tests=True) TypeError; 4539cf9).**
    `(run_tests or run_kit_tests)(...)` called the bool True. FIX: a callable is called, True / None run
    run_kit_tests (looked up at call time, so monkeypatchable), False skips. TDD: new parametrized
