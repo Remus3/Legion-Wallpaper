@@ -79,6 +79,20 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-12, session 73) - kit v17, RRF-2.3b closed, RRF-2.6, LEDGER-ASCII
+
+Commits: 0b1e706 FLEET-KIT v17 vendored (orphaned responder-child work adopted byte-exact,
+pins 15->17; one batched ANSWER to MAIN v16+v17+SAF-DENY reached 1/1; LEDGER 308),
+f618710 RRF-2.3b slice 3 (responder model-free adopt of verified MAIN kit bundles, residual
+to sonnet/medium child; LEDGER 309), f8af59a LEDGER-ASCII (tracked-file 7-bit sweep, LEDGER
+e-acute fixed; LEDGER 310), 5c42cd6 LEDGER 308-311, f2389c4 RRF-2.6 (five autouse fixtures
+-> one; LEDGER 312). Suite 4226 passed / 19 skipped at f2389c4; CI 38268123565 green.
+Probed: R4 0/19; RETIRE-JUNCTION 3/6; GATE-FIFO no MAIN reply (v17 left
+fleet_suite_gate.py unchanged, LEDGER 311). R4 + READBACK-2237 now registered operator
+tasks (vote.r4-ab, visual.readback-2237-statusline).
+Do NOT redo: KIT-V17, SAF-DENY-NOTE, RRF-2.3b, LEDGER-ASCII, RRF-2.6.
+Next: RRF-2.1 (hash-pinned pytest-xdist + pytest-timeout, CI change).
+
 ## PREVIOUS SESSION (2026-10-10, session 72) - RRF-2.3b slice 2 landed
 
 Commits: 3f6a9cd builder / 69944d6 merge RRF-2.3b slice 2 (lw_kit_adopt CLI chains
