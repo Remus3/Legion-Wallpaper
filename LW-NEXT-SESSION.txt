@@ -31,6 +31,13 @@ CHECKLIST:
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_FINDINGS_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
   - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.1 above; RRF-2.3b, RRF-2.6, RRF-T1, RRF-3.4, RRF-2.9 done)
 Carried forward:
+  - SESSION 73 /done STOPPED AT SECTION 7 (NOT PUSHED): wrap commit 7fe23a7 + this
+    note commit are LOCAL ONLY. done_gate.py bind: attempt 1 and 2 exit 1, suite-gate
+    queue timeout (no slot after 3600 s; FLEET_SUITE_SLOTS=1, 4 other-tree waiters);
+    attempt 3 killed by the harness under low system memory before finishing. FIRST
+    ACTION next session: `python tools/done_gate.py bind` when the slot queue is short
+    (`fleet_suite_gate.py status`), then push via fleet_gitlock and
+    `done_gate.py verify-push`, record the CI run id.
   - Session 73 wrap: worker pushed f2389c4 (CI 38268123565 green, 4226 passed / 19
     skipped). The wrap commit's CI run id is created after this file is committed -
     re-check `gh run list --branch main --limit 2` and `gh run view <id> --json
