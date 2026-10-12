@@ -27,6 +27,53 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+311. DONE **2026-10-12 (session 73 watches + operator-blocked re-checks; docs-only).**
+   GATE-FIFO-WATCH: no MAIN reply to the 1120 INFORMATION note in the inbox (newest
+   note 2026-10-11-0538, SS ANSWER); v16/v17 left fleet_suite_gate.py byte-identical
+   (manifest hash unchanged, header still v14) - watch stays open. RETIRE-JUNCTION: no
+   new sibling re-point confirmation since 2026-10-09-2155 (3/6) - junction stays; still
+   open. R4: `lw_ab_r4.py status` 0/19 voted, votes.json absent - operator. READBACK-2237,
+   R5c, WATCH-SWAP: triggers unchanged, carried. Inbox marked seen after reading the
+   1230 / 1312 / SS 0538 notes (`lw_facts.py --mark-inbox-seen`).
+
+310. DONE **2026-10-12 (LEDGER-ASCII: 7-bit allowlist sweep; f8af59a).**
+   The one non-ASCII byte pair in this file (UTF-8 e-acute in a French quote,
+   "configure") is now ASCII. ROOT CAUSE of the miss: every hygiene guard was a
+   glyph BANLIST (smart quotes / dashes in test_smart_quote_hygiene and
+   precommit_gate, U+2026 / U+00A0, two mojibake signatures) - U+00E9 is on none.
+   CLOSED by tests/test_ascii_only_authored.py: every tracked file is 7-bit ASCII
+   except CLAUDE.md's exclusions (logs, _archive, dated artifacts, .jsonl, binaries)
+   and vendored ops/fleet_kit/. Sibling cases it found, fixed with escapes (same
+   values): tests/test_lw_checklist.py U+2610, tests/test_lw_review_threads.py
+   U+00E9. Excluded by rule, not fixed: docs/WIKI_SWAP_22_2026-08-01.md (dated, 40
+   middots). Reverse if: a tracked authored file legitimately needs raw non-ASCII.
+
+309. DONE **2026-10-12 (RRF-2.3b slice 3: responder adopts the kit, child gets only the residual; f618710).**
+   tools/lw_inbox_responder.py: kit_bundle (sibling `<stamp>-from-MAIN-FLEET-KIT-vN`
+   dir of a MAIN FLEET-KIT note), bundle_verified (every file verify_main against
+   MAIN's committed outbox), kit_adoption (MATCH only; runs lw_kit_adopt.adopt with
+   kit tests; never raises), adoption_prompt; spawn() runs the child at sonnet /
+   medium (RESIDUAL_MODEL / RESIDUAL_EFFORT) when the adoption reached stage done or
+   tests, else the full opus code run with the parent's result in the prompt; dry
+   run never adopts. tests/test_inbox_responder_kit_adopt.py 16 passed; full suite
+   via fleet_suite_gate 4224 passed / 19 skipped. RRF-2.3b CLOSED (ROADMAP).
+   Reverse if: a residual run at sonnet / medium fails a kit adoption the full run
+   would have landed.
+
+308. DONE **2026-10-12 (FLEET-KIT v17 vendored; 0b1e706; MAIN ANSWER sent).**
+   Session start found 8 dirty files: the v17 adoption left by the responder child of
+   2026-10-11 05:09 (opus/medium, error timeout at 1798 s, progress responder-run.json
+   stuck at A2 suite). READ BACK: all 22 files + MANIFEST.json byte-identical to the
+   delivered bundle (cmp); claim file owner pid 4204 not running, last update
+   2026-10-11 05:31 - no live owner. verify_main True for the 1230 and 1312 notes and
+   every v17 bundle file; `lw_kit_adopt.py adopt --no-tests` ok stage done; `check`
+   conformance []. Step 3: only the 15 -> 17 pins. Full suite via fleet_suite_gate:
+   4205 passed / 19 skipped, rc 0. ONE batched ANSWER (v16 + v17 + SAF-DENY-NOTE:
+   subagent_first.mode = deny armed, LEDGER 304) written to moon_sync_outbox as
+   2026-10-12-0938-from-LW-ANSWER-to-MAIN-1230-1312-kit-v17-vendored-0b1e706-4205-passed-SAF-deny-armed.md
+   and delivered to MAIN's inbox; destination copy re-hashed equal: reached 1/1
+   (OutboundCap 1/6 today). SAF-DENY-NOTE CLOSED.
+
 307. DONE **2026-10-10 (KIT-V16 FIX received, NOT vendored - superseded by v17; docs-only).**
    Responder run, session 168. MAIN FIX 2026-10-10-1230 (FLEET-KIT v16,
    gitlock live-holder ceiling STALE_MIN 120 min, CS 0718). READ BACK:
