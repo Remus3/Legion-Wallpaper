@@ -753,6 +753,96 @@ def _triage(note_path: Path, dry_run: bool, seams: dict) -> Disposition:
                        True, line.get("result"))
 
 
+# RRF-2.3b residual (MAIN REPO-REVIEW 2.3; LEDGER 299, 305, 308). A FLEET-KIT-vN
+# FIX / ORDER from MAIN ships its kit as a sibling directory
+# `<stamp>-from-MAIN-FLEET-KIT-vN/`. Once the note is a MAIN MATCH and every
+# bundle file is byte-identical to MAIN's COMMITTED outbox copy, the PARENT
+# adopts it with tools/lw_kit_adopt.adopt (verify, version, embed, copy,
+# conformance, kit tests - no model) and the child is handed only the residual
+# (tree-specific wiring such as version pins, the gated suite, the commit, the
+# LEDGER line and the answer) at RESIDUAL_MODEL / RESIDUAL_EFFORT. An adoption
+# that stopped before the copy (verify / version / embed / provenance / adopt)
+# keeps the full code run, with the parent's result in its prompt. Why: the v17
+# child (2026-10-11 05:09) ran opus, copied the kit and timed out at 1800 s with
+# nothing committed. Reverse if: a residual run at sonnet / medium fails to land
+# a kit adoption that the full run would have.
+RESIDUAL_MODEL = "sonnet"
+RESIDUAL_EFFORT = "medium"
+_RESIDUAL_STAGES = frozenset({"done", "tests"})
+_KIT_NOTE = re.compile(r"^(\d{4}-\d{2}-\d{2}-\d{4})-from-MAIN-.*FLEET-KIT-v(\d+)(?!\d)")
+
+
+def kit_bundle(note_path: Path) -> Path | None:
+    """The kit bundle beside a MAIN FLEET-KIT-vN note (same stamp, same N), or None."""
+    m = _KIT_NOTE.match(note_path.name)
+    if m is None or note_path.is_dir():
+        return None
+    bundle = note_path.parent / f"{m.group(1)}-from-MAIN-FLEET-KIT-v{m.group(2)}"
+    return bundle if bundle.is_dir() else None
+
+
+def bundle_verified(bundle: Path) -> bool:
+    """True only when the bundle holds files and EVERY one matches MAIN's
+    committed outbox copy (kit verify_main, rel = <bundle dir>/<file>)."""
+    try:
+        outbox = main_outbox()
+        files = sorted(f for f in bundle.iterdir() if f.is_file())
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return False
+    k = lw_headless_env.kit
+    checks = [k.verify_main(f, outbox, rel=f"{bundle.name}/{f.name}") for f in files]
+    return bool(checks) and all(checks)
+
+
+def kit_adoption(note_path: Path, provenance: str, *, adopt=None,
+                 bundle_ok=None) -> dict | None:
+    """The parent's adoption of a MAIN kit bundle, as lw_kit_adopt's result dict.
+
+    None when there is nothing to adopt: the note is not a MAIN MATCH or carries
+    no bundle. Never raises: an unverified bundle is stage "provenance" (nothing
+    copied), a crash inside adopt is stage "adopt"."""
+    if ": MATCH" not in provenance:
+        return None
+    bundle = kit_bundle(note_path)
+    if bundle is None:
+        return None
+    if not (bundle_ok or bundle_verified)(bundle):
+        return {"ok": False, "stage": "provenance", "residual": [],
+                "problems": [f"{bundle.name}: not every file matches MAIN's committed "
+                             "outbox copy; nothing copied"]}
+    try:
+        if adopt is None:
+            import lw_kit_adopt
+            adopt = lw_kit_adopt.adopt
+        return adopt(bundle, ROOT, run_tests=True)
+    except Exception as exc:  # noqa: BLE001 - a crash is a reported stage, never a dead tick
+        return {"ok": False, "stage": "adopt", "residual": [],
+                "problems": [f"{type(exc).__name__}: {exc}"]}
+
+
+def hands_residual(adoption: dict | None) -> bool:
+    """True when the parent's adoption got past the copy and conformance."""
+    return adoption is not None and adoption.get("stage") in _RESIDUAL_STAGES
+
+
+def adoption_prompt(adoption: dict) -> str:
+    """The paragraph that tells the child what the parent already did."""
+    head = "KIT ADOPTION (done by the parent responder)"
+    result = json.dumps(adoption, sort_keys=True)
+    if hands_residual(adoption):
+        return (f"{head}: tools/lw_kit_adopt.py checked every bundle file against MAIN's "
+                "committed outbox and the bundle manifest, copied the kit into "
+                "ops/fleet_kit/ byte for byte, re-embedded the CLAUDE.md block, passed "
+                "conformance() and ran the kit tests; do NOT copy the bundle again. Your "
+                "work is ONLY the residual: the tree-specific wiring the note describes "
+                "(for example KIT_VERSION / FLEET_KIT_VERSION pins in tests and tools), "
+                "the full suite through fleet_suite_gate, ONE commit through "
+                "fleet_gitlock, a LEDGER entry and the one answer the note asks for. "
+                f"Result: {result}")
+    return (f"{head}: adoption STOPPED at stage {adoption.get('stage')}; nothing past "
+            f"that stage was written. Do the note's steps yourself. Result: {result}")
+
+
 def spawn(note_path: Path, dry_run: bool = False, *,
           kit_seams: dict | None = None, kind: str = "inbox") -> Disposition:
     """One headless run for one note, through `kit.spawn`. Waits for it.
@@ -782,11 +872,18 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         if dry_run:
             lw_headless_env.resolve(seams.get("url_source"), seams.get("connect"))
             return _auto("spawn", f"dry run, would run kit.spawn on {note_path.name}{tail}")
+        adoption = kit_adoption(note_path, provenance)
+        residual = hands_residual(adoption)
+        prompt = spawn_prompt(note_path, provenance)
+        if adoption is not None:
+            prompt = f"{prompt} {adoption_prompt(adoption)}"
+            tail = f"{tail}; kit adoption stage {adoption.get('stage')}"
         governor = run_governor(note_path)
-        line = lw_headless_env.spawn(spawn_prompt(note_path, provenance),
+        line = lw_headless_env.spawn(prompt,
                                      note=note_path.name,
                                      writes_code=writes_code(note_path),
-                                     effort=run_effort(note_path),
+                                     model=RESIDUAL_MODEL if residual else None,
+                                     effort=RESIDUAL_EFFORT if residual else run_effort(note_path),
                                      governor=governor,
                                      governor_timeout=SLOT_WAIT_S if governor else None,
                                      timeout=RUN_TIMEOUT_S, extra=RESPONDER_EXTRA,

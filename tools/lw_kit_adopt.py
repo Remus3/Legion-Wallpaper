@@ -22,8 +22,8 @@ version (no downgrade), embed (CLAUDE.md markers checked BEFORE any write),
 copy, conformance, tests. Output is one JSON object {ok, stage, problems,
 residual}; exit 0 ok, 1 not ok, 2 usage. Red kit tests after a clean copy are
 the residual (tree-specific wiring, e.g. the version pin) - the only part
-left for a model. Still to come in RRF-2.3b: the responder hand-off of that
-residual at sonnet/medium.
+left for a model. The responder hands only that residual to its child at
+sonnet/medium (tools/lw_inbox_responder.py kit_adoption, RRF-2.3b slice 3).
 
 Pure stdlib, no machine paths: every function takes its directories as
 arguments, so tests run on tmp_path and never touch the live kit.
