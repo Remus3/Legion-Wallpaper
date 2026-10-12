@@ -10200,7 +10200,7 @@ sc-first-run` accepted on its referrer
     `resolver.ts` / `config.ts` / `index.ts`. `gitwand_resolve_hunk_llm` does
     not call a model at all: it VALIDATES and applies a resolution the calling
     agent proposed (the package header calls this "the agent IS the LLM"), and
-    the "endpoint LLM configuré" wording survives only inside a description
+    the "endpoint LLM configure" wording survives only inside a description
     string. So the BACKLOG's "LLM involvement is opt-in" was UNDERSTATED - there
     is no LLM client in the MCP package to opt into.
     LW-SPECIFIC GOTCHA recorded for any future adoption: every classification

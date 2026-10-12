@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import lw_checklist as lc  # noqa: E402
 
-BOX = "☐"
+BOX = "\u2610"
 
 HANDOFF = """NEXT SESSION
 ------------

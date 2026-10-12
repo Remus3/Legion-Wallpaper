@@ -136,7 +136,7 @@ def test_promote_writes_a_seed_and_edits_nothing(tmp_path):
 def test_stored_files_are_ascii(tmp_path):
     root, _, _ = _img(tmp_path)
     review = tmp_path / "review"
-    rec = RT.submit("ahri", [10, 10], 4, "café smudge", {"x0": 0, "y0": 0, "x1": 30, "y1": 30},
+    rec = RT.submit("ahri", [10, 10], 4, "caf\xe9 smudge", {"x0": 0, "y0": 0, "x1": 30, "y1": 30},
                     review_root=review, images_root=root)
     raw = (review / "ahri" / f"{rec['id']}.json").read_bytes()
     raw.decode("ascii")
