@@ -100,20 +100,42 @@ def _unpatch_pil_image_open():
     yield
 
 
-@pytest.fixture(autouse=True)
-def _the_live_fleet_files_are_never_written(request, monkeypatch):
-    """Redirect the fleet kit's files for EVERY test: status, budget, usage.
+# RRF-2.6 (MAIN REPO-REVIEW 2.6): ONE autouse fixture for every LW live-state
+# redirect, where there were five, each pulling tmp_path for one redirect. Pinned
+# by tests/test_conftest_one_redirect.py. The env redirects duplicate the kit's
+# _fleet_runtime_roots on purpose: they still hold when FLEET_TEST_GUARD=off.
+_LW_ENV_REDIRECTS = (
+    # Operator-task engine (tools/lw_ops_tasks.py): the responder runs
+    # verify_pending() on every --once tick; never the live operator log.
+    ("LW_OPS_TASKS_ROOT", "operator_tasks"),
+    # tools/lw_runlog.py (ingest P0-4): responder / CI watchdog / wallpaper tick
+    # run records; never the live ops/runtime/runlog/ lw_job_health.py judges.
+    ("LW_RUNLOG_ROOT", "runlog"),
+    # Kit v6 governor (spawn(governor=...)): never a real machine-wide slot under
+    # %ProgramData%/lw-loop/slots (lw_headless_env.governor_root()).
+    ("LW_GOVERNOR_ROOT", "governor/slots"),
+    # AHK bridge send journal (ops/loop/executor.py, ingest P1-6); live one is
+    # ops/runtime/bridge/sends.jsonl.
+    ("LW_BRIDGE_JOURNAL", "bridge/sends.jsonl"),
+)
 
-    Suite-wide because every headless path - responder, CI watchdog, loop
-    executor, oracle, the `exec` / `spawn` CLI - now goes through MAIN's kit
-    (kit v3), which writes `ops/loop/control/inbox_status.json`,
-    `headless_budget.json` and `headless_usage.jsonl` under
-    `lw_headless_env.FLEET_ROOT`. The widget reads the status file live and the
-    budget gates real runs, so one forgotten redirect would show the operator a
-    test's fake state as LW's, or spend LW's real budget. The adapter is imported
-    HERE so it is always loaded, and so always redirected, before an arm runs.
-    Guarded at the kit's writer, never by mtime: the armed lanes rewrite these
-    files on their own schedule.
+
+@pytest.fixture(autouse=True)
+def _lw_live_state_redirect(request, monkeypatch):
+    """Point every LW live-state writer at this test's tmp_path.
+
+    Env seams (read at call time) for the operator-task log, run logs, governor
+    slots and bridge journal; and the fleet kit's files (status, budget, usage)
+    via lw_headless_env.FLEET_ROOT, guarded at the kit's writer. Suite-wide
+    because every headless path - responder, CI watchdog, loop executor, oracle,
+    the `exec` / `spawn` CLI - goes through MAIN's kit (kit v3), which writes
+    `ops/loop/control/inbox_status.json`, `headless_budget.json` and
+    `headless_usage.jsonl` under FLEET_ROOT. The widget reads the status file
+    live and the budget gates real runs, so one forgotten redirect would show the
+    operator a test's fake state as LW's, or spend LW's real budget. The adapter
+    is imported HERE so it is always loaded, and so always redirected, before an
+    arm runs. Guarded at the kit's writer, never by mtime: the armed lanes
+    rewrite these files on their own schedule.
     """
     import sys
     tools = str(Path(__file__).resolve().parents[1] / "tools")
@@ -121,8 +143,10 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
         sys.path.insert(0, tools)
     import lw_headless_env as he
 
-    real = (Path(he.ROOT) / "ops" / "loop" / "control").resolve()
     tmp = request.getfixturevalue("tmp_path")
+    for var, sub in _LW_ENV_REDIRECTS:
+        monkeypatch.setenv(var, str(tmp / sub))
+    real = (Path(he.ROOT) / "ops" / "loop" / "control").resolve()
     monkeypatch.setattr(he, "FLEET_ROOT", tmp / "fleet_root")
     # LOG-LEAK: log_refusal's default daily log. The env seam
     # (LW_LOG_DIR, a declared runtime root) already points here; this
@@ -143,55 +167,3 @@ def _the_live_fleet_files_are_never_written(request, monkeypatch):
     monkeypatch.setattr(kit, "_atomic_write", _guarded)
     yield
     assert hits == [], f"an arm wrote a live fleet-kit file: {hits}"
-
-
-@pytest.fixture(autouse=True)
-def _the_live_operator_task_log_is_never_touched(request, monkeypatch):
-    """Point the operator-task engine (tools/lw_ops_tasks.py) at a per-test root.
-
-    The engine's default store is ops/runtime/operator_tasks/, and the inbox
-    responder runs `verify_pending()` on every `--once` tick. Without this, an
-    arm that drives the responder's main would execute the LIVE pending checks
-    and append verify events to the operator's real log. Env-var seam, read at
-    call time by `lw_ops_tasks.default_root()`.
-    """
-    tmp = request.getfixturevalue("tmp_path")
-    monkeypatch.setenv("LW_OPS_TASKS_ROOT", str(tmp / "operator_tasks"))
-    yield
-
-
-@pytest.fixture(autouse=True)
-def _the_live_job_run_logs_are_never_written(request, monkeypatch):
-    """Point tools/lw_runlog.py at a per-test root (ingest P0-4).
-
-    The responder, CI watchdog and wallpaper tick append a run record on every
-    invocation; an arm that drives their main must never append to the live
-    ops/runtime/runlog/ that tools/lw_job_health.py judges.
-    """
-    tmp = request.getfixturevalue("tmp_path")
-    monkeypatch.setenv("LW_RUNLOG_ROOT", str(tmp / "runlog"))
-    yield
-
-
-@pytest.fixture(autouse=True)
-def _the_live_governor_slots_are_never_taken(request, monkeypatch):
-    """Point the fleet-kit v6 governor (spawn(governor=...)) at a per-test root.
-
-    A code-writing headless run takes one machine-wide slot under
-    %ProgramData%/lw-loop/slots - the SAME bucket every live loop on this
-    machine draws from. An arm that drove a governed spawn there would hold a
-    real slot (or wait behind a live run). Env seam, read at call time by
-    `lw_headless_env.governor_root()`.
-    """
-    tmp = request.getfixturevalue("tmp_path")
-    monkeypatch.setenv("LW_GOVERNOR_ROOT", str(tmp / "governor" / "slots"))
-    yield
-
-
-@pytest.fixture(autouse=True)
-def _the_live_bridge_journal_is_never_written(request, monkeypatch):
-    """Point the AHK bridge send journal (ops/loop/executor.py, ingest P1-6) at
-    a per-test path; the live one is ops/runtime/bridge/sends.jsonl."""
-    tmp = request.getfixturevalue("tmp_path")
-    monkeypatch.setenv("LW_BRIDGE_JOURNAL", str(tmp / "bridge" / "sends.jsonl"))
-    yield

@@ -27,6 +27,16 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+312. DONE **2026-10-12 (RRF-2.6: one LW autouse redirect fixture; see commit below).**
+   tests/conftest.py: the five LW autouse fixtures that each pulled tmp_path for one
+   redirect (fleet-kit files via FLEET_ROOT / LOG_DIR, LW_OPS_TASKS_ROOT,
+   LW_RUNLOG_ROOT, LW_GOVERNOR_ROOT, LW_BRIDGE_JOURNAL) are ONE fixture,
+   `_lw_live_state_redirect`; the env redirects still duplicate the kit's
+   _fleet_runtime_roots on purpose so they hold under FLEET_TEST_GUARD=off.
+   Pinned by tests/test_conftest_one_redirect.py (2). Full suite via
+   fleet_suite_gate: 4226 passed / 19 skipped, rc 0. RRF-2.1 NOT started this
+   session (needs hash-pinned requirements + CI change; carried).
+
 311. DONE **2026-10-12 (session 73 watches + operator-blocked re-checks; docs-only).**
    GATE-FIFO-WATCH: no MAIN reply to the 1120 INFORMATION note in the inbox (newest
    note 2026-10-11-0538, SS ANSWER); v16/v17 left fleet_suite_gate.py byte-identical
