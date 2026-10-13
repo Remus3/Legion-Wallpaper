@@ -51,6 +51,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import gitdep
+import tracked_corpus
 
 import pytest
 
@@ -90,14 +91,10 @@ def _fragments_for(rel: str) -> tuple:
 PROBE = pin("probe", "zqxsplitprobe")
 
 
-@lru_cache(maxsize=1)
 def _tracked_files() -> tuple[str, ...]:
-    """Every tracked path, asked of GIT rather than of the disk."""
-    out = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=REPO_ROOT,
-        capture_output=True, text=True, check=True,
-    ).stdout
-    return tuple(sorted(p for p in out.split("\0") if p))
+    """Every tracked path, asked of GIT rather than of the disk (RRF-2.10: once
+    per test process, shared through tests/tracked_corpus.py)."""
+    return tracked_corpus.tracked_files()
 
 
 def sweep() -> tuple[int, list[str]]:
@@ -106,7 +103,7 @@ def sweep() -> tuple[int, list[str]]:
     offenders: list[str] = []
     for rel in _tracked_files():
         try:
-            text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            text = tracked_corpus.read_text(rel)
         except (OSError, UnicodeDecodeError):
             continue
         scanned += 1

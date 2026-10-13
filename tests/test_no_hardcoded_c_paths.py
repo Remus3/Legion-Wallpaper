@@ -24,6 +24,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import gitdep
+import tracked_corpus
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -72,9 +73,7 @@ def find_literals(text: str) -> list[int]:
 
 @lru_cache(maxsize=1)
 def _tracked_code_files() -> tuple[str, ...]:
-    out = subprocess.run(["git", "ls-files", "-z"], cwd=REPO_ROOT,
-                         capture_output=True, check=True).stdout
-    names = [n for n in out.decode("utf-8", "replace").split("\0") if n]
+    names = tracked_corpus.tracked_files()      # RRF-2.10: one git call per process
     return tuple(n for n in names if n.lower().endswith(CODE_SUFFIXES))
 
 
@@ -100,9 +99,8 @@ def test_no_tracked_code_file_hardcodes_lw_root():
     for rel in _tracked_code_files():
         if _allowed(rel):
             continue
-        p = REPO_ROOT / rel
         try:
-            text = p.read_text(encoding="utf-8", errors="replace")
+            text = tracked_corpus.read_text(rel, errors="replace")
         except OSError:
             continue
         hits += [f"{rel}:{n}" for n in find_literals(text)]

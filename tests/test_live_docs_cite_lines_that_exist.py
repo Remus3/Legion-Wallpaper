@@ -53,6 +53,7 @@ import subprocess
 from pathlib import Path
 
 import gitdep
+import tracked_corpus
 
 import pytest
 
@@ -78,11 +79,7 @@ _CITATION = re.compile(
 
 
 def _tracked() -> list[str]:
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "ls-files", "-z"],
-        capture_output=True, check=True,
-    ).stdout
-    return [p for p in out.decode("utf-8").split("\0") if p]
+    return list(tracked_corpus.tracked_files())     # RRF-2.10: one git call per process
 
 
 def _live_docs(tracked: list[str]) -> list[str]:
@@ -120,7 +117,7 @@ def _sweep() -> tuple[int, int, list[str]]:
     def count(rel: str) -> int:
         if rel not in nlines:
             try:
-                nlines[rel] = len((ROOT / rel).read_bytes().splitlines())
+                nlines[rel] = len(tracked_corpus.read_bytes(rel).splitlines())
             except OSError:
                 nlines[rel] = -1
         return nlines[rel]

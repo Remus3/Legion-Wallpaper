@@ -22,6 +22,7 @@ import subprocess
 from pathlib import Path
 
 import gitdep
+import tracked_corpus
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -57,9 +58,7 @@ def non_ascii(data: bytes) -> tuple[int, int] | None:
 
 
 def _tracked() -> list[str]:
-    out = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True,
-                         check=True).stdout
-    return [p for p in out.decode("utf-8").split("\0") if p]
+    return list(tracked_corpus.tracked_files())     # RRF-2.10: one git call per process
 
 
 def test_the_rule_flags_a_lone_e_acute_that_every_banlist_missed():
@@ -85,7 +84,7 @@ def test_every_tracked_authored_text_file_is_7bit_ascii():
     bad = []
     for rel in files:
         try:
-            hit = non_ascii((ROOT / rel).read_bytes())
+            hit = non_ascii(tracked_corpus.read_bytes(rel))
         except OSError:
             continue  # tracked but deleted in the working tree
         if hit:

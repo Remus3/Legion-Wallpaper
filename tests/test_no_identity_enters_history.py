@@ -119,6 +119,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 import gitdep
+import tracked_corpus
 
 import pytest
 
@@ -253,10 +254,10 @@ def _git_bytes(*args: str) -> bytes:
     ).stdout
 
 
-@lru_cache(maxsize=1)
 def _tracked_files() -> tuple[str, ...]:
-    """Every tracked path, asked of GIT rather than of the disk."""
-    return tuple(sorted(p for p in _git("ls-files", "-z").split("\0") if p))
+    """Every tracked path, asked of GIT rather than of the disk (RRF-2.10: once
+    per test process, shared through tests/tracked_corpus.py)."""
+    return tracked_corpus.tracked_files()
 
 
 @lru_cache(maxsize=1)
@@ -278,7 +279,7 @@ def entry_sweep() -> tuple[int, list[str]]:
     offenders: list[str] = []
     for rel in _tracked_files():
         try:
-            text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+            text = tracked_corpus.read_text(rel)
         except (OSError, UnicodeDecodeError):
             continue
         scanned += 1

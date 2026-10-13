@@ -661,7 +661,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - RRF-2.6: one lazy autouse fixture (or a session root with per-test subdirs) instead of six autouse tmp_path fixtures in tests/conftest.py. DONE 2026-10-12 (session 73, LEDGER 312): five LW redirect fixtures folded into `_lw_live_state_redirect` (plus the kit's _fleet_runtime_roots); pinned by tests/test_conftest_one_redirect.py.
   - RRF-2.8: one answer channel per ORDER (child reply OR the tick's batched answer, not both). DONE 2026-10-12 (LEDGER 314): first-claim-wins answer_channels.jsonl; tick claims child on a work spawn, send_answers drops parts owned elsewhere, sessions claim via `--answer-channel NOTE session`.
   - RRF-2.9: flip subagent_first to deny - DONE 2026-10-10 (session 71 = clean 3 of 3, mode = deny, LEDGER 304).
-  - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests.
+  - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests. DONE 2026-10-12 (LEDGER 315): tests/tracked_corpus.py (one ls-files + one read per file per process) + session fixture; the 8 tree-wide git-ls-files guards moved onto it, pinned by tests/test_tracked_corpus.py.
   - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep.
   - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).
   - RRF-T1 (INFERRED, 2026-10-09): 6 tests in tests/test_headless_lean_spawn.py go red while the LIVE ops/runtime/inbox_responder/HALT file exists - the responder's halt check reads real state; point it at tmp_path in those tests (fleet_test_guard declared roots).

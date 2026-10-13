@@ -27,6 +27,28 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+315. DONE **2026-10-12 (RRF-2.10: one session-scoped tracked corpus; see commit below).**
+   NEW tests/tracked_corpus.py: `tracked_files()` (one `git ls-files -z` per test
+   process, lru_cache) and `read_bytes()` / `read_text()` (each tracked file read
+   once, cached; read_text keeps Path.read_text's universal-newline translation).
+   tests/conftest.py exposes it as the session-scoped `tracked_corpus` fixture. The
+   8 tree-wide guards that ran their own ls-files and disk reads now share it:
+   test_ascii_only_authored, test_live_docs_cite_lines_that_exist,
+   test_no_account_paths, test_no_account_uuid, test_no_hardcoded_c_paths,
+   test_no_identity_enters_history, test_no_secret_literals, test_no_split_identity.
+   DECISION: a process-level cached module plus the fixture, not fixture-only.
+   Alternatives: (a) thread a fixture argument through every guard's sweep() -
+   rejected, sweep()/_tracked_files() are plain functions the mutation arms call
+   with no fixture in reach; (b) one conftest-level session read of all 655 files
+   up front - rejected, it loads 9.66 MB into every xdist worker even when it runs
+   none of the guards. Under xdist the cache is per worker (one process each), so
+   the saving is per worker that runs two or more guards. The other "31" sites
+   MAIN counted enumerate tools/ or ops/ *.py, a tmp tree, or a tool's own
+   `--others` corpus (mojibake, smart quotes, em dashes): different corpora,
+   left alone. RED first: tests/test_tracked_corpus.py collection error (module
+   missing), then 8 failed (each guard still ran its own ls-files); after: the
+   corpus test + the 8 guards + conftest pin, 138 passed / 1 skipped; ruff clean.
+
 314. DONE **2026-10-12 (RRF-2.8: one answer channel per note; see commit below).**
    Evidence: MAIN 2354 (kit v9 ORDER) got two LW notes, the child's
    RESPONDER-ANSWER at 0010 and a session's batched answer at 0100, two slots of

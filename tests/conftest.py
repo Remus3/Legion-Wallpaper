@@ -120,6 +120,13 @@ _LW_ENV_REDIRECTS = (
 )
 
 
+@pytest.fixture(scope="session")
+def tracked_corpus():
+    """RRF-2.10: the tracked corpus (git ls-files + file bytes), once per process."""
+    import tracked_corpus as corpus
+    return corpus
+
+
 @pytest.fixture(autouse=True)
 def _lw_live_state_redirect(request, monkeypatch):
     """Point every LW live-state writer at this test's tmp_path.
