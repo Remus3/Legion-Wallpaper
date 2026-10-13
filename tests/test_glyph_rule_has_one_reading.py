@@ -2,7 +2,7 @@
 
 WHY THIS EXISTS
 ---------------
-Resin Compute found the shape and Riot Commander confirmed it on its own tree
+RSC found the shape and RC confirmed it on its own tree
 (cross-repo notes, 2026-09-06): a hard rule enforced by more than one mechanism
 drifts, because each mechanism carries its own idea of what the rule says. RC's
 version was a narrow test guard beside a catch-all commit gate. RC's fix was to

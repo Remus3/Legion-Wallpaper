@@ -27,7 +27,7 @@ New-Item -ItemType Directory -Force $ctl | Out-Null
   Remove-Item "$ctl\$_" -Force -ErrorAction SilentlyContinue
 }
 # Kill ONLY THIS repo's bridge instances (cmdline-scoped). A bare AutoHotkey64
-# kill would murder the sibling Riot Commander loop's bridge mid-run; RC holds
+# kill would murder the sibling RC loop's bridge mid-run; RC holds
 # the mirror-image guard (RC commit 81636382). taskkill per repo rule.
 Get-CimInstance Win32_Process -Filter "Name='AutoHotkey64.exe'" -ErrorAction SilentlyContinue |
   Where-Object { $_.CommandLine -like "*Legion Wallpaper\ops\loop*" } |
@@ -44,7 +44,7 @@ if ($Mode -eq "dry") {
 elseif ((Get-Content $Cfg -Raw | ConvertFrom-Json).channel -eq "sdk") {
   # The sdk channel runs headless `claude -p`: no window, no typing, nothing for
   # the bridge to do. Starting it anyway would resurrect the machine-wide
-  # singleton that F1 removed and could block the sibling Riot Commander loop,
+  # singleton that F1 removed and could block the sibling RC loop,
   # and the strict window-bind below would refuse to launch at all whenever this
   # window is not titled claude_window_title. Both are pure AHK-channel concerns.
   Write-Host "live: channel=sdk - no AHK bridge, no window bind"

@@ -6,8 +6,8 @@ so it guards nothing. Every check here is pinned against the LIVE definition
 site or derived from the source tree, so the failure mode it catches is "a
 server moved / a new server appeared and nobody updated the registry".
 
-Pattern credited to Red Moon's core/ports.py; the pin-against-the-live-site
-refinement came from Riot Commander (2026-08-01 cross-project port reservation).
+Pattern credited to RM's core/ports.py; the pin-against-the-live-site
+refinement came from RC (2026-08-01 cross-project port reservation).
 """
 
 import ast

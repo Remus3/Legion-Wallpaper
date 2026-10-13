@@ -185,7 +185,7 @@ def resolves_to_flag(node, consts, depth=0):
     0)` - a typo that returns the 0 default, spawns fine, and flashes anyway.
     Fails CLOSED: an expression this cannot follow is not the flag, because a
     guard that guesses yes is the fail-open it was written to remove.
-    Riot Commander hit the identical shape in its own copy, 2026-07-27.
+    RC hit the identical shape in its own copy, 2026-07-27.
     """
     if node is None or depth > 6:
         return False

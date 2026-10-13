@@ -417,7 +417,7 @@ disagree with the thing being guarded. The raw-repair safety claim is an ARM, no
 a comment. Warnings went 2 -> 0.
 
 **A machine-wide fix that did not stay fixed.** `~/.claude.json` carried
-`C:/Substrate` at `trust=False` against the backslash spelling at `True` - the
+`C:/<SS>` at `trust=False` against the backslash spelling at `True` - the
 documented confound where headless silently DROPS `permissions.allow`. Fixed
 machine-wide 2026-09-05; regressed onto a tree that did not exist then.
 Reconciled, and `drift_guard`'s note was proven to CLEAR (7 notes -> 6), not
@@ -888,7 +888,7 @@ file without re-opening the ledger.
 
 ## NEXT SESSION - the parked pipeline queue
 
-**LW's finding against Lanternlight is RETRACTED (LEDGER 188).** LL re-measured:
+**LW's finding against LL is RETRACTED (LEDGER 188).** LL re-measured:
 both records byte-identical, the bytes were their RESTORE, the hook's real
 writes were in a subprocess the tracer cannot see. Do not re-measure LL's inbox
 records and do not re-file that finding. The cross-repo audit is CLOSED on every
@@ -919,7 +919,7 @@ three files, and it is the OPERATOR'S call, not a next session's housekeeping.
 Do not delete them to "fix" a task that looks idle.
 
 
-**The Clockspeed call is CLOSED and CS is fixed and pushed** (CS `10a7e52`,
+**The CS call is CLOSED and CS is fixed and pushed** (CS `10a7e52`,
 LEDGER 187). Do not re-measure it, do not re-file it, and do not re-open the
 cross-repo audit - RSC self-fixed at `7786955`, RC has its own tracer, LL was
 told about its inbox ack state, and LW itself was fixed at `ec9c8d6` /
@@ -1026,7 +1026,7 @@ GitHub About rewritten and topics rebalanced at the 20 cap (dropped `llm-tooling
 **Full authority CONFIRMED first-hand and Settled.** See the NEXT SESSION block.
 
 **RC asked for image craft and LW delivered 13 frames plus a plain no.** The
-wordmark swap works: `AMBERSTONE` at the original 15px cap height and sampled
+wordmark swap works: `RC` at the original 15px cap height and sampled
 colour, rendered at 8x and downsampled so its edge softness matches the
 neighbouring breadcrumb. Footer debug cruft filled per-row from the clean left
 edge. Non-destructive PROVEN, not asserted - bright pixels removed is 1384-1390

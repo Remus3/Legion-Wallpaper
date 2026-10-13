@@ -191,4 +191,4 @@ See `docs/LEDGER.md` and the ROADMAP entry. Shape of the landing: the reversible
 half flips now (backends behind a config key, Claude default), the Gemini backend
 stays reachable as the rollback path, and the physical deletions file as a sweep.
 `GEMINI_MUTEX` is NOT deleted from `ops/loop/winmutex.py` - it is
-byte-identical-by-contract with Riot Commander and still has a live consumer.
+byte-identical-by-contract with RC and still has a live consumer.

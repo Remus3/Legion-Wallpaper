@@ -241,7 +241,7 @@ def test_every_exempt_file_would_trip_the_sweep(exempt):
     "potkseD\\gninnudm\\sresU\\:C",
 ])
 def test_this_guard_is_blind_to_a_split_path_and_names_its_sibling(split):
-    """The probe Lanternlight's 2026-09-07 note asked for, kept as a standing arm.
+    """The probe LL's 2026-09-07 note asked for, kept as a standing arm.
 
     A contiguous regex is silently a CLAIM that the value is contiguous, and the
     claim is false for every one of these. The detector above is not widened to

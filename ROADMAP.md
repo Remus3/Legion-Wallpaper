@@ -7,8 +7,8 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 ## Recently shipped
 
 - **Fleet roster change - DONE 2026-10-05 (MAIN 0230 order, digest `a229e8a8`).**
-  Fleet is MAIN + RC CS LW SS RSC EW. EW (Ebonwake) JOINED 2026-10-04, ports
-  8940-8959; LL (Lanternlight) RETIRED 2026-10-04, block 8810-8819 held, not
+  Fleet is MAIN + RC CS LW SS RSC EW. EW JOINED 2026-10-04, ports
+  8940-8959; LL RETIRED 2026-10-04, block 8810-8819 held, not
   freed, no notes addressed to it. Updated: `tools/lw_ports.py`, its pin test,
   the sibling-name/code needles in `tests/test_loop_concurrency.py`. History
   mentions of LL below stay as written. `docs/CHANNEL.md` participant table is
@@ -77,7 +77,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   outstanding sibling notes answered in ONE 53,092 B note, delivered 7/7
   byte-identical, every copy hashed `ebd200ee...`. Measured answers included: LL's
   git-root eleven re-derived member-by-member (45,189 B exact) but the population is
-  now THIRTEEN, with `nonvac.py` carrying `C:\Lanternlight` in BACKSLASH spelling only
+  now THIRTEEN, with `nonvac.py` carrying `C:\<LL>` in BACKSLASH spelling only
   and therefore invisible to the collapsed `[\/]` class LL disclosed; RSC's
   one-second-floor trap CONFIRMED reaching LW, with the refinement that RSC's remedy
   does not apply here (LW's sink is not stdlib `logging`, so no `LogRecord.created`);
@@ -563,7 +563,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   a three-command quick start parsed out of the live argparse); GitHub About and
   the 20 topic tags rebalanced for search reach. The UI/UX audit ran BEFORE the
   commit per the fixture ritual and caught a stale 2.4k test-arm claim against a
-  live 2938. RC's 13 dashboard frames: wordmark swapped to AMBERSTONE at the
+  live 2938. RC's 13 dashboard frames: wordmark swapped to RC at the
   original 15px cap height and delivered, footer debug cruft removed with the
   removal PROVEN non-destructive (1384-1390 pixels destroyed across all 12, a 6px
   spread = only the fixed debug string), and the resolution refused plainly with a
@@ -582,7 +582,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   17,492 B (RSC self-fixed at 7786955), LL writes its own inbox ack state.
   LEDGER 184-185.
 
-- **Clockspeed's write leak fixed in CS's own tree - DONE 2026-09-11 (CS
+- **CS's write leak fixed in CS's own tree - DONE 2026-09-11 (CS
   `10a7e52`).** Operator answered FIX CS DIRECTLY, so this is the first sibling
   tree LW has edited. CS already had it open as CS-973, whose acceptance asked
   for a full-suite before/after count that DISCOVERS the writer - not just the
@@ -662,7 +662,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - RRF-2.8: one answer channel per ORDER (child reply OR the tick's batched answer, not both). DONE 2026-10-12 (LEDGER 314): first-claim-wins answer_channels.jsonl; tick claims child on a work spawn, send_answers drops parts owned elsewhere, sessions claim via `--answer-channel NOTE session`.
   - RRF-2.9: flip subagent_first to deny - DONE 2026-10-10 (session 71 = clean 3 of 3, mode = deny, LEDGER 304).
   - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests. DONE 2026-10-12 (LEDGER 315): tests/tracked_corpus.py (one ls-files + one read per file per process) + session fixture; the 8 tree-wide git-ls-files guards moved onto it, pinned by tests/test_tracked_corpus.py.
-  - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep.
+  - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep. DONE 2026-10-12 (LEDGER 316): tools/sibling_names.py pins + sweep + sibling_dir; 284 hits -> 0; pre-push runs the sweep; pinned by tests/test_no_sibling_names.py.
   - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).
   - RRF-T1 (INFERRED, 2026-10-09): 6 tests in tests/test_headless_lean_spawn.py go red while the LIVE ops/runtime/inbox_responder/HALT file exists - the responder's halt check reads real state; point it at tmp_path in those tests (fleet_test_guard declared roots).
   - RRF-3.4: absolute checkout path and account username -> `<repo>` / `%USERPROFILE%` placeholders (done.md, headless-upgrade.md, sync-all-md.md, OPERATIONS.md, the golden-set plan).
@@ -725,7 +725,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `899f6eb957cc26ee25993d83d65d8ca291841fe4eec24a48f729c2dc005f4c6b` (20,633 B),
   pinned in `tests/test_channel_doc_pin.py` by `PINNED_SHA256` +
   `PINNED_CHANNEL_VERSION`. The doc's section 0 says "Five participating
-  repositories" and the machine now has six (SS/Substrate joined the slot bucket
+  repositories" and the machine now has six (SS joined the slot bucket
   2026-09-20). v2 must carry: the roster at six with a standing SS row; the
   section 6 rule 6 ADDRESS LIST extended to six, because an address-list omission
   is invisible to the omitted tree; and LL's Variant A question, which LL has

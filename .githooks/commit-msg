@@ -1,5 +1,5 @@
 #!/bin/sh
-# Legion Wallpaper commit-msg hook (ported 1:1 from Riot Commander Phase 7).
+# Legion Wallpaper commit-msg hook (ported 1:1 from RC Phase 7).
 #
 # Validates the commit subject line against Conventional Commits.
 # Install per-clone with:

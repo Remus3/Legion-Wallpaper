@@ -86,7 +86,7 @@ clean.
 - **Reader-quiet overstates removal by one step** - caught twice. `still_reads`
   silence is never evidence.
 - **OPEN, not fixed: C: is FULL.** `%LOCALAPPDATA%\Temp\claude` = 185.6 GB of
-  never-cleaned session scratchpads (Clockspeed 133.1, one LW session 34.0,
+  never-cleaned session scratchpads (CS 133.1, one LW session 34.0,
   RC 16.4). That is the black desktop - Windows wrote a 0-byte
   TranscodedWallpaper while SPI reported success - and it turned one suite run
   RED on temp exhaustion. Deletion commands handed to the operator; not run.
@@ -559,7 +559,7 @@ answered at wrap. Nothing in any sibling tree has been edited by LW.
 
 - **Standby lifted, positions filed.** One note, byte-identical by construction
   (sha256 `f627670e967f1603...`, 13627 bytes), into all four sibling inboxes
-  plus LW's own record. RSC located at `C:\Resin Compute` - it is NOT under
+  plus LW's own record. RSC located at `C:\<RSC>` - it is NOT under
   `C:\ReSin*`. No code written into any sibling tree.
 - **The conftest claim, refuted on a SECOND tree.** RSC's "already latent in the
   conftest all five of us share" was retracted after RC refuted it; LW measured
@@ -631,7 +631,7 @@ answered at wrap. Nothing in any sibling tree has been edited by LW.
 - **The leak, found by grepping instead of assuming:** the operator's personal
   address was tracked CONTIGUOUSLY in 5 places across 3 files - WAKEUP_NOTES.md,
   LEDGER item 172, and the 2026-09-07 sha-rewrite map. All three were written to
-  RECORD the purge. Lanternlight's finding in its plainest form, and it did not
+  RECORD the purge. LL's finding in its plainest form, and it did not
   even need a split to survive. Scrubbed; `git grep` returns nothing.
 - **The probe on the guard that does exist:** a break AT the separator ends the
   contiguous match, so `C:\Users\` + newline + account, the same break made by a
@@ -822,8 +822,8 @@ answered at wrap. Nothing in any sibling tree has been edited by LW.
   (`-c credential.helper=`, so it measures what a stranger gets), all 66620
   objects streamed and split by object TYPE. **RC's "all in" is NOT:** 14 hits /
   10 blobs / 4 filenames, the extra 3 in two DOCUMENTS a module-scoped scan
-  cannot see. Per-name: LW 8, RSC 3, Red Moon 3, LL 0, CS 0. Trees 0, commits 0.
-- **The one worth carrying: LW's first Red Moon pass returned 653 and was
+  cannot see. Per-name: LW 8, RSC 3, RM 3, LL 0, CS 0. Trees 0, commits 0.
+- **The one worth carrying: LW's first RM pass returned 653 and was
   wrong.** All substring matches inside longer words (`form-empowe`+`red moon`+
   `stone`). Anchoring took it to 3 - a 218x inflation. Caught ONLY because the
   tool printed a sample line beside the count. Rule: a name-matching rule is not
@@ -1154,8 +1154,8 @@ token is the repo name. Any NEW hardcoded path needs QUOTING - an unquoted
 stray positional, and fails silently.
 
 **drift_guard WILL report a slots.py divergence between LW and RC. That is
-correct and expected - do NOT revert it.** Red Moon is archived read-only and
-its working copy deleted; Resin Compute took the vacated third slot in the
+correct and expected - do NOT revert it.** RM is archived read-only and
+its working copy deleted; RSC took the vacated third slot in the
 concurrency governor. LW authored the new bytes (docstring only, line 5,
 `MAX_CONCURRENT_SLOTS` still 3) and re-pinned from its own disk:
 
@@ -1169,7 +1169,7 @@ explaining the sequencing are in RC's and RSC's `moon_sync_inbox`.
 Also landed: `RSC: 8790-8809` recorded in `tools/lw_ports.py` FORBIDDEN (the
 seventh block). LW binds nothing in that band - checked against source, the
 registry and all three task definitions. `RM: 8770-8789` stays declared even
-though Red Moon is gone, because Amberstone's `core/ports.py` still declares
+though RM is gone, because RC's `core/ports.py` still declares
 `RM_BLOCK = range(8770, 8790)`.
 
 If the folder move has not run yet: close Claude Code and run
@@ -1266,8 +1266,8 @@ read it before writing another test that touches machine state.
 - **Evaluated ECC/AgentShield: declined the framework, took the check list
   (`7ea5707`).** Reasons in the commit body. The mined checks
   (`drift_guard.check_agent_config` + `check_claude_path_keys`) immediately
-  found the 2026-08-01 trust-key bug LIVE on two sibling projects - Clockspeed
-  [True, True, False] and Lanternlight [True, False], with the SUBSTANTIVE entry
+  found the 2026-08-01 trust-key bug LIVE on two sibling projects - CS
+  [True, True, False] and LL [True, False], with the SUBSTANTIVE entry
   (30 and 27 fields) untrusted while a 7-field stub held the trust. **Both fixed
   machine-wide; all 7 collision groups now agree.**
 - **CI RED, and the lesson is the point.** `test_other_projects_key_collisions`
@@ -1728,7 +1728,7 @@ Commits: f49102f + this one. Suite 2331 passed / 18 skipped, ruff clean.
   genuinely blind steps need a measurement the probe cannot take.
 - **C: HIT 100 PERCENT MID-SESSION and truncated `tools/lw_clean_spot.py` to 0
   bytes** (restored from git, nothing lost). 118 of the 119 GB under
-  `%LOCALAPPDATA%\Temp\claude` is `C--Clockspeed`, not LW. This is now a
+  `%LOCALAPPDATA%\Temp\claude` is `C--<CS>`, not LW. This is now a
   correctness risk, not just housekeeping.
 
 ---
@@ -3172,7 +3172,7 @@ slices, all verifier-gated; two REFUTED and reworked rather than merged.
 - **Your headless loop could not start and had not been able to for five days.**
   `RUNNING.lock` named a pid recycled to an unrelated conhost. Fixed `e63a50d`.
   Do NOT re-investigate.
-- **The shared lane cap stays at 2.** RC proposed 3 and Red Moon has already
+- **The shared lane cap stays at 2.** RC proposed 3 and RM has already
   WRITTEN 3, so the bucket is 3 wide whenever RM acquires first - RM was asked to
   set it back today. LW cannot agree until B6 lands; 6 of 9 CUDA consumers are
   wired. Both siblings are waiting on that answer.
@@ -4466,9 +4466,9 @@ decisions:** artist-signature keep/remove policy; LongPathsEnabled (deferred).
 
 ---
 
-# 2026-07-03 (GENESIS - operating system inherited from Riot Commander; docs-only, no product code)
+# 2026-07-03 (GENESIS - operating system inherited from RC; docs-only, no product code)
 
-Legion Wallpaper bootstrapped by cloning HOW the Riot Commander (RC) project
+Legion Wallpaper bootstrapped by cloning HOW the RC project
 operates - 1:1 process port, ZERO product content. The product (some kind of
 wallpaper app for the Legion machine) is deliberately NOT defined yet; the
 first real work item is the scope decision (ROADMAP.md, top item).
@@ -4613,7 +4613,7 @@ correctly reads `ed249af6` against the manifest's `6d43a6d4`.
 **Two guards were silently blind, one on each side.** LW's rename disarmed RC's
 cross-repo guards for ~3 hours (RC held the old `LW_ROOT`; their suite went
 28/0 to 25/3 and stayed green). LW had the identical structure aimed at
-`C:\Riot Commander`. `drift_guard.resolve_sibling_root()` now returns
+`C:\<RC>`. `drift_guard.resolve_sibling_root()` now returns
 present/renamed/absent - a rename is a breach, genuine absence still skips. The
 transferable rule: a guard whose target can move must tell moved from missing,
 and the renaming party sweeps the sibling's constants in the rename commit.

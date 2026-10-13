@@ -1,7 +1,7 @@
 """
 scripts/wakeup_prune.py - auto-prune WAKEUP_NOTES.md per the /done ritual.
 
-Ported 1:1 from Riot Commander scripts/wakeup_prune.py (Phase 7).
+Ported 1:1 from RC scripts/wakeup_prune.py (Phase 7).
 
 Keeps the most recent N session blocks (default 3) in WAKEUP_NOTES.md and
 moves older blocks to docs/history_notes.md, preserving newest-first order.

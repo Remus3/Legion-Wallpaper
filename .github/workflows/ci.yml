@@ -28,7 +28,7 @@ on:
   # not-evaluated ambiguity that only existed because of it (f1 item 12).
   #
   # RE-CHECKED 2026-09-06 against RC's live tree, because the question came back
-  # as "Amberstone has a docs-guards badge, should LW?". ANSWER: NO, and the
+  # as "RC has a docs-guards badge, should LW?". ANSWER: NO, and the
   # reason is structural, not a preference. RC's ci.yml still carries
   # `paths-ignore: ['**/*.md']`, so a docs-only commit there fires NO workflow,
   # and docs-guards.yml exists purely as the complement to that filter (its own

@@ -11,7 +11,7 @@ _archive/**                       linguist-vendored=true
 # (b) Local data caches that occasionally get tracked - generated, not authored
 data/**                           linguist-generated=true
 # EOL policy - prevent CR-CR-LF / CRLF corruption of Python sources.
-# (Incident inherited verbatim from the Riot Commander repo - the rule is
+# (Incident inherited verbatim from the RC repo - the rule is
 # carried 1:1 so the same corruption cannot recur here.)
 # core.autocrlf=true on the Windows fleet, combined with tools that
 # re-add an already-CRLF blob, produced doubled-CR line endings in 21

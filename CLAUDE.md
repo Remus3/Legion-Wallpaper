@@ -220,7 +220,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 
 ## Settled - do not re-litigate
 One line each; reasoning and evidence in `docs/claude-md-history.md` (and the cited LEDGER/ADR). "Reverse if" names what would reopen it.
-- LW inherits the Riot Commander operating system 1:1 (ADR-001). Reverse if: a new ADR supersedes ADR-001.
+- LW inherits the RC operating system 1:1 (ADR-001). Reverse if: a new ADR supersedes ADR-001.
 - Repo PUBLIC under Apache-2.0 (LEDGER 88): no image bytes, keys or personal email tracked; history rewritten 4x - resolve an old sha in the 10-09 map first (it covers only shas from 2026-09-20 on), else the 09-07 map, never chain maps (LEDGER 292); a force-push does not purge GitHub objects. Reverse if: the operator makes the repo private.
 - Pipeline folder scheme (ADR-003). Reverse if: a new operator-designed ADR.
 - Primary upscaler IllustrationJaNai V3 detail DAT2 (ADR-004); V1 DAT2 fallback. Reverse if: a golden A/B sweep beats V3 on MS-SSIM/LPIPS/halo.

@@ -20,4 +20,8 @@ if [ -z "$PY" ] || ! command -v "$PY" >/dev/null 2>&1; then
 fi
 
 "$PY" "$ROOT/ops/fleet_kit/fleet_identity.py" pre-push "$@" || exit 1
+# RRF-3.2 (MAIN README-AUDIT 3.2): no sibling display name in a tracked file
+# outside docs/_archive/ - write the channel code. The name list is pinned by
+# hash in tools/sibling_names.py, so this hook spells none of them either.
+"$PY" "$ROOT/tools/sibling_names.py" sweep || exit 1
 exit 0

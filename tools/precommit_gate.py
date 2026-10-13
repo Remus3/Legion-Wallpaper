@@ -125,7 +125,7 @@ _CLAUDE_TRAILER = re.compile(r"^\s*co-authored-by:.*(claude|anthropic)", re.IGNO
 # highest-variance artifact in the tree: written fresh every session, never
 # reviewed before it is written, quoting freely from whatever that session
 # touched. A Desktop file that is wrong costs one edit; a tracked one costs a
-# history rewrite (Clockspeed's finding, 2026-09-06), and LW rewrote its whole
+# history rewrite (CS's finding, 2026-09-06), and LW rewrote its whole
 # history twice that week.
 #
 # So the same function gates the WRITE (tools/lw_next_session.write_handoff,

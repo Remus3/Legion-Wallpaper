@@ -104,7 +104,8 @@ def test_ahk_final_step_names_this_repo_only():
     the mirror of this. Copying the other repo's string verbatim would break the
     ahk rollback path in a way only a live dry cycle would catch."""
     s = executor.final_step_instruction("ahk")
-    assert "Riot Commander" not in s
+    import sibling_names   # RRF-3.2: no sibling display name, by pinned key
+    assert sibling_names.find(s) == []
     assert "ops/loop/done_sentinel.py" in s
 
 

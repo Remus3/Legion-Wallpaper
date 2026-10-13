@@ -1,8 +1,8 @@
 # F1 - SDK executor channel (retire the AHK GUI bridge), concurrency-safe
 
 Status: SPEC (not built). Author date 2026-07-26.
-Supersedes the FUTURE-lane sketch F1 in `C:\Riot Commander\docs\LOOP_IMPROVEMENTS_2026-06-27.md`.
-Sibling precedent: `C:\Riot Commander\ops\loop\adjudicator.py` (LEDGER 993) did exactly this
+Supersedes the FUTURE-lane sketch F1 in `C:\<RC>\docs\LOOP_IMPROVEMENTS_2026-06-27.md`.
+Sibling precedent: `C:\<RC>\ops\loop\adjudicator.py` (LEDGER 993) did exactly this
 refactor for the BRAIN side. This spec does it for the EXECUTOR side, and adds the
 machine-wide concurrency contract the adjudicator swap never needed.
 

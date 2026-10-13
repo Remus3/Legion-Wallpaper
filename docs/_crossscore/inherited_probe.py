@@ -20,8 +20,12 @@ import re
 import subprocess
 import sys
 
-# RSC is a sibling tree beside LW's root (docs/_crossscore -> parents[2]).
-RSC = str(pathlib.Path(__file__).resolve().parents[3] / "Resin Compute")
+# RSC is a sibling tree beside LW's root, found by its pinned name key
+# (tools/sibling_names.py, RRF-3.2) so its display name is never spelled here.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
+from sibling_names import sibling_dir  # noqa: E402
+
+RSC = str(sibling_dir("RSC"))
 ROWS = pathlib.Path(RSC) / "docs" / "REFUTATION_ROWS.md"
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))

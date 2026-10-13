@@ -61,7 +61,7 @@ SNAPSHOTS a live record, lets something modify it, and RESTORES it in a
 `finally` is reported here as a writer of that record, and the write it is
 reported for is the RESTORE. A guard's repair looks identical to the damage.
 
-Both readings of this tracer taken on 2026-09-11, LW's own and Lanternlight's,
+Both readings of this tracer taken on 2026-09-11, LW's own and LL's,
 made that mistake in opposite directions. LW published a finding against a
 sibling's suite whose two records were afterwards measured BYTE-IDENTICAL
 across the run; the bytes were its restore putting the operator's mail state
@@ -76,7 +76,7 @@ opposite of what it looks like.
 
 IF YOU VENDOR THIS
 ------------------
-Reported by Lanternlight from a live vendoring on 2026-09-11, and it is a real
+Reported by LL from a live vendoring on 2026-09-11, and it is a real
 trap: a linter will offer to autofix the `builtins.open` and `os.replace` calls
 inside the planted control into their `pathlib` equivalents. Those ARE the
 patched routes the control exists to exercise, so the autofix disarms the

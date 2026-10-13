@@ -3,9 +3,9 @@
 Date: 2026-07-03
 Author: monitor-design agent (research wave, Task 7)
 Status: PROPOSED - awaiting ADR + coordination with the state-machine agent
-Reference implementation (read-only): `C:\Riot Commander\dashboard\routes_loop_monitor.py`,
-`C:\Riot Commander\dashboard\routes_loop_status.py`,
-`C:\Riot Commander\tests\test_loop_monitor_route.py`
+Reference implementation (read-only): `C:\<RC>\dashboard\routes_loop_monitor.py`,
+`C:\<RC>\dashboard\routes_loop_status.py`,
+`C:\<RC>\tests\test_loop_monitor_route.py`
 
 ---
 
@@ -13,7 +13,7 @@ Reference implementation (read-only): `C:\Riot Commander\dashboard\routes_loop_m
 
 The RC "loop monitor" is NOT a separate web asset. The whole page (HTML + CSS + JS)
 is one inline `_PAGE` string inside `routes_loop_monitor.py`, served at
-`GET /loop-monitor`. A grep of `C:\Riot Commander\web\` for loop-monitor assets
+`GET /loop-monitor`. A grep of `C:\<RC>\web\` for loop-monitor assets
 confirms: zero hits - the page is fully self-contained in the route file.
 
 ### 1.1 Polling model (extract)
@@ -496,7 +496,7 @@ Stop path (documented, not on the shortcut): `POST /api/shutdown` via
 `taskkill /F /PID <pid>` (pid from `/api/health`) - never `Stop-Process`
 (CLAUDE.md hard rule: it hangs the MCP pipe).
 
-## 9. Test plan (mirrors C:\Riot Commander\tests\test_loop_monitor_route.py)
+## 9. Test plan (mirrors C:\<RC>\tests\test_loop_monitor_route.py)
 
 `tests/test_lw_monitor.py`, pure-builder-first:
 

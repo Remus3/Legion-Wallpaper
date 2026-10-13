@@ -23,6 +23,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import lw_model_pins  # noqa: E402  (sibling tool, not a package)
 import lw_paths  # noqa: E402  (sibling tool, not a package)
+import sibling_names  # noqa: E402  (sibling tool, not a package)
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -447,7 +448,7 @@ def resolve_sibling_root(configured):
     the renaming is the only party positioned to notice, so a rename commit
     should sweep the SIBLING's constants too.
 
-    Reported by RC 2026-09-06 (Amberstone e752e4edc), which fixed its own side.
+    Reported by RC 2026-09-06 (RC e752e4edc), which fixed its own side.
     """
     configured = pathlib.Path(configured)
     if configured.is_dir():
@@ -469,8 +470,9 @@ def resolve_sibling_root(configured):
 
 
 SHARED_LOOP_FILES = ("ops/loop/slots.py", "ops/loop/winmutex.py")
-# Derived beside this checkout, never a drive literal (2026-10-08 C: -> E: move).
-SIBLING_REPO = lw_paths.sibling_repo("Riot Commander")
+# Derived beside this checkout, never a drive literal (2026-10-08 C: -> E: move),
+# and found by its pinned name key so no display name is spelled (RRF-3.2).
+SIBLING_REPO = sibling_names.sibling_dir("RC")   # by pinned key, RRF-3.2
 
 
 def check_shared_loop_files() -> None:

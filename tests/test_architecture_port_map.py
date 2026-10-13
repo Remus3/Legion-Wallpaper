@@ -1,6 +1,6 @@
 """The ARCHITECTURE.md port restatement must match the registry it restates.
 
-Ported in shape from Riot Commander's tests/test_readme_port_map.py, delivered
+Ported in shape from RC's tests/test_readme_port_map.py, delivered
 verbatim to moon_sync_inbox/from-RC-verbatim/ on 2026-09-07. RC measured its own
 README missing `:8861` - a port that was in the registry, bound by a live
 scheduled task, and holding its own credential. Nothing noticed, because nothing

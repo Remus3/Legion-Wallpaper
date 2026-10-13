@@ -295,7 +295,7 @@ python -m py_compile <file.py>
 | `docs/LEDGER.md` | Append-only per-item completion ledger |
 | `WAKEUP_NOTES.md` | Session hand-off notes (newest-first) |
 | `docs/adr/` | Decision records |
-| `moon_sync_inbox/` | Cross-repo channel with Riot Commander (gitignored on BOTH sides). RC's mirror is `C:\Riot Commander\moon_sync_inbox\`. Read it at session start whenever the shared `ops/loop/slots.py` / `winmutex.py` are in play - a change to either is a joint act, never unilateral. Both sessions independently invented a channel on 2026-07-26 before finding the other's; this table entry exists so the next one does not. |
+| `moon_sync_inbox/` | Cross-repo channel with RC (gitignored on BOTH sides). RC's mirror is `C:\<RC>\moon_sync_inbox\`. Read it at session start whenever the shared `ops/loop/slots.py` / `winmutex.py` are in play - a change to either is a joint act, never unilateral. Both sessions independently invented a channel on 2026-07-26 before finding the other's; this table entry exists so the next one does not. |
 
 ## Machine state - PowerShell 7 (standing reference)
 
@@ -303,7 +303,7 @@ _Relocated verbatim from WAKEUP_NOTES.md 2026-07-27. It is durable machine
 reference, not session history, and WAKEUP is pruned every few sessions - a
 standing reference living there gets archived by design._
 
-- **PowerShell 7 - INSTALLED BY RIOT COMMANDER 2026-07-26. LW migration = NO-OP.**
+- **PowerShell 7 - INSTALLED BY RC 2026-07-26. LW migration = NO-OP.**
   Authority doc: `%USERPROFILE%\Desktop\POWERSHELL_7_MIGRATION.md` (RC,
   machine-wide). Read it before touching any call site; do not re-derive.
   - Live state verified 2026-07-26: `C:\Program Files\PowerShell\7\pwsh.exe` =

@@ -12,7 +12,7 @@ OS PROCESSES, with entry and exit timestamps recorded per process and peak
 overlap computed by sweep line.
 
 **NOT measured:** three repositories running their real loops. LW cannot drive
-Riot Commander or Red Moon, and nothing in this harness reads or writes a
+RC or RM, and nothing in this harness reads or writes a
 sibling tree. Anyone citing this must not upgrade it to "three repos ran
 concurrently" - it is "the protocol the three repos coordinate through admits
 exactly three, denies the fourth, and recovers from a dead holder".

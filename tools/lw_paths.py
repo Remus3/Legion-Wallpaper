@@ -45,7 +45,7 @@ def repo_root() -> Path:
 
 
 def sibling_repo(name: str) -> Path:
-    """A sibling fleet tree (e.g. "Riot Commander"), assumed to sit beside this
+    """A sibling fleet tree (e.g. "RC"), assumed to sit beside this
     one. `LW_SIBLINGS_DIR` overrides the parent directory for a split layout."""
     base = os.environ.get("LW_SIBLINGS_DIR")
     return (Path(base) if base else repo_root().parent) / name

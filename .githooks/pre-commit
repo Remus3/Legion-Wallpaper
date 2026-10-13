@@ -1,5 +1,5 @@
 #!/bin/sh
-# Legion Wallpaper pre-commit hook (ported 1:1 from Riot Commander proposal 4.1).
+# Legion Wallpaper pre-commit hook (ported 1:1 from RC proposal 4.1).
 #
 # Install per-clone with:
 #   git config core.hooksPath .githooks

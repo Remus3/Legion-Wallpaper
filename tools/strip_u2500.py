@@ -1,7 +1,7 @@
 """One-shot + reusable maintenance: replace U+2500 BOX DRAWINGS LIGHT
 HORIZONTAL with ASCII hyphen-minus in operator-granted target files.
 
-Ported 1:1 from Riot Commander tools/strip_u2500.py (repair/scan logic
+Ported 1:1 from RC tools/strip_u2500.py (repair/scan logic
 unchanged; RC-specific background and target lists dropped - LW starts
 with zero U+2500 anywhere).
 

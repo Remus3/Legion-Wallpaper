@@ -19,9 +19,9 @@ def test_repo_root_is_this_checkout():
 
 def test_sibling_repo_sits_beside_this_checkout(monkeypatch):
     monkeypatch.delenv("LW_SIBLINGS_DIR", raising=False)
-    assert lw_paths.sibling_repo("Riot Commander") == REPO_ROOT.parent / "Riot Commander"
+    assert lw_paths.sibling_repo("RC") == REPO_ROOT.parent / "RC"
 
 
 def test_sibling_repo_honours_override(monkeypatch, tmp_path):
     monkeypatch.setenv("LW_SIBLINGS_DIR", str(tmp_path))
-    assert lw_paths.sibling_repo("Resin Compute") == tmp_path / "Resin Compute"
+    assert lw_paths.sibling_repo("RSC") == tmp_path / "RSC"

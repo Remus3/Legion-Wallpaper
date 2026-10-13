@@ -1,6 +1,6 @@
 """One-shot + reusable maintenance: repair mojibake byte sequences in the repo.
 
-Ported 1:1 from Riot Commander tools/repair_mojibake.py (repair/scan
+Ported 1:1 from RC tools/repair_mojibake.py (repair/scan
 logic unchanged; file enumeration + exclusions adapted to the Legion
 Wallpaper convention, see FILE ENUMERATION below).
 

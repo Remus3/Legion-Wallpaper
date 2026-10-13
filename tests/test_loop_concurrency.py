@@ -327,9 +327,9 @@ SHARED_SHA256 = {
     # "either repo" -> "ANY of them"). Docstring only: no code, no protocol, no
     # behaviour. Bytes authored by RC, applied here VERBATIM and re-hashed from
     # this disk rather than trusted from the note.
-    # Re-pinned 2026-09-06: Red Moon is archived read-only and its working copy
-    # deleted, so Resin Compute takes the vacated third slot. Docstring only,
-    # same shape as the 2026-08-01 re-pin: "Red Moon" -> "Resin Compute", no
+    # Re-pinned 2026-09-06: RM is archived read-only and its working copy
+    # deleted, so RSC takes the vacated third slot. Docstring only,
+    # same shape as the 2026-08-01 re-pin: "RM" -> "RSC", no
     # code, no protocol, no behaviour, and MAX_CONCURRENT_SLOTS stays 3 - the
     # bucket models one Anthropic account, and the participant count did not
     # change. Bytes authored HERE and hashed from this disk. Provisional until
@@ -348,7 +348,7 @@ SHARED_SHA256 = {
     # Previous: 629c3d511d2500f92d25fbe102a7a8c73644c027291f46b8796565a1e839f865
     # Re-pinned 2026-09-07: the opening paragraph no longer NAMES two sibling
     # repos. Docstring only - no code, no protocol, no behaviour, bucket still 3.
-    # The old text named "Legion Wallpaper, Riot Commander and Resin Compute" one
+    # The old text named "Legion Wallpaper, RC and RSC" one
     # sentence before forbidding exactly that ("Nothing here may reference ANY of
     # them"), which RC spotted when it took its tree public. Wording proposed by
     # RC, bytes AUTHORED BY RSC, copied here byte-level (shutil.copyfile - a
@@ -399,14 +399,14 @@ def test_shared_module_matches_the_pinned_cross_repo_digest(name: str):
     concurrency bug where both loops believe they hold the only slot."""
     digest = hashlib.sha256((ROOT / "ops" / "loop" / name).read_bytes()).hexdigest()
     assert digest == SHARED_SHA256[name], (
-        f"{name} no longer matches the digest agreed with Riot Commander. "
+        f"{name} no longer matches the digest agreed with RC. "
         f"If this change is intended, re-sync BOTH trees and re-pin on BOTH "
         f"sides in the same round - do not just update this constant.")
 
 
 # ---- what a DIGEST cannot pin, because the digest moves legitimately -------
 #
-# Offered by SS (Substrate) on 2026-09-20 when it joined the bucket as a fourth
+# Offered by SS on 2026-09-20 when it joined the bucket as a fourth
 # carrier at the unchanged width of 3. Adopted here because both arms cover a
 # hole LW already fell into, and a digest pin is blind to both by construction:
 # on a re-pin round the digest CHANGES legitimately, in the same commit, so it
@@ -415,17 +415,17 @@ def test_shared_module_matches_the_pinned_cross_repo_digest(name: str):
 #   * CRLF / non-ASCII: this file is copied between trees with
 #     shutil.copyfile precisely because a text-mode write turns LF into CRLF on
 #     Windows. When that happens the digest arm reports "no longer matches the
-#     digest agreed with Riot Commander" - true, useless, and it sends the
+#     digest agreed with RC" - true, useless, and it sends the
 #     reader hunting a protocol change that did not happen. This arm names the
 #     real cause.
 #   * NAMES A CARRIER: the 2026-09-07 re-pin exists because the opening
 #     paragraph named three sibling repos one sentence before forbidding
 #     exactly that, and it was caught BY EYE when a tree went public. Eye is
 #     not a guard. This is that guard.
-CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper", "Riot Commander",
-                 "RiotCommander", "Resin Compute", "ResinCompute",
-                 "Clockspeed", "Lanternlight", "Lantern Light", "Substrate",
-                 "Ebonwake")  # LL retired 2026-10-04: a retired name still leaks
+# This tree's own name is a literal; every SIBLING is matched by its pinned
+# name key (tools/sibling_names.py, RRF-3.2), so no sibling display name is
+# spelled in this file. A retired name stays pinned there: it still leaks.
+CARRIER_NAMES = ("Legion Wallpaper", "LegionWallpaper")
 
 
 # ---- the detectors, refactored into seams a FIXTURE can be pointed at -------
@@ -461,6 +461,12 @@ def _scan_carrier_codes(root: Path, names=None, codes=None) -> list:
     return sorted(found)
 
 
+def _sibling_names():
+    sys.path.insert(0, str(ROOT / "tools"))
+    import sibling_names
+    return sibling_names
+
+
 def _scan_carrier_names(root: Path, names=None, carriers=None) -> list:
     """[(file, [carrier, ...])] by case-INSENSITIVE SUBSTRING, files with hits only."""
     names = sorted(SHARED_SHA256 if names is None else names)
@@ -469,6 +475,9 @@ def _scan_carrier_names(root: Path, names=None, carriers=None) -> list:
     for name in names:
         low = (root / name).read_text(encoding="utf-8").lower()
         hits = [n for n in carriers if n.lower() in low]
+        if carriers is CARRIER_NAMES:
+            hits += [f"<{code}>" for _ln, code in _sibling_names().find(
+                (root / name).read_text(encoding="utf-8"))]
         if hits:
             out.append((name, hits))
     return out
@@ -695,19 +704,20 @@ def test_the_carrier_code_scanner_is_silent_over_near_misses(tmp_path: Path):
 
 
 def test_the_carrier_name_scanner_fires_on_a_planted_name(tmp_path: Path):
+    name = "Riot" + " " + "Commander"      # built from fragments (RRF-3.2)
     body = (b"# fixture, not shared bytes. This is the 2026-09-07 defect in\n"
             b"# shape: the shared file naming a carrier it may not reference.\n"
-            b"# handed to Riot Commander verbatim, then re-pinned on both sides\n")
+            b"# handed to " + name.encode() + b" verbatim, then re-pinned on both sides\n")
     p = _plant(tmp_path, "named.py", body)
-    assert b"Riot Commander" in p.read_bytes(), (
+    assert name.encode() in p.read_bytes(), (
         "the sentinel name is not in the fixture's own bytes.")
     assert _scan_carrier_names(tmp_path, names=("named.py",),
-                               carriers=("Riot Commander",)) == [("named.py", ["Riot Commander"])], (
+                               carriers=(name,)) == [("named.py", [name])], (
         "the name scanner did NOT find a carrier name present in the "
         "fixture's own bytes.")
-    assert _scan_carrier_names(tmp_path, names=("named.py",)) == [("named.py", ["Riot Commander"])], (
+    assert _scan_carrier_names(tmp_path, names=("named.py",)) == [("named.py", ["<RC>"])], (
         "the scanner finds the name from a literal tuple but not from "
-        "CARRIER_NAMES, so CARRIER_NAMES no longer covers it.")
+        "CARRIER_NAMES + the pinned sibling keys, so they no longer cover it.")
 
 
 def test_the_carrier_name_scanner_is_silent_over_near_misses(tmp_path: Path):
@@ -804,7 +814,7 @@ def test_the_code_default_matches_what_the_configs_declare():
         f"{declared} - any config omitting the key runs the wrong ceiling")
 
 
-def test_riot_commander_agrees_on_the_lane_ceiling():
+def test_rc_agrees_on_the_lane_ceiling():
     """Cross-repo half. SKIPS on a CI runner by design - that is exactly why the
     internal half above exists and is not redundant with this one."""
     sys.path.insert(0, str(ROOT / "tools"))
@@ -812,13 +822,13 @@ def test_riot_commander_agrees_on_the_lane_ceiling():
 
     # A RENAMED sibling must fail here, not skip. RC's copy of this guard held
     # LW's old root through the 2026-09-06 rename and silently stopped
-    # comparing anything for three hours while staying green (Amberstone
+    # comparing anything for three hours while staying green (RC
     # e752e4edc). Genuine absence - a CI runner - still skips.
     # Derived beside this checkout (drift_guard.SIBLING_REPO), never a drive
     # literal: RC moved C: -> E: on 2026-10-08 (LEDGER 286).
     sibling, status = drift_guard.resolve_sibling_root(drift_guard.SIBLING_REPO)
     assert status != "renamed", (
-        f"Riot Commander moved to {sibling}: this guard is comparing nothing "
+        f"RC moved to {sibling}: this guard is comparing nothing "
         f"until the constant is updated, and would stay green while blind"
     )
     assert status != "no-git", (
@@ -826,7 +836,7 @@ def test_riot_commander_agrees_on_the_lane_ceiling():
         f"config and would stay green while blind"
     )
     if status == "absent":
-        pytest.skip("Riot Commander tree not present on this machine")
+        pytest.skip("RC tree not present on this machine")
     rc_root = sibling / "ops" / "loop"
     rc = {}
     for cfg in sorted(rc_root.glob("config*.json")):

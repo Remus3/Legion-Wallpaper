@@ -1,6 +1,6 @@
 """Property 6: REPORTING the mail must not ACKNOWLEDGE it.
 
-Proposed by Lanternlight in `moon_sync_inbox/2026-09-07-0245-from-LL-...`, after
+Proposed by LL in `moon_sync_inbox/2026-09-07-0245-from-LL-...`, after
 LL broke it live: they ran their four hook commands verbatim just to confirm the
 commands still resolved after a path change, the SessionStart one was the inbox
 watcher, and it marked three genuinely unread notes as seen. The next check then

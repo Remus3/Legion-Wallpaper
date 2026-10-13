@@ -4,7 +4,7 @@ WHY THIS EXISTS (ROADMAP `handoff-write-gate`): `LW-NEXT-SESSION.txt` is
 TRACKED in a PUBLIC repo and is the highest-variance artifact in the tree. It
 is written fresh every session, never reviewed before it is written, and quotes
 freely from whatever that session happened to touch. The asymmetry, which is
-Clockspeed's and is the whole reason this file exists:
+CS's and is the whole reason this file exists:
 
     a Desktop file that is wrong costs one edit; a tracked one costs a history
     rewrite

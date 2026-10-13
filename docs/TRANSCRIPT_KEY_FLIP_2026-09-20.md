@@ -176,7 +176,7 @@ pre-rename one. The stray key directory was created 0.389 s later.
 **The encoding is confirmed empirically.** Every run of non-alphanumeric characters
 becomes one `-`, so a colon, a backslash and a space are indistinguishable in the result.
 Checked against live keys whose trees exist on this disk with spaces in their names:
-`C:\Riot Commander` -> `C--Riot-Commander`, `C:\Resin Compute` -> `C--Resin-Compute`,
+`C:\<RC>` -> `C--<RC>`, `C:\<RSC>` -> `C--<RSC>`,
 `C:\Legion Wallpaper` -> `C--Legion-Wallpaper`. That is why the two LW spellings land one
 hyphen apart, and it is what `drift_guard.collide_store_keys` folds on.
 

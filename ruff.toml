@@ -1,5 +1,5 @@
 # ruff.toml - Legion Wallpaper
-# Ported 1:1 from Riot Commander ruff.toml (RC per-file product entries dropped).
+# Ported 1:1 from RC ruff.toml (RC per-file product entries dropped).
 # Conservative config: catches real errors without churn
 # target-version is the MINIMUM Python this code must run on, not the newest.
 # Legion runs 3.14 locally and CI pins 3.14 (.github/workflows/ci.yml), so 3.14

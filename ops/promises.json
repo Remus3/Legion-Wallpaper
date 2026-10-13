@@ -2,7 +2,7 @@
  "schema": 1,
  "about": "Promise watch (tools/lw_promise_watch.py, ingest P1-3). Every CLAUDE.md Settled 'Reverse if' entry is either a watched promise below or listed under not_machine_checkable with the reason. A probe exits 0 when the reversal condition is TRUE, 1 when false, 2 when it cannot tell. A true promise posts ONCE under its marker to ops/runtime/promises/posts.jsonl; the weekly run is LW-WeeklyHygiene (--post).",
  "promises": [
-  {"id": "adr001", "kind": "probe", "settled": "LW inherits the Riot Commander operating",
+  {"id": "adr001", "kind": "probe", "settled": "LW inherits the RC operating system",
    "condition": ["python", "tools/lw_promise_probes.py", "adr001_superseded"],
    "deliver_to": "note", "marker": "promise:adr001-superseded",
    "says": "An ADR now supersedes ADR-001: re-open the 'LW inherits the RC operating system' Settled entry."},

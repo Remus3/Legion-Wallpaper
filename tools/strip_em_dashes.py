@@ -1,6 +1,6 @@
 """One-shot + reusable maintenance: purge Unicode dashes + smart quotes.
 
-Hard rule (CLAUDE.md, carried over from Riot Commander 2026-05-18): no
+Hard rule (CLAUDE.md, carried over from RC 2026-05-18): no
 em-dashes, en-dashes, or smart quotes in any authored text - keep
 authored content 7-bit ASCII. This replaces every em-dash (U+2014) and
 en-dash (U+2013) with a plain ASCII hyphen-minus '-', and every smart

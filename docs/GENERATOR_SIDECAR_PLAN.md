@@ -622,7 +622,7 @@ ACCEPTANCE:
 9. THROUGHPUT for a solo op: n=4 + max_regen_rounds=1 defaults keep a failing brief to
    a few minutes of GPU, not 8-16. Auto-regen is opt-in.
 10. os.replace transient WinError 5 on the 0.Originals write under concurrent pipeline
-    read: use the repo's own primitive + a LOCAL retry (do not import a Riot Commander
+    read: use the repo's own primitive + a LOCAL retry (do not import a RC
     convention that does not exist in this repo).
 
 ### Licensing / IP

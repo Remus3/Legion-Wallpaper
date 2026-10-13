@@ -18,7 +18,7 @@ cannot say what is NOT ours can only prove disjointness by reading five other
 trees. The old rule - "cite the block, never someone else's port" - STANDS and
 is now enforced rather than merely written down: FORBIDDEN carries block
 BOUNDARIES only, never a sibling's service port, and the guard test allows
-exactly the numbers declared here. Riot Commander's `core/ports.py` remains the
+exactly the numbers declared here. RC's `core/ports.py` remains the
 cross-project registry of record; this is LW's read of it, stated by the
 operator 2026-08-29.
 """
@@ -57,22 +57,22 @@ ALLOCATIONS = {
 # there, so nothing failed and nothing warned: a live scan cannot prove a band
 # is free when the owner's server is an operator-launched GUI that is unbound
 # most of the time. Verify a band against the owning project's registry IN
-# SOURCE, never against netstat. That rule is Clockspeed's and the credit is
-# theirs. RM stays declared though Red Moon was archived read-only and its
-# working copy deleted on 2026-09-06 - Amberstone's core/ports.py still
+# SOURCE, never against netstat. That rule is CS's and the credit is
+# theirs. RM stays declared though RM was archived read-only and its
+# working copy deleted on 2026-09-06 - RC's core/ports.py still
 # declares RM_BLOCK = range(8770, 8790), so the boundary is still real and
 # dropping it here would only invite someone to take a band another registry
-# still claims. Same rule for LL: Lanternlight was retired by the operator on
+# still claims. Same rule for LL: LL was retired by the operator on
 # 2026-10-04 and its band STAYS RESERVED (reassignment is an operator act).
-# EW (Ebonwake) joined the fleet the same day with 8940-8959 (MAIN 0230 order).
+# EW joined the fleet the same day with 8940-8959 (MAIN 0230 order).
 FORBIDDEN = {
-    "RM": ((8770, 8789),),          # Red Moon (archived 2026-09-06)
-    "RSC": ((8790, 8809),),         # Resin Compute
-    "LL": ((8810, 8819),),          # Lanternlight - RETIRED 2026-10-04, block held, not freed
+    "RM": ((8770, 8789),),          # RM (archived 2026-09-06)
+    "RSC": ((8790, 8809),),         # RSC
+    "LL": ((8810, 8819),),          # LL - RETIRED 2026-10-04, block held, not freed
     "DS": ((8860, 8879),),          # Daemon Slayer
-    "RC": ((2999, 2999), (8888, 8895)),   # Amberstone / Riot Commander
-    "CS": ((8920, 8939),),          # Clockspeed
-    "EW": ((8940, 8959),),          # Ebonwake (joined 2026-10-04)
+    "RC": ((2999, 2999), (8888, 8895)),   # RC / RC
+    "CS": ((8920, 8939),),          # CS
+    "EW": ((8940, 8959),),          # EW (joined 2026-10-04)
 }
 
 

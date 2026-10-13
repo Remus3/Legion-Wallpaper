@@ -1,6 +1,6 @@
 """No tracked file may carry an API key or token as a literal.
 
-Ported from Resin Compute's `tests/test_no_secret_literals.py`, delivered
+Ported from RSC's `tests/test_no_secret_literals.py`, delivered
 verbatim to `moon_sync_inbox/from-RSC-verbatim/` and credited. RSC's payload was
 scrubbed before it was sent - unlike the drop that had to be pulled the same
 night - so this port carries RSC's shape and LW's specifics.

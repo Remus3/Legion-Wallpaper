@@ -15,7 +15,7 @@ lw_window_guard.py` has checked this since the guard was written, but two ways:
 Second reason this file exists at all: the guard is a SESSION-START HOOK, so it
 only ever runs on the machine that would show the flash. In CI it does not run.
 A check that only executes in the environment that created the state cannot
-catch a regression pushed from anywhere else. Riot Commander found the same two
+catch a regression pushed from anywhere else. RC found the same two
 shapes in its own copy (RC 2026-07-27); this is LW's half.
 """
 from __future__ import annotations

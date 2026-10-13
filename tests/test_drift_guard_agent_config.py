@@ -95,13 +95,13 @@ def test_collide_path_keys_finds_a_trust_mismatch():
     """Two spellings of one directory disagreeing on trust is the live bug: the
     losing spelling silently discards permissions in a headless run."""
     projects = {
-        r"C:\Lanternlight": {"hasTrustDialogAccepted": True},
-        "C:/Lanternlight": {"hasTrustDialogAccepted": False},
+        r"C:\Sibling Tree": {"hasTrustDialogAccepted": True},
+        "C:/Sibling Tree": {"hasTrustDialogAccepted": False},
     }
     out = DG.collide_path_keys(projects)
     assert len(out) == 1
     norm, keys, trusts = out[0]
-    assert norm == r"c:\lanternlight"
+    assert norm == r"c:\sibling tree"
     assert set(trusts) == {True, False}
 
 
@@ -150,14 +150,14 @@ def test_other_projects_key_collisions_are_notes_not_breaches():
     verification discipline is written to prevent.
     """
     projects = {
-        r"C:\Lanternlight": {"hasTrustDialogAccepted": True},
-        "C:/Lanternlight": {"hasTrustDialogAccepted": False},
+        r"C:\Sibling Tree": {"hasTrustDialogAccepted": True},
+        "C:/Sibling Tree": {"hasTrustDialogAccepted": False},
     }
     DG.problems.clear()
     DG.notes.clear()
     DG.check_claude_path_keys(projects)
     assert DG.problems == []
-    assert any("lanternlight" in n.lower() for n in DG.notes)
+    assert any("sibling tree" in n.lower() for n in DG.notes)
 
 
 def test_this_projects_key_collision_is_a_breach():
@@ -198,7 +198,7 @@ def test_this_projects_key_collision_is_a_breach():
 def test_collide_store_keys_finds_the_hyphen_only_difference():
     """The live LW defect, as data. One tree, two transcript keys."""
     out = DG.collide_store_keys(["C--Legion-Wallpaper", "C--LegionWallpaper",
-                                 "C--Riot-Commander"])
+                                 "C--Other-Tree"])
     assert len(out) == 1
     norm, keys = out[0]
     assert keys == ["C--Legion-Wallpaper", "C--LegionWallpaper"]
@@ -206,7 +206,7 @@ def test_collide_store_keys_finds_the_hyphen_only_difference():
 
 def test_collide_store_keys_is_clean_on_distinct_projects():
     assert DG.collide_store_keys(
-        ["C--Legion-Wallpaper", "C--Riot-Commander", "C--Substrate"]) == []
+        ["C--Legion-Wallpaper", "C--Other-Tree", "C--Third"]) == []
 
 
 def test_collide_store_keys_enumerates_rather_than_comparing_a_found_pair():
@@ -253,9 +253,9 @@ def test_this_projects_store_collision_is_a_breach():
 def test_another_projects_store_collision_is_a_note():
     DG.problems.clear()
     DG.notes.clear()
-    DG.check_transcript_store_keys(["C--Resin-Compute", "C--ResinCompute"])
+    DG.check_transcript_store_keys(["C--Sibling-Tree", "C--SiblingTree"])
     assert DG.problems == []
-    assert any("resin" in n.lower() for n in DG.notes)
+    assert any("sibling" in n.lower() for n in DG.notes)
 
 
 def test_check_transcript_store_keys_takes_names_not_a_path():

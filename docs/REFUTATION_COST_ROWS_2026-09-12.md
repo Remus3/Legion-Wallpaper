@@ -64,9 +64,9 @@ note: a live-surface / machine-state guard is mechanical and needs no human. The
 
 id: chunk1-04
 entry: 188
-claim: LEDGER 186's finding that Lanternlight leaks its live mail-ack state from a test - 19,700 B inbox_seen.json + 10,464 B inbox_reported.json attributed to the SessionStart hook test.
-refuter: Lanternlight's own re-measurement (sibling repo), hashing the records before and after the run.
-quote: "LEDGER 186's retraction of the \"Lanternlight is CLEAN\" verdict is itself retracted here"
+claim: LEDGER 186's finding that LL leaks its live mail-ack state from a test - 19,700 B inbox_seen.json + 10,464 B inbox_reported.json attributed to the SessionStart hook test.
+refuter: LL's own re-measurement (sibling repo), hashing the records before and after the run.
+quote: "LEDGER 186's retraction of the \"LL is CLEAN\" verdict is itself retracted here"
 correct: YES
 bucket: c
 inherited: NO
@@ -77,8 +77,8 @@ note: root cause is the INSTRUMENT'S QUESTION - the tracer answers "did bytes mo
 
 id: chunk1-05
 entry: 187
-claim: LW's hand-off to Clockspeed described the fix as two autouse redirects, and shipping those two would close the item.
-refuter: Clockspeed's own tree - the item was already open as CS-973 with a broader written acceptance.
+claim: LW's hand-off to CS described the fix as two autouse redirects, and shipping those two would close the item.
+refuter: CS's own tree - the item was already open as CS-973 with a broader written acceptance.
 quote: "its acceptance asked for MORE than the two redirects LW's hand-off described - a full-suite before/after count whose arm DISCOVERS the writer rather than encoding the two already known"
 correct: YES
 bucket: b
@@ -90,7 +90,7 @@ note: inherited YES because the hand-off note was accurate when sent and decayed
 
 id: chunk1-06
 entry: 187
-claim: LW's hand-off attribution of WHICH tests wrote the 23 *.copy.sav into Clockspeed's live work/saves/ (two known writers).
+claim: LW's hand-off attribution of WHICH tests wrote the 23 *.copy.sav into CS's live work/saves/ (two known writers).
 refuter: a traced run inside CS - three arms, not two, and the copy happens inside a MODULE-scoped fixture so a function-scoped redirect installs and tears down after the writes.
 quote: "THE HAND-OFF'S ATTRIBUTION WAS RIGHT ON THE FILES AND INCOMPLETE ON THE ARMS."
 correct: YES
@@ -103,8 +103,8 @@ note: the prevention shipped is mechanical - a session-scoped count guard plus d
 
 id: chunk1-07
 entry: 187
-claim: LW's first edit to Clockspeed's tracked file was correct - the phase 4 blocks were placed where they read best.
-refuter: Clockspeed's own guard, test_docs_citations.py, which pins WRITER_WRITE_SURFACE at line 2089 for the still-open CS-446.
+claim: LW's first edit to CS's tracked file was correct - the phase 4 blocks were placed where they read best.
+refuter: CS's own guard, test_docs_citations.py, which pins WRITER_WRITE_SURFACE at line 2089 for the still-open CS-446.
 quote: "The first attempt put the phase 4 blocks in the section where they read best, moving `WRITER_WRITE_SURFACE` off line 2089 and reddening `test_docs_citations.py` twice"
 correct: YES
 bucket: a
@@ -129,9 +129,9 @@ note: fix_of_a_fix because the corrected instrument's own next verdict (chunk1-0
 
 id: chunk1-09
 entry: 186
-claim: the retraction of LEDGER 185's "Lanternlight is CLEAN" verdict - i.e. the new claim that LL leaks its live mail-ack state.
+claim: the retraction of LEDGER 185's "LL is CLEAN" verdict - i.e. the new claim that LL leaks its live mail-ack state.
 refuter: nobody at the time; LW itself, with the corrected instrument, believed the reading. Refuted a day later by LL at entry 188.
-quote: "the \"Lanternlight is CLEAN\" verdict is RETRACTED - re-measured, LL writes 19,700 B `inbox_seen.json` + 10,464 B `inbox_reported.json`"
+quote: "the \"LL is CLEAN\" verdict is RETRACTED - re-measured, LL writes 19,700 B `inbox_seen.json` + 10,464 B `inbox_reported.json`"
 correct: NO
 bucket: c
 inherited: NO
@@ -156,7 +156,7 @@ note: textbook non-vacuity gate - "Without it that run would have printed a clea
 id: chunk1-11
 entry: 186
 claim: the tracer's zero-finding output was evidence that a tree was clean.
-refuter: Lanternlight (sibling), on methodology, unargued and adopted.
+refuter: LL (sibling), on methodology, unargued and adopted.
 quote: "an instrument printing a zero with no self-check reports an absence of evidence dressed as evidence of absence"
 correct: YES
 bucket: c
@@ -169,7 +169,7 @@ note: an adversary with a lens on the instrument, not on the code. This critique
 id: chunk1-12
 entry: 186
 claim: the first control design - plant a positive specimen through each patched route and report control.proved.
-refuter: Lanternlight's second point, same pass.
+refuter: LL's second point, same pass.
 quote: "a positives-only control still passes a classifier mutated to promote everything"
 correct: YES
 bucket: a
@@ -181,7 +181,7 @@ note: adopted in the same pass as chunk1-11, so chunk1-11 is not marked fix_of_a
 
 id: chunk1-13
 entry: 186
-claim: LEDGER 185's finding that Resin Compute's suite writes 17,492 B into the operator's live day log, and by implication that LW's note drove the repair.
+claim: LEDGER 185's finding that RSC's suite writes 17,492 B into the operator's live day log, and by implication that LW's note drove the repair.
 refuter: a re-measurement plus timestamps - RSC had already self-fixed at 10:11, ahead of LW's 10:43 note.
 quote: "RSC now CLEAN, self-fixed at `7786955` (\"the suite was writing the operator's day log\") at 10:11, AHEAD of LW's 10:43 note - credit theirs"
 correct: UNCLEAR
@@ -618,8 +618,8 @@ note: the fix (tools/split_scan.py) was itself shown incomplete in-window - see 
 id: chunk2-26
 entry: 174
 claim: The new normalized split scanner closes split-value blindness.
-refuter: The Lanternlight 26-character case, asserted as a standing arm rather than glossed
-quote: "Two halves separated by UNRELATED text (Lanternlight's 26 characters) never become adjacent under normalisation."
+refuter: The LL 26-character case, asserted as a standing arm rather than glossed
+quote: "Two halves separated by UNRELATED text (LL's 26 characters) never become adjacent under normalisation."
 correct: YES
 bucket: c
 inherited: NO
@@ -804,8 +804,8 @@ fix_of_a_fix: NO
 id: chunk3-10
 entry: 170
 claim: The disagreeing-trust-key defect in ~/.claude.json was fixed machine-wide on 2026-09-05.
-refuter: A later probe of the Resin Compute checkout, carried outbound as a finding.
-quote: the Resin Compute checkout has two path spellings in `~/.claude.json` with DISAGREEING trust [False, True] - surfaced, not edited
+refuter: A later probe of the RSC checkout, carried outbound as a finding.
+quote: the RSC checkout has two path spellings in `~/.claude.json` with DISAGREEING trust [False, True] - surfaced, not edited
 correct: NO
 bucket: a
 inherited: YES
@@ -825,7 +825,7 @@ note: UNCERTAIN adoption. The scope sentence is RC's, but LW's operator made a d
 
 id: chunk3-12
 entry: 169
-claim: 653 blob hits for "Red Moon" in RC's public history (LW's own first pass, nearly sent).
+claim: 653 blob hits for "RM" in RC's public history (LW's own first pass, nearly sent).
 refuter: The same agent, on inspecting the printed sample lines.
 quote: Anchoring to `red[ _-]?moon` took 653 to 3, a 218x inflation.
 correct: YES
@@ -1211,7 +1211,7 @@ note: UNCERTAIN - the named victim of this failure mode is RC's five hooks at mo
 RECITALS (refutation happened outside this window, merely re-told) - 6:
  1. 170: RSC's own finding that three of its gates were implemented, unit-tested and never consulted by the code that runs.
  2. 163: "LW's earlier 'you are still on the old slots.py' was a nine-minute-stale read and RSC was right" - the round RSC refuted closes here, but the refutation predates the window.
- 3. 160: RC's 100644 index-mode regression that made five RC hooks inert on every Linux clone; Lanternlight measured the same 2026-09-06.
+ 3. 160: RC's 100644 index-mode regression that made five RC hooks inert on every Linux clone; LL measured the same 2026-09-06.
  4. 168: RSC measuring a heredoc eating a NUL and reporting SURVIVED on mutations that never applied (RSC's harness, adopted here as a guard).
  5. 169: LL's 1744 measurement that 14 of its 19 outgoing notes leave no trace in its own repo.
  6. 164: CS finding the operator account path in RC's pulled 48-file payload (19 of 48, not the 3 CS first reported) - a correction entirely between RC and CS.
@@ -1328,7 +1328,7 @@ fix_of_a_fix: YES
 id: chunk4-02
 entry: 158
 claim: Moving LW-NEXT-SESSION.txt into the tracked repo (shipped DONE in 155) was incomplete - it turned the highest-variance artifact in the tree into a public one with no write-time gate.
-refuter: Clockspeed's asymmetry finding, relayed by RC
+refuter: CS's asymmetry finding, relayed by RC
 quote: "a Desktop file that is wrong costs one edit, a tracked one costs a history rewrite, and LW rewrote its whole history twice this week"
 correct: YES
 bucket: b
@@ -1448,8 +1448,8 @@ fix_of_a_fix: NO
 id: chunk4-14
 entry: 150
 claim: LW's cross-repo byte guards compare the shared loop files; they take a skip-when-absent branch, so a renamed sibling makes them compare nothing and stay green.
-refuter: RC's incident report (Amberstone e752e4edc), then confirmed structurally on LW's own tree
-quote: "LW carried the identical structure aimed at `C:\Riot Commander` (`tests/test_loop_concurrency.py`, `tools/drift_guard.py:194`)."
+refuter: RC's incident report (RC e752e4edc), then confirmed structurally on LW's own tree
+quote: "LW carried the identical structure aimed at `C:\<RC>` (`tests/test_loop_concurrency.py`, `tools/drift_guard.py:194`)."
 correct: YES
 bucket: a
 inherited: YES
@@ -1567,9 +1567,9 @@ fix_of_a_fix: NO
 
 id: chunk4-26
 entry: 146
-claim: ops/loop/slots.py named Red Moon as a participant; Red Moon had been re-spelled to Resin Compute, so the shared file's docstring was stale.
+claim: ops/loop/slots.py named RM as a participant; RM had been re-spelled to RSC, so the shared file's docstring was stale.
 refuter: RM (sibling repo) via the inbox round, verified against this tree before editing
-quote: "`ops/loop/slots.py` now names Resin Compute where it named Red Moon"
+quote: "`ops/loop/slots.py` now names RSC where it named RM"
 correct: YES
 bucket: b
 inherited: YES

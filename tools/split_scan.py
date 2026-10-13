@@ -96,7 +96,7 @@ def scan_fragments(
 
     Pure, so the mutation arms can drive it with a synthetic pin instead of the
     real one. Scanning the reversed view for a forward fragment is what catches
-    a value written backwards, which is the shape Lanternlight actually hit.
+    a value written backwards, which is the shape LL actually hit.
     """
     forward = normalize(text)
     if not forward:

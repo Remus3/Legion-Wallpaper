@@ -169,7 +169,7 @@ moved: none. Re-checked against CHANGE 2: the pathlib-plus-control remedy stood,
 id: chunk1-09
 entry: 186
 prevention: PROXY-MEASURE
-prevention_why: the byte-counting tracer was correct and answered the wrong question, and RUNNING it is what manufactured the false "Lanternlight is not clean" verdict; only a second measure of a different quantity (identity or hash of the record) reaches it
+prevention_why: the byte-counting tracer was correct and answered the wrong question, and RUNNING it is what manufactured the false "LL is not clean" verdict; only a second measure of a different quantity (identity or hash of the record) reaches it
 discovery: SIBLING
 origin_time: FRESH
 origin_sub: NA

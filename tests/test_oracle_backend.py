@@ -174,7 +174,7 @@ def test_gemini_backend_is_not_deleted():
 
 
 def test_gemini_mutex_still_exists_for_the_cross_repo_contract():
-    """ops/loop/winmutex.py is byte-identical-by-contract with Riot Commander and
+    """ops/loop/winmutex.py is byte-identical-by-contract with RC and
     GEMINI_MUTEX still has a live consumer there. Deleting it needs a three-way
     re-pin, not a sweep."""
     assert lc.winmutex.GEMINI_MUTEX == "Global\\MX-7C41A9E2"

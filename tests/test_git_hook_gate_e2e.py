@@ -1,6 +1,6 @@
 """End-to-end proof that LW's tracked git hooks actually REFUSE a bad commit.
 
-PORTED from Riot Commander's tests/test_git_hook_gate_e2e.py (delivered verbatim
+PORTED from RC's tests/test_git_hook_gate_e2e.py (delivered verbatim
 to moon_sync_inbox/from-RC-verbatim/ on 2026-09-07). RC's paraphrases of this
 probe in the note channel are superseded by the real file; this is that file
 adapted to LW's two hooks and tool paths, not a fifth rewrite of the idea.
@@ -10,7 +10,7 @@ WHY THIS EXISTS
 RC measured 2026-07-26 that all five of its tracked hooks were committed mode
 100644. Git refuses to execute a non-executable hook and says NOTHING about it,
 so on every Linux clone - CI included - the entire gate was absent while every
-check reported green. Lanternlight's two tracked hooks were measured the same
+check reported green. LL's two tracked hooks were measured the same
 way on 2026-09-06. CLAUDE.md draws the conclusion this file implements: never
 treat a hook's PRESENCE as proof it fires; the only valid test is end-to-end -
 stage a banned glyph, attempt a REAL commit, assert HEAD unchanged.

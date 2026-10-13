@@ -1,10 +1,10 @@
 """No tracked file may carry the operator's identity, even SPLIT into fragments.
 
 Sibling of `tests/test_no_account_paths.py` and `tests/test_no_secret_literals.py`,
-and the correction to both. Written on Lanternlight's 2026-09-07 2035 note.
+and the correction to both. Written on LL's 2026-09-07 2035 note.
 
 THE BLINDNESS. Every whole-token sweep for a sensitive string is silently a
-claim that the string is CONTIGUOUS. Lanternlight's address sat split across
+claim that the string is CONTIGUOUS. LL's address sat split across
 adjacent lines of a tracked file, 26 characters apart and in reversed order, and
 EVERY guard reported clean - including the guard written for exactly that
 address. The split was not adversarial: the session DOCUMENTING the leak wrote
@@ -24,7 +24,7 @@ break in the middle of a word. It then scans the view AND its reverse, so text
 written backwards is caught the same way.
 
 WHAT IT STILL CANNOT SEE, stated rather than implied. Two fragments separated by
-UNRELATED text (Lanternlight's 26 characters) do not become adjacent under
+UNRELATED text (LL's 26 characters) do not become adjacent under
 normalisation. The answer is not a cleverer window, it is the choice of
 fragment: each pinned fragment must be distinctive ON ITS OWN, so no assembly is
 required to recognise it. `SENSITIVE_FRAGMENTS` is chosen on that rule, and any
@@ -133,7 +133,7 @@ def test_no_tracked_file_carries_an_identity_fragment():
 @pytest.mark.parametrize("planted", [
     # Contiguous. The baseline: a fragment a whole-token grep would also find.
     "contact: zqxsplitprobe@example.invalid",
-    # Split across adjacent lines - Lanternlight's shape.
+    # Split across adjacent lines - LL's shape.
     "the value is `zqxsplit`\n`probe` closes it",
     # Split mid-word by markdown emphasis, on ONE line.
     "the value is **zqx**split*probe* in the doc",
@@ -167,7 +167,7 @@ def test_an_unrelated_neighbour_survives(innocent):
 
 
 @pytest.mark.parametrize("beyond_reach", [
-    # Lanternlight's actual shape: the halves are separated by OTHER text, so
+    # LL's actual shape: the halves are separated by OTHER text, so
     # normalisation never makes them adjacent.
     "local part `zqxsplit`\nand the rest is `probe`",
     "probe\nzqxsplit",  # halves present, wrong order

@@ -1,7 +1,7 @@
 """
 tools/precommit_msg_check.py - commit-msg hook (Conventional Commits).
 
-Ported 1:1 from Riot Commander scripts/precommit_msg_check.py (Phase 7) -
+Ported 1:1 from RC scripts/precommit_msg_check.py (Phase 7) -
 make Conventional Commits subject lines mechanical.
 
 Validates the staged commit's subject line against the Conventional Commits

@@ -2,7 +2,7 @@
 
 WHY, and it is a warning taken from another tree rather than a defect found in
 this one. On 2026-09-07 LW replaced the operator's hard-coded home path in all
-eleven hook commands with the bare name `pythonw` (LEDGER 166). Lanternlight,
+eleven hook commands with the bare name `pythonw` (LEDGER 166). LL,
 doing the same cleanup the same night, sent the failure mode with it:
 
     A parameterised path that does not RESOLVE is worse than a hardcoded one.
