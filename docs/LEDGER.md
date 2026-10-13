@@ -95,6 +95,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    its file + config + console-flash tests: 127 passed. Run 3 on the final tree was
    killed by the harness for low memory while still queued for a slot (never ran):
    the next done_gate bind is the first whole-suite grade of this tree.
+   FOLLOW-UP 2026-10-12 (count side check): the parallel pass's 4073 vs the serial
+   pass's "4072 deselected" is NOT a missing test. Node ids dumped from an xdist
+   worker and from a -n0 process are identical (4272 = 4090 not-serial + 182
+   serial on the current tree). The odd one is a COLLECTION-TIME skip:
+   tests/test_lw_clean_dekel_align.py:37 `importorskip("skimage")` (skimage is in
+   .venv-clean, not the suite's Python). Every pytest invocation reports it once
+   as "1 skipped" whatever -m selects, and it is not an item, so it is never
+   deselected. Hence parallel = 4072 items + that skip = 4073, and the serial
+   pass's "1 skipped" is that module, not a serial test: the serial set is 182
+   items, 182 passed, 0 skipped. No fix needed; read lw_suite's serial skip
+   count with that in mind.
 
 312. DONE **2026-10-12 (RRF-2.6: one LW autouse redirect fixture; see commit below).**
    tests/conftest.py: the five LW autouse fixtures that each pulled tmp_path for one
