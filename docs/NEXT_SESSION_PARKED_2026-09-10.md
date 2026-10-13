@@ -35,7 +35,7 @@ ON STANDBY, do not touch: the inbox responder and all outbound filings. The
   asks nothing of LW. Drafted positions on RSC's Q1-Q5 are in WAKEUP_NOTES,
   held and NOT sent. Do not build or file until the operator lifts it.
 Context: ROADMAP.md "Open items - High priority"; WAKEUP_NOTES "NEXT SESSION";
-  docs/LEDGER.md 177-180; docs/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md;
+  docs/LEDGER.md 177-180; docs/_archive/2026-09/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md;
   ops/runtime/{tier2_queue,intake_refused,crop_overrides}_2026-09-07.*.
   Inbox first: read, THEN ack with `python tools/lw_facts.py --mark-inbox-seen`.
 Acceptance: whatever the chosen item states. Standing bar: `python -m pytest

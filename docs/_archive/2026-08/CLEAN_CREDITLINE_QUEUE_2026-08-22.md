@@ -1,6 +1,6 @@
 # Credit-line lane, run end to end on the queue - 2026-08-22
 
-The chain from the mask-generation session (`docs/CLEAN_MASKGEN_2026-08-22.md`)
+The chain from the mask-generation session (`docs/_archive/2026-08/CLEAN_MASKGEN_2026-08-22.md`)
 had been measured piece by piece and looked at on two frames. This is the first
 time it has been pointed at the whole queue and the first time the output has
 been put in front of an eye. Nothing here approves anything: acceptance is the

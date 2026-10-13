@@ -146,7 +146,7 @@ gate - it rests on one champion. See LEDGER 110.
 ViT-L-14-quickgelu/openai image-embedding cosine over the 21 real Ahri splashes)
 lived only in a session scratchpad. `tools/lw_gen_medium.py` re-derives it and
 reproduces 0.83732 to four decimals - which is what validates the definition. It
-then settled the base: see ADR-010 and `docs/GEN_BASE_DECISION_2026-08-16.md`.
+then settled the base: see ADR-010 and `docs/_archive/2026-08/GEN_BASE_DECISION_2026-08-16.md`.
 **DreamShaper XL, never previously evaluated as a txt2img base, also clears the
 ceiling** (0.8448, +0.008) at a sharpness cost (`lap_var` 286) - and is DROPPED
 as a candidate anyway (ADR-011: it violates the corpus look outright).

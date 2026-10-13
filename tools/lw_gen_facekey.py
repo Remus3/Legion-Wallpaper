@@ -8,7 +8,7 @@ flatter, under-keyed face on a more strongly modelled body, which is exactly
 that read.
 
 Three levers were measured and failed before this one (see
-`docs/GEN_FACE_REALISM_2026-08-16.md`): four lighting-tag arms, two CFG arms,
+`docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md`): four lighting-tag arms, two CFG arms,
 and a face-region img2img refinement at 3x effective resolution - the last one
 moved the key the WRONG way at every strength, which is what ruled out
 "the face is flat because it is small".

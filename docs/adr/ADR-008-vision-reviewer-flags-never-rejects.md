@@ -7,7 +7,7 @@
 
 The anatomy percept has no working metric. A keypoint head-spine offset was
 built, measured over all 288 approved firstdones, and REJECTED as a gate on the
-evidence (LEDGER 60, `docs/ANATOMY_CENSUS_2026-07-29.md`); it ships as a
+evidence (LEDGER 60, `docs/_archive/2026-07/ANATOMY_CENSUS_2026-07-29.md`); it ships as a
 diagnostic only (`tools/lw_anat_metrics.py`, `tools/lw_anat_probe.py`). The
 census also closed off the obvious rescue: splash art is cropped at the waist, so
 most images have no confident hips, and a better pose model cannot find hips

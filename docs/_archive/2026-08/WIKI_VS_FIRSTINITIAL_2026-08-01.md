@@ -1,6 +1,6 @@
 # The 77, compared against the held `_firstinitial` - 46 favour the wiki (2026-08-01)
 
-`docs/WIKI_INTERSECTION_2026-08-01.md` confirmed 77 corpus images as the same
+`docs/_archive/2026-08/WIKI_INTERSECTION_2026-08-01.md` confirmed 77 corpus images as the same
 artwork as a canonical wiki splash, and reported that all 77 wiki files sit at or
 above the 2560x1440 target at a median 7.43x the target pixel count. It also said
 plainly what that did NOT establish:

@@ -783,7 +783,7 @@ def coons_fill(img: np.ndarray, box) -> np.ndarray:
 def g2_subject(g1_subject: dict) -> dict:
     """A clean-pass subject built from a frame: a credit-line-shaped mask in the
     bottom band (geometry from the operator's hand-clean captures, 549x69 at
-    2560x1440 - docs/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md), placed over the
+    2560x1440 - docs/_archive/2026-08/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md), placed over the
     busiest candidate patch so the fill really changes it, and a smooth
     Coons-patch fill standing in for a good inpaint. Outside the
     mask the frame is byte-identical, exactly as the live paste-back keeps it.

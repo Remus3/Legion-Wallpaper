@@ -4,7 +4,7 @@ WHY THIS EXISTS. On 2026-08-22 every automated cleaning candidate produced for
 the 87-slug QA queue was rejected by the operator - 4 review rounds, 3 different
 mask sources, both fill decisions, zero accepted. The operator then hand-cleaned
 two slugs in the IOPaint UI and saved all 128 iterations, and the measurement
-(docs/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md) said the failure was never the mask
+(docs/_archive/2026-08/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md) said the failure was never the mask
 quality:
 
   operator, 105-cleanup : 82 strokes, median 6,495 px each (0.18% of frame)

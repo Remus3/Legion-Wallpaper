@@ -11,7 +11,7 @@ faint ghost - does NOT pass. There is no partial credit.
 
 ## Where the problem actually stands
 
-Settled by measurement on 2026-08-22 (`docs/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md`):
+Settled by measurement on 2026-08-22 (`docs/_archive/2026-08/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md`):
 
 - **FILL is solved.** Replaying the operator's own masks through simple-lama
   produced a frame they accepted (105), and held up on the harder slug (107).

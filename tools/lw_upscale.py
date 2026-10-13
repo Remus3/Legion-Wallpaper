@@ -196,7 +196,7 @@ def gpu_lock(device="cuda", log=None):
 TARGET = (2560, 1440)
 # usm-halo-calibration, operator direction 2026-08-02: percent 70 -> 35.
 # MEASURED over all 17 gated batch20 slugs at 70 / 50 / 35 / none
-# (docs/USM_FIDELITY_CENSUS_2026-08-02.md), fidelity computed PER VARIANT - the
+# (docs/_archive/2026-08/USM_FIDELITY_CENSUS_2026-08-02.md), fidelity computed PER VARIANT - the
 # axis the 2026-07-30 halo census deliberately skipped, which is why no number
 # could be proposed then.
 #   halo_pct over 0.05:  70 -> 7/17   50 -> 2/17   35 -> 0/17   none -> 0/17

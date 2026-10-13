@@ -1,6 +1,6 @@
 # Faint-mark FLAG (gate v4) - the last 4 recall misses - 2026-08-11
 
-Closes the remainder of `docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`. That census
+Closes the remainder of `docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`. That census
 found 14 false negatives; the centre-overlay detector (LEDGER 93-96) took 11 of
 them. This is the other 3 - plus `110-cleanup`, an overlay case whose score
 (0.121) sits under the 0.15 overlay flag, so it was still `clean` as well.

@@ -1,6 +1,6 @@
 """lw_transcript_union - close a split Claude transcript store by line-level union.
 
-THE DEFECT (measured 2026-09-20, write-up docs/TRANSCRIPT_UNION_2026-09-20.md)
+THE DEFECT (measured 2026-09-20, write-up docs/_archive/2026-09/TRANSCRIPT_UNION_2026-09-20.md)
 
 `~/.claude/projects` held TWO store keys encoding one tree:
 
@@ -26,7 +26,7 @@ Every `cwd` in both copies of all three sessions is `C:\\LegionWallpaper` (no sp
 path that does not exist today, and it is recorded in the CANONICAL copies too, so cwd does
 not distinguish the two keys.
 
-CORRECTED 2026-09-20 (root-cause probe, `docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md`). Two
+CORRECTED 2026-09-20 (root-cause probe, `docs/_archive/2026-09/TRANSCRIPT_KEY_FLIP_2026-09-20.md`). Two
 claims above were WRONG and both matter to whether `--apply` should ever run:
 
   1. That cwd is NOT a phantom. `C:\\LegionWallpaper` was LW's REAL root until 2026-09-06

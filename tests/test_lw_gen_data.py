@@ -283,7 +283,7 @@ def test_brief_style_exists_in_styles():
 # heavy dep CI does not carry), so the invariant is pinned as tag POSITION:
 # the guards that must survive sit early, and the redundant finger/limb
 # duplicates sit last where truncation eats them. Re-measure with the
-# tokenizer if this block is reordered - see docs/GEN_FACE_REALISM_2026-08-16.md.
+# tokenizer if this block is reordered - see docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md.
 BOORU_SURVIVORS = (
     "flat color", "cel shading", "doll face", "plastic skin",
     "smooth featureless skin", "lowres", "worst quality", "low quality",

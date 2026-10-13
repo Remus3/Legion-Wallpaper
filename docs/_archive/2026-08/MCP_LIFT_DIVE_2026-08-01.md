@@ -1,6 +1,6 @@
 # MCP lift - stage 4 DEEP DIVE, 2026-08-01
 
-Companion to `docs/MCP_LIFT_TRIAGE_2026-08-01.md`. That document scored 63
+Companion to `docs/_archive/2026-08/MCP_LIFT_TRIAGE_2026-08-01.md`. That document scored 63
 entries with **5 VERIFIED-LIVE and 58 INHERITED-RC** - every score but five was
 derived from a one-line summary written by a prior RC-scoped pass. This document
 closes that gap: **all 63 LW-list entries were fetched at source in this pass**,

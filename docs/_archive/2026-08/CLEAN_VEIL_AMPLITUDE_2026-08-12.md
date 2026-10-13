@@ -1,6 +1,6 @@
 # Settling the veil amplitude (2026-08-12)
 
-The feather work (`docs/CLEAN_VEIL_FEATHER_2026-08-12.md`) left one thing open
+The feather work (`docs/_archive/2026-08/CLEAN_VEIL_FEATHER_2026-08-12.md`) left one thing open
 and flagged it as untouched: **is the veil's alpha right at all?**
 
 The doubt was specific. `lw_clean_overlay._fit_veil_gain` calibrates the
@@ -145,7 +145,7 @@ takes the wide pair; `overlay_score` uses the template).
 ## Reproduce
 
 ```
-C:\Tools\lw-clean\venv\Scripts\python.exe tools\lw_clean_detector_probe.py --wide --build-overlay-matte <the 19 confirmed slugs listed in docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md>
+C:\Tools\lw-clean\venv\Scripts\python.exe tools\lw_clean_detector_probe.py --wide --build-overlay-matte <the 19 confirmed slugs listed in docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md>
 C:\Tools\lw-clean\venv\Scripts\python.exe tools\lw_clean_iopaint.py <slug> --overlay --image <firstdone> --out-dir ops\runtime\clean\overlay_rebuilt\<slug>
 ```
 

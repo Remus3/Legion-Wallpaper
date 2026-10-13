@@ -4,7 +4,7 @@ Date: 2026-07-16 (status updated 2026-08-11)
 Status: **glyph15+SDXL = current-best interim; proper Dekel = the zero-halo fix, DEFERRED to a fresh session (operator-chosen).**
 
 > **2026-08-11 UPDATE - a partial Dekel now EXISTS for the DeviantArt centre
-> overlay** (`tools/lw_clean_overlay.py`, `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`).
+> overlay** (`tools/lw_clean_overlay.py`, `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`).
 > Steps 1 (collection + registration) and 5 (reconstruct by inverting the
 > matting equation) of section 3 are implemented; the mark's detector score
 > falls 0.565 -> 0.112 median over 19 frames, 17 of them under the flag. Steps 3
@@ -151,4 +151,4 @@ or no weights). Segmentation helper if wanted: Diffusion-Dynamics/watermark-segm
   keep". The wordmark KEEP is right, but the frame ALSO carries a
   `(C) VEXXSOUL.DEVIANTART.COM` centre overlay that the gate missed entirely
   (best YOLO box 0.144, under the 0.35 floor) - it is a false NEGATIVE, not a
-  false positive. See `docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`.
+  false positive. See `docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`.

@@ -1274,7 +1274,7 @@ def cmd_start_stage(ctx, slug, pick_next):
 # repainting 2.66x the area - all 9 rejected. A measured-improvement gate is not
 # available: seam gain tracks edit area (r = +0.46), so gating on it would select
 # for the biggest repaint. The engines stay; a second one costs an explicit flag.
-# Evidence: docs/CLEAN_LADDER_DECISION_2026-08-12.md, pinned by
+# Evidence: docs/_archive/2026-08/CLEAN_LADDER_DECISION_2026-08-12.md, pinned by
 # tests/test_lw_clean_ladder_gate.py.
 LADDER_EXEMPT_TOOLS = frozenset({"operator-select", "clean-scan", "manual", "qa"})
 _CLEAN_WORKING_RE = re.compile(r"_cleanworking_\d+\.", re.IGNORECASE)

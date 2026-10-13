@@ -13,7 +13,7 @@ skills are almost verbatim the mechanism the refutation-cost lane converged on.
 
 That lane is not speculative. Five trees each counted how many of their own
 done-claims were later refuted and how many a program could have caught. LW's
-own re-scored census (`docs/REFUTATION_COST_RESCORE_2026-09-12.md`) put
+own re-scored census (`docs/_archive/2026-09/REFUTATION_COST_RESCORE_2026-09-12.md`) put
 gate-or-contract-reachable at 82.3 pct, with GATE-ABSENT beating GATE-EXISTING
 2.2 to 1 - the dominant failure is not a gate that let something through, it is
 that no gate was asked. LW, RSC and CS then independently named the same

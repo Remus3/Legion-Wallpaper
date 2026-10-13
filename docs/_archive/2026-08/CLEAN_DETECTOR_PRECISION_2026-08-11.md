@@ -98,7 +98,7 @@ floor). So that row is a correct KEEP **and** a false NEGATIVE at the same time.
 The precision result is unaffected - it counts unattended `auto` proposals, and
 this slug proposes nothing - but the annotation is corrected here rather than
 left to read as "nothing to find". See
-`docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`.
+`docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`.
 
 The general lesson: this census looked at the DETECTED BOX for each `auto`, and
 at the full frame only where a verdict was `clean`. Judging a box tells you

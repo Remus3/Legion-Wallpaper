@@ -25,7 +25,7 @@ re-derives it and reproduces 0.83732 to four decimals, which is what validates
 the definition rather than merely restating it.
 
 A three-base A/B (matched seeds, adapter OFF, one fresh process per arm,
-n=3, `docs/GEN_BASE_DECISION_2026-08-16.md`):
+n=3, `docs/_archive/2026-08/GEN_BASE_DECISION_2026-08-16.md`):
 
 | base | medium vs 0.8373 | subject_cos | margin | lap_var | QA |
 |---|---|---|---|---|---|

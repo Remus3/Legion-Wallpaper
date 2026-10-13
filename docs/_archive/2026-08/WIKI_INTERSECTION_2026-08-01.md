@@ -1,6 +1,6 @@
 # The corpus/wiki intersection, measured - 77 confirmed (2026-08-01)
 
-The open question `docs/MCP_LIFT_P3_2026-08-01.md` refused to guess at:
+The open question `docs/_archive/2026-08/MCP_LIFT_P3_2026-08-01.md` refused to guess at:
 
 > **That this helps the EXISTING corpus.** The wiki hosts OFFICIAL Riot splash
 > art. A large part of LW's corpus is fan art off DeviantArt and wallpaper

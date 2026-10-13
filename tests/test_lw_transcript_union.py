@@ -1,6 +1,6 @@
 """Tests for tools/lw_transcript_union.py - the line-level transcript-store union.
 
-Context (measured 2026-09-20, docs/TRANSCRIPT_UNION_2026-09-20.md): `~/.claude/projects`
+Context (measured 2026-09-20, docs/_archive/2026-09/TRANSCRIPT_UNION_2026-09-20.md): `~/.claude/projects`
 carried TWO store keys encoding one tree, `C--Legion-Wallpaper` (canonical) and
 `C--LegionWallpaper` (stray), with three session UUIDs present under BOTH. One pair was
 byte-identical, one was a stray superset by a single record, and one was a contiguous
@@ -377,7 +377,7 @@ def test_union_is_scoped_to_one_session_id_and_is_blind_to_a_cross_file_duplicat
     the rest of the canonical key, so a stray record already present store-wide under a
     different file name is planned for appending anyway.
 
-    Measured 2026-09-20 (docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md): this is not a
+    Measured 2026-09-20 (docs/_archive/2026-09/TRANSCRIPT_KEY_FLIP_2026-09-20.md): this is not a
     hypothetical. All three real stray files are uuid-subsets of canonical files carried
     under DIFFERENT session ids, byte-identical apart from `sessionId`. "No canonical file
     with this session id holds this record" was read as "this record exists nowhere else",

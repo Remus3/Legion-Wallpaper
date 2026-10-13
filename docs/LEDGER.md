@@ -27,6 +27,28 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+317. DONE **2026-10-12 (RRF-3.3: dated one-off reports moved to docs/_archive/<yyyy-mm>/; see commit below).**
+   68 dated reports `git mv`'d out of docs/ root into docs/_archive/2026-07 / 2026-08 /
+   2026-09 / 2026-10 (yyyy-mm from the date in the name); docs/ root 98 -> 30 tracked
+   files. Consumer check first: every `docs/<name>` citation in tracked files (64
+   files: ROADMAP, BACKLOG, ADRs, tools/ docstrings, tests, LEDGER, the moved docs
+   themselves) rewritten to the new path; one code reader
+   (tests/test_no_identity_enters_history.py reads the IDENTITY doc) re-pointed. Two
+   test strings were RULE INPUTS, not citations (the dated-name skip arm in
+   test_ascii_only_authored, the exemption arm in test_no_account_paths) and keep the
+   docs-root spelling. STANDING (dated name, live use, stay in root, reason pinned in
+   the test): RUNDASH_SPEC_2026-08-01 (live spec, tools/lw_rundash*.py + 6 tests),
+   REPO_REVIEW_PLAN_2026-10-08 (open driver item), HANDCLEAN_WORKLIST_2026-09-01 (cited
+   by the hand-off), NEXT_SESSION_PARKED_2026-09-10 (parked prompt kept to resume).
+   NEW tests/test_docs_root_layout.py (3): no dated report in docs/ root outside
+   STANDING; STANDING files exist; every dated `docs/...md` cited outside docs/_archive
+   and tests/ resolves (PENDING: REPO_REVIEW_FINDINGS_2026-10-08, the dead driver's
+   unwritten output). DECISION: keep the 4 standing docs in root rather than archive
+   all 72. Alternative: archive every dated file - rejected, a live spec cited by 9
+   code files and three open-work docs would read as history. RED first: 2 failed (68
+   stray, 2 dangling - the PENDING pair); after: 3 passed; the 21 related test files
+   320 passed / 1 skipped; drift_guard 0 breaches; ruff clean.
+
 316. DONE **2026-10-12 (RRF-3.2: sibling trees by channel code; hash-pinned name list in pre-push; see commit below).**
    NEW tools/sibling_names.py: PINS = sha256 over each sibling display name's squashed
    key (lowercase alphanumerics), grouped by code RC / RSC / RM / LL / CS / SS / EW
@@ -161,7 +183,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    except CLAUDE.md's exclusions (logs, _archive, dated artifacts, .jsonl, binaries)
    and vendored ops/fleet_kit/. Sibling cases it found, fixed with escapes (same
    values): tests/test_lw_checklist.py U+2610, tests/test_lw_review_threads.py
-   U+00E9. Excluded by rule, not fixed: docs/WIKI_SWAP_22_2026-08-01.md (dated, 40
+   U+00E9. Excluded by rule, not fixed: docs/_archive/2026-08/WIKI_SWAP_22_2026-08-01.md (dated, 40
    middots). Reverse if: a tracked authored file legitimately needs raw non-ASCII.
 
 309. DONE **2026-10-12 (RRF-2.3b slice 3: responder adopts the kit, child gets only the residual; f618710).**
@@ -372,7 +394,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    (gitignored ops/loop/control/repo-review-launch.py + repo-review-prompt.md, no launch log, no headless usage line).
    Nothing redone.
    1. SECTION 3.1 first (ordinary commit 22a8ee9 -> rewritten a109d9c): the account and org UUID in
-      docs/TRANSCRIPT_KEY_FLIP_2026-09-20.md:106-107 -> `<account-uuid>` / `<org-uuid>`; NEW guard
+      docs/_archive/2026-09/TRANSCRIPT_KEY_FLIP_2026-09-20.md:106-107 -> `<account-uuid>` / `<org-uuid>`; NEW guard
       tests/test_no_account_uuid.py (keyed UUID after account/org uuid-or-id keys, every tracked file, all-zero
       allowed; red first, then 13 passed).
    2. SECTION 4 REWRITE, ONLY through ops/fleet_kit/fleet_rewrite.py. Responder paused with
@@ -1009,7 +1031,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    (3) BACKFILL. PREMISE CORRECTED: LEDGER 268's "287 dispose approvals" is wrong - live manifests held
    486 APPROVE_CLEAN dated 08-22 with actor=operator (472 in 4.Cleaning Done + the 14 reopened), = 479
    lw_clean_dispose (12:04-12:17Z, LEDGER 122) + 7 detector-FP passthroughs at 19:08Z, all run with
-   `--actor tool:auto-approve` (docs/CLEAN_OVERLAY_REVIEW_2026-08-22.md "Disposition of the seven").
+   `--actor tool:auto-approve` (docs/_archive/2026-08/CLEAN_OVERLAY_REVIEW_2026-08-22.md "Disposition of the seven").
    New tools/lw_actor_backfill.py (TDD, 3 tests; dry-run default, idempotent): APPROVE_CLEAN ->
    tool:auto-approve; that day's SUBMITs -> tool:lw_clean_dispose (479, dispose window) / unattributed
    (7, driver unrecorded); each changed transition carries `corrected_from {actor, at, ref}`, manifest
@@ -1202,7 +1224,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    READ BACK, not run-and-assumed: ops/loop/slots.py sha256 prefix 290cbf80 / 11426 B on disk AND at HEAD in
    LW, RSC, RC, CS, SS (LL carries none); drift_guard 0 breaches; done_gate bind GREEN (ruff 0, pytest 0,
    drift_guard 0) bound to c6e9984; push 31604ac..c6e9984; verify-push VERIFIED origin = HEAD = graded.
-   Research doc docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md (c6e9984): no MoE all-in-one restorer fits
+   Research doc docs/_archive/2026-10/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md (c6e9984): no MoE all-in-one restorer fits
    (photo degradations, no router labels for ADR-009); MIM useful only as a re-inpaint residue detector;
    ExPLoRA feasible (2-6 GPU-h ViT-B est.) but DINOv2 kNN first. Experiments R1-R6 filed under the ROADMAP
    gate-repair item; operator offered ~8.7k unlabeled local images (count read back 8714) for R5/R6.
@@ -1783,7 +1805,7 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    26s, positive control 11 of 11 arms, 20 unreferenced-but-present blobs covered, NO
    credential anywhere; the operator's email DOES survive in 5 blobs reachable from
    origin/main, **remediation CONSIDERED AND DECLINED by the operator**, so it is guarded
-   and recorded by digest in `docs/IDENTITY_IN_HISTORY_2026-10-02.md` - and both prior
+   and recorded by digest in `docs/_archive/2026-10/IDENTITY_IN_HISTORY_2026-10-02.md` - and both prior
    secret guards were working-tree guards that structurally could not see it. **The joint
    round is FROZEN at `da35f8b1` and the reason is LW's own process defect:** LW voided
    three attestations in a row (`9531bfe9`, `799cdeed`, `72a11e29`) and every one was
@@ -3732,7 +3754,7 @@ sc-first-run` accepted on its referrer
    enumerated the 98 files under `hooks/`, the directory whose whole purpose is
    to run on every session event. It measured CONFIGURATION WRITES and reported
    it as THE BLAST RADIUS. Corrected in place under a CORRECTION heading in
-   `docs/CONTEXT_MODE_DECISION_2026-09-16.md`, title and the "three reasons"
+   `docs/_archive/2026-09/CONTEXT_MODE_DECISION_2026-09-16.md`, title and the "three reasons"
    count reconciled, a fourth hold-reason added. The decision does not move; it
    was already HOLD for reasons that did not include the forwarder.
    **REFINEMENT LW measured and LL did not:** LL attributes the miss partly to
@@ -3894,7 +3916,7 @@ sc-first-run` accepted on its referrer
    entry is caught, a dropped edge diverges.
 
    **context-mode - LICENCE SETTLED, BLAST RADIUS MEASURED, WIRING HELD**
-   (`docs/CONTEXT_MODE_DECISION_2026-09-16.md`). Licence re-probed live:
+   (`docs/_archive/2026-09/CONTEXT_MODE_DECISION_2026-09-16.md`). Licence re-probed live:
    `gh api` still says NOASSERTION, published package.json says
    `"license": "Elastic-2.0"`. Install-only, track nothing; `node_modules/`
    was ALREADY ignored at `.gitignore:139`, so the handoff's "gitignore it in
@@ -4224,7 +4246,7 @@ sc-first-run` accepted on its referrer
    field v1.3 calls most load-bearing is not reporting what it claims. VERIFIED:
    `ruff` clean on `docs/_crossscore/inherited_probe.py`; em-dash gate 0
    offenders; both outbound files ASCII-clean and byte-identical in all four
-   sibling inboxes. Artifacts: `docs/LW_INHERITED_GAP_2026-09-13.md`,
+   sibling inboxes. Artifacts: `docs/_archive/2026-09/LW_INHERITED_GAP_2026-09-13.md`,
    `docs/_crossscore/inherited_probe.py`. DO NOT REDO: the extraction-voice
    hypothesis is settled (refuted); do not quote 88.0 without UPPER BOUND; do not
    compare RSC's swept figures to RC's unswept band as though like for like; do
@@ -4296,7 +4318,7 @@ sc-first-run` accepted on its referrer
    mismatches; `ruff` clean on `docs/_crossscore/rsc.py` + `build_rsc.py`;
    em-dash gate 0 offenders; all three outbound files ASCII-clean and
    byte-identical in all four sibling inboxes. Artifacts:
-   `docs/LW_SCORED_RSC_2026-09-13.md`, `docs/LW_SCORED_RSC_ROWS_2026-09-13.md`
+   `docs/_archive/2026-09/LW_SCORED_RSC_2026-09-13.md`, `docs/_archive/2026-09/LW_SCORED_RSC_ROWS_2026-09-13.md`
    (all 96 rows, both passes, agreement marked), `docs/_crossscore/scored_D*.psv`
    + `scored_E*.psv`, `docs/_crossscore/rsc.py`, `docs/_crossscore/build_rsc.py`.
    DO NOT REDO: never quote LW's 5.2/7.3 fix-of-a-fix without the word FLOOR;
@@ -4383,8 +4405,8 @@ sc-first-run` accepted on its referrer
    `docs/_crossscore/`; scripts re-run from the repo; em-dash drift gate 0
    offenders; outbound note and result ASCII-clean and byte-identical in all four
    sibling inboxes. Correction banner added in place to
-   `docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md` rather than editing the retracted
-   claims away. Artifacts: `docs/LW_OVERLAP_N198_2026-09-13.md`,
+   `docs/_archive/2026-09/LW_CROSSSCORE_RC_RESULT_2026-09-13.md` rather than editing the retracted
+   claims away. Artifacts: `docs/_archive/2026-09/LW_OVERLAP_N198_2026-09-13.md`,
    `docs/_crossscore/*.psv` (13 scorer files), `docs/_crossscore/panels.py`,
    `build_panels.py`, `leak_effect.py`, `leak_rows.txt`. DO NOT REDO: do not
    quote 6.9 / 10.3 / the 3.75x ratio; do not treat 2.0/2.0/1.0 as precise (the
@@ -4492,8 +4514,8 @@ sc-first-run` accepted on its referrer
    parse with **0 gof-vs-derived mismatches**; `ruff` clean on
    `docs/_crossscore_tally.py`; `tests/test_no_account_paths.py` 21 passed; em-dash
    drift gate 0 offenders; every outbound file ASCII-clean and byte-identical in
-   all four sibling inboxes. Artifacts: `docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`,
-   `docs/LW_CROSSSCORE_RC_ROWS_2026-09-13.md` (all 198 rows with RC's values
+   all four sibling inboxes. Artifacts: `docs/_archive/2026-09/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`,
+   `docs/_archive/2026-09/LW_CROSSSCORE_RC_ROWS_2026-09-13.md` (all 198 rows with RC's values
    beside LW's and the second scorer's disagreements marked),
    `docs/_crossscore/*.psv`, `docs/_crossscore_tally.py`. DO NOT REDO: the
    convention is pre-registered and must not be retro-fitted; do not re-run the
@@ -4528,7 +4550,7 @@ sc-first-run` accepted on its referrer
    field, mandatory per-row `pin_gap`, and grain + aggregation rule + adjudicator
    named on every published figure - never a rulebook, and no clause decides a
    contested case. **`discovery` FIXED ahead of the ten MATERIAL findings**
-   (`docs/DISCOVERY_AXIS_SPLIT_2026-09-13.md`): its seven values span THREE axes -
+   (`docs/_archive/2026-09/DISCOVERY_AXIS_SPLIT_2026-09-13.md`): its seven values span THREE axes -
    WHO (`SIBLING`/`OPERATOR`/`CI`), HOW (`CODE-READ`/`RUN`/`RESEARCH`), STANCE
    (`SELF-AUDIT`) - which is exactly what v1.2 section 1 exists to forbid, sitting
    in v1.2 section 3. Proof needing no row re-read: **`CI` is a conjunction of two
@@ -4865,7 +4887,7 @@ sc-first-run` accepted on its referrer
    all five wired hook events fire at WRITE time or at SessionStart, none at READ
    time, and `drift_guard.check_cited_shas` reads only staged ADDED lines, caps
    at 40 shas, and asks only whether each resolves. Artifacts:
-   `docs/REFUTATION_COST_MEASUREMENT_2026-09-12.md` (335 lines, self-contained),
+   `docs/_archive/2026-09/REFUTATION_COST_MEASUREMENT_2026-09-12.md` (335 lines, self-contained),
    the 1836 note and the 1905 CORRECTION filed byte-identical into all four
    sibling inboxes with the corrected report RE-DELIVERED over the stale payload.
    ROADMAP carries the lane row, OPEN and deliberately not started. Suite 2921
@@ -5371,7 +5393,7 @@ sc-first-run` accepted on its referrer
    with `git ls-files`). Mirror direction measured too: skips rose 18 -> 57, so
    39 arms already degrade correctly. The first probe attempt was DISCARDED as a
    measurement error - its two arms saw different trees. Write-up:
-   `docs/FALSE_RED_PROBE_2026-09-10.md`. NO repair shipped: 43 sites is a
+   `docs/_archive/2026-09/FALSE_RED_PROBE_2026-09-10.md`. NO repair shipped: 43 sites is a
    per-site application of the three-disposition rule, not a matcher, and it is
    now a ROADMAP item.
 
@@ -5425,7 +5447,7 @@ sc-first-run` accepted on its referrer
    NOT reproducible from disk; `still_reads` is a coarse per-slug reader verdict;
    cross-lane comparison is confounded (`run_ringfix` reaches still_reads 0 with
    no scoping at all) so only the two paired comparisons isolate the change.
-   Full write-up `docs/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`. NEXT, not done
+   Full write-up `docs/_archive/2026-09/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`. NEXT, not done
    here: a no-reference artifact measure over the kept-fill region against its
    neighbourhood - a smear is a region whose local gradient energy collapses
    relative to the surrounding art. That is the only thing that stops the 95
@@ -6717,7 +6739,7 @@ sc-first-run` accepted on its referrer
    branch taken plus whether the USM ran, and `data/golden/cases.json` is the
    tracked blessed-set definition (no image bytes; candidates gitignored on the
    same privacy boundary). Recipe written into `docs/research/GOLDEN_SET.md`;
-   evidence `docs/GOLDEN_REFREEZE_USM35_2026-09-06.md`. Verified: ruff clean,
+   evidence `docs/_archive/2026-09/GOLDEN_REFREEZE_USM35_2026-09-06.md`. Verified: ruff clean,
    2521 passed / 18 skipped.
 
 151. DONE **2026-09-06 (the 5/6 localizer number re-measured on CUDA; `5f6f119`).**
@@ -6756,7 +6778,7 @@ sc-first-run` accepted on its referrer
    operator-in-the-loop. FUTURE / do-not-redo: do not re-measure on more frames
    expecting movement - the only provider-sensitive frames are those with a
    wrist within ~0.02 of `min_conf`. Evidence
-   `docs/DWPOSE_CUDA_PARITY_2026-09-06.md`; artifacts (both stamped) in
+   `docs/_archive/2026-09/DWPOSE_CUDA_PARITY_2026-09-06.md`; artifacts (both stamped) in
    `images/_gen_scratch/localizer_eval/dwpose_{cpu,cuda}_2026-09-06/`. Verified:
    ruff clean, 2519 passed / 18 skipped, drift_guard 0 breaches.
 
@@ -6971,7 +6993,7 @@ sc-first-run` accepted on its referrer
    `drift_guard` 0 breaches.
 
    **The veil resisted three independent attacks, all recorded in
-   `docs/POOLED_VEIL_RESULT_2026-09-05.md` so none is retried blind.** The
+   `docs/_archive/2026-09/POOLED_VEIL_RESULT_2026-09-05.md` so none is retried blind.** The
    62-frame POOLED estimate (123f held out) established that registration is NOT
    the problem - every sampled frame sits at scale 1.00 with shift within +-3 px
    and correlation 0.35-0.58 - and that pooling cancels the art cleanly. It
@@ -7272,7 +7294,7 @@ sc-first-run` accepted on its referrer
    into `4.Cleaning Done` and routing the rest to manual IOPaint. Suite
    re-verified 2408 passed / 18 skipped, exit 0; ruff clean; drift_guard 0
    breaches; CI green on `a116989`. Detail:
-   `docs/CLEAN_CREDITLINE_EDGES_2026-08-30.md` section 6.
+   `docs/_archive/2026-08/CLEAN_CREDITLINE_EDGES_2026-08-30.md` section 6.
 
 140. DONE **2026-08-30 (the right edge is falsified and the mid-line holes
    were the revert, not the mask; docs + `handed_back` wiring).** The hand-off
@@ -7340,7 +7362,7 @@ sc-first-run` accepted on its referrer
    call:** refusing a corridor that hands a legible letter back falls through to
    a WHOLE revert today (28.13 percent against 1.80); making refusal mean COMMIT
    is one line plus a lane re-run. Detail:
-   `docs/CLEAN_CREDITLINE_EDGES_2026-08-30.md`.
+   `docs/_archive/2026-08/CLEAN_CREDITLINE_EDGES_2026-08-30.md`.
 
 139. DONE **2026-08-30 (the fill was destroying artwork because the MASK
    contained artwork; 88e1ac7, and the queue re-run 47903a2 that exposed it).**
@@ -7522,7 +7544,7 @@ sc-first-run` accepted on its referrer
    measured against an alternative configuration. It is a census of the shipping
    default's output. Disposition remains the operator's, against the
    zero-residue bar. Finding:
-   `docs/CLEAN_CREDITLINE_TRIAGE_2026-08-29.md`; ranked shortlist:
+   `docs/_archive/2026-08/CLEAN_CREDITLINE_TRIAGE_2026-08-29.md`; ranked shortlist:
    `ops/runtime/clean/creditline/run_scoped/TRIAGE.md`. Suite untouched by this
    item (no production code changed); the 2379/18 green from earlier in the
    session still stands.
@@ -7607,7 +7629,7 @@ sc-first-run` accepted on its referrer
    log untracked; 6fffd74).** Removed only what nothing references:
    `scratchpad/reddit-*.txt` (6 files, raw old.reddit scrape output from the
    2026-08-01 MCP lift dive - zero references anywhere, the conclusions were
-   already written up in `docs/MCP_LIFT_DIVE_2026-08-01.md`, and the extractor
+   already written up in `docs/_archive/2026-08/MCP_LIFT_DIVE_2026-08-01.md`, and the extractor
    reads `reddit-*.html`, not these); and `ops/loop/ABORT.log` (a hand-written
    2026-07-16 incident note about the AHK bridge failing its window-title
    pre-check - zero references, the AHK channel is retired at `channel=sdk`, and
@@ -7665,7 +7687,7 @@ sc-first-run` accepted on its referrer
    failure (`test_lw_usm_halo_probe.py::test_worker_spandrel_branch_produces_both_variants`,
    a CUDA OOM from another process on the box) passes 40/40 on re-run in
    isolation and the file has zero references to the changed modules. Doc:
-   `docs/CLEAN_LANE_DEFAULTS_2026-08-29.md`; strips
+   `docs/_archive/2026-08/CLEAN_LANE_DEFAULTS_2026-08-29.md`; strips
    `ops/runtime/clean/creditline/lanes/REVIEW.md`. **Do NOT redo:** re-opening
    scoped on the akali smear (byte-identical with and without the flag),
    reading the pair run as the strongest configuration, or defaulting stubs ON
@@ -7720,7 +7742,7 @@ sc-first-run` accepted on its referrer
    written down: block boundaries only, and the guard test allows exactly those.
    Verified: suite 2323 passed / 18 skipped, ruff clean, hygiene 10 passed,
    drift_guard 0 breaches, CI green on d61e382. Docs:
-   `docs/CLEAN_CHORD_COVERAGE_2026-08-29.md` + ROADMAP.
+   `docs/_archive/2026-08/CLEAN_CHORD_COVERAGE_2026-08-29.md` + ROADMAP.
 
 131. DONE **2026-08-29 (chord coverage: the pairing had no headroom, so spend
    the lone crossings; d9861e9, 0184089, 30e98cd).** The roadmap's standing
@@ -7771,7 +7793,7 @@ sc-first-run` accepted on its referrer
    veil lane would pay far more than this glyph lane's 79 of 1,103 (pinned by
    its own test); and 116 steps remain blind, carrying neither chord nor stub,
    which no pairing or threshold reaches. Doc:
-   `docs/CLEAN_CHORD_COVERAGE_2026-08-29.md`.
+   `docs/_archive/2026-08/CLEAN_CHORD_COVERAGE_2026-08-29.md`.
 
 130. DONE **2026-08-23 (the credit-line lane, end to end on the queue, and the
    revert that was the real lever; 363d9e5, 4a7c047, c993009, 4dbe017, 89f55ae).**
@@ -7815,7 +7837,7 @@ sc-first-run` accepted on its referrer
    step (259f quiet at p70 with the line legible, viego at p80 with a ghost), so
    `still_reads` silence is never evidence. Verified: 26 new tests, full suite
    **2293 passed / 18 skipped** re-run fresh at wrap, ruff clean, ASCII clean.
-   Docs: `docs/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`, ROADMAP
+   Docs: `docs/_archive/2026-08/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`, ROADMAP
    `clean-creditline-queue`. Parser-vs-loop guards added after a missing `--pad`
    killed a whole round at attribute time, mid-run, after the models had loaded.
    SEPARATE, UNFIXED: the Legion C: drive is full - `%LOCALAPPDATA%\Temp\claude`
@@ -7894,7 +7916,7 @@ sc-first-run` accepted on its referrer
    the `not_border` bucket. VERIFIED: 22 tests in
    `tests/test_lw_clean_creditline.py` with the reader injected so easyocr never
    enters CI, RED confirmed before implementing; full suite 2265 passed / 18
-   skipped; ruff clean. DOC SYNCS: `docs/CLEAN_MASKGEN_2026-08-22.md`, ROADMAP
+   skipped; ruff clean. DOC SYNCS: `docs/_archive/2026-08/CLEAN_MASKGEN_2026-08-22.md`, ROADMAP
    (new clean-maskgen item), WAKEUP_NOTES. DO NOT REDO: scoring a logo detector
    against a credit-line gold mask or reading the hand-clean captures as complete
    masks for their frames; tuning the centre-overlay matte to find the credit
@@ -7946,7 +7968,7 @@ sc-first-run` accepted on its referrer
    holding the estimator to the model on synthetic art where the model is true
    by construction - which is what proves the failure is the corpus and not a
    broken estimator; full suite 2243 passed / 18 skipped; ruff clean. DOC SYNCS:
-   `docs/CLEAN_CONDITIONING_DECISION_2026-08-22.md`, ROADMAP (D closed; all five
+   `docs/_archive/2026-08/CLEAN_CONDITIONING_DECISION_2026-08-22.md`, ROADMAP (D closed; all five
    tracks now resolved), WAKEUP_NOTES. DO NOT REDO: conditioning, tone-matching
    or un-blending a mark region from ring statistics; reading a high fitted
    alpha as evidence of a veil without its R-squared; or adding a pre-pass that
@@ -8005,7 +8027,7 @@ sc-first-run` accepted on its referrer
    worse than leaving the watermark in, with the single chord holding. VERIFIED:
    16 tests in `tests/test_lw_clean_spot.py`, RED confirmed before implementing;
    full suite 2227 passed / 18 skipped; ruff clean. DOC SYNCS:
-   `docs/CLEAN_SPOT_ROLLBACK_2026-08-22.md`, ROADMAP (C marked done, D remains),
+   `docs/_archive/2026-08/CLEAN_SPOT_ROLLBACK_2026-08-22.md`, ROADMAP (C marked done, D remains),
    WAKEUP_NOTES. DO NOT REDO: growing a spot to the stroke target, adding a
    margin to a mask that is already a brush mask, or splitting a blob into
    disjoint stroke-sized pieces - all three are measured worse, on all four
@@ -8062,7 +8084,7 @@ sc-first-run` accepted on its referrer
    confirmed before implementing, including a property test that wrecks every
    pixel under the mark and requires the built layer to come out identical, the
    misaligned-line test, and three schedule-integration tests; full suite 2211
-   passed / 18 skipped; ruff clean. DOC SYNCS: `docs/CLEAN_COMPARISON_LAYER_2026-08-22.md`, ROADMAP
+   passed / 18 skipped; ruff clean. DOC SYNCS: `docs/_archive/2026-08/CLEAN_COMPARISON_LAYER_2026-08-22.md`, ROADMAP
    (B marked done, C and D remain), WAKEUP_NOTES. DO NOT REDO: lowering
    `GRAD_MIN` below 6.0 without re-running the census, or reading this layer as
    a detector or an approval gate.
@@ -8113,7 +8135,7 @@ sc-first-run` accepted on its referrer
    (ModuleNotFoundError), including a property test that wrecks every pixel under
    the mask and requires the measure not to move at all; full suite 2196 passed /
    18 skipped; ruff clean on all four touched files. DOC SYNCS:
-   `docs/CLEAN_BEHIND_THE_MARK_2026-08-22.md`, ROADMAP (A marked done, B/C/D
+   `docs/_archive/2026-08/CLEAN_BEHIND_THE_MARK_2026-08-22.md`, ROADMAP (A marked done, B/C/D
    remain), WAKEUP_NOTES. DO NOT REDO: busyness taken on the marked frame
    anywhere in the cleaning stack, busyness taken on the behind-the-mark
    estimate, or a trust threshold fitted on these four captures.
@@ -8161,7 +8183,7 @@ sc-first-run` accepted on its referrer
    is not re-added. VERIFIED: `pytest tests/test_lw_clean_heal.py
    tests/test_lw_clean_replay.py tests/test_lw_clean_tiled.py` = 83 passed;
    ruff clean on all five touched files; `py_compile` on every new tool. DOC
-   SYNCS: `docs/CLEAN_HEAL_DECISION_2026-08-22.md` (evidence + caveat that the
+   SYNCS: `docs/_archive/2026-08/CLEAN_HEAL_DECISION_2026-08-22.md` (evidence + caveat that the
    metric flatters LaMa, and why the conclusion holds anyway), ROADMAP
    clean-zero-watermark item amended to record the closed primary track, and
    WAKEUP_NOTES. DO NOT REDO: the healing brush as a fill. The code stays as a
@@ -8217,8 +8239,8 @@ sc-first-run` accepted on its referrer
     "like photoshops healing brush" - which is deterministic, cannot hallucinate
     phantom context, and preserves lines by construction, retro-explaining every
     piece of operator guidance this session. Plan in
-    `docs/CLEAN_NEXT_SESSION_PLAN_2026-08-22.md`; analysis in
-    `docs/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md`. New tools: `lw_clean_dispose`,
+    `docs/_archive/2026-08/CLEAN_NEXT_SESSION_PLAN_2026-08-22.md`; analysis in
+    `docs/_archive/2026-08/CLEAN_HANDEDIT_ANALYSIS_2026-08-22.md`. New tools: `lw_clean_dispose`,
     `lw_clean_lane`, `lw_clean_review`, `lw_clean_tiled`, `lw_clean_replay`,
     `lw_clean_overlay_schedule` (+ 4 test files, 60 tests on the tiler alone).
     Suite 2161 passed / 18 skipped. **Do NOT redo:** lattice tiling of any kind
@@ -8258,7 +8280,7 @@ sc-first-run` accepted on its referrer
     `needs_attention` 0 after a fresh `scan`. **The 20th `auto` is the gate
     working, not a failure:** `259f` inpainted, FAILED the G2 verify gate, and
     fell to the QA queue instead of shipping a bad edit. Held set recorded with
-    per-slug reason in `docs/cleaning_qa_queue_2026-08-22.md`: 45
+    per-slug reason in `docs/_archive/2026-08/cleaning_qa_queue_2026-08-22.md`: 45
     `centre_overlay` (the known recall root cause), 27 `not_border`, 12
     `faint_mark`, 1 each `watermark_ocr` / `area_too_large` / `low_conf`.
     **OPEN REMAINDER, stated rather than papered over:** the operator's 13 named
@@ -8489,7 +8511,7 @@ sc-first-run` accepted on its referrer
     generated frames get auto-corrected is an operator call. Shipped:
     `tools/lw_gen_facekey.py` + 11 tests (numpy-only, torch-free import proven),
     each of the three defects pinned by a test that names the measurement that
-    caught it. Evidence appended to `docs/GEN_FACE_REALISM_2026-08-16.md`.
+    caught it. Evidence appended to `docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md`.
     **Verified:** 2025 passed / 18 skipped, ruff clean.
 
 116. DONE **2026-08-16 (splash-booru face realism: the shipped base moved to
@@ -8535,7 +8557,7 @@ sc-first-run` accepted on its referrer
     `test_lw_gen_data.py`: the realism block present, every guard inside the
     first 20 tags (position as a CI-safe proxy for the token count, with the
     tokenizer re-measure written into the comment), and the anti-realism tags
-    staying deleted. Evidence: `docs/GEN_FACE_REALISM_2026-08-16.md`.
+    staying deleted. Evidence: `docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md`.
     **Standing:** champion canon (eye colour) goes in the brief's
     `prompt_extra`, never the shared style; the IP-Adapter stays a per-brief
     option in the real-splash shape, never a default and never another
@@ -8564,7 +8586,7 @@ sc-first-run` accepted on its referrer
     off-canon, which is the exact conflation the metric makes, and I reported it as
     corroboration of the metric while it was the same error twice. One frame per
     arm read by the agent that chose the metric is not an inspection.
-    `docs/GEN_BASE_DECISION_2026-08-16.md` keeps the numbers (they reproduce) with
+    `docs/_archive/2026-08/GEN_BASE_DECISION_2026-08-16.md` keeps the numbers (they reproduce) with
     the conclusion struck and the retraction written into the section that was
     wrong; ADR-010 is kept in full at status SUPERSEDED as the record of a decision
     made on a measure that could not see the deciding property. **SHIPPED:**
@@ -9100,7 +9122,7 @@ sc-first-run` accepted on its referrer
     before the implementation, observed **12 failed / 2 passed**, then green.
     Verified this turn: `pytest -q` **1975 passed / 18 skipped** (baseline 1961
     + 14 new). Docs: `docs/adr/ADR-009-single-engine-cleaning-ladder.md`,
-    `docs/CLEAN_LADDER_DECISION_2026-08-12.md`; ROADMAP item removed (closed
+    `docs/_archive/2026-08/CLEAN_LADDER_DECISION_2026-08-12.md`; ROADMAP item removed (closed
     entries live in the ledger, per the archival contract).
     **DO NOT REDO:** do not re-open the ladder on a seam_ssim argument, and do
     not fit a threshold on the undecided queue - it carries no strong labels.
@@ -9169,7 +9191,7 @@ sc-first-run` accepted on its referrer
     `overlay_feather/` (alpha 0.1332) are both superseded. The non-wide
     `overlay_matte.npz` was deliberately NOT rebuilt: nothing reads it
     (`load_overlay_pair` takes the wide pair, `overlay_score` uses the template).
-    Evidence: `docs/CLEAN_VEIL_AMPLITUDE_2026-08-12.md` section 7.
+    Evidence: `docs/_archive/2026-08/CLEAN_VEIL_AMPLITUDE_2026-08-12.md` section 7.
 
 102. DONE **2026-08-12 (veil amplitude settled; grid widened + boundary warning).**
     Answers the question LEDGER 101 left open and explicitly flagged: is the
@@ -9212,7 +9234,7 @@ sc-first-run` accepted on its referrer
     (`VEIL_CLOSE` 51) fills the chevron's UNVEILED notch, so 19 of 31 frames
     show sub-floor pixels that simply are not veiled, and the notch estimator
     reports 0.024 for a frame that is plainly ~0.13 by eye.
-    Evidence: `docs/CLEAN_VEIL_AMPLITUDE_2026-08-12.md`.
+    Evidence: `docs/_archive/2026-08/CLEAN_VEIL_AMPLITUDE_2026-08-12.md`.
 
 101. DONE **2026-08-12 (overlay lane: feather the veil, drop the LaMa ring).**
     Rules on ROADMAP `cleaning-detector-recall` open item (a) - whether the
@@ -9277,7 +9299,7 @@ sc-first-run` accepted on its referrer
     candidates in
     `ops/runtime/clean/overlay_lane/` are STALE; the feathered set is in
     `ops/runtime/clean/overlay_feather/`. Evidence:
-    `docs/CLEAN_VEIL_FEATHER_2026-08-12.md`.
+    `docs/_archive/2026-08/CLEAN_VEIL_FEATHER_2026-08-12.md`.
 
 100. DONE **2026-08-12 (QA-lane precision census; docs + one new probe tool).**
     Closes ROADMAP `cleaning-detector-recall` open item (d) - the last unmeasured
@@ -9312,7 +9334,7 @@ sc-first-run` accepted on its referrer
     Verified: ruff clean on the new tool, doc/roadmap/ledger suite subset 43
     passed / 2 skipped. Full suite not re-run - Tier-0/1 (docs + a standalone
     probe on no production path), per the R5 tiered-verification rule.
-    Evidence `docs/CLEAN_QA_PRECISION_2026-08-12.md` (per-reason table + every
+    Evidence `docs/_archive/2026-08/CLEAN_QA_PRECISION_2026-08-12.md` (per-reason table + every
     named miss); sheets in `ops/runtime/clean/qa_precision/` (gitignored - crops
     of third-party art). DO NOT REDO: the labelling is settled; re-open only if
     the gate's reasons or thresholds change, which would invalidate the strata.
@@ -9380,7 +9402,7 @@ sc-first-run` accepted on its referrer
     score 0.109, under the 0.15 overlay flag, and detection did not gain the
     search); `FAINT_OVERLAY_DEFER` from LEDGER 98 is what routes it to
     `--overlay`, so the chain completes without moving a gate threshold.
-    Evidence: `docs/CLEAN_OVERLAY_SCALE_2026-08-12.md`; candidates in
+    Evidence: `docs/_archive/2026-08/CLEAN_OVERLAY_SCALE_2026-08-12.md`; candidates in
     `ops/runtime/clean/overlay_scale/`.
 
 98. DONE **2026-08-12 (faint-mark REMOVAL lane; suite 1939/18).** Closes ROADMAP
@@ -9458,7 +9480,7 @@ sc-first-run` accepted on its referrer
     STILL OPEN: p2402 + 110-cleanup are queued for the manual IOPaint lane and
     nothing automates them; 110's real fix is the overlay lane's registration on
     weakly-correlating frames.
-    Evidence: `docs/CLEAN_FAINT_LANE_2026-08-12.md`; candidates in
+    Evidence: `docs/_archive/2026-08/CLEAN_FAINT_LANE_2026-08-12.md`; candidates in
     `ops/runtime/clean/faint_lane/`.
 
 97. DONE **2026-08-11 (faint-mark FLAG, gate v4: the last 4 recall misses; suite
@@ -9531,7 +9553,7 @@ sc-first-run` accepted on its referrer
     the human queue; two of the four are thin strokes over busy art, which is
     the manual IOPaint lane's shape, not LaMa's); LaMa's softening on pale flat
     art; and the 46 `qa` images were never labelled.
-    Evidence: `docs/CLEAN_FAINT_MARK_2026-08-11.md`;
+    Evidence: `docs/_archive/2026-08/CLEAN_FAINT_MARK_2026-08-11.md`;
     `ops/runtime/clean_recall_census_gatev4.json`.
 
 96. DONE **2026-08-11 (the flat VEIL: calibrated against its own boundary step).**
@@ -9571,7 +9593,7 @@ sc-first-run` accepted on its referrer
     skin, worst case) is down to a soft blur with no legible mark.
     VERIFIED: full suite **1889 passed / 18 skipped** (3.14); ruff clean over
     `tools/` + the new test file. Docs:
-    `docs/CLEAN_OVERLAY_INPAINT_2026-08-11.md` part 2, ROADMAP updated.
+    `docs/_archive/2026-08/CLEAN_OVERLAY_INPAINT_2026-08-11.md` part 2, ROADMAP updated.
     DO NOT REDO: a 2-parameter regression of the step on `(W - J)` across frames
     (the x spread is only 8-17 levels on this corpus, so the fit is noise); the
     201px background window (interior reads 0.028 against 0.060 at ~408px);
@@ -9615,7 +9637,7 @@ sc-first-run` accepted on its referrer
     error - latent until the 1xN horizontal gate needed it.
     VERIFIED: full suite **1881 passed / 18 skipped** (3.14) after the change;
     ruff clean on all four touched files. Docs:
-    `docs/CLEAN_OVERLAY_INPAINT_2026-08-11.md`, ROADMAP item updated.
+    `docs/_archive/2026-08/CLEAN_OVERLAY_INPAINT_2026-08-11.md`, ROADMAP item updated.
     DO NOT REDO: pure algebraic Dekel (LEDGER 29 cap), per-pixel least squares
     (R^2 0.10) and per-pixel W (diverges) from LEDGER 94, and now: lowering the
     matte threshold to reach the veil (0.03 stretches the ROI from 550x290 to
@@ -9685,7 +9707,7 @@ sc-first-run` accepted on its referrer
     clean; matte + candidates rebuilt through the CLI end to end. Matte, like
     the template, is a derivative of a third party's watermark -> `ops/runtime/`
     (gitignored), never tracked. Detail:
-    `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`; R&D doc status updated and its
+    `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`; R&D doc status updated and its
     stale "the-ruined-king-viego = LoL logo, keep" line CORRECTED (it is a false
     negative, not a false positive).
 
@@ -9749,7 +9771,7 @@ sc-first-run` accepted on its referrer
     STILL OPEN: removal (nothing here cleans an overlay); the other 3 of 14
     misses (thin signatures - YOLO gives one NO box at any conf - and a wordmark
     off the bottom band); `110-cleanup` still scores 0.121, under threshold.
-    Detail: `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`.
+    Detail: `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`.
 
 92. DONE **2026-08-11 (cleaning detector RECALL measured: 14 confirmed false
     negatives, ~12 percent of `clean` verdicts; one object is 11 of them).**
@@ -9794,7 +9816,7 @@ sc-first-run` accepted on its referrer
     `tools/lw_clean_detector_probe.py --corpus firstdone --low-conf 0.10`; suite
     1837 passed / 18 skipped (3.14, unchanged - no production rule touched);
     ruff clean. Detail + per-miss table:
-    `docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`.
+    `docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`.
     NOT measured: whether the 46 `qa` images carry real marks.
 
 91. DONE **2026-08-11 (clean-retry-degrades HALF 2 - detector precision
@@ -9830,7 +9852,7 @@ sc-first-run` accepted on its referrer
     become `auto`. Stdlib+numpy only, so it runs in CI with no GPU.
     Verified: suite **1837 passed / 18 skipped** (3.14, full run this session,
     up from 1808 by the 29 new tests); ruff clean on both new files.
-    Census + per-slug table: `docs/CLEAN_DETECTOR_PRECISION_2026-08-11.md`.
+    Census + per-slug table: `docs/_archive/2026-08/CLEAN_DETECTOR_PRECISION_2026-08-11.md`.
     NOT closed: recall (false negatives) was never measured, and the
     cross-engine ladder is still fired by the operator/skill, not by code.
 
@@ -10081,7 +10103,7 @@ sc-first-run` accepted on its referrer
 
 86. DONE **2026-08-02 (gemini-removal reversible half + the five owed operator
     answers; TDD, 16 new tests).** Two deliverables, one session.
-    **(A) The five answers** live in `docs/OPERATOR_ANSWERS_2026-08-02.md`, each
+    **(A) The five answers** live in `docs/_archive/2026-08/OPERATOR_ANSWERS_2026-08-02.md`, each
     with its evidence and a recommendation so a one-word reply closes the item:
     `anat-vision-review` -> FLAG only, but make the flag BLOCK auto-approval (a
     third position, and it gets REJECT's safety property without giving an
@@ -10288,7 +10310,7 @@ sc-first-run` accepted on its referrer
     counting today; the question the triage actually posed - retroactively, how
     often was a green claim in this repo unbacked - was untouched.
     `tools/claimed_green_gate.py` gains a retrospective mode
-    (`--history` / `--audit` / `--json`) and `docs/CLAIMED_GREEN_RETRO_2026-08-01.md`
+    (`--history` / `--audit` / `--json`) and `docs/_archive/2026-08/CLAIMED_GREEN_RETRO_2026-08-01.md`
     holds the reviewed result. THE ANSWER, over **387 transcripts** (81 sessions
     plus their `subagents/` files) and **269 green claims**: 25 flagged (9.3%),
     **6 genuinely unbacked after reading every one by hand** (2.2%), and **ZERO**
@@ -10496,7 +10518,7 @@ sc-first-run` accepted on its referrer
 77. DONE **2026-08-01 (the 22 wiki upgrades SWAPPED IN; 10 approved, 12 queued
     at NEEDAUTH).** `tools/lw_wiki_swap_oneoff.py` +
     `tests/test_lw_wiki_swap_oneoff.py` (10 tests) +
-    `docs/WIKI_SWAP_22_2026-08-01.md`. Operator-directed on LEDGER 76's
+    `docs/_archive/2026-08/WIKI_SWAP_22_2026-08-01.md`. Operator-directed on LEDGER 76's
     evidence. The wiki original is now the `_firstinitial` for all 22 and first
     pass has been re-run: **processed=22 pass=10 flag=12 fail=0 held=0**.
     Everything displaced was MOVED, never deleted, into
@@ -10549,7 +10571,7 @@ sc-first-run` accepted on its referrer
 
 76. DONE **2026-08-01 (the 77 compared against the held `_firstinitial`; 46
     favour the wiki, and the 7.43x headline does not survive).**
-    `docs/WIKI_VS_FIRSTINITIAL_2026-08-01.md`. Closes what LEDGER 75 explicitly
+    `docs/_archive/2026-08/WIKI_VS_FIRSTINITIAL_2026-08-01.md`. Closes what LEDGER 75 explicitly
     did not claim. Premise CORRECTED twice, both times by a control rather than
     by inspection. (1) **A path bug that would have answered a different
     question at full confidence**: `_firstinitial` keeps the SOURCE's extension,
@@ -10600,7 +10622,7 @@ sc-first-run` accepted on its referrer
     decision.
 
 75. DONE **2026-08-01 (the corpus/wiki intersection, counted on pixels - 77
-    confirmed).** `docs/WIKI_INTERSECTION_2026-08-01.md`. Closes the question
+    confirmed).** `docs/_archive/2026-08/WIKI_INTERSECTION_2026-08-01.md`. Closes the question
     LEDGER 72 refused to guess at. **77 corpus images are confirmed to be the
     same artwork as a canonical wiki splash, and 77 of 77 have a wiki source at
     or above 2560x1440 - median 7.43x the target pixel count, min 1.44x, max
@@ -10638,7 +10660,7 @@ sc-first-run` accepted on its referrer
     build the wiki index; fetching full splashes to compare.
 
 74. DONE **2026-08-01 (P5 - memi audited our pages and got them backwards;
-    DO NOT ADOPT; `d24b494`).** `docs/MCP_LIFT_P5_2026-08-01.md`. The dive set
+    DO NOT ADOPT; `d24b494`).** `docs/_archive/2026-08/MCP_LIFT_P5_2026-08-01.md`. The dive set
     one adoption test - run it against both pages, adopt only if it catches
     something the 5-phase ritual missed - and it caught nothing. Premise
     CORRECTED before a single command ran: `npm view memi` returns **0.0.8 by an
@@ -10714,7 +10736,7 @@ sc-first-run` accepted on its referrer
     with f1-phase6 item 7's "executor serializes AND RECORDS the deviation".
 
 72. DONE **2026-08-01 (P3 - the MediaWiki probe answered YES on the source and
-    NO on the server; docs-only).** `docs/MCP_LIFT_P3_2026-08-01.md`. Third
+    NO on the server; docs-only).** `docs/_archive/2026-08/MCP_LIFT_P3_2026-08-01.md`. Third
     phase of `mcp-lift-phases`, operator gate lifted this session. Premise
     CORRECTED: the dive framed P3 as "professionalwiki vs olgasafonova, decided
     by whether `get-file-data` returns bytes from a Fandom wiki". The probe was
@@ -10941,7 +10963,7 @@ sc-first-run` accepted on its referrer
     mutex serialization on a POSIX runner.
 
 67. DONE **2026-08-01 (three-way concurrency MEASURED - the mechanism, not the
-    three repos).** Full numbers in `docs/CONCURRENCY_MEASURED_2026-08-01.md`;
+    three repos).** Full numbers in `docs/_archive/2026-08/CONCURRENCY_MEASURED_2026-08-01.md`;
     harness `tests/test_three_way_concurrency.py`, 4 tests, 6.4s.
     Closes two hand-off entries that sat as STILL UNMEASURED while N=3 was
     already live in `ops/loop/config.json`.
@@ -11056,7 +11078,7 @@ sc-first-run` accepted on its referrer
     references. Every one was its own definition or a test. skylos was right;
     counting references without reading them cannot tell a live consumer from a
     test, and a grep count is not the source-of-truth re-probe CLAUDE.md asks
-    for. `docs/MCP_LIFT_L1_2026-08-01.md` is corrected in place.
+    for. `docs/_archive/2026-08/MCP_LIFT_L1_2026-08-01.md` is corrected in place.
     FUTURE: the data reaches `/api/run` but no panel draws it - rendering is a
     page change and owes the UI fixture ritual, so it is deliberately a separate
     slice. The three run-id namespaces (`slice_manifest.run_id`, controller
@@ -11069,7 +11091,7 @@ sc-first-run` accepted on its referrer
     `lw_g1_gate:48` documenting the fork rather than fixing it. Python matches
     exceptions by class IDENTITY, so `except GpuBusy` only ever covered a raise
     from its own module's `gpu_lock`. Found while chasing an L1 skylos "unused
-    import" (`docs/MCP_LIFT_L1_2026-08-01.md` section 3), not by skylos itself.
+    import" (`docs/_archive/2026-08/MCP_LIFT_L1_2026-08-01.md` section 3), not by skylos itself.
     Shipped `tools/lw_gpu_busy.py`, which imports NOTHING - load-bearing,
     because the four consumers run under four different venvs and the fork
     existed to avoid dragging one venv's deps into another. Each consumer binds
@@ -11334,7 +11356,7 @@ sc-first-run` accepted on its referrer
     so a defect inherent to the source scores near 1.0. The head geometry is the
     artist's; the hand-cropped `firstinitial` swapped in 2026-07-15 is the source.
     Built the metric, then measured it over all 288 approved firstdones - and the
-    census REFUTED gating it. Evidence: `docs/ANATOMY_CENSUS_2026-07-29.md`.
+    census REFUTED gating it. Evidence: `docs/_archive/2026-07/ANATOMY_CENSUS_2026-07-29.md`.
     fiora1 is the 43.5th percentile (abs 0.1446 vs median 0.1638) - BELOW median
     badness, so any threshold catching it flags over half an approved corpus. Only
     115/288 measurable; 157-159 of the 173 unmeasurable fail on HIP confidence
@@ -11361,7 +11383,7 @@ sc-first-run` accepted on its referrer
     **Verified:** 835 -> 1093 passed / 16 skipped / 0 failed, ruff clean, drift
     guard 0 breaches, CI green, `core.hooksPath` unmutated.
     **Second blind spot found chasing the same root cause, NOT acted on:**
-    `docs/SOURCE_ADEQUACY_CENSUS_2026-07-29.md` - 105 of 276 approved images were
+    `docs/_archive/2026-07/SOURCE_ADEQUACY_CENSUS_2026-07-29.md` - 105 of 276 approved images were
     upscaled from sources BELOW 2560x1440 (worst `image3` at 800x450, a 3.2x
     blowup, verdict PASS); 12 approved carry no G1 audit at all (legacy, verified
     pre-ADR-004, so a BACKFILL is owed not a fix) and 10 of those 12 were built

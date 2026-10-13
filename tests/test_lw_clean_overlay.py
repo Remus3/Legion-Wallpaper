@@ -212,7 +212,7 @@ def test_gate_default_is_unchanged_without_a_score():
 
 def test_threshold_is_the_calibrated_constant():
     """The threshold is a measured value, not a guess - see the module docstring
-    and docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md."""
+    and docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md."""
     assert cp.OVERLAY_SCORE_MIN == pytest.approx(0.15)
     v, _ = cp.gate_decision(0, 0.0, False, 0.0, None, _W, _H, [],
                             overlay_score=cp.OVERLAY_SCORE_MIN)

@@ -1,6 +1,6 @@
 """usm-halo-calibration step 1: measure FIDELITY per USM variant.
 
-The 2026-07-30 census (`docs/USM_HALO_CENSUS_2026-07-30.md`) established that our
+The 2026-07-30 census (`docs/_archive/2026-07/USM_HALO_CENSUS_2026-07-30.md`) established that our
 own unsharp mask manufactures every halo flag, and that usm35 clears them all
 while keeping `lap_ratio` above its 1.0 hard floor. What it deliberately did NOT
 do is recompute ms_ssim / lpips / dists per variant - so the FIDELITY cost of a

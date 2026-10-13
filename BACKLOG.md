@@ -21,9 +21,9 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
 ## Developer experience
 
 - **mcp-lift-phases - act on the 2026-08-01 MCP triage.** Full evidence and the
-  per-entry rubric in `docs/MCP_LIFT_TRIAGE_2026-08-01.md`; the triage was
+  per-entry rubric in `docs/_archive/2026-08/MCP_LIFT_TRIAGE_2026-08-01.md`; the triage was
   filed but never queued, which is why this entry exists.
-  - **L1 - DONE 2026-08-01, result in `docs/MCP_LIFT_L1_2026-08-01.md`.** Both
+  - **L1 - DONE 2026-08-01, result in `docs/_archive/2026-08/MCP_LIFT_L1_2026-08-01.md`.** Both
     halves ran and both changed the plan. skylos is NOT wire-into-CI material
     here: it flagged `lw_httpd.py:122 allow_reuse_address = False`, which IS the
     single-instance bind guard, and most other high-confidence hits are
@@ -41,7 +41,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     against git history - the tool form of LW's most documented failure class,
     currently answered by spending a whole verifier subagent.
   - **L3 and L4 are SUPERSEDED by the stage-4 deep dive, 2026-08-01 -
-    `docs/MCP_LIFT_DIVE_2026-08-01.md`.** All 63 LW-list entries were fetched at
+    `docs/_archive/2026-08/MCP_LIFT_DIVE_2026-08-01.md`.** All 63 LW-list entries were fetched at
     source (the triage had 5 VERIFIED-LIVE and 58 INHERITED-RC), plus the 5
     off-list entries. Read the dive, not the triage, before acting on any row.
     The replacement plan, in order:
@@ -91,7 +91,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     real DeviantArt oEmbed + gallery-dl exchanges once, including a quota block,
     and replay them. Acceptance: recovery tests pass with the network unplugged
     and the hand-written stubs deleted.
-  - **P3 - DONE 2026-08-01, result in `docs/MCP_LIFT_P3_2026-08-01.md`.** The
+  - **P3 - DONE 2026-08-01, result in `docs/_archive/2026-08/MCP_LIFT_P3_2026-08-01.md`.** The
     probe answered YES on the capability and NO on the server, so the impl
     choice INVERTS a second time: **adopt the source, decline both wrappers.**
     Both wikis serve splash art anonymously (Fandom MW 1.43.9, wiki.gg MW
@@ -107,7 +107,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     wiki hosts official Riot splash; much of LW's corpus is DeviantArt fan art
     no wiki hosts), that a wiki HD file beats the held `_firstinitial` for any
     given slug, or anything about licensing. **The intersection is now COUNTED
-    (2026-08-01, LEDGER 75, `docs/WIKI_INTERSECTION_2026-08-01.md`): 77 corpus
+    (2026-08-01, LEDGER 75, `docs/_archive/2026-08/WIKI_INTERSECTION_2026-08-01.md`): 77 corpus
     images are confirmed same-artwork as a canonical wiki splash on TWO
     independent metrics, and 77 of 77 have a wiki source at or above 2560x1440,
     median 7.43x the target pixel count.** That is 23.3 percent of the 330
@@ -115,7 +115,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     were never swept. A Tier-0.5 canonical-source step is now justified on
     evidence rather than on hope - but see the next line before sizing it.
     **The per-slug comparison against the held `_firstinitial` is now DONE
-    (2026-08-01, LEDGER 76, `docs/WIKI_VS_FIRSTINITIAL_2026-08-01.md`) and it
+    (2026-08-01, LEDGER 76, `docs/_archive/2026-08/WIKI_VS_FIRSTINITIAL_2026-08-01.md`) and it
     cuts the prize down: 46 of 77 favour the wiki, not 77.** 23 held sources
     have MORE pixels than their wiki twin (aggregator 8K files), and on raw
     sharpness the wiki file is the softer of the two in 35 of 77. What rescues
@@ -176,7 +176,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     without a granted claim is the enforcement half, and it belongs with
     f1-phase6 item 7's "executor serializes AND RECORDS the deviation".
   - **P5 - DONE 2026-08-01, DO NOT ADOPT. Result in
-    `docs/MCP_LIFT_P5_2026-08-01.md`.** Ran against both pages, which was the
+    `docs/_archive/2026-08/MCP_LIFT_P5_2026-08-01.md`.** Ran against both pages, which was the
     adoption test, and it caught nothing the 5-phase ritual missed. Its single
     finding is a false positive that fires on the fix it recommends: it flags
     `web/monitor.html:9` as "raw colors leaking into UI code" and recommends
@@ -328,7 +328,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
   and its promotions section against the P-numbers here - a row that lives only
   in a doc's prose does not get worked.
   **L2's retrospective half is DONE 2026-08-01 (LEDGER 82,
-  `docs/CLAIMED_GREEN_RETRO_2026-08-01.md`) - do not re-run the sweep blind.**
+  `docs/_archive/2026-08/CLAIMED_GREEN_RETRO_2026-08-01.md`) - do not re-run the sweep blind.**
   387 transcripts, 269 green claims, 25 flagged, **6 genuinely unbacked** after
   reading every one by hand, **0** claims of green over a red suite. All 6 are
   one shape: a count somebody ELSE observed, restated as this turn's fact. The

@@ -184,7 +184,7 @@ def test_filter_to_resolvable_falls_back_to_the_standard_splash():
 def test_resolve_falls_back_when_the_hd_file_is_absent():
     """A champion with no HD upload must still yield its standard splash, not
     be silently skipped - a 0 from a name guess is the failure mode to avoid
-    (docs/MCP_LIFT_P3_2026-08-01.md)."""
+    (docs/_archive/2026-08/MCP_LIFT_P3_2026-08-01.md)."""
     def fake_api(**params):
         titles = params["titles"].split("|")
         pages = {}

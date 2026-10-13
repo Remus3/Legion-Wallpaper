@@ -3,7 +3,7 @@
 63 frames in `3.Cleaning Scratch` carry the DeviantArt preview overlay, which is
 TWO objects: a `(c) ARTIST.DEVIANTART.COM` credit line and a large faint logo
 veil, both mid-frame and both crossing the subject. The automated lanes cannot
-clear them (see `docs/CLEAN_SCRATCH_CENSUS_2026-09-01.md`).
+clear them (see `docs/_archive/2026-09/CLEAN_SCRATCH_CENSUS_2026-09-01.md`).
 
 **These are NOT for deletion.** The plan is to hand-correct them, then study the
 before/after pairs to build an automated emulation - the same route that turned

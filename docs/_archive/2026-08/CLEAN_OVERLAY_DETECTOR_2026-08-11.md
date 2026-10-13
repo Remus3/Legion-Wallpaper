@@ -1,6 +1,6 @@
 # Centre-overlay detector - build + calibration, 2026-08-11
 
-Answers the top item of `docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`: **11 of the
+Answers the top item of `docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`: **11 of the
 14 measured false negatives are one object**, the semi-transparent DeviantArt
 centre overlay (`(C) NAME.DEVIANTART.COM` plus the DA logo, alpha-composited
 across the middle of the frame).

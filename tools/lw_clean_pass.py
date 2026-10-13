@@ -110,7 +110,7 @@ BOTTOM_BAND_FRAC = 0.80      # bottom banner := centroid_y > 0.80*h
 AREA_MAX_WM = 8.0            # auto area ceiling (pct) for banners + OCR watermarks
 # gate v3 (2026-08-11): centre-overlay FLAG floor. CALIBRATED, not guessed:
 # scored all 302 firstdones against a 19-image template and read the effect on
-# the 229 `clean` verdicts (docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md).
+# the 229 `clean` verdicts (docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md).
 #   0.15 -> 15 clean images flip to qa, ALL 15 verified real marks (0 false)
 #   0.12 -> 19 flip, 3 of them carry no mark
 # So 0.15 is the largest-recall setting that still costs nothing. It can only
@@ -125,7 +125,7 @@ OVERLAY_SCORE_MIN = 0.15
 # AUTO, so it can never route to auto and never rewrites an existing qa reason.
 DETECT_CONF = 0.35
 # FAINT_CONF_MIN is CALIBRATED against the live 302-image corpus, swept at 0.05
-# (docs/CLEAN_FAINT_MARK_2026-08-11.md). Marginal effect on the `clean` set:
+# (docs/_archive/2026-08/CLEAN_FAINT_MARK_2026-08-11.md). Marginal effect on the `clean` set:
 #   0.10 -> 3 flips, 3 of 3 verified real marks, 0 false
 #   0.05 -> 5 flips, 4 of 5 real, 1 false (dbwtlkx-eeb94ce2, blurred stonework)
 # 0.05 ships because it closes the LAST measured recall miss - the alexflores

@@ -1,6 +1,6 @@
 # The two cleaning lanes: `--scoped-revert` defaults ON, `--stubs` stays opt-in
 
-_2026-08-29. Settles the "NEXT" left by `docs/CLEAN_CHORD_COVERAGE_2026-08-29.md`:
+_2026-08-29. Settles the "NEXT" left by `docs/_archive/2026-08/CLEAN_CHORD_COVERAGE_2026-08-29.md`:
 the operator's eye on the two opt-in lanes, and a verdict per lane._
 
 ## Verdict

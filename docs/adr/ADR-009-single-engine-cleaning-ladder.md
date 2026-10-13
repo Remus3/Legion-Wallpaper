@@ -17,7 +17,7 @@ improvement or dropped. It was answered with a full-stage census, not a sample -
 21 slugs, 18 with 2+ workings, 50 rejected workings, 24 retries scored against
 their own `_01` with the cleaning gate's metric functions
 (`tools/lw_clean_retry_probe.py --metrics`, re-run 2026-08-12; full writeup in
-`docs/CLEAN_LADDER_DECISION_2026-08-12.md`):
+`docs/_archive/2026-08/CLEAN_LADDER_DECISION_2026-08-12.md`):
 
 1. **The ladder has never produced a winner.** Of the 3 slugs the operator has
    adjudicated, retries won 0 - two settled on `_01`'s content and one on

@@ -1,7 +1,7 @@
 """Centre-overlay detector - the DeviantArt semi-transparent watermark.
 
 ROADMAP `cleaning-detector-recall`. The recall census (2026-08-11,
-`docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`) measured 14 false negatives over the
+`docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`) measured 14 false negatives over the
 302 unrouted firstdones and found **11 of them are one object**: the DA centre
 overlay - the site's logo plus `(C) NAME.DEVIANTART.COM`, alpha-composited over
 the middle of the frame.
@@ -18,7 +18,7 @@ the existing stack cannot see it:
 Dropping the conf floor was measured to be the wrong lever: a low-conf box is a
 good FLAG (13 of 17 low-conf `clean` images are real misses) but a bad AUTO
 signal, and precision over the gated corpus is currently 0 false positives in 14
-proposals (`docs/CLEAN_DETECTOR_PRECISION_2026-08-11.md`).
+proposals (`docs/_archive/2026-08/CLEAN_DETECTOR_PRECISION_2026-08-11.md`).
 
 WHAT IT EXPLOITS INSTEAD. The overlay is the SAME pixels at the SAME place on
 every image the site serves. Median-stacking the high-pass of images that carry

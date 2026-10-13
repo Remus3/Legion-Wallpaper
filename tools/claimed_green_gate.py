@@ -8,7 +8,7 @@ right moment: `Stop` is the event where Claude asserts it is done, and its
 payload carries BOTH halves of the question - `last_assistant_message` is the
 claim and `transcript_path` is the evidence.
 
-Contract (official hook docs, see docs/MCP_LIFT_DIVE_2026-08-01.md section 3):
+Contract (official hook docs, see docs/_archive/2026-08/MCP_LIFT_DIVE_2026-08-01.md section 3):
   - a finding is exit 0 with ONE line of {"hookSpecificOutput": {"hookEventName":
     "Stop", "additionalContext": ...}}. It is fed back to the model and keeps
     the conversation going exactly like a block, which is what makes this a

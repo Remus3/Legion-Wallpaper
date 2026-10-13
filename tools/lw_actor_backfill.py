@@ -4,7 +4,7 @@ Until LEDGER 268, `_complete_approve` wrote actor=operator for every approval
 (the `--actor` flag reached the ADR-008 rail only) and SUBMIT had no actor at
 all. On 2026-08-22 every APPROVE_CLEAN was run with `--actor tool:auto-approve`:
 479 by `lw_clean_dispose` (12:04-12:17Z, LEDGER 122) and 7 detector-false-
-positive passthroughs at 19:08Z (docs/CLEAN_OVERLAY_REVIEW_2026-08-22.md,
+positive passthroughs at 19:08Z (docs/_archive/2026-08/CLEAN_OVERLAY_REVIEW_2026-08-22.md,
 "Disposition of the seven"). The dispose burst's SUBMITs were run by the dispose
 driver; the driver of the 19:08 SUBMITs is not recorded -> `unattributed`.
 

@@ -50,7 +50,7 @@ renaming them is a wider change than this decision covers.
 project, and no longer document how the failover misbehaves. The retired names
 are dead, so every historical mention of them in append-only records
 (`docs/LEDGER.md`, `docs/history_notes.md`, dated artifacts under
-`docs/_archive/` and `docs/CONCURRENCY_MEASURED_2026-08-01.md`) is now inert and
+`docs/_archive/` and `docs/_archive/2026-08/CONCURRENCY_MEASURED_2026-08-01.md`) is now inert and
 was deliberately left unedited rather than rewritten - the redaction is recorded
 here instead of applied silently to history.
 

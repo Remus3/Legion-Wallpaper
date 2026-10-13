@@ -287,7 +287,7 @@ def build_overlay_template(slugs, out_path=None, stages=None, wide=False):
     The slugs must be images CONFIRMED by eye to carry the DeviantArt centre
     overlay - the estimator has no way to tell a marked frame from a clean one,
     and a clean frame in the stack only blurs the template. The verified list
-    lives in `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`; re-run this whenever
+    lives in `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md`; re-run this whenever
     it grows.
 
     The template is a derivative of a third party's watermark, so it is written
@@ -383,7 +383,7 @@ def remove_overlay_for(slugs, out_dir=None):
     Produces pixels into the runtime dir and PRINTS the lw_pipeline commands -
     it never mutates pipeline state, matching `lw_clean_pass`'s single-writer
     discipline. The candidate is a QA proposal: the overlay is reduced, not
-    provably erased (see docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md).
+    provably erased (see docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md).
     """
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import lw_clean_overlay as ov

@@ -35,7 +35,7 @@ A photoreal base scores well by looking photographically plausible while
 rendering six-fingered hands and a wrong-shaped weapon; an anime base scores
 badly for its rendering register while keeping every convention intact.
 
-The evidence table stands as measured - `docs/GEN_BASE_DECISION_2026-08-16.md`
+The evidence table stands as measured - `docs/_archive/2026-08/GEN_BASE_DECISION_2026-08-16.md`
 is corrected in place rather than deleted, because the numbers are real and the
 conclusion drawn from them was not.
 

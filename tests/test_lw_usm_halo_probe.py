@@ -204,7 +204,7 @@ def test_the_mask_measurably_moves_the_metric():
     # the 2026-08-02 default of 35 it reads exactly equal to the no-mask
     # variant, so tracking the live default would make this assertion silently
     # measure fixture saturation instead of mask sensitivity. Mask strength is
-    # a corpus question; it is settled in docs/USM_FIDELITY_CENSUS_2026-08-02.md
+    # a corpus question; it is settled in docs/_archive/2026-08/USM_FIDELITY_CENSUS_2026-08-02.md
     # over 17 real slugs, never on a bar pattern.
     src = _step_edge(800, 450)
     raw = src.resize((3200, 1800), Image.LANCZOS)

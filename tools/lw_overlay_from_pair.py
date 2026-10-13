@@ -3,7 +3,7 @@
 WHY THIS EXISTS. The DeviantArt preview overlay is two objects - a
 `(c) ARTIST.DEVIANTART.COM` credit line and a large faint logo veil - and both
 sit mid-frame across the subject. Every automated lane failed on them (see
-`docs/CLEAN_SCRATCH_CENSUS_2026-09-01.md`), and blind matte estimation sits at
+`docs/_archive/2026-09/CLEAN_SCRATCH_CENSUS_2026-09-01.md`), and blind matte estimation sits at
 SNR ~1 because it must separate mark from art with NEITHER known - the reason
 the settled ruling says not to refit that estimator on a small frame set.
 

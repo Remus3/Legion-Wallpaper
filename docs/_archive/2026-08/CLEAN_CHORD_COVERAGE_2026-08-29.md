@@ -1,6 +1,6 @@
 # Chord coverage: the rollback is blind on three quarters of what it fills
 
-_2026-08-29. Follows `docs/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`, which ended
+_2026-08-29. Follows `docs/_archive/2026-08/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`, which ended
 "NEXT: chord COVERAGE, not revert granularity."_
 
 ## The defect, restated in numbers

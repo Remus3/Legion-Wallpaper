@@ -1,6 +1,6 @@
 """Tests for tools/lw_gpu_busy.py - the ONE GpuBusy every GPU consumer shares.
 
-Why this file exists (2026-08-01, docs/MCP_LIFT_L1_2026-08-01.md section 3):
+Why this file exists (2026-08-01, docs/_archive/2026-08/MCP_LIFT_L1_2026-08-01.md section 3):
 `GpuBusy` was declared FOUR times - lw_g1_gate, lw_upscale, lw_gen_run and
 lw_clean_sdxl each carried their own `class GpuBusy(RuntimeError)`. Python
 exception matching is by class IDENTITY, so `except GpuBusy` in one module does

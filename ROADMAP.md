@@ -633,7 +633,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   representative node per repaired file with git stripped AND with git present -
   SKIP then RUN, because a marker that always skips grades nothing. Without git
   the suite is now 0 failed / 0 errors / 101 skipped (was 15 / 28 / 57). 5
-  mutants, 5 killed. `docs/FALSE_RED_PROBE_2026-09-10.md`. LEDGER 182.
+  mutants, 5 killed. `docs/_archive/2026-09/FALSE_RED_PROBE_2026-09-10.md`. LEDGER 182.
 - **inbox responder built + positions filed - DONE 2026-09-10.**
   `tools/lw_inbox_responder.py` + `tests/test_inbox_responder.py` (51 arms, 18
   mutants killed, no survivors). Built to RC's SHAPE with CS's and RSC's
@@ -663,11 +663,11 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - RRF-2.9: flip subagent_first to deny - DONE 2026-10-10 (session 71 = clean 3 of 3, mode = deny, LEDGER 304).
   - RRF-2.10: one session-scoped `tracked_corpus` fixture for the 31 hygiene tests. DONE 2026-10-12 (LEDGER 315): tests/tracked_corpus.py (one ls-files + one read per file per process) + session fixture; the 8 tree-wide git-ls-files guards moved onto it, pinned by tests/test_tracked_corpus.py.
   - RRF-3.2: sibling display names -> channel codes outside docs/_archive; hash-pinned name list in the pre-push sweep. DONE 2026-10-12 (LEDGER 316): tools/sibling_names.py pins + sweep + sibling_dir; 284 hits -> 0; pre-push runs the sweep; pinned by tests/test_no_sibling_names.py.
-  - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first).
+  - RRF-3.3: dated one-off reports in docs/ root -> docs/_archive/<yyyy-mm>/ (consumer check first). DONE 2026-10-12 (LEDGER 317): 68 moved, 64 citing files re-pointed, 4 standing docs stay (reasons in tests/test_docs_root_layout.py).
   - RRF-T1 (INFERRED, 2026-10-09): 6 tests in tests/test_headless_lean_spawn.py go red while the LIVE ops/runtime/inbox_responder/HALT file exists - the responder's halt check reads real state; point it at tmp_path in those tests (fleet_test_guard declared roots).
   - RRF-3.4: absolute checkout path and account username -> `<repo>` / `%USERPROFILE%` placeholders (done.md, headless-upgrade.md, sync-all-md.md, OPERATIONS.md, the golden-set plan).
 
-- **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
+- **Gate-repair research (MoE / MIM / ExPLoRA survey) - OPEN, top-5 experiments ranked in `docs/_archive/2026-10/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md`** (CAMBI mlc=5 for band_delta, re-inpaint matched filter for text_residue, contour-normal seam, anime-lama A/B, DINOv2 kNN before ExPLoRA).
   - DONE R1 CAMBI mlc=5 (LEDGER 263): ACCEPTED. Output-only mlc=5 ranks posterize_8 above clean 12/12 (one absolute bar 11/12); default mlc=2 7/12 (bar 3/12). Shipped as the delta vs the source resized to output size: clean max 1.21, banded min 3.00 -> new row G1.cambi_delta (flag > 2.0) PROVEN 12/12; live needauth census 0/131 flagged (max 1.74).
   - DONE R1b (LEDGER 265): `lw_first_pass.compute_cambi_delta` feeds `assemble_metrics(..., cambi_delta)` live (None + log line without ffmpeg, never gated); G1.band_delta board row + its ack entry retired together; band_delta kept as `info_metrics` (USM census) and as a verdict rule for `lw_clean_fr` only.
   - DONE R2 re-inpaint matched filter (LEDGER 267): ACCEPTED; DRAEM fallback not needed. Signed median over stroke pixels of luma(cleaned) - luma(LaMa re-inpaint of strokes dilated 3 px): golden clean |.| max 2.00 vs credit_line_4lv min 4.00 (12/12); 26 real LaMa clean pairs max 1.94 (0 FP), +4 lv copies min 3.89 (26/26); bar 3.0 -> new row G2.text_residue_mf PROVEN 12/12. The 40-offset null (z-score) separated too but with less margin and 41x the LaMa calls; dropped.
@@ -968,7 +968,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   so the diagram cannot drift; 4 arms, all mutation-proven.
 
   **context-mode - LICENCE SETTLED, BLAST RADIUS MEASURED, WIRING HELD.** Full
-  reasoning in `docs/CONTEXT_MODE_DECISION_2026-09-16.md`. Licence confirmed
+  reasoning in `docs/_archive/2026-09/CONTEXT_MODE_DECISION_2026-09-16.md`. Licence confirmed
   live as Elastic-2.0 in the published package.json: install-only, track
   nothing, and `node_modules/` was already ignored so no new rule was needed.
   Measured rather than inferred: its `postinstall` rewrites
@@ -1029,7 +1029,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   **FOUR COUNTS ARE IN (2026-09-12): LW 73.8, RSC 78.5, RC 80.3, CS 83.3 pct**
   gate- or contract-reachable, each under a different reading of the same three
   ambiguous fields. LW pinned the definitions (`docs/REFUTATION_TAXONOMY_PIN_v1_2.md`)
-  and re-scored its own 126 rows first (`docs/REFUTATION_COST_RESCORE_2026-09-12.md`):
+  and re-scored its own 126 rows first (`docs/_archive/2026-09/REFUTATION_COST_RESCORE_2026-09-12.md`):
   82.3 pct gate-or-contract, GATE-ABSENT beats GATE-EXISTING 2.2 to 1, inherited
   62.9 pct with BORN-WRONG outnumbering DECAYED 3.11 to 1, and fix-of-a-fix 24.2
   pct - which WITHDRAWS LW's own published 4.8-6.3 pct and closes the apparent
@@ -1082,7 +1082,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   a fourth; one ordering, four holes, two trees, one night. v1.4 if it exists is a
   SCHEMA (one axis per field + mandatory `pin_gap` + grain/rule/adjudicator named
   on every figure), never a rulebook. **`discovery` IS FIXED - it mixed three
-  axes** (`docs/DISCOVERY_AXIS_SPLIT_2026-09-13.md`): WHO / HOW / STANCE, proven
+  axes** (`docs/_archive/2026-09/DISCOVERY_AXIS_SPLIT_2026-09-13.md`): WHO / HOW / STANCE, proven
   internally by `CI` being a conjunction of two other values' axes, with ZERO of
   LW's 124 rows recording all three. The cross-tree consequence is bigger than any
   v1.3 clause: RC files 36 `GATE-FIRED-CAUGHT` (29 of them `SELF-AUDIT`), **LW
@@ -1132,7 +1132,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   window) is CONFOUNDED because each chunk had its own scorer - interleave next
   time; and **v1.2's tie-breaker deletes v1.2's own `VACUOUS` sub-case**, found
   by scoring against the clause rather than reading it, which two full
-  adversarial audits missed. Artifacts: `docs/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`,
+  adversarial audits missed. Artifacts: `docs/_archive/2026-09/LW_CROSSSCORE_RC_RESULT_2026-09-13.md`,
   all 198 rows in `..._ROWS_...`, raw scorer output in `docs/_crossscore/`,
   reproducible via `python docs/_crossscore_tally.py`. Also answered RSC's and
   RC's refuted-remedy blocker by DECOMPOSITION (record every link so the forward
@@ -1239,7 +1239,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   a no-reference artifact measure over the kept-fill region against its
   neighbourhood - a smear is a region whose local gradient energy collapses
   relative to the surrounding art. Evidence:
-  `docs/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`.
+  `docs/_archive/2026-09/CLEAN_SCOPED_REVERT_HELDOUT_2026-09-08.md`.
 
 - **`dists` is computed and gated by nothing - OPEN, operator call.** No entry
   in `_METRIC_RULES` or `DEFAULT_G1_THRESHOLDS`, so a catastrophic 0.5777
@@ -1455,26 +1455,26 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   - **E (healing brush) - FALSIFIED.** Built in full and beaten by the incumbent
     LaMa fill on all four captures. Splash art is PAINTED, not textured, so no
     translation repeats its content and the exemplar search has nothing to lock
-    onto. `docs/CLEAN_HEAL_DECISION_2026-08-22.md`, LEDGER 124.
+    onto. `docs/_archive/2026-08/CLEAN_HEAL_DECISION_2026-08-22.md`, LEDGER 124.
   - **A (analyse behind the mark) - DONE.** Busyness excluding the mark cut the
     error against ground truth 15x (221.3% -> 14.6% mean). The rule had been
     giving the two SMOOTHEST captures the minimum stroke because their marks
-    were the loudest thing in frame. `docs/CLEAN_BEHIND_THE_MARK_2026-08-22.md`,
+    were the loudest thing in frame. `docs/_archive/2026-08/CLEAN_BEHIND_THE_MARK_2026-08-22.md`,
     LEDGER 125.
   - **B (comparison layer) - DONE.** Predicts where a line entering the mark has
     to come out and separates ERASED from MISALIGNED, which is the defect that
     got 45 candidates rejected and which a contrast measure passes. Every
     verdict agrees with the labels; abstains where no line crosses.
-    `docs/CLEAN_COMPARISON_LAYER_2026-08-22.md`, LEDGER 126.
+    `docs/_archive/2026-08/CLEAN_COMPARISON_LAYER_2026-08-22.md`, LEDGER 126.
   - **C (spot heal with rollback) - DONE.** Per-blob healing costs nothing
     against a one-shot fill and buys a rollback that fires on exactly the engine
-    shown to damage art at 1:1. `docs/CLEAN_SPOT_ROLLBACK_2026-08-22.md`,
+    shown to damage art at 1:1. `docs/_archive/2026-08/CLEAN_SPOT_ROLLBACK_2026-08-22.md`,
     LEDGER 127.
   - **D (opacity / tone conditioning) - FALSIFIED.** The veil model fits none of
     the four captures (R-squared 0.49 / 0.32-0.81 / 0.00 / 0.04; an opaque
     painted signature carries no information about what is under it), and where
     conditioning fires it makes the frame worse.
-    `docs/CLEAN_CONDITIONING_DECISION_2026-08-22.md`, LEDGER 128.
+    `docs/_archive/2026-08/CLEAN_CONDITIONING_DECISION_2026-08-22.md`, LEDGER 128.
   - **F (DA overlay: pooled / analysis-by-synthesis) - CLOSED 2026-09-05, three
     attempts, all refused.** The DA preview overlay is TWO objects - an
     artist-specific credit line and a common logo veil - and the veil defeated
@@ -1490,7 +1490,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
     **Do NOT retry** the pooled path with more frames or looser thresholds: the
     blindness is in the transform, not the sample size. Registration is settled
     and is NOT the problem (every frame scale 1.00, shift +-3 px).
-    `docs/POOLED_VEIL_RESULT_2026-09-05.md`, LEDGER 144.
+    `docs/_archive/2026-09/POOLED_VEIL_RESULT_2026-09-05.md`, LEDGER 144.
 
   **Where it stands:** the FILL is settled on LaMa, now on an engine comparison
   rather than a single-engine replay. Mask generation is the remaining problem -
@@ -1533,7 +1533,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the glyphs inside the verified box, giving **11.56 on 105 against 15.45
   untouched and the operator's own 8.08**, committed with 0 of 7 spots held.
   Still open: 107-class AREA marks, the logo itself, and the 41 slugs with no
-  readable line. Doc: `docs/CLEAN_MASKGEN_2026-08-22.md`.
+  readable line. Doc: `docs/_archive/2026-08/CLEAN_MASKGEN_2026-08-22.md`.
 
 - **clean-creditline-queue - the lane ran on all 39 slugs and REDUCES without
   finishing; 13 of 39 still read a credit line in their own output and 16 held a
@@ -1571,13 +1571,13 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   (both variants measured worse), a blanket second round, or the GLYPH_PCT sweep
   for the never-quiet class. 266f wants a discriminator INSIDE the box - the
   overlay is achromatic where the tagline is saturated gold. Numbers and the
-  reasoning for each: `docs/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`.
+  reasoning for each: `docs/_archive/2026-08/CLEAN_CREDITLINE_QUEUE_2026-08-22.md`.
   **Chord COVERAGE is DONE 2026-08-29 (d9861e9, 0184089, 30e98cd) - see
   `clean-chord-coverage` below.**
   **All 39 sheets have now been LOOKED at, flag-only, 2026-08-29: 37 flagged, 2
   clear.** Ranked shortlist at `ops/runtime/clean/creditline/run_scoped/TRIAGE.md`
   (gitignored, sits with the sheets); finding at
-  `docs/CLEAN_CREDITLINE_TRIAGE_2026-08-29.md`. **The reader is near-blind by an
+  `docs/_archive/2026-08/CLEAN_CREDITLINE_TRIAGE_2026-08-29.md`. **The reader is near-blind by an
   order of magnitude: `still_reads` fires on 2 slugs, the eye reads a line on 28,
   so 26 reader-silent slugs still read as text at 1:1** - the known one-step bias
   is not a one-step bias, it is most of the queue. **A second failure mode the
@@ -1625,7 +1625,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   artifacts stayed flat at 1.00x.
   **The two MORE coverage modes the re-run exposed were both measured
   2026-08-30 and BOTH framings were wrong. See
-  `docs/CLEAN_CREDITLINE_EDGES_2026-08-30.md`.**
+  `docs/_archive/2026-08/CLEAN_CREDITLINE_EDGES_2026-08-30.md`.**
   - **RIGHT-edge truncation is real on 4 of 39, not 2** - `viego-the-ruined-king`
     (must reach 52px past the box), `261f` (117), `aidraw-...-watercolornessie`
     (56) and `266f` (152, and it is the known detection failure). `syndra-dlsfckr`
@@ -1792,7 +1792,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `run_stubs4` while carrying an almost untouched mark and READS after the
   scoped fill removed most of it. Sheets:
   `ops/runtime/clean/creditline/run_stubs_scoped/REVIEW.md`.
-  Doc: `docs/CLEAN_CHORD_COVERAGE_2026-08-29.md`.
+  Doc: `docs/_archive/2026-08/CLEAN_CHORD_COVERAGE_2026-08-29.md`.
   **VERDICT 2026-08-29, operator, one per lane: `--scoped-revert` DEFAULTS ON,
   `--stubs` STAYS OPT-IN.** The pair was being compared against a missing
   control - `--scoped-revert` ALONE had never been run over the queue, so the
@@ -1818,7 +1818,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   smear, reading the pair run as the strongest configuration, or defaulting
   stubs ON on the coverage argument alone. Strips:
   `ops/runtime/clean/creditline/lanes/REVIEW.md`.
-  Doc: `docs/CLEAN_LANE_DEFAULTS_2026-08-29.md`.
+  Doc: `docs/_archive/2026-08/CLEAN_LANE_DEFAULTS_2026-08-29.md`.
 
 - **clean-automated-lane-closed - 0 of 87 automated cleaning candidates were
   accepted by the operator across 4 review rounds, 2026-08-22. STOP tuning the
@@ -1831,7 +1831,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   mask or threshold. The only slugs that left the queue did so because the
   DETECTOR was wrong and there was no mark (see clean-detector-false-positives).
   The remaining 80 are staged for hand IOPaint with per-slug input, derived mask
-  and re-entry commands in `docs/CLEANING_HAND_LANE_2026-08-22.md`. Anything that
+  and re-entry commands in `docs/_archive/2026-08/CLEANING_HAND_LANE_2026-08-22.md`. Anything that
   reopens the automated lane needs a NEW method and an eye-anchored objective -
   the detector score is falsified as a proxy (LEDGER 101-103 plus these rounds).
 
@@ -1852,7 +1852,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `4.Cleaning Done` 485 -> 492, `3.Cleaning Scratch` 87 -> 80. STILL OPEN: whether
   the gate needs an in-art-text rule at all, or whether this stays a human call.
   Evidence:
-  `docs/CLEAN_OVERLAY_REVIEW_2026-08-22.md`.
+  `docs/_archive/2026-08/CLEAN_OVERLAY_REVIEW_2026-08-22.md`.
 
 - **clean-coverage-guard-shared - FIXED 2026-08-22 (our bug, found by operator
   review).** The 25% mask-coverage refusal was written `if faint and not
@@ -1879,7 +1879,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   Registration is NOT the obvious culprit: the fitted shift is 0 or +-1px on 43 of
   45 frames (outliers one 24px, one 30px, one scale 1.12) - worth a look, but it
   cannot explain a whole-bucket rejection. Verdicts and the four defect classes
-  (A 17 / B 25 / C 1 / D 2) are in `docs/CLEAN_OVERLAY_REVIEW_2026-08-22.md`.
+  (A 17 / B 25 / C 1 / D 2) are in `docs/_archive/2026-08/CLEAN_OVERLAY_REVIEW_2026-08-22.md`.
   ANSWERED THE SAME DAY, against the fill hypothesis: the operator reviewed the
   algebraic-only column too and passed exactly TWO frames (`32-cleanup`,
   `9-cleanup`), both on the SIGNATURE only; the other 43 failed. So dropping LaMa
@@ -1917,7 +1917,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   through `lw_pipeline`, so an ADR-008 / ADR-009 refusal is RECORDED and skipped,
   never forced, and approvals are attributed `--actor tool:auto-approve` so the
   rail can see a non-operator approver. The held set with per-slug reason is
-  `docs/cleaning_qa_queue_2026-08-22.md`: 45 `centre_overlay`, 27 `not_border`,
+  `docs/_archive/2026-08/cleaning_qa_queue_2026-08-22.md`: 45 `centre_overlay`, 27 `not_border`,
   12 `faint_mark`, 1 each `watermark_ocr` / `area_too_large` / `low_conf`.
   **OPEN REMAINDER:** the operator's 13 named `ref_*` slugs are recorded nowhere
   in the repo (only the count survives), and the gate held 9 of them as `qa` - the
@@ -2004,7 +2004,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   Measured over all 32 flagged slugs: detector score median **0.310 -> 0.069**,
   worst 0.696 -> 0.115, **32 of 32 under the 0.15 flag** (was 0 of 32). By eye the
   CREDIT LINE clears completely on busy art; the logo's flat veil survives on
-  smooth art. Evidence `docs/CLEAN_OVERLAY_INPAINT_2026-08-11.md`, candidates in
+  smooth art. Evidence `docs/_archive/2026-08/CLEAN_OVERLAY_INPAINT_2026-08-11.md`, candidates in
   `ops/runtime/clean/overlay_lane/`.
   VEIL HALF LANDED 2026-08-11 (LEDGER 96): `estimate_veil` recovers the logo's
   FLAT interior, which the high-pass template cannot see (matte alpha there was
@@ -2152,7 +2152,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `193-cleanup` (a painted snowflake) and `dbwtlkx-eeb94ce2` (brick texture at
   conf 0.0765). DO NOT tighten on them: their `conf_max` 0.72-0.79, `n_boxes`,
   `area_pct` and `ocr_hit` all sit inside the true-positive range, so every cut
-  that drops them drops real marks too. Detail `docs/CLEAN_QA_PRECISION_2026-08-12.md`.
+  that drops them drops real marks too. Detail `docs/_archive/2026-08/CLEAN_QA_PRECISION_2026-08-12.md`.
   (a) CLOSED 2026-08-12 - **the mask WAS too wide, and the excess was a ring the
   lane added to hide a cliff it had created itself.** The item recorded "a blur,
   not a legible mark"; at 1:1 (the ROI is 666x442 at deliverable scale, so the
@@ -2168,7 +2168,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   slugs): median mask 63821 -> 41349 px (35% less), median score 0.0680 ->
   0.0664, 33 of 33 still under the flag. Suite 1957 passed / 18 skipped. DO NOT re-add the ring (test-pinned)
   and DO NOT read `hf_keep` as the damage signal (mecha-ahri is mid-pack at
-  0.452). Detail `docs/CLEAN_VEIL_FEATHER_2026-08-12.md`.
+  0.452). Detail `docs/_archive/2026-08/CLEAN_VEIL_FEATHER_2026-08-12.md`.
   STILL OPEN: (f) `p2402-kda-evelynn` is queued for the MANUAL IOPaint lane and
   nothing automates it - a stylised wordmark on busy art that no threshold
   separates; **`mecha-ahri` now joins it** (the logo strokes and credit line lie
@@ -2183,7 +2183,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   whole-band high-pass CORRELATION, not the text. **Standing rule that falls out
   of it: `overlay_score` is a DETECTION flag and must never gate removal
   QUALITY.** A future ship gate needs a legibility measure, not the detector.
-  **VEIL AMPLITUDE SETTLED 2026-08-12** (`docs/CLEAN_VEIL_AMPLITUDE_2026-08-12.md`):
+  **VEIL AMPLITUDE SETTLED 2026-08-12** (`docs/_archive/2026-08/CLEAN_VEIL_AMPLITUDE_2026-08-12.md`):
   the ring-pair confound is REFUTED by a control - the same objective over 31
   frames carrying NO overlay minimises at the smallest gain (alpha 0.0133) and
   rises monotonically, so the geometry does not manufacture a veil. But the
@@ -2206,12 +2206,12 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   the corpus, the two-resolution slugs carry no lever, and both the notch
   estimator and the floor test are defeated by the support's closing filling the
   chevron's unveiled notch.
-  Evidence: `docs/CLEAN_QA_PRECISION_2026-08-12.md` +
-  `docs/CLEAN_OVERLAY_SCALE_2026-08-12.md` +
-  `docs/CLEAN_FAINT_LANE_2026-08-12.md` +
-  `docs/CLEAN_FAINT_MARK_2026-08-11.md` +
-  `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md` +
-  `docs/CLEAN_DETECTOR_RECALL_2026-08-11.md`; census tool
+  Evidence: `docs/_archive/2026-08/CLEAN_QA_PRECISION_2026-08-12.md` +
+  `docs/_archive/2026-08/CLEAN_OVERLAY_SCALE_2026-08-12.md` +
+  `docs/_archive/2026-08/CLEAN_FAINT_LANE_2026-08-12.md` +
+  `docs/_archive/2026-08/CLEAN_FAINT_MARK_2026-08-11.md` +
+  `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md` +
+  `docs/_archive/2026-08/CLEAN_DETECTOR_RECALL_2026-08-11.md`; census tool
   `tools/lw_clean_detector_probe.py --corpus firstdone`.
 
 
@@ -2254,7 +2254,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   nothing to do with the vendor.
   Evidence: `moon_sync_inbox/2026-08-01-0820-from-RC-*` section 7;
   `tests/test_oracle_backend.py` (16 tests);
-  `docs/OPERATOR_ANSWERS_2026-08-02.md`.
+  `docs/_archive/2026-08/OPERATOR_ANSWERS_2026-08-02.md`.
 
 
 - **ci-watchdog - `tools/ci_watchdog.py` WRITTEN and `LW-CIWatchdog` ARMED
@@ -2294,7 +2294,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   a reliable tell and is cheaper than any metric.
   Do-not-redo: do NOT retune the G1 fidelity metrics - they are correct at their
   job; the gap is a MISSING ABSOLUTE precondition, not a miscalibrated relative one.
-  Evidence: LEDGER 60; `docs/SOURCE_ADEQUACY_CENSUS_2026-07-29.md`.
+  Evidence: LEDGER 60; `docs/_archive/2026-07/SOURCE_ADEQUACY_CENSUS_2026-07-29.md`.
 
 - **legacy-audit-backfill - 12 approved images carry no G1 audit; 10 of them were
   built with the FALLBACK upscaler - NEXT (backfill, not a code fix).**
@@ -2306,7 +2306,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   `gate_check` as `pass` / `override` / `no_audit`, so an override is greppable
   and a legacy no-audit approval is its own outcome rather than passing for a
   clean one. Only the DATA decision is still owed.
-  Evidence: LEDGER 60 + 61; `docs/SOURCE_ADEQUACY_CENSUS_2026-07-29.md` (slugs listed).
+  Evidence: LEDGER 60 + 61; `docs/_archive/2026-07/SOURCE_ADEQUACY_CENSUS_2026-07-29.md` (slugs listed).
 
 - **anat-vision-review - AUTHORITY RULED 2026-08-02 (ADR-008) and the rails are
   SHIPPED. The reviewer itself is the remaining slice.**
@@ -2338,7 +2338,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   hips - a better pose model cannot find hips outside the crop); reading a DWPose
   figure count as a detection count (35 percent yield zero person boxes and
   `tools/dwpose_onnx/onnxpose.py:26` silently substitutes the whole frame).
-  Evidence: LEDGER 60; `docs/ANATOMY_CENSUS_2026-07-29.md`.
+  Evidence: LEDGER 60; `docs/_archive/2026-07/ANATOMY_CENSUS_2026-07-29.md`.
 
 - **gen-nonahri-deformed - the shipped recipe is tuned on ONE champion and the
   others come out deformed - NEW 2026-08-16, operator verdict.**
@@ -2367,7 +2367,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   keeping `official splash art`. Then re-validate on 4+ champions BY EYE; the
   QA gate scored the deformed frames in the normal range and cannot arbitrate.
   Frames + index: `images/_review_ablation/`.
-  Evidence: `docs/GEN_FACE_REALISM_2026-08-16.md`, LEDGER 119-120.
+  Evidence: `docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md`, LEDGER 119-120.
 
 - **gen-reference-lane - BASE SETTLED 2026-08-16 (ADR-011: Animagine XL 4.0
   HELD; RealVisXL + DreamShaper DROPPED). NEXT is facial realism ON THIS BASE,
@@ -2391,7 +2391,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   sharpness 519.5 held, and the base's rendering register moved from **0.6843
   (-0.153) to 0.8268 (-0.011)** against the 0.8373 ceiling - the ADR-010 gap
   closed on the SHIPPED base by a prompt change. Evidence:
-  `docs/GEN_FACE_REALISM_2026-08-16.md`.
+  `docs/_archive/2026-08/GEN_FACE_REALISM_2026-08-16.md`.
   Next, in order: (1) **operator eye on the shipped frames** - hands, weapon
   canon and likeness have no automatic measure (ADR-011), so the realism block
   stands until inspected on more champions than Ahri; (2) champion canon (eye
@@ -2851,7 +2851,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   exist, and it stays blocked until the product has a long-running process to
   supervise. Arming it now would fail on every logon.
   Deep-audit program stays DORMANT - separate gate, untouched by this review.
-  Evidence: `docs/OPERATIONS.md` roster + `docs/OPERATOR_ANSWERS_2026-08-02.md`
+  Evidence: `docs/OPERATIONS.md` roster + `docs/_archive/2026-08/OPERATOR_ANSWERS_2026-08-02.md`
   section 4; `docs/DEEP_AUDIT_CHARTER.md`.
 
 ## Status at a glance

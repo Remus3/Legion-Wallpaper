@@ -1,6 +1,6 @@
 # Centre-overlay removal, part 2: the matte SEEDS the LaMa mask
 
-2026-08-11. Follows `docs/CLEAN_OVERLAY_DETECTOR_2026-08-11.md` (LEDGER 93, the
+2026-08-11. Follows `docs/_archive/2026-08/CLEAN_OVERLAY_DETECTOR_2026-08-11.md` (LEDGER 93, the
 detector) and the algebraic removal (LEDGER 94), which measured itself to a
 detector score of 0.112 and then stopped at a legible ghost.
 

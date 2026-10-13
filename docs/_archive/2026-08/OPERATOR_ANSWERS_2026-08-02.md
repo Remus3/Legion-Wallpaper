@@ -10,7 +10,7 @@ one-word reply is enough to close the item.
 
 **The question.** `tools/lw_anat_metrics.py` keypoint offset was built, measured
 over all 288 approved firstdones, and rejected as a gate (LEDGER 60,
-`docs/ANATOMY_CENSUS_2026-07-29.md`). The right mechanism is the Claude-vision
+`docs/_archive/2026-07/ANATOMY_CENSUS_2026-07-29.md`). The right mechanism is the Claude-vision
 2AFC path `end-review` already uses. Open: may that reviewer only FLAG, or may
 it REJECT.
 
@@ -63,7 +63,7 @@ image that a bad REJECT sent back through a degrading pass is not.
 
 ## 2. usm-halo-calibration - the three axes, explained, with a recommendation
 
-**What is actually true, from the census** (`docs/USM_HALO_CENSUS_2026-07-30.md`,
+**What is actually true, from the census** (`docs/_archive/2026-07/USM_HALO_CENSUS_2026-07-30.md`,
 all 17 gated slugs of batch20, nothing inferred):
 
 - Condition A reproduces every recorded manifest `halo_pct` to 4dp, so the probe

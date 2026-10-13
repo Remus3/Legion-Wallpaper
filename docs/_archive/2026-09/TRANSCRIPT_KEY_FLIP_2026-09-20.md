@@ -13,7 +13,7 @@ artifacts, labelled as such below.
    `81de837` + `a019586`; LEDGER 150: RC held `LW_ROOT = C:\LegionWallpaper`). It returns
    ENOENT today because it was renamed away, not because it never existed. The claim
    "A phantom cwd, not a second checkout" in `tools/lw_transcript_union.py` and in
-   `docs/TRANSCRIPT_UNION_2026-09-20.md` inverts the diagnosis: the RECORDS are right and
+   `docs/_archive/2026-09/TRANSCRIPT_UNION_2026-09-20.md` inverts the diagnosis: the RECORDS are right and
    it is the canonical KEY that carried a spelling the root did not have.
 2. The stray store holds **ZERO records the canonical key does not already carry.** Every
    one of the 746 / 441 / 346 stray uuids is present in a canonical file under a DIFFERENT

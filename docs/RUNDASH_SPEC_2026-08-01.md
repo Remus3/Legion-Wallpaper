@@ -232,7 +232,7 @@ beside them - 136 agents were never the unit of the question.
 
 ## Rejected, with reasons
 
-**Gate flag census ("7 of 17").** `docs/USM_HALO_CENSUS_2026-07-30.md`
+**Gate flag census ("7 of 17").** `docs/_archive/2026-07/USM_HALO_CENSUS_2026-07-30.md`
 established that `halo_pct` is monotone in USM percent on every slug - it reads
 as a strength dial, not a defect detector, and the 0.05 line cuts a continuum
 with no gap at it. Putting that number on a dashboard implies a target, a target

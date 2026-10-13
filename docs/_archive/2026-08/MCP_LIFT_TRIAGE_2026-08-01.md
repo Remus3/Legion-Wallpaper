@@ -1,6 +1,6 @@
 # MCP lift triage - LW pass, 2026-08-01
 
-> **SUPERSEDED IN PART by `docs/MCP_LIFT_DIVE_2026-08-01.md` (stage 4, same
+> **SUPERSEDED IN PART by `docs/_archive/2026-08/MCP_LIFT_DIVE_2026-08-01.md` (stage 4, same
 > day).** This document scored 63 entries with 5 VERIFIED-LIVE and 58
 > INHERITED-RC. The dive fetched ALL 63 at source and moved rows in both
 > directions - `viznoir` 6 to 3, `picdefenseio` 6 to 2, `mockd` 5 to 8,

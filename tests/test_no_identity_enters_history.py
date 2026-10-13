@@ -41,7 +41,7 @@ their redaction gates fire. It is not this machine's login - that account name
 is thirteen characters and hashes to a different digest. Nothing is pinned for
 it, deliberately: pinning a deliberate fake would make the guard fire on the
 fixtures that prove the OTHER guards work, and a guard that fights its siblings
-gets deleted. Recorded in `docs/IDENTITY_IN_HISTORY_2026-10-02.md`.
+gets deleted. Recorded in `docs/_archive/2026-10/IDENTITY_IN_HISTORY_2026-10-02.md`.
 
 THE OPERATOR'S DECISION, 2026-10-02: do NOT rewrite history a fourth time. The
 reasons are recorded in that doc. This file is the forward half of that
@@ -537,7 +537,7 @@ def test_no_blob_new_since_the_baseline_carries_a_pinned_identity():
         f"{BASELINE_COMMIT[:9]}:\n  " + "\n  ".join(offenders)
         + "\nThese are already in the object database. Reaching them needs a "
         "history rewrite, which the operator declined on 2026-10-02 - see "
-        "docs/IDENTITY_IN_HISTORY_2026-10-02.md - so the cost of one of these "
+        "docs/_archive/2026-10/IDENTITY_IN_HISTORY_2026-10-02.md - so the cost of one of these "
         "is permanent. Stop it at the working tree instead.")
 
 
@@ -610,7 +610,7 @@ def test_the_census_agrees_with_the_record():
         f"  appeared: {sorted(set(found) - set(KNOWN_CARRIERS))}\n"
         f"  vanished: {sorted(set(KNOWN_CARRIERS) - set(found))}\n"
         "An appearance is a new leak. A disappearance means the record and "
-        "docs/IDENTITY_IN_HISTORY_2026-10-02.md are both stale.")
+        "docs/_archive/2026-10/IDENTITY_IN_HISTORY_2026-10-02.md are both stale.")
 
 
 # --------------------------------------------------------------------------- #
@@ -656,7 +656,7 @@ def test_this_file_quotes_no_real_address():
 def test_the_record_doc_exists_and_cites_every_carrier_sha():
     """A finding nobody can find again is not recorded. The doc is the place a
     future session looks, and it is only checkable if it cites the shas."""
-    doc = REPO_ROOT / "docs" / "IDENTITY_IN_HISTORY_2026-10-02.md"
+    doc = REPO_ROOT / "docs" / "_archive" / "2026-10" / "IDENTITY_IN_HISTORY_2026-10-02.md"
     assert doc.is_file(), f"{doc} is missing - the record is the other half"
     text = doc.read_text(encoding="utf-8")
     missing = [sha for sha in KNOWN_CARRIERS if sha not in text]

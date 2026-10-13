@@ -14,7 +14,7 @@ Do NOT add an import here, and do NOT move this into ops/loop/winmutex.py -
 that file is byte-identical-by-contract with the sibling repos and moving it
 would need a three-way re-pin.
 
-See docs/MCP_LIFT_L1_2026-08-01.md section 3 and the ROADMAP item
+See docs/_archive/2026-08/MCP_LIFT_L1_2026-08-01.md section 3 and the ROADMAP item
 gpu-busy-fork-unification.
 """
 from __future__ import annotations

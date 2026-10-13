@@ -50,7 +50,7 @@ Contract references: `docs/research/CLEANING_INPAINT.md` (stack + install), `doc
    14/15, and iopaint's seam wins are bought by repainting 2.66x the area (all 9
    rejected). `save-working` REFUSES a second engine on a slug (exit 3) unless
    `--allow-ladder` is passed; the engines stay available for an explicit,
-   operator-chosen swap. Evidence: `docs/CLEAN_LADDER_DECISION_2026-08-12.md`.
+   operator-chosen swap. Evidence: `docs/_archive/2026-08/CLEAN_LADDER_DECISION_2026-08-12.md`.
 
 Any helper script authored here that spawns subprocesses MUST pass `creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)` (Legion focus-steal rule).
 

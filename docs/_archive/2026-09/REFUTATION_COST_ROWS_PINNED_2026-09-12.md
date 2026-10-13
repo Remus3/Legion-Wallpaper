@@ -1914,7 +1914,7 @@ FIX-OF-A-FIX COUNT (rows with fix_chain >= 1):
 1. EXTRACTOR vs BUCKETER: satisfied. These 75 rows were extracted by two other
    passes; this pass scored rows it did not extract and did not author the events.
 2. PERSISTENCE: satisfied. The per-event rows are tracked in
-   `docs/REFUTATION_COST_ROWS_2026-09-12.md`, so this re-score cost one read pass,
+   `docs/_archive/2026-09/REFUTATION_COST_ROWS_2026-09-12.md`, so this re-score cost one read pass,
    not a fresh extraction.
 3. FLOOR: every count here is a floor. Forward links can only be seen where a later
    entry names the remedy; a remedy quietly refuted outside the ledger, or in a

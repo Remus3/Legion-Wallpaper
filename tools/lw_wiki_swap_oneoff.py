@@ -1,7 +1,7 @@
 """One-off: swap the 22 confirmed wiki upgrades in as the new `_firstinitial`.
 
 Operator-directed 2026-08-01, on the evidence in
-`docs/WIKI_VS_FIRSTINITIAL_2026-08-01.md`: of 77 corpus images confirmed to be
+`docs/_archive/2026-08/WIKI_VS_FIRSTINITIAL_2026-08-01.md`: of 77 corpus images confirmed to be
 the same artwork as a canonical wiki splash, 22 are a clear upgrade on BOTH axes
 (more native pixels AND sharper at common scale, from the original bytes).
 
@@ -68,7 +68,7 @@ def fetch_original(title):
     """The file's ORIGINAL bytes plus its declared dimensions.
 
     No `?format=original` dance is needed on wiki.gg - that rule is Fandom's
-    (docs/MCP_LIFT_P3_2026-08-01.md). The declared sha1 is deliberately NOT
+    (docs/_archive/2026-08/MCP_LIFT_P3_2026-08-01.md). The declared sha1 is deliberately NOT
     asserted against these bytes: no host serves bytes matching it, so
     provenance records the sha256 of what actually arrived.
     """

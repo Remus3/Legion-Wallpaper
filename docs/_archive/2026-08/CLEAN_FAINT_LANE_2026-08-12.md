@@ -1,6 +1,6 @@
 # Faint-mark REMOVAL lane - 2026-08-12
 
-The removal half of `docs/CLEAN_FAINT_MARK_2026-08-11.md`. Gate v4 flags five
+The removal half of `docs/_archive/2026-08/CLEAN_FAINT_MARK_2026-08-11.md`. Gate v4 flags five
 images to `qa/faint_mark`; this is what happens to them next.
 
 ## The first finding: the family is not one object

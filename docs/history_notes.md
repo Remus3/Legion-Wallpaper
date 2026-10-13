@@ -115,7 +115,7 @@ cost down. Nothing here is open.
   Do-not-redo: do NOT reintroduce filename keying anywhere that compares against
   a manifest, and do NOT record a REPLACE_SOURCE for a drift nobody has explained
   - that converts a finding into history.
-  Evidence: LEDGER 83 + 84; `docs/WIKI_SWAP_22_2026-08-01.md`.
+  Evidence: LEDGER 83 + 84; `docs/_archive/2026-08/WIKI_SWAP_22_2026-08-01.md`.
 
 _Shipped/closed entries move to `docs/LEDGER.md` (append-only). Only open/in-flight work stays below, highest priority first. Sequencing for the next 2-4 weeks: `docs/ATTACK_PLAN.md`. Item grammar: id - title - state - next action - evidence link._
 
@@ -182,7 +182,7 @@ _Shipped/closed entries move to `docs/LEDGER.md` (append-only). Only open/in-fli
   firstdones were produced at usm70 and are now on a different recipe from
   anything produced after today. Reprocessing any of them is an operator call;
   the 7 carrying a halo flag are the obvious candidates if it is taken up.
-  Evidence: `docs/USM_FIDELITY_CENSUS_2026-08-02.md` (+ the 2026-07-30 halo
+  Evidence: `docs/_archive/2026-08/USM_FIDELITY_CENSUS_2026-08-02.md` (+ the 2026-07-30 halo
   census it reproduces to 4dp); `scratchpad/usm_fidelity_census.json`.
 
 Deep archive for content pruned from the living docs. Nothing here is ever
@@ -233,7 +233,7 @@ measurement.
   `ops/runtime/clean/qa_precision/` (gitignored).
 - Verified: ruff clean, doc/roadmap/ledger subset **43 passed / 2 skipped**.
   Full suite NOT re-run - Tier-0/1 change, no production path touched.
-- Evidence: `docs/CLEAN_QA_PRECISION_2026-08-12.md`.
+- Evidence: `docs/_archive/2026-08/CLEAN_QA_PRECISION_2026-08-12.md`.
 
 STILL OPEN on the item: (a) LaMa softening on pale flat art (`mecha-ahri`), and
 (f) `p2402-kda-evelynn` in the MANUAL IOPaint lane.
@@ -1234,7 +1234,7 @@ Six commits, all pushed. Suite **2501+ passed / 18 skipped**, ruff clean,
 read it before writing another test that touches machine state.
 
 - **The veil resisted three independent attacks. All three are written up in
-  `docs/POOLED_VEIL_RESULT_2026-09-05.md`; do not retry them blind.**
+  `docs/_archive/2026-09/POOLED_VEIL_RESULT_2026-09-05.md`; do not retry them blind.**
   (1) 62-frame POOLED estimate, 123f held out: registration is NOT the problem
   (every sampled frame at scale 1.00, shift within +-3 px, correlation
   0.35-0.58) and pooling cancels the art cleanly, but the estimators are built
@@ -1406,11 +1406,11 @@ Ran `/first-pass` then `/cleaning-pass` over the 24 slugs in scratch.
   every rung rejected. They ARE part of the evidence base ADR-009 rests on.
 - **What remains: ~63 DA-overlay slugs in `3.Cleaning Scratch`, one drop-or-keep
   call.** Per-slug census with scores and reasons:
-  `docs/CLEAN_SCRATCH_CENSUS_2026-09-01.md`. `clean_done` 507 -> 517,
+  `docs/_archive/2026-09/CLEAN_SCRATCH_CENSUS_2026-09-01.md`. `clean_done` 507 -> 517,
   `clean_scratch` 80 -> 70.
 
 - **Tried the 62-frame pooled veil estimate (123f held out). IT DID NOT WORK,
-  and the mechanism is now known - see `docs/POOLED_VEIL_RESULT_2026-09-05.md`.**
+  and the mechanism is now known - see `docs/_archive/2026-09/POOLED_VEIL_RESULT_2026-09-05.md`.**
   What DID work: registration is NOT the problem (all 26 sampled frames at
   scale 1.00, shift within +-3 px, correlation 0.35-0.58 - so the `scale=1.12`
   reading on slug 122 does not generalise), and pooling cancels the art cleanly
@@ -1557,7 +1557,7 @@ mismatches. Started as `/intake`, became four fixes the intake exposed.
 One commit plus this doc sync. Suite **2408 passed / 18 skipped, exit 0** on a
 fresh full run (128s, nothing deselected); baseline was 2400/18 and I added 8
 tests. ruff clean repo-wide, drift_guard 0 breaches. Detail:
-`docs/CLEAN_CREDITLINE_EDGES_2026-08-30.md`, LEDGER 140.
+`docs/_archive/2026-08/CLEAN_CREDITLINE_EDGES_2026-08-30.md`, LEDGER 140.
 
 - **Built the rebuild harness first and it is exact:** every one of the 39
   recorded masks reproduces from its recorded box at `reach=0`, 39 of 39. That
@@ -1802,7 +1802,7 @@ falsified with evidence.
   in `lw_clean_iopaint`, and this census supports keeping it that way.
 - **Verified:** 16 new tests (RED confirmed first), full suite **2243 passed /
   18 skipped**, ruff clean. Doc:
-  `docs/CLEAN_CONDITIONING_DECISION_2026-08-22.md`.
+  `docs/_archive/2026-08/CLEAN_CONDITIONING_DECISION_2026-08-22.md`.
 
 ---
 
@@ -1842,7 +1842,7 @@ Fourth slice of the same session. E closed, A + B + C shipped.
   chord it protects very little (at margin 1.6 on 107 the frame went to 36.04,
   worse than untouched, and the single chord held).
 - **Verified:** 16 new tests (RED confirmed first), full suite **2227 passed /
-  18 skipped**, ruff clean. Doc: `docs/CLEAN_SPOT_ROLLBACK_2026-08-22.md`.
+  18 skipped**, ruff clean. Doc: `docs/_archive/2026-08/CLEAN_SPOT_ROLLBACK_2026-08-22.md`.
 
 ---
 
@@ -1883,7 +1883,7 @@ Third slice of the same session. E closed, A done, B now shipped.
   it; the ordering held on all twelve angle/ray combinations tried.
 - **Verified:** 15 new tests (RED confirmed first), full suite **2211 passed /
   18 skipped**, ruff clean.
-  Doc: `docs/CLEAN_COMPARISON_LAYER_2026-08-22.md`.
+  Doc: `docs/_archive/2026-08/CLEAN_COMPARISON_LAYER_2026-08-22.md`.
 
 ---
 
@@ -1922,7 +1922,7 @@ Second half of the same session, after track E was closed.
   estimate. NO threshold fitted - four captures cannot calibrate one.
 - **Verified:** 14 new tests (RED confirmed first), full suite **2196 passed /
   18 skipped**, ruff clean. Doc:
-  `docs/CLEAN_BEHIND_THE_MARK_2026-08-22.md`.
+  `docs/_archive/2026-08/CLEAN_BEHIND_THE_MARK_2026-08-22.md`.
 - **Do NOT redo:** busyness on the marked frame anywhere in the stack; busyness
   on the behind-the-mark estimate; fitting a trust threshold on these four.
 
@@ -1969,7 +1969,7 @@ Built it properly, measured it against ground truth, and it loses.
 - **Where this leaves the item:** the FILL is settled (LaMa, and now on an
   engine comparison rather than a single-engine replay). Mask generation is
   still the entire open problem, and tracks A-D are all mask-side and untouched
-  by this. Decision doc: `docs/CLEAN_HEAL_DECISION_2026-08-22.md`.
+  by this. Decision doc: `docs/_archive/2026-08/CLEAN_HEAL_DECISION_2026-08-22.md`.
 
 ---
 
@@ -2010,7 +2010,7 @@ measurement, and the acceptance bar raised.
   session runs five tracks in parallel, PRIMARY being a **healing-brush fill**
   (exemplar + gradient-domain Poisson blending, "like photoshops healing
   brush") - deterministic, no hallucination, preserves lines by construction.
-  Plan: `docs/CLEAN_NEXT_SESSION_PLAN_2026-08-22.md`.
+  Plan: `docs/_archive/2026-08/CLEAN_NEXT_SESSION_PLAN_2026-08-22.md`.
 - **Do NOT redo:** lattice tiling of any kind (it signs its own boundaries into
   the result), blanket mask escalation (destroys art), absolute or relative
   contrast residue as a starting detector, and more LaMa fill variants before
@@ -2045,7 +2045,7 @@ Operator answered the standing block with shape (1) (gate-driven).
   `4.Cleaning Done` 6 -> 485, `3.Cleaning Scratch` 566 -> 87, needs_attention 0.
 - **`259f`** is the 20th auto: inpainted, FAILED the G2 verify gate, fell to the
   QA queue. That is the gate working - do not "fix" it by relaxing verify.
-- **Held set** with per-slug reason: `docs/cleaning_qa_queue_2026-08-22.md`
+- **Held set** with per-slug reason: `docs/_archive/2026-08/cleaning_qa_queue_2026-08-22.md`
   (45 centre_overlay / 27 not_border / 12 faint_mark / 3 singletons).
 - **OPEN:** the operator's 13 named `ref_*` slugs are recorded NOWHERE in the
   repo; the gate held 9 as `qa`, the other 4 were approved with the clean bucket.
@@ -2398,7 +2398,7 @@ Four commits (`71bf503`, `d74888b`, `8766adf`, `5527059`). Suite **1958 passed /
   the ROI shrinks with the mask, so a few slugs look flat in percent.
 - **`mecha-ahri` still goes to MANUAL IOPaint** - the strokes and credit line lie
   across the nose and lip, so any auto fill invents facial structure.
-- Evidence: `docs/CLEAN_VEIL_FEATHER_2026-08-12.md`. Feathered candidates in
+- Evidence: `docs/_archive/2026-08/CLEAN_VEIL_FEATHER_2026-08-12.md`. Feathered candidates in
   `ops/runtime/clean/overlay_feather/`; the `overlay_lane/` set is STALE.
 
 - **"Skip LaMa when the pre-pass clears" was measured over all 33 in the same
@@ -2551,7 +2551,7 @@ One commit `109124d`. Suite **1881 passed / 18 skipped** (3.14). LEDGER 95.
   background window wider than the veil, median over the collection): it renders
   the silhouette FILLED, but underreads (interior 0.060 vs ~0.14 from the boundary
   step) and its support sprawls. Numbers in
-  `docs/CLEAN_OVERLAY_INPAINT_2026-08-11.md`.
+  `docs/_archive/2026-08/CLEAN_OVERLAY_INPAINT_2026-08-11.md`.
 - Latent bug fixed in passing: `_binary_dilate`/`_binary_erode` padded both axes
   with the SE's row radius, so any non-square element raised a broadcast error.
 
@@ -2817,7 +2817,7 @@ LEDGER 88. Commits `4e3b617` + `f9cd7a1`.
 
 Suite **1695 passed / 16 skipped**, ruff clean, drift_guard 0 breaches. LEDGER 86.
 
-- **The five answers are on disk at `docs/OPERATOR_ANSWERS_2026-08-02.md`**, each
+- **The five answers are on disk at `docs/_archive/2026-08/OPERATOR_ANSWERS_2026-08-02.md`**, each
   with evidence + a recommendation so a one-word reply closes the item. Headlines:
   `anat-vision-review` -> FLAG only, but the flag BLOCKS auto-approval (a third
   position; gets REJECT's safety without letting an irreproducible judge spend a
@@ -2885,7 +2885,7 @@ every explain/trace string is hardcoded FRENCH with em-dashes - it must never
 reach a commit message or a tracked doc.
 
 **L2's retrospective half followed, same session (LEDGER 82,
-`docs/CLAIMED_GREEN_RETRO_2026-08-01.md`).** `claimed_green_gate.py` gained
+`docs/_archive/2026-08/CLAIMED_GREEN_RETRO_2026-08-01.md`).** `claimed_green_gate.py` gained
 `--history` / `--audit` / `--json`. THE ANSWER: 387 transcripts, 269 green
 claims, 25 flagged, **6 genuinely unbacked** after hand-reading every one, and
 **ZERO** claims of green over a red suite. All 6 are the same shape - a count a
@@ -3209,7 +3209,7 @@ verifier-gated before merge; one was REFUTED and reworked rather than merged.
   with no mask **6 of the 16 gated slugs fall through `lap_ratio`'s 1.0 HARD
   FAIL floor**. usm35 clears every halo flag with the weakest gated `lap_ratio`
   at 1.1399; usm50 leaves 2. Nothing was changed - see ROADMAP
-  `usm-halo-calibration`, evidence `docs/USM_HALO_CENSUS_2026-07-30.md`.
+  `usm-halo-calibration`, evidence `docs/_archive/2026-07/USM_HALO_CENSUS_2026-07-30.md`.
 - **Do NOT pick a USM percent or a threshold on the halo numbers alone.** The
   census deliberately did not recompute ms_ssim/lpips/dists per variant, so the
   fidelity cost of a milder mask is UNMEASURED. Measuring that is the next
@@ -4678,7 +4678,7 @@ Went after the standing open problem. The finding is not a tuning result.
 - **Still open:** 107-class AREA marks (best 22.3 vs 23.5 untouched), the logo
   itself, and the 41 slugs with no readable line.
 - **Verified:** 22 new tests, full suite **2265 passed / 18 skipped**, ruff
-  clean. Doc: `docs/CLEAN_MASKGEN_2026-08-22.md`.
+  clean. Doc: `docs/_archive/2026-08/CLEAN_MASKGEN_2026-08-22.md`.
 
 ---
 
@@ -4760,7 +4760,7 @@ drift_guard 0 breaches.
 ## Relocated ROADMAP entries - the three operator-queued tools (2026-09-15)
 
 Relocated verbatim from `ROADMAP.md` on 2026-09-16 when all three were
-answered (LEDGER 206, ADR-013, `docs/CONTEXT_MODE_DECISION_2026-09-16.md`).
+answered (LEDGER 206, ADR-013, `docs/_archive/2026-09/CONTEXT_MODE_DECISION_2026-09-16.md`).
 Kept because each carries the live-probed facts the decisions rest on, and a
 decision without its evidence is the thing that gets re-litigated.
 

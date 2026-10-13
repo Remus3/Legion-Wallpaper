@@ -210,5 +210,5 @@ even when its coverage is safely under the ceiling. Three different mask sources
 and two different fill decisions all land in the same place, which points at the
 FILL being the wrong instrument for this corpus rather than at any one mask.
 
-The remaining 80 go to the hand lane: `docs/CLEANING_HAND_LANE_2026-08-22.md`.
+The remaining 80 go to the hand lane: `docs/_archive/2026-08/CLEANING_HAND_LANE_2026-08-22.md`.
 
