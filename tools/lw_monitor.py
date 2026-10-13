@@ -60,6 +60,7 @@ PAGE_PATH = ROOT / "web" / "monitor.html"
 REVIEW_PAGE_PATH = ROOT / "web" / "review.html"   # spatial review bench (P1-2)
 REVIEW_ROOT = ROOT / "ops" / "runtime" / "review"
 REVIEW_BODY_MAX = 65536
+REVIEW_DRAIN_MAX = 1 << 20      # drain up to 1 MiB of an oversized body before the 413
 AB_ROOT = ROOT / "ops" / "runtime" / "ab_r4"   # R4 blind A/B (tools/lw_ab_r4.py)
 AB_PAGE_PATH = ROOT / "web" / "ab_r4.html"
 DEFAULT_IMAGE_ROOTS = [ROOT / "images"]
@@ -673,6 +674,22 @@ class Handler(BaseLWHandler):
         except ValueError:
             n = -1
         if n < 0 or n > REVIEW_BODY_MAX:
+            # Drain a bounded oversized body BEFORE answering: closing with
+            # unread bytes in the receive buffer makes Windows send a RESET,
+            # which can beat the client to the 413 (WinError 10053/10054 seen
+            # under suite load, 2026-10-12). Beyond REVIEW_DRAIN_MAX, or if the
+            # client stalls, the 413 goes out undrained as before.
+            if 0 < n <= REVIEW_DRAIN_MAX:
+                try:
+                    self.connection.settimeout(2.0)
+                    left = n
+                    while left > 0:
+                        chunk = self.rfile.read(min(left, 65536))
+                        if not chunk:
+                            break
+                        left -= len(chunk)
+                except OSError:
+                    pass
             self._send_json(413, {"ok": False, "error": "body too large"})
             self.close_connection = True
             return None

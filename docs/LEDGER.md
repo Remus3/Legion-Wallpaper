@@ -27,6 +27,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+318. DONE **2026-10-12 (lw_monitor 413 reset race, found by the RRF batch's final suite; see commit below).**
+   Final lw_suite through fleet_suite_gate on e890944: parallel 1 failed / 4095 passed /
+   19 skipped (61.98 s), serial 182 passed / 1 skipped (the skimage collection skip,
+   LEDGER 313 follow-up), rc 1. The failure: test_post_body_is_capped,
+   ConnectionResetError WinError 10054 - green 5/5 alone, so load-dependent. ROOT CAUSE:
+   tools/lw_monitor.py answered 413 and closed with the unread body in its receive
+   buffer; Windows then RESETs, and the reset can beat the client to the 413 bytes.
+   FIX: drain a bounded oversized body (REVIEW_DRAIN_MAX 1 MiB, 2 s socket timeout)
+   before the 413; larger or stalled bodies keep the old undrained answer. RED first:
+   new test_an_oversized_body_gets_its_413_even_when_the_client_reads_late (raw socket,
+   whole body sent, read after 0.5 s) failed 1 of 3 (WinError 10053) before, 8 of 8
+   green after; lw_monitor + review files 39 passed. Sibling cases: the other
+   early-answer path in _review_body (415) fires before any body is read too, but only
+   on a wrong Content-Type with a small body; left as is (no failure seen). The live LW
+   Monitor process keeps the old code until its next restart.
+
 317. DONE **2026-10-12 (RRF-3.3: dated one-off reports moved to docs/_archive/<yyyy-mm>/; see commit below).**
    68 dated reports `git mv`'d out of docs/ root into docs/_archive/2026-07 / 2026-08 /
    2026-09 / 2026-10 (yyyy-mm from the date in the name); docs/ root 98 -> 30 tracked

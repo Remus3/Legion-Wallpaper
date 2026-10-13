@@ -144,6 +144,30 @@ def test_post_body_is_capped(bench):
     assert status == 413
 
 
+def test_an_oversized_body_gets_its_413_even_when_the_client_reads_late(bench):
+    """Final suite 2026-10-12 (RRF batch): test_post_body_is_capped failed once
+    under xdist load with WinError 10054. The server answered 413 and closed
+    with the unread body still in its receive buffer; Windows then RESETs the
+    connection, and the reset can beat the client to the 413 bytes. A client
+    that has sent its whole body and reads a moment later must still see 413:
+    the server drains a bounded oversized body before it closes."""
+    import socket
+    import time
+
+    body = b"{" + b" " * 70000 + b"}"
+    port = bench[0].server_address[1]
+    head = (f"POST /api/review/mark HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n"
+            f"Content-Type: application/json\r\nContent-Length: {len(body)}\r\n"
+            f"Connection: close\r\n\r\n").encode()
+    with socket.create_connection(("127.0.0.1", port), timeout=10) as s:
+        s.sendall(head + body)
+        time.sleep(0.5)
+        data = b""
+        while chunk := s.recv(65536):
+            data += chunk
+    assert data.split(b"\r\n", 1)[0].split(b" ")[1:2] == [b"413"], data[:40]
+
+
 # ---------------------------------------------------------------- operator test 2026-10-04
 # REAL FAILURE: the operator opened /review three times and no image ever showed.
 # The server log holds three GET /review and ZERO image requests: the page
