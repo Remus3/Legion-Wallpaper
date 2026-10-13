@@ -262,3 +262,91 @@ def test_this_guard_is_blind_to_a_split_path_and_names_its_sibling(split):
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-q"]))
+
+
+# ---------------------------------------------------------------------------
+# RRF-3.4: the live instruction docs carry placeholders, not this machine.
+# ---------------------------------------------------------------------------
+# The account-path sweep above parses `<drive>:\Users\<name>` only. Three other
+# shapes publish the same facts and went stale on the 2026-10-08 C: -> E: move:
+# the checkout root spelled out, its Claude project slug (`C--Legion-Wallpaper`
+# encodes the root), and the bare login (a scheduled-task principal column).
+# `.claude/commands/*.md` are executed verbatim by agents and docs/OPERATIONS.md
+# is the operator's runbook, so both are live instructions, not history; the
+# placeholders are `<repo>`, `<repo-slug>` and `<account>`.
+CHECKOUT_ROOT = re.compile(
+    r"(?:[A-Za-z]:(?:\\\\|\\|/)+|/[a-z]/)Legion ?Wallpaper", re.IGNORECASE)
+CHECKOUT_SLUG = re.compile(r"\b[A-Za-z]--Legion-?Wallpaper\b", re.IGNORECASE)
+
+_RRF34_FIXED = ("docs/OPERATIONS.md",)
+
+
+def _rrf34_corpus() -> list[str]:
+    return sorted({rel for rel in _tracked_files()
+                   if rel.startswith(".claude/commands/") and rel.endswith(".md")}
+                  | set(_RRF34_FIXED))
+
+
+def _login_word() -> re.Pattern | None:
+    """This machine's login as a whole word, or None when it names nobody.
+
+    Read from the environment at run time so the guard itself never carries the
+    name. A CI runner's `runner` is a placeholder and is skipped.
+    """
+    name = Path.home().name
+    if not name or name.lower() in {p.lower() for p in PLACEHOLDER_ACCOUNTS}:
+        return None
+    return re.compile(r"\b" + re.escape(name) + r"\b")
+
+
+def scan_instruction_text(text: str, login: re.Pattern | None) -> list[str]:
+    hits = [m.group(0) for m in CHECKOUT_ROOT.finditer(text)]
+    hits += [m.group(0) for m in CHECKOUT_SLUG.finditer(text)]
+    if login is not None:
+        hits += [m.group(0) for m in login.finditer(text)]
+    return hits
+
+
+@gitdep.requires_git
+def test_live_instruction_docs_carry_placeholders_not_this_machine():
+    corpus = _rrf34_corpus()
+    assert len(corpus) > 10, f"only {len(corpus)} instruction docs - corpus wrong"
+    login = _login_word()
+    offenders = []
+    for rel in corpus:
+        text = (REPO_ROOT / rel).read_text(encoding="utf-8")
+        for n, line in enumerate(text.splitlines(), 1):
+            for hit in scan_instruction_text(line, login):
+                offenders.append(f"{rel}:{n}: {hit}")
+    assert not offenders, (
+        "checkout path / project slug / login in a live instruction doc:\n  "
+        + "\n  ".join(offenders)
+        + "\nUse `<repo>`, `<repo-slug>` or `<account>`. This repo is PUBLIC.")
+
+
+@pytest.mark.parametrize("planted", [
+    r'git -C "C:/Legion Wallpaper" status -s',
+    r"E:\Legion Wallpaper\tools\ci_watchdog.py",
+    r'"C:\\LegionWallpaper\\ops"',
+    "/e/Legion Wallpaper/tools",
+    "%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/memory/",
+    r"~\.claude\projects\E--Legion-Wallpaper",
+])
+def test_a_planted_checkout_spelling_is_caught(planted):
+    assert scan_instruction_text(planted, None), f"missed: {planted}"
+
+
+def test_a_planted_login_is_caught():
+    login = re.compile(r"\bmdunning\b")
+    assert scan_instruction_text("| LW-X | At logon | mdunning / Limited |", login)
+
+
+@pytest.mark.parametrize("innocent", [
+    r'git -C "<repo>" status -s',
+    "%USERPROFILE%/.claude/projects/<repo-slug>/memory/",
+    "| LW-X | At logon | <account> / Limited |",
+    "Legion Wallpaper (LW) is a restoration pipeline",
+    "tools/lw_paths.py resolves the Legion Wallpaper root",
+])
+def test_a_placeholder_instruction_survives(innocent):
+    assert not scan_instruction_text(innocent, re.compile(r"\bmdunning\b"))

@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+321. DONE **2026-10-13 (RRF-3.4 residuals: project slug and login -> placeholders, guard extended; see commit below).**
+   Premise CORRECTED: the checkout path -> `<repo>` and the account Python path ->
+   %LOCALAPPDATA% had landed 2026-10-09 (bc3b9c2). Residuals found by grep: the Claude
+   project slug `C--Legion-Wallpaper` (encodes the checkout root; stale since the E: move,
+   live sessions write to the E-- slug) in done.md x2, sync-all-md.md, weekly-hygiene.md
+   -> `<repo-slug>` with a one-line definition; the bare login in OPERATIONS.md's six
+   scheduled-task principal cells -> `<account>`. GAP: test_no_account_paths parses only
+   `<drive>:/Users/<name>` and test_no_hardcoded_c_paths skips .md, so neither covered
+   these. Extended tests/test_no_account_paths.py (TDD, RED first: 10 offenders listed,
+   plus a regex arm that missed `C:/` until corrected) with a sweep of every tracked
+   .claude/commands/*.md + docs/OPERATIONS.md for the checkout root (any drive, Git-Bash
+   form), the project slug, and this machine's login read from Path.home() at run time
+   (skipped when it is a placeholder such as CI's `runner`), plus fire / survive arms.
+   Verified: 250 passed across the guard + every test reading these docs; drift_guard 0
+   breaches. NOT changed (engine config, out of scope): ops/loop/config*.json
+   transcript_dir still names the C-- slug. Reverse if: the repo goes private.
+
 320. DONE **2026-10-13 (RRF-T1: lean-spawn tests never read the live responder HALT; fix 744df9d, docs-only now).**
    Premise CORRECTED: the fix had already landed 2026-10-09 (744df9d): an autouse fixture in
    tests/test_headless_lean_spawn.py monkeypatches `responder.HALT_PATH`

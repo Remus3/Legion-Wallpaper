@@ -118,7 +118,7 @@ Manual follow-ups (only if needed):
 
 ### 5. Memory updates
 
-- List new/modified files under `%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/memory/` since session start.
+- List new/modified files under `%USERPROFILE%/.claude/projects/<repo-slug>/memory/` (`<repo-slug>` = the checkout path with each `:`, `\` and space turned into `-`) since session start.
 - Confirm `MEMORY.md` indexes any new memories; add if missing.
 
 ### 6. Next-session prompt - compose it and persist it (ALWAYS - never skip)
@@ -193,7 +193,7 @@ python tools/done_gate.py verify-push
 
 ### 8b. Session-size check (folded from /wrap)
 
-- Find the active session jsonl: `Get-ChildItem "%USERPROFILE%/.claude/projects/C--Legion-Wallpaper/" -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 Name, @{N='MB';E={[math]::Round($_.Length/1MB,1)}}`
+- Find the active session jsonl: `Get-ChildItem "%USERPROFILE%/.claude/projects/<repo-slug>/" -Filter "*.jsonl" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 Name, @{N='MB';E={[math]::Round($_.Length/1MB,1)}}`
 - > 10 MB: record "session file > 10 MB - /clear overdue" in the hand-off file.
 - > 20 MB: record it in the hand-off file as urgent - at this size compaction is lossy and the model is already degraded.
 
