@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+322. DONE **2026-10-13 (session 75 wrap: SLOTS-WATCH and CI-74 closed; docs-only).**
+   SLOTS-WATCH: MAIN's outbox holds 2026-10-10-1324-from-MAIN-RULING-to-RC-RM-737-memory-gate-slots-1-now-commit-admission-v18.md
+   (addressed to RC only, TERMINAL; read back this session). It records machine-scope
+   FLEET_SUITE_SLOTS=1 as MAIN's own deliberate setting (RM-737 memory gate), and kit v18
+   memory-aware (commit) admission, FIFO kept, rolls out no earlier than 2026-10-16 20:55.
+   This meets LEDGER 319's reverse condition ("MAIN replies that slots=1 is intended"), so the
+   watch closes with no outbound note (never answer an answer; cost cap). LW keeps budgeting
+   20-30 min per whole-suite gate until v18 lands. CI-74: run 38339357018 on 645425e
+   conclusion success; scheduled run 38423920729 success. Session 75 also closed RRF-T1
+   (LEDGER 320) and RRF-3.4 (LEDGER 321); full suite on 2c38543 4110 passed / 19 skipped
+   parallel + 182 passed / 1 skipped serial. Opened CONFIG-SLUG (ROADMAP): ops/loop/config*.json
+   transcript_dir still names the C-- project slug. Reverse if: MAIN rules slots=1 unintended
+   or v18 is withdrawn.
+
 321. DONE **2026-10-13 (RRF-3.4 residuals: project slug and login -> placeholders, guard extended; see commit below).**
    Premise CORRECTED: the checkout path -> `<repo>` and the account Python path ->
    %LOCALAPPDATA% had landed 2026-10-09 (bc3b9c2). Residuals found by grep: the Claude

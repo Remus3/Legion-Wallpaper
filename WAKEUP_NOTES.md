@@ -79,6 +79,21 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-13, session 75) - RRF-T1 + RRF-3.4 closed, CI-74 + SLOTS-WATCH closed
+
+Commits: 091df12 RRF-T1 DONE (fix had landed as 744df9d; re-verified with a simulated live
+HALT: pre-fix 7 failed / 9 passed, current 17 passed; LEDGER 320), 2c38543 RRF-3.4 residuals
+(project slug -> `<repo-slug>`, task principal -> `<account>`, tests/test_no_account_paths.py
+extended; LEDGER 321). Full suite on 2c38543: 4110 passed / 19 skipped parallel + 182 passed /
+1 skipped serial. CI-74 closed: run 38339357018 on 645425e success (scheduled 38423920729 also
+success). SLOTS-WATCH closed (LEDGER 322): MAIN's 2026-10-10-1324 RULING (to RC) says machine
+FLEET_SUITE_SLOTS=1 is intentional; kit v18 memory-aware admission not before 2026-10-16 20:55.
+Watches unchanged: GATE-FIFO (no reply; v18 plan keeps FIFO), RETIRE-JUNCTION 3/6, R4 0/19,
+READBACK-2237 open, R5c blocked, WATCH-SWAP tripwire green 3/3.
+Do NOT redo: RRF-T1, RRF-3.4, CI-74, SLOTS-WATCH.
+Next: CONFIG-SLUG - ops/loop/config*.json transcript_dir still names the C-- project slug
+(sessions now write under the E-- slug); fix TDD.
+
 ## PREVIOUS SESSION (2026-10-12, session 74) - RRF-2.1 xdist suite, RRF rows closed, 413 drain fix
 
 Commits: 06575f7 RRF-2.1 (pytest-xdist + pytest-timeout hash-pinned, tools/lw_suite.py
