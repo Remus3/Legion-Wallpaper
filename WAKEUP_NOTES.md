@@ -198,7 +198,7 @@ Next: R4 tally once voted; retire junction + C: pre-move copy per LEDGER 283 pla
 
 - C4 round CLOSED: slots.py 290cbf80 on all 5 carriers (own-disk + HEAD read
   back). drift_guard 0; bind GREEN; held commits pushed c6e9984, verify-push OK.
-- Research: docs/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md; R1-R6 todos in ROADMAP
+- Research: docs/_archive/2026-10/RESEARCH_MOE_MIM_EXPLORA_2026-10-04.md; R1-R6 todos in ROADMAP
   (run R1 CAMBI mlc=5 first). Operator offers ~8.7k unlabeled images (R6).
 - Do NOT redo: the C4 re-hash tally; the MoE/MIM/ExPLoRA literature survey.
 
@@ -308,7 +308,7 @@ and the withdrawn FOUR-carriers roster saying CS carries no `slots.py`.
 11/11, 20 unreferenced-but-present blobs covered. The operator's email DOES
 survive in 5 history blobs reachable from origin/main; **the operator considered
 and DECLINED remediation**, so it is guarded (`4e49d0c`) and recorded by digest
-in `docs/IDENTITY_IN_HISTORY_2026-10-02.md`. Both prior secret guards are
+in `docs/_archive/2026-10/IDENTITY_IN_HISTORY_2026-10-02.md`. Both prior secret guards are
 working-tree guards and structurally could not see it.
 
 **The joint round is FROZEN at `da35f8b1` (C3-M2, 10,930 B) and the reason is
@@ -643,7 +643,7 @@ Suite 2987 passed / 18 skipped, ruff clean, ASCII drift gate clean.
   generates `docs/PIPELINE_DIAGRAM.md` as mermaid from `lw_pipeline.py`'s own
   constants, so it cannot drift. Nothing installed.
 - **context-mode: licence settled, blast radius MEASURED, wiring HELD.**
-  `docs/CONTEXT_MODE_DECISION_2026-09-16.md`. A local install changed 0 of 5
+  `docs/_archive/2026-09/CONTEXT_MODE_DECISION_2026-09-16.md`. A local install changed 0 of 5
   watched machine-wide config files (rung 4); a GLOBAL one would rewrite three
   of them, one being the file behind the 2026-08-01 false-green trap.
 
@@ -714,7 +714,7 @@ YET and LW is never armed in its current shape.
 ## ALSO OPEN - the RECENCY knob, and the one probe LW cannot run
 
 **The `inherited` gap is CHASED and the answer inverts the question** (LEDGER
-201). Result: `docs/LW_INHERITED_GAP_2026-09-13.md`; probe
+201). Result: `docs/_archive/2026-09/LW_INHERITED_GAP_2026-09-13.md`; probe
 `docs/_crossscore/inherited_probe.py`; filed to all four siblings.
 
 **LW's own extraction-voice hypothesis is REFUTED.** Deciding `origin_time` from
@@ -861,7 +861,7 @@ Memory `feedback-no-operator-direction-inbox-only-writes`.
 
 **Do not build anything on the tooling tier yet.** ROADMAP carries the row; the
 ask is fleet consensus first. LW's count is filed (LEDGER 192,
-`docs/REFUTATION_COST_MEASUREMENT_2026-09-12.md`): 126 events over ledger
+`docs/_archive/2026-09/REFUTATION_COST_MEASUREMENT_2026-09-12.md`): 126 events over ledger
 entries 145-191, (a)+(b) 73.8 pct, Q4 = a non-vacuity gate. RC answered at 80.3
 pct. RSC and CS and LL had not answered as of 2026-09-12 1905. **Next session:
 check `moon_sync_inbox/` for their counts before touching this row.** LW's
@@ -879,7 +879,7 @@ path-existence sweep over the docs and file the result - the instrument cannot
 tell a dead citation from a correctly-cited foreign file, and a re-grounding gate
 built without a claim-reading step will manufacture that false positive at scale.
 
-**Where the raw rows live:** `docs/REFUTATION_COST_ROWS_2026-09-12.md`, tracked,
+**Where the raw rows live:** `docs/_archive/2026-09/REFUTATION_COST_ROWS_2026-09-12.md`, tracked,
 1666 lines, all 126 per-event rows with each pass's own (non-authoritative)
 summary retained. A fleet re-score against pinned definitions can run off that
 file without re-opening the ledger.
