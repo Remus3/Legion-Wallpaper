@@ -27,6 +27,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+319. DONE **2026-10-12 (session 74 wrap: MAIN 0925 non-delivery recorded, one INFORMATION note to MAIN; docs-only).**
+   MAIN FIX 2026-10-12-0925 (to LW: commit the v17 kit, send ONE ANSWER) sits in MAIN's outbox
+   (MAIN commit 2143bf7) but no copy is in LW's inbox (read back: ls of both). Its asks were
+   already met by 0b1e706 (v17 vendored, LEDGER 308) and LW's 0938 ANSWER (reached 1/1), so no
+   reply (never answer an answer; cost cap). Machine-scope FLEET_SUITE_SLOTS=1 (user scope unset;
+   kit default 2) makes each whole-suite gate wait 20-30 min across trees; not this tree's to edit.
+   Both went to MAIN in ONE INFORMATION note
+   2026-10-12-2153-from-LW-INFORMATION-to-MAIN-suite-slots-1-machine-wide-and-0925-FIX-never-delivered-already-satisfied.md,
+   destination copy re-hashed: reached 1/1 (OutboundCap 2/6 today). Watches read back unchanged:
+   GATE-FIFO (no MAIN reply, kit v17), RETIRE-JUNCTION 3/6, R4 0/19, WATCH-SWAP tripwire green.
+   LW Monitor: no live process and :8901 not answering, so no restart needed for 48074a6.
+   Reverse if: MAIN replies that slots=1 is intended, or the 0925 copy turns up in LW's inbox.
+
 318. DONE **2026-10-12 (lw_monitor 413 reset race, found by the RRF batch's final suite; see commit below).**
    Final lw_suite through fleet_suite_gate on e890944: parallel 1 failed / 4095 passed /
    19 skipped (61.98 s), serial 182 passed / 1 skipped (the skimage collection skip,

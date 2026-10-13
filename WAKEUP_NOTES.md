@@ -79,6 +79,23 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-12, session 74) - RRF-2.1 xdist suite, RRF rows closed, 413 drain fix
+
+Commits: 06575f7 RRF-2.1 (pytest-xdist + pytest-timeout hash-pinned, tools/lw_suite.py
+two-pass runner; LEDGER 313; verifier fresh run 4054 passed / 19 skipped parallel + 182
+passed / 1 skipped serial), e65df82 LEDGER 313 follow-up (4073 vs 4072 = import-time skip of
+test_lw_clean_dekel_align, not a bug), 72de90a RRF-2.8 (L314), 0777d92 + 3725774 RRF-2.10
+(L315), 92d51ea RRF-3.2 (L316), 9fc4a7b + e890944 RRF-3.3 (L317), 48074a6 lw_monitor 413
+drain fix (L318). Final suite on 48074a6: 4097 passed / 19 skipped + 182 passed / 1 skipped.
+Session 73's unpushed wrap went out with this session's push.
+Watches unchanged: GATE-FIFO no MAIN reply (kit v17), RETIRE-JUNCTION 3/6, R4 0/19,
+WATCH-SWAP tripwire green. MAIN FIX 0925 never reached LW's inbox (asks already met by
+0b1e706 + the 0938 ANSWER; LEDGER 319). One INFORMATION note to MAIN (2153, reached 1/1):
+machine FLEET_SUITE_SLOTS=1 + the 0925 non-delivery. LW Monitor not running (next start
+picks up 48074a6).
+Do NOT redo: RRF-2.1, 2.8, 2.10, 3.2, 3.3, the 413 drain fix, the 2153 note.
+Next: RRF-T1 / RRF-3.4 (last open REPO-REVIEW-FOLLOW rows), then the carried watches.
+
 ## PREVIOUS SESSION (2026-10-12, session 73) - kit v17, RRF-2.3b closed, RRF-2.6, LEDGER-ASCII
 
 Commits: 0b1e706 FLEET-KIT v17 vendored (orphaned responder-child work adopted byte-exact,
