@@ -59,7 +59,7 @@ def test_read_text_matches_path_read_text_newline_translation(tmp_path, monkeypa
         (tmp_path / "bad.txt").write_bytes(b"\xff")
         with pytest.raises(UnicodeDecodeError):
             tc.read_text("bad.txt")
-        assert tc.read_text("bad.txt", errors="replace") == "�"
+        assert tc.read_text("bad.txt", errors="replace") == "\ufffd"
     finally:
         tc.read_bytes.cache_clear()
 
