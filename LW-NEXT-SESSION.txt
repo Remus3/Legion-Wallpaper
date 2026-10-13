@@ -21,7 +21,6 @@ Context: repo lives at E:\Legion Wallpaper; C:\Legion Wallpaper is a junction (L
 Acceptance: RRF-2.1 merged with xdist + timeout pinned by hash, the serial set passing
   under -n0, CI green on the push; ROADMAP RRF-2.1 flipped DONE with its LEDGER entry.
 CHECKLIST:
-  - RRF-2.1: Add hash-pinned pytest-xdist + pytest-timeout, -n auto --dist loadfile, serial mark set, markers, --durations=25, and the CI change (ROADMAP.md:659)
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v17 did not change fleet_suite_gate.py, LEDGER 311); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
   - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at 2026-10-12)
@@ -29,7 +28,7 @@ CHECKLIST:
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_FINDINGS_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
-  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.1 above; RRF-2.3b, RRF-2.6, RRF-T1, RRF-3.4, RRF-2.9 done)
+  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.1 done LEDGER 313; RRF-2.3b, RRF-2.6, RRF-T1, RRF-3.4, RRF-2.9 done)
 Carried forward:
   - SESSION 73 /done STOPPED AT SECTION 7 (NOT PUSHED): wrap commit 7fe23a7 + this
     note commit are LOCAL ONLY. done_gate.py bind: attempt 1 and 2 exit 1, suite-gate

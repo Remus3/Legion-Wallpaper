@@ -20,6 +20,10 @@ from pathlib import Path
 
 import pytest
 
+# RRF-2.1: shares machine state across files or times itself - runs in the
+# -n0 serial pass, never under xdist (tools/lw_suite.py).
+pytestmark = pytest.mark.serial
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools import lw_httpd  # noqa: E402

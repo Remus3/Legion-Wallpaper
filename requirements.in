@@ -15,3 +15,6 @@ pytest
 ruff
 numpy
 Pillow
+# RRF-2.1: parallel suite (tools/lw_suite.py) + per-test timeout (pytest.ini).
+pytest-xdist
+pytest-timeout

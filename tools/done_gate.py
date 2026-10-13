@@ -65,7 +65,8 @@ DEFAULT_RECEIPT = ROOT / "ops" / "runtime" / "done_gate.json"
 # the tests can substitute a trivial one and the real thing cannot word-split.
 DEFAULT_CHECKS: list[list[str]] = [
     [sys.executable, "-m", "ruff", "check", "."],
-    [sys.executable, "-m", "pytest", "tests/", "-q"],
+    # The whole suite as its two passes, xdist + the -n0 serial set (RRF-2.1).
+    [sys.executable, "tools/lw_suite.py", "-q"],
     [sys.executable, "tools/drift_guard.py"],
 ]
 
@@ -74,8 +75,12 @@ def default_checks(env: dict | None = None) -> list[list[str]]:
     """DEFAULT_CHECKS with the whole suite run through the kit's suite gate
     (FLEET-COMMON 16c, MAIN 2031); unwrapped when already inside a held slot."""
     own = lw_race_guards.owner("done_gate", env)
-    return [lw_race_guards.gate_argv(c, own, env) if "pytest" in c else list(c)
+    return [lw_race_guards.gate_argv(c, own, env) if _is_suite(c) else list(c)
             for c in DEFAULT_CHECKS]
+
+
+def _is_suite(cmd: list[str]) -> bool:
+    return "pytest" in cmd or any(str(a).endswith("lw_suite.py") for a in cmd)
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:

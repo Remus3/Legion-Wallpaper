@@ -232,14 +232,17 @@ def test_the_gate_runs_the_same_suite_ci_runs():
     lw-clean venv) and a vendored MCP extension's conftest under Claude/.
     Collection died, counts came back zeroed, and EVERY count claim quarantined.
     A gate that manufactures a REFUSE is worse than no gate at all.
-    CI runs `pytest tests/ -q`; so must this.
+    CI runs `pytest tests/` (since RRF-2.1 as two passes whose union is the
+    whole of tests/: xdist on everything not `serial`, then the serial set
+    with -n0); the gate's one serial `pytest tests/ -q` covers that same union.
     """
     import truth_gate
 
     assert " tests/" in truth_gate.DEFAULT_SUITE_CMD, (
         f"suite cmd sweeps the whole tree: {truth_gate.DEFAULT_SUITE_CMD}")
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    assert "pytest tests/ -q" in ci, "CI moved - re-pin the gate to match it"
+    assert 'pytest tests/ -n auto --dist loadfile -m "not serial" -q' in ci and \
+        "pytest tests/ -n0 -m serial -q" in ci, "CI moved - re-pin the gate to match it"
 
 
 def test_the_documented_example_suite_cmd_matches_the_default():

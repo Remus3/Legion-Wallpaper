@@ -112,7 +112,8 @@ def test_owner_prefers_the_env_owner():
 
 def test_done_gate_suite_check_goes_through_the_gate():
     import done_gate
-    suites = [c for c in done_gate.default_checks(env={}) if "pytest" in c]
+    suites = [c for c in done_gate.default_checks(env={})
+              if any(str(a).replace("\\", "/").endswith("tools/lw_suite.py") for a in c)]
     assert len(suites) == 1
     assert any(str(a).replace("\\", "/").endswith("fleet_suite_gate.py") for a in suites[0])
 

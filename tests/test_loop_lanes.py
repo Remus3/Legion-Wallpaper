@@ -23,6 +23,10 @@ from pathlib import Path
 
 import pytest
 
+# RRF-2.1: shares machine state across files or times itself - runs in the
+# -n0 serial pass, never under xdist (tools/lw_suite.py).
+pytestmark = pytest.mark.serial
+
 ROOT = Path(__file__).resolve().parent.parent
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 

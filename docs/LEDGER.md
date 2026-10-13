@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+313. DONE **2026-10-12 (RRF-2.1: suite under pytest-xdist + a -n0 serial pass; see commit below).**
+   requirements.in + requirements-cv.in gain pytest-xdist + pytest-timeout, locks
+   re-compiled with the header uv line (adds only execnet 2.1.2, pytest-timeout 2.4.0,
+   pytest-xdist 3.8.0, all hashed). pytest.ini: addopts `--strict-markers
+   --durations=25`, `timeout = 120`, markers serial / slow / subprocess / git.
+   `pytestmark = pytest.mark.serial` on test_loop_concurrency, test_gpu_mutex_wiring,
+   test_loop_lanes, test_lw_httpd (182 tests). NEW tools/lw_suite.py pairs the passes
+   (`-n auto --dist loadfile -m "not serial"`, then `-n0 -m serial`; first non-zero rc,
+   empty serial pass = red); done_gate's suite check is now `tools/lw_suite.py -q`
+   through the suite gate; ci.yml check + nightly run the two commands per step.
+   DECISION (adjudicated in-slice): -n is NOT in addopts. Alternatives: (a) -n auto in
+   addopts + conftest deselecting serial under xdist - rejected, every one-shot caller
+   (truth_gate, false-red probe, a developer) would silently lose the serial set;
+   (b) -n in addopts, no deselect - rejected, the serial set would run beside other
+   workers, the flake the mark exists to stop. Opt-in keeps a bare `pytest tests/` a
+   complete serial run. FOUND IN THE RUN: lw_suite's children first ran with every std
+   handle None, and CREATE_NO_WINDOW gave them a hidden console - the whole pytest
+   report vanished (run 1: rc 1, no output). stdin=DEVNULL fixes it, pinned by a test.
+   test_truth_gate_wiring re-pinned to CI's two pass lines. Measured: parallel pass
+   4053 passed / 19 skipped in 54.6 s, serial pass 182 passed / 1 skipped in 15.6 s
+   (was ~255 s whole-suite serial, LEDGER-cited 2026-10-08). RED first:
+   tests/test_pytest_parallel_config.py 8 failed before the change (9 arms now).
+   Run 2 (suite gate, lw_suite): parallel 1 failed (the stale CI pin, fixed after) /
+   4053 passed / 19 skipped, serial 182 passed / 1 skipped, rc 1; the fix re-run as
+   its file + config + console-flash tests: 127 passed. Run 3 on the final tree was
+   killed by the harness for low memory while still queued for a slot (never ran):
+   the next done_gate bind is the first whole-suite grade of this tree.
+
 312. DONE **2026-10-12 (RRF-2.6: one LW autouse redirect fixture; see commit below).**
    tests/conftest.py: the five LW autouse fixtures that each pulled tmp_path for one
    redirect (fleet-kit files via FLEET_ROOT / LOG_DIR, LW_OPS_TASKS_ROOT,

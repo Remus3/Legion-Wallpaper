@@ -22,3 +22,6 @@ scipy
 scikit-image
 opencv-python-headless
 pytest
+# RRF-2.1: parallel suite (tools/lw_suite.py) + per-test timeout (pytest.ini).
+pytest-xdist
+pytest-timeout

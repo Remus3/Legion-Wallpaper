@@ -166,7 +166,7 @@ The gate that licenses the push, and the only one. Section 0 ran before the sess
 python tools/done_gate.py bind
 ```
 
-  It refuses (exit 2) a dirty tree, or a tree that moved while the checks ran, and exits 1 when a check goes red. Only on exit 0 does it write `ops/runtime/done_gate.json` recording the graded sha. The checks are the section-0 set run against the committed tree: `ruff check .`, `pytest tests/ -q`, `tools/drift_guard.py`.
+  It refuses (exit 2) a dirty tree, or a tree that moved while the checks ran, and exits 1 when a check goes red. Only on exit 0 does it write `ops/runtime/done_gate.json` recording the graded sha. The checks are the section-0 set run against the committed tree: `ruff check .`, `tools/lw_suite.py -q` (the whole suite as two passes: xdist `-n auto --dist loadfile -m "not serial"`, then `-n0 -m serial`; RRF-2.1), `tools/drift_guard.py`.
 - Push: `git -C "<repo>" log @{u}.. --oneline` to list what is going, then `python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git -C "<repo>" push origin <branch>`. No confirmation prompt - pushing is part of the exit ritual. Only ask the operator if the push fails (auth, conflict, hook).
 - Prove the pushed tree IS the graded tree:
 
