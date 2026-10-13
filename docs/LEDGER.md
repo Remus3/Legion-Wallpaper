@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+320. DONE **2026-10-13 (RRF-T1: lean-spawn tests never read the live responder HALT; fix 744df9d, docs-only now).**
+   Premise CORRECTED: the fix had already landed 2026-10-09 (744df9d): an autouse fixture in
+   tests/test_headless_lean_spawn.py monkeypatches `responder.HALT_PATH`
+   (tools/lw_inbox_responder.py:157, read at call time by spawn at :739/:892 and halt_reason
+   at :1074) to tmp_path, plus test_a_live_halt_never_reaches_these_tests. Only the ROADMAP
+   row and hand-off were stale. Re-verified without touching live state: a pytest plugin
+   faking os.path.lexists / Path.exists for the live ops/runtime/inbox_responder/HALT
+   (the kit checks os.path.lexists, fleet_headless.py:1059). Pre-fix file (744df9d^) under
+   the fake HALT: 7 failed / 9 passed (the leak). Current file under the fake HALT: 17
+   passed; without it: 17 passed. Reverse if: a lean-spawn test goes red while HALT exists.
+
 319. DONE **2026-10-12 (session 74 wrap: MAIN 0925 non-delivery recorded, one INFORMATION note to MAIN; docs-only).**
    MAIN FIX 2026-10-12-0925 (to LW: commit the v17 kit, send ONE ANSWER) sits in MAIN's outbox
    (MAIN commit 2143bf7) but no copy is in LW's inbox (read back: ls of both). Its asks were
