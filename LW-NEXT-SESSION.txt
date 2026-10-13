@@ -28,7 +28,7 @@ CHECKLIST:
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_FINDINGS_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
-  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.8 one answer channel per ORDER, RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.1 done LEDGER 313; RRF-2.3b, RRF-2.6, RRF-T1, RRF-3.4, RRF-2.9 done)
+  - RRF: Work the open REPO-REVIEW-FOLLOW rows (ROADMAP), one TDD slice each: RRF-2.10 session tracked_corpus fixture, RRF-3.2 channel codes + name list, RRF-3.3 dated docs to _archive (RRF-2.1 done LEDGER 313; RRF-2.8 done LEDGER 314; RRF-2.3b, RRF-2.6, RRF-T1, RRF-3.4, RRF-2.9 done)
 Carried forward:
   - SESSION 73 /done STOPPED AT SECTION 7 (NOT PUSHED): wrap commit 7fe23a7 + this
     note commit are LOCAL ONLY. done_gate.py bind: attempt 1 and 2 exit 1, suite-gate

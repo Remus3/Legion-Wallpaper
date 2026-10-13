@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+314. DONE **2026-10-12 (RRF-2.8: one answer channel per note; see commit below).**
+   Evidence: MAIN 2354 (kit v9 ORDER) got two LW notes, the child's
+   RESPONDER-ANSWER at 0010 and a session's batched answer at 0100, two slots of
+   the 6-a-day cap. tools/lw_inbox_responder.py: `claim_answer_channel(note,
+   channel)` / `answer_channel(note)` over an append-only
+   ops/loop/control/answer_channels.jsonl (kit FLEET_ROOT, gitignored); first
+   claim owns the note. The tick claims "child" as it spawns a work run;
+   `send_answers` claims "tick" per part and drops parts another channel owns
+   (`dropped` in the run-log record; all dropped = held, no note, no cap slot);
+   a session claims "session" with `--answer-channel NOTE session` (exit 1 =
+   owned elsewhere, send nothing). The child prompt names its reply as the ONE
+   channel. DECISION: claim ledger keyed by the incoming note's file name.
+   Alternatives: (a) match earlier answers by filename stamp / "## Re" heading -
+   rejected, the two 2354 answers used different shapes, no one pattern finds
+   both; (b) route every answer through the tick - rejected, the child's reply is
+   where its read-backs live. RED first: 6 new arms in
+   tests/test_inbox_responder_triage.py (1 failed at -x before the change);
+   after: 23 passed; responder/inbox subset 314 passed / 1 skipped; ruff clean.
+
 313. DONE **2026-10-12 (RRF-2.1: suite under pytest-xdist + a -n0 serial pass; see commit below).**
    requirements.in + requirements-cv.in gain pytest-xdist + pytest-timeout, locks
    re-compiled with the header uv line (adds only execnet 2.1.2, pytest-timeout 2.4.0,

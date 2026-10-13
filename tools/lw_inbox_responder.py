@@ -678,7 +678,9 @@ _INBOX_COST_RULE = (
     "note and put the answer in your final output instead. After writing a note run "
     "`python tools/lw_inbox_responder.py --outbound-record <note file name> <CLASS> "
     "<TO>`. Several answers to one destination go in ONE note. Never answer an "
-    "ANSWER, ACK or INFORMATION note."
+    "ANSWER, ACK or INFORMATION note. Your reply is this note's ONE answer channel "
+    "(RRF-2.8): the tick sends no batched answer for it and no session may answer it "
+    "again, so put everything the note asks for in that one reply."
 )
 
 
@@ -916,6 +918,60 @@ def carrier_inbox(code: str | None, carriers_path: Path | None = None) -> Path |
     return inbox if inbox.is_dir() else None
 
 
+# RRF-2.8 (MAIN REPO-REVIEW 2.8): ONE answer channel per note. Two notes went
+# out for one ORDER (the child's reply, then a session's batched answer to the
+# same note), and each spent a slot of the 6-a-day cap. The first channel to
+# CLAIM a note owns its answer: "child" (the parent claims it as it spawns a
+# work run), "tick" (a triage ANSWER batched by the tick), "session" (an
+# interactive session, via --answer-channel, before it batches one). Every
+# other channel sends nothing for that note. Append-only JSONL under the kit's
+# FLEET_ROOT (gitignored ops/loop/control/; tmp in tests).
+# Rejected: matching earlier answers by filename stamp (the 2354 ORDER was
+# answered as "...RESPONDER-ANSWER-MAIN-2354..." and as "## Re <full name>",
+# so no one pattern finds both); routing every answer through the tick (a
+# child's reply is the only place its read-backs live).
+ANSWER_CHANNELS_REL = Path("ops/loop/control/answer_channels.jsonl")
+ANSWER_CHANNELS = ("child", "tick", "session")
+
+
+def _answer_channels_path() -> Path:
+    return Path(lw_headless_env.FLEET_ROOT) / ANSWER_CHANNELS_REL
+
+
+def answer_channel(note: str) -> str | None:
+    """The channel that owns `note`'s answer, or None while nothing claimed it."""
+    name = Path(str(note)).name
+    try:
+        lines = _answer_channels_path().read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    for ln in lines:
+        try:
+            doc = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(doc, dict) and doc.get("note") == name:
+            return doc.get("channel")
+    return None
+
+
+def claim_answer_channel(note: str, channel: str) -> str:
+    """Claim `note`'s answer for `channel`; returns the OWNER (first claim wins)."""
+    if channel not in ANSWER_CHANNELS:
+        raise ValueError(f"unknown answer channel {channel!r}")
+    name = Path(str(note)).name
+    owner = answer_channel(name)
+    if owner is not None:
+        return owner
+    path = _answer_channels_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc = {"ts": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+           "note": name, "channel": channel}
+    with open(path, "a", encoding="ascii", newline="\n") as fh:
+        fh.write(json.dumps(doc) + "\n")
+    return channel
+
+
 def send_answers(dest: str | None, parts: list[tuple[str, str, int]]) -> dict:
     """ONE batched ANSWER note to `dest` for parts = [(note, text, incoming hop)].
 
@@ -926,8 +982,21 @@ def send_answers(dest: str | None, parts: list[tuple[str, str, int]]) -> dict:
     only then recorded against the cap. A held answer keeps its text in the
     returned record, which the cycle's run-log line carries.
     """
+    dropped = []
+    keep = []
+    for part in parts:
+        owner = claim_answer_channel(part[0], "tick")
+        if owner == "tick":
+            keep.append(part)
+        else:
+            dropped.append({"note": Path(part[0]).name, "owner": owner})
+    parts = keep
     answers = [{"note": n, "text": t} for n, t, _h in parts]
     rec = {"to": dest, "parts": len(parts), "sent": False, "answers": answers}
+    if dropped:
+        rec["dropped"] = dropped
+    if not parts:
+        return {**rec, "why": "answer channel: every part is owned by another channel"}
     cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
     if not cap.allow("ANSWER"):
         return {**rec, "why": f"outbound cap: {cap.used()}/{cap.cap} notes today"}
@@ -1170,6 +1239,10 @@ def build_parser() -> argparse.ArgumentParser:
                          "today, 1 if the cap is spent (ORDER/FIX/RULING exempt)")
     ap.add_argument("--outbound-record", nargs=3, metavar=("NOTE", "CLASS", "TO"),
                     default=None, help="record one written note against the cap")
+    ap.add_argument("--answer-channel", nargs=2, metavar=("NOTE", "CHANNEL"),
+                    default=None,
+                    help="RRF-2.8: claim NOTE's one answer channel (child / tick / "
+                         "session); exit 0 if CHANNEL owns it, 1 if another does")
     return ap
 
 
@@ -1233,6 +1306,13 @@ def _main(argv: list[str] | None = None) -> int:
         print("\nNot run from here. Registering a scheduled task is D5 in the "
               "deny set this responder obeys, so it stays an operator act.")
         return 0
+
+    if args.answer_channel:
+        note, channel = args.answer_channel
+        owner = claim_answer_channel(note, channel)
+        print(json.dumps({"note": Path(note).name, "owner": owner,
+                          "claimed": owner == channel}))
+        return 0 if owner == channel else 1
 
     if args.outbound_check or args.outbound_record:
         cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
@@ -1337,6 +1417,8 @@ def _main(argv: list[str] | None = None) -> int:
                 fire.running(f"N{i + 1}", "headless run",
                              fleet_inbox.TRIAGE_SPAWN["timeout"] if kind == "triage"
                              else RUN_TIMEOUT_S)
+            if kind == "inbox" and not args.dry_run:
+                claim_answer_channel(note.name, "child")        # RRF-2.8
             try:
                 outcome = spawn(args.inbox / note.name, dry_run=args.dry_run, kind=kind)
             except Exception as exc:  # noqa: BLE001 - a raise exits the task 1, unlogged

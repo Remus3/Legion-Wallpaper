@@ -264,3 +264,70 @@ def test_the_outbound_cli_records_a_note(capsys):
     assert responder.main(["--outbound-record", "x.md", "ANSWER", "MAIN"]) == 0
     capsys.readouterr()
     assert fi.OutboundCap(_fleet_root()).used() == 1
+
+
+# --------------------------------------------------------------------------
+# RRF-2.8 (MAIN REPO-REVIEW 2.8): ONE answer channel per note. A worked note
+# (ORDER / FIX / RULING) is answered by its child's reply ONLY; a triaged note
+# by the tick's batched answer ONLY; an interactive session claims the note
+# before it batches one. The first claim owns the note; every other channel
+# sends nothing for it.
+# --------------------------------------------------------------------------
+
+def test_a_worked_order_is_owned_by_the_child_channel(tmp_path, inbox, spawns):
+    name = "2026-10-05-0700-from-MAIN-ORDER-to-LW-do-x.md"
+    _write(inbox, name)
+    _tick(tmp_path, inbox)
+    assert responder.answer_channel(name) == "child"
+
+
+def test_the_tick_sends_no_batched_answer_for_a_note_another_channel_owns(
+        tmp_path, inbox, spawns):
+    dest = tmp_path / "rc_inbox"
+    dest.mkdir()
+    (tmp_path / "carriers.json").write_text(json.dumps({"RC": {"inbox": str(dest)}}),
+                                            encoding="utf-8")
+    owned, free = ("2026-10-05-0701-from-RC-QUESTION-owned.md",
+                   "2026-10-05-0702-from-RC-QUESTION-free.md")
+    assert responder.claim_answer_channel(owned, "session") == "session"
+    for n in (owned, free):
+        _write(inbox, n)
+        spawns.replies[n] = f"VERDICT: ANSWER\nanswer for {n}"
+    payload = _tick(tmp_path, inbox)
+    (out,) = list(dest.iterdir())
+    body = out.read_text(encoding="ascii")
+    assert f"## Re {free}" in body and owned not in body
+    (sent,) = payload["outbound"]
+    assert sent["parts"] == 1 and sent["dropped"] == [{"note": owned, "owner": "session"}]
+    assert responder.answer_channel(free) == "tick"
+
+
+def test_send_answers_holds_everything_when_every_part_is_owned_elsewhere(tmp_path):
+    name = "2026-10-05-0703-from-RC-QUESTION-x.md"
+    responder.claim_answer_channel(name, "child")
+    rec = responder.send_answers("RC", [(name, "text", 1)])
+    assert rec["sent"] is False and "answer channel" in rec["why"]
+    assert fi.OutboundCap(_fleet_root()).used() == 0
+
+
+def test_the_first_claim_owns_the_note(tmp_path):
+    name = "2026-10-05-0704-from-MAIN-ORDER-to-LW-y.md"
+    assert responder.answer_channel(name) is None
+    assert responder.claim_answer_channel(name, "child") == "child"
+    assert responder.claim_answer_channel(name, "tick") == "child"
+    assert responder.claim_answer_channel(f"some/dir/{name}", "session") == "child"
+
+
+def test_the_answer_channel_cli_claims_and_refuses_a_second_channel(capsys):
+    name = "2026-10-05-0705-from-MAIN-ORDER-to-LW-z.md"
+    assert responder.main(["--answer-channel", name, "session"]) == 0
+    assert json.loads(capsys.readouterr().out) == {"note": name, "owner": "session",
+                                                   "claimed": True}
+    assert responder.main(["--answer-channel", name, "tick"]) == 1
+    assert json.loads(capsys.readouterr().out)["owner"] == "session"
+
+
+def test_the_child_prompt_names_its_reply_as_the_one_answer_channel(tmp_path):
+    note = tmp_path / "2026-10-05-0706-from-MAIN-ORDER-to-LW-x.md"
+    note.write_text("# From MAIN - ORDER to LW\n\nHOP: 1\n", encoding="utf-8")
+    assert "ONE answer channel" in responder.spawn_prompt(note)
