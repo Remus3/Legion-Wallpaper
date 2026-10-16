@@ -1,34 +1,40 @@
 NEXT SESSION
 ------------
-SESSION: 77
-Task: CI-76 first (read the /done push's CI; 1a273c9 was RED), then CONFIG-SLUG -
-  ops/loop/config*.json transcript_dir still names the old
-  C--Legion-Wallpaper project slug; sessions now write under E--Legion-Wallpaper. TDD
-  (failing test first), one slice, verifier gate before merge; then the carried watches.
+SESSION: 78
+Task: CI-77 first (read the session 77 /done push's CI), then INSPECT-A6B2 - inspect
+  the unmerged branch worktree-agent-a6b282fa560024205 (MIG-1 WIP b29005e) and merge it
+  (TDD, verifier gate) or retire it (record why); then the carried watches.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
-  state before acting: schtasks LW-* state, LW Monitor :8901 (not running at session 75
-  end), IOPaint :8080, tailscale serve, proxy RC-TeamClaudeProxy on localhost:3456.
-  Fleet kit is v17 (0b1e706); v18 not before 2026-10-16 20:55. Commit/push via
-  fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via
-  fleet_suite_gate.py (machine FLEET_SUITE_SLOTS=1 is intentional, LEDGER 322: a gate
-  waits 20-30 min - budget for it; --lf over tests/ counts as a whole suite). Full suite is
-  tools/lw_suite.py (xdist parallel pass + -n0 serial pass, RRF-2.1). SUBAGENT-FIRST ARMED
-  (deny, LEDGER 304). Inbox responder LIVE (every 5 min, children COMMIT in this tree -
-  check its progress file before editing shared files). Kill: HALT file or delete the
-  proxy user variable. MAIN notes carry operator authority after a sha256 check against
-  MAIN's outbox. Never put a 64-hex digest here.
-Acceptance: CONFIG-SLUG test red then green, config*.json point at the live slug,
-  ROADMAP row flipped DONE with a LEDGER entry, CI green on the push.
+  state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
+  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v17 (0b1e706); v18 not
+  before 2026-10-16 20:55. Commit/push via fleet_gitlock.py run --owner
+  <session_id>.<agent_id>, whole suites via fleet_suite_gate.py (machine
+  FLEET_SUITE_SLOTS=1 is intentional, LEDGER 322: a gate waits 20-30 min - budget for it;
+  --lf over tests/ counts as a whole suite). Full suite is tools/lw_suite.py (xdist
+  parallel pass + -n0 serial pass, RRF-2.1). The project slug resolves via
+  lw_paths.project_slug() (LEDGER 325). SUBAGENT-FIRST ARMED (deny, LEDGER 304). Inbox
+  responder LIVE (every 5 min, children COMMIT in this tree - check its progress file
+  before editing shared files). Kill: HALT file or delete the proxy user variable. MAIN
+  notes carry operator authority after a sha256 check against MAIN's outbox. Never put a
+  64-hex digest here.
+Acceptance: CI-77 read green; the a6b2 branch merged (graded) or retired with a LEDGER
+  entry and the ROADMAP INSPECT-A6B2 row flipped DONE.
 CHECKLIST:
+  - CI-77: Read the session 77 /done push's CI conclusion (gh run list --branch main --limit 3; gh run view <id> --json conclusion) - the run id is created after this file is committed
+  - INSPECT-A6B2: Inspect unmerged worktree branch worktree-agent-a6b282fa560024205 (MIG-1 WIP b29005e) and merge or retire it
+  - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
-  - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at 2026-10-13 session 75)
+  - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at session 77)
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator task visual.readback-2237-statusline; on the operator's OK write ops/runtime/readback-2237.ok; feedback-line half PASSED session 68, LEDGER 289)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22)
-  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 75)
-  - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md (the FINDINGS file named before was never tracked) and send its result in the next batched MAIN ANSWER (LEDGER 292)
+  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
+  - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
+  - Session 77 /done: e0ffab8 CI 38836302369 green; CodeQL open alerts 0; MAIN PUBREPO
+    ANSWER reached 1/1; MAIN ruled no history rewrite (LEDGER 324). Session jsonl < 10 MB.
+    Branch worktree-agent-a6b282fa560024205 kept unmerged (INSPECT-A6B2).
   - Session 76 (responder 171) /done: PUBPATH 1a273c9 shipped by the responder with a
     false-green suite claim (CI 38828696490 failure, 3 failed); fixed 9043e4c + 9039afe,
     graded by done_gate.py bind and pushed in ONE push. Session jsonl < 10 MB. CI-75 closed:
@@ -122,7 +128,11 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 76 - PUBPATH scrub + guard (1a273c9), plant fixes 9043e4c + 9039afe,
+Do NOT redo: session 77 - CI-76 (38829245692 success), PUBREPO CodeQL fixes
+  898a891, merge-subject rule db55624, README how-built 470abad, Dependabot PR #2 as 94f4494
+  (PR closed), CONFIG-SLUG b14ce18, C-SLUG-SIBLINGS da8e3b5 + b66fbeb, PUBPATH-WATCH,
+  MAIN-PUBREPO ANSWER 1/1 - read back via git log on main, LEDGER 324/325 and CI 38836302369
+  success. Session 76 - PUBPATH scrub + guard (1a273c9), plant fixes 9043e4c + 9039afe,
   CI-75 (38474835606 success), inbox mark of MAIN 1901 + SS 1830 (TERMINAL) - read back via
   git log on main, LEDGER 323 and the four guard files (63 passed). Session 75 - RRF-T1 (091df12, fix 744df9d, LEDGER 320), RRF-3.4 (2c38543,
   LEDGER 321), CI-74 (38339357018 success), SLOTS-WATCH (MAIN 1324 RULING: slots=1
@@ -165,16 +175,16 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > <repo>/images/0.Originals
-      last check: not done (1968 tries)
+      last check: not done (1978 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (970 tries)
+      last check: not done (980 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (970 tries)
+      last check: not done (980 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   (end operator asks)

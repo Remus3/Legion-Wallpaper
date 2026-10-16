@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-15, session 77) - PUBREPO answered, CONFIG-SLUG + C-SLUG-SIBLINGS
+
+Commits: 898a891 (20 CodeQL fixes: path containment, ReDoS-free guard regexes), db55624
+(merge subjects read `merge: <topic>`), 470abad (README how-built), 94f4494 (Dependabot PR
+#2 applied; PR closed), 4866bc8 (LEDGER 324), b14ce18 CONFIG-SLUG (transcript_dir -> live
+E-- slug), da8e3b5 + b66fbeb C-SLUG-SIBLINGS (one resolver lw_paths.project_slug()),
+e0ffab8 (LEDGER 325). CI 38836302369 green on e0ffab8; CodeQL open alerts 0. MAIN PUBREPO
+ANSWER reached 1/1; MAIN ruled NO history rewrite (PUBPATH-D1 held, LEDGER 324).
+Kept: branch worktree-agent-a6b282fa560024205 (unmerged MIG-1 WIP) -> INSPECT-A6B2.
+Do NOT redo: CI-76, PUBPATH-WATCH, CONFIG-SLUG, MAIN-PUBREPO, CodeQL triage, PR #2.
+Next: INSPECT-A6B2, then the carried watches.
+
 ## PREVIOUS SESSION (2026-10-15, session 76 / responder 171) - PUBPATH shipped, CI red fixed
 
 Commits: 1a273c9 PUBPATH (MAIN ORDER 1901, digest MATCH): absolute machine paths scrubbed in
