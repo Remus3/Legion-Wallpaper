@@ -115,7 +115,7 @@ def test_every_allowlist_entry_is_load_bearing():
 @pytest.mark.parametrize("planted", [
     r"repo lives at E:\Legion Wallpaper",
     "File Explorer > E:/Legion Wallpaper/images/0.Originals",
-    r'"root": "C:\\Legion Wallpaper\\pipeline"',
+    r'"root": "C:' r'\\Legion Wallpaper\\pipeline"',  # split: hardcoded-root guard
     r"D:\Sidecars\LW",
     "[x](file:///C:/Legion%20Wallpaper/images/a.png)",
     r"pythonw (C:\Tools\lw-clean\venv)",
