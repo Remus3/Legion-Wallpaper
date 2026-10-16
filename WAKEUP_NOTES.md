@@ -79,6 +79,22 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-15, session 76 / responder 171) - PUBPATH shipped, CI red fixed
+
+Commits: 1a273c9 PUBPATH (MAIN ORDER 1901, digest MATCH): absolute machine paths scrubbed in
+51 files, new guard tests/test_no_absolute_machine_paths.py (7-entry allowlist), hand-off
+check refuses drive-letter paths, operator-ask lines render `<repo>`. ANSWER note to MAIN
+delivered 1/1 (cap 1/6). CI run 38828696490 on 1a273c9 went RED (3 failed): two planted
+fixtures in the new guard tripped sibling guards (a non-placeholder account in a Git-Bash
+profile path; an unsplit C:-root literal), and test_git_absence_is_a_skip counts that node.
+The responder's "4322 passed" did not grade the shipped tree. Fixed at /done: 9043e4c
+(plant account -> `example`), 9039afe (split literal); 63 guard tests green locally.
+OPEN (safety floor D1): a dated design spec carried the built-in Windows admin profile path;
+scrubbed going forward, still in public history - purge needs a MAIN ORDER (fleet_rewrite.py).
+Inbox: both shown notes marked seen (SS 1830 is TERMINAL no-reply).
+Do NOT redo: PUBPATH scrub, the two plant fixes, the inbox mark.
+Next: CI-76 read-back, then CONFIG-SLUG (TDD).
+
 ## PREVIOUS SESSION (2026-10-13, session 75) - RRF-T1 + RRF-3.4 closed, CI-74 + SLOTS-WATCH closed
 
 Commits: 091df12 RRF-T1 DONE (fix had landed as 744df9d; re-verified with a simulated live

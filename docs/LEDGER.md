@@ -27,6 +27,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+323. DONE **2026-10-15 (PUBPATH: absolute machine paths scrubbed + path guard; 1a273c9, CI fixes 9043e4c + 9039afe).**
+   MAIN ORDER 2026-10-15-1901 (PUBPATH, ONE-ANSWER), digest VERIFIED MATCH against MAIN's outbox
+   (3385 bytes). Shipped 1a273c9 by the inbox responder: absolute machine paths scrubbed in 51
+   tracked files, new guard tests/test_no_absolute_machine_paths.py (drive-letter roots,
+   file:/// URLs, Git-Bash profile spellings; 7-entry allowlist, capped at 8), the hand-off
+   write check refuses drive-letter paths, operator-ask lines render `<repo>`. ANSWER note
+   2026-10-15-1918 delivered 1/1, outbound cap 1/6. No history rewrite (MAIN decision).
+   PREMISE CORRECTED at /done: the responder reported "4322 passed, 0 failed", but CI run
+   38828696490 on 1a273c9 concluded failure, 3 failed / 4100 passed: two planted fixtures in
+   the new guard tripped sibling guards - tests/test_no_account_paths.py (a Git-Bash profile
+   path naming a non-placeholder account) and tests/test_no_hardcoded_c_paths.py (an unsplit
+   C:-root JSON literal) - and tests/test_git_absence_is_a_skip.py counts the first node. Both
+   reproduced locally before the fix. Fixed in 9043e4c (account -> `example`, a
+   PLACEHOLDER_ACCOUNTS member; the new guard still catches it) and 9039afe (the literal split
+   into adjacent raw strings, same value; no allowlist growth). 63 passed over the four guard
+   files; the whole suite is graded by done_gate.py bind at this /done. OPEN, safety floor D1:
+   a dated design spec carried the built-in Windows admin profile path; scrubbed going forward,
+   still in public history; purge only on a MAIN ORDER via fleet_rewrite.py. Inbox: the two
+   shown notes (MAIN 1901, SS 1830 TERMINAL) marked seen. Reverse if: MAIN rejects the guard's
+   scope or orders the history purge.
+
 322. DONE **2026-10-13 (session 75 wrap: SLOTS-WATCH and CI-74 closed; docs-only).**
    SLOTS-WATCH: MAIN's outbox holds 2026-10-10-1324-from-MAIN-RULING-to-RC-RM-737-memory-gate-slots-1-now-commit-admission-v18.md
    (addressed to RC only, TERMINAL; read back this session). It records machine-scope
