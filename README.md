@@ -112,12 +112,35 @@ believe it. The same instinct runs through the publication guards, which pin
 every forbidden value by hash rather than writing it down, because a guard that
 names what it forbids publishes it.
 
-## How it is built
+## How this repo is built
 
 This repo is developed by Claude Code agents working under an operating contract
 ([`CLAUDE.md`](CLAUDE.md)), steered by one human operator. The interesting part is
 not that agents write the code; it is what stops them from shipping a claim they
-have not proven.
+have not proven. The agent files are tracked on purpose: they are the documented
+process, not leftovers.
+
+- **[`CLAUDE.md`](CLAUDE.md)** is the operating contract every agent session
+  loads first: the fleet-wide common block (identical in every sibling repo and
+  pinned by a test), then this repo's own rules and its settled decisions, each
+  with the condition that would reopen it.
+- **[`.claude/`](.claude/)** holds the harness configuration: `settings.json`
+  wiring the hooks that enforce the contract at tool-call time, agent definitions (the
+  read-only verifier among them) and the slash commands for each pipeline stage
+  and session ritual.
+- **[`ops/`](ops/)** holds the operational side: the vendored fleet kit pinned
+  by a manifest (`ops/fleet_kit/`), the loop controller and its control files
+  (`ops/loop/`), and runtime state, most of it gitignored.
+- **[`.githooks/`](.githooks/)** is the authoritative gate, run by git itself:
+  `pre-commit` (banned glyphs, net-new lint, generated-map drift), `commit-msg` (Conventional Commits
+  subjects, `merge: <topic>` merge subjects with no agent worktree names, AI
+  attribution stripped) and `pre-push` (operator identity only).
+- **The hand-off** ([`LW-NEXT-SESSION.txt`](LW-NEXT-SESSION.txt)) is the only
+  continuity between sessions: each session starts by reading it and ends by
+  rewriting it, carrying forward every item it did not act on.
+
+The license is stated plainly in [License](#license): Apache License 2.0, an
+open-source license, covering the code and docs only, never the image corpus.
 
 ```mermaid
 flowchart LR
