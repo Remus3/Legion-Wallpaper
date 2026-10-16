@@ -23,6 +23,7 @@ running interpreter for Python.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -165,6 +166,56 @@ def desktop_dir() -> Path:
 def claude_project_dir(slug: str) -> Path:
     """`~/.claude/projects/<slug>` - transcripts and per-project memory."""
     return user_home() / ".claude" / "projects" / slug
+
+
+def slug_for(path: str | os.PathLike[str]) -> str:
+    """The transcript-store key Claude Code gives a checkout: every
+    non-alphanumeric character of its path becomes one hyphen
+    (`E:\\Legion Wallpaper` -> `E--Legion-Wallpaper`)."""
+    return "".join(c if c.isascii() and c.isalnum() else "-" for c in str(path))
+
+
+def main_checkout_root(root: str | os.PathLike[str] | None = None) -> Path:
+    """The MAIN checkout for `root` (default repo_root()). A linked worktree's
+    `.git` is a file `gitdir: <main>/.git/worktrees/<name>`; anything else is
+    returned as given. Degrades to `root` on any read or parse failure."""
+    base = Path(root) if root is not None else repo_root()
+    marker = base / ".git"
+    try:
+        if marker.is_file():
+            line = marker.read_text(encoding="utf-8").strip()
+            if line.startswith("gitdir:"):
+                gitdir = Path(line.split(":", 1)[1].strip())
+                if gitdir.parent.name == "worktrees" and gitdir.parent.parent.name == ".git":
+                    return gitdir.parent.parent.parent
+    except OSError:
+        pass
+    return base
+
+
+def project_slug(root: str | os.PathLike[str] | None = None) -> str:
+    """This repo's LIVE Claude project slug (C-SLUG-SIBLINGS, 2026-10-15).
+
+    Read from ops/loop/config.json `transcript_dir`, the one place the slug is
+    written (CONFIG-SLUG pinned it to the live store, so a CI runner or a
+    worktree gets the same answer as the operator's checkout). Falls back to
+    slug_for(main_checkout_root(root)) when the config is absent or unreadable.
+    """
+    main = main_checkout_root(root)
+    try:
+        doc = json.loads((main / "ops" / "loop" / "config.json").read_text(encoding="utf-8"))
+        td = str(doc.get("transcript_dir") or "").replace("\\", "/").rstrip("/")
+        name = td.rsplit("/", 1)[-1]
+        if name and "/.claude/projects/" in "/" + td.lstrip("~"):
+            return name
+    except (OSError, ValueError, AttributeError):
+        pass
+    return slug_for(main)
+
+
+def claude_project_sessions(root: str | os.PathLike[str] | None = None) -> Path:
+    """`~/.claude/projects/<project_slug()>` - this repo's transcript store."""
+    return claude_project_dir(project_slug(root))
 
 
 def expand(value: str | os.PathLike[str]) -> Path:

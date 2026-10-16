@@ -38,11 +38,12 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
 import lw_rundash_state as rundash_state  # noqa: E402  (sibling tool, not a package)
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TARGET = ROOT / "ops" / "runtime" / "agent_fleet_mirror.json"
-PROJECT_SESSIONS = (Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper")
+PROJECT_SESSIONS = lw_paths.claude_project_sessions()  # C-SLUG-SIBLINGS: live slug
 
 SCHEMA = 1
 

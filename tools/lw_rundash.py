@@ -54,6 +54,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:  # launched as a script, not as tools.lw_rundash
     sys.path.insert(0, str(ROOT))
 
+from tools import lw_paths  # noqa: E402
 from tools import lw_rundash_state as rundash_state  # noqa: E402
 from tools.lw_httpd import (  # noqa: E402
     BaseLWHandler,
@@ -123,7 +124,7 @@ FLEET_HISTORY_N = 20
 # Where Claude Code keeps this project's sessions, and with them the only record
 # of which agent owned which worktree. AVAILABLE, NOT DURABLE - no
 # cleanupPeriodDays is set, so absent is a normal answer here.
-TRANSCRIPT_DIR = Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper"
+TRANSCRIPT_DIR = lw_paths.claude_project_sessions()  # C-SLUG-SIBLINGS: live slug
 
 # A slice sitting in one status this long, or an agent silent this long while
 # the run is still LIVE, is the thing the operator came to the page to find.

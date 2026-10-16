@@ -91,7 +91,11 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-DEFAULT_CANON_KEY = "C--Legion-Wallpaper"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
+
+DEFAULT_CANON_KEY = lw_paths.project_slug()  # C-SLUG-SIBLINGS: live slug
+# The historical stray key the 2026-09-20 union closed; not this tree's live slug.
 DEFAULT_STRAY_KEY = "C--LegionWallpaper"
 
 #: A canonical-dir file touched more recently than this (seconds) means a LIVE session.

@@ -42,6 +42,9 @@ import shlex
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lw_paths  # noqa: E402  (sibling tool, not a package)
+
 # A run that was killed is not a run that failed. red-handed learned this the
 # same way: 124 timeout, 137 SIGKILL, 143 SIGTERM.
 INTERRUPTED_CODES = {124, 137, 143}
@@ -585,7 +588,7 @@ def evaluate(payload: dict) -> str | None:
 # It REPORTS. Exit stays 0 whatever it finds: a historical audit that failed its
 # caller would be unrunnable in CI, and the number is the deliverable.
 # ===========================================================================
-PROJECT_SESSIONS = Path.home() / ".claude" / "projects" / "C--Legion-Wallpaper"
+PROJECT_SESSIONS = lw_paths.claude_project_sessions()  # C-SLUG-SIBLINGS: live slug
 
 CLAIM_EXCERPT = 220
 
