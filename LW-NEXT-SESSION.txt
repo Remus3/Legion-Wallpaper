@@ -21,9 +21,10 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
 Acceptance: CONFIG-SLUG test red then green, config*.json point at the live slug,
   ROADMAP row flipped DONE with a LEDGER entry, CI green on the push.
 CHECKLIST:
-  - CI-76: Read the session 76 /done push's CI conclusion (gh run list --branch main --limit 3; gh run view <id> --json conclusion) - the run id is created after this file is committed; it must clear 1a273c9's red run 38828696490 (3 failed, fixed in 9043e4c + 9039afe, LEDGER 323)
-  - PUBPATH-WATCH: Read MAIN's reply (if any) to the 2026-10-15-1918 PUBPATH ANSWER; never answer an answer (LEDGER 323)
-  - PUBPATH-D1: DRAFTED, waits on safety floor D1 - a dated design spec carried the built-in Windows admin profile path, scrubbed going forward but still in public history; purge only on a MAIN ORDER via fleet_rewrite.py or the operator (LEDGER 323)
+  - PUBREPO-PUSH: Push 898a891..HEAD in ONE push at /done (done_gate bind first), read CI green, then read back CodeQL open counts after the re-scan (expect 0 open; 20 fixed by 898a891, alert 17 dismissed) (LEDGER 324)
+  - PUBREPO-PR2: After the push, close Dependabot PR #2 with a comment naming 94f4494 (applied locally, operator identity); read back open bot PRs = 0 (LEDGER 324)
+  - PUBREPO-ANSWER: Fill the AT-PUSH fields in ops/runtime/inbox_responder/reply_draft_MAIN1925_PUBREPO.md from the read-backs, then deliver it as the ONE ANSWER to MAIN (OutboundCap, HOP 2) and report N/M reached (LEDGER 324)
+  - PUBREPO-WT: Remove the dead PUBREPO run's merged worktree agent-a3b50d28a7b9f6792 (content landed in 898a891; git worktree remove); worktree agent-a51f6a5baa26ec35c (locked) holds an uncommitted CONFIG-SLUG slice - reuse it for CONFIG-SLUG below, do not discard it (LEDGER 324)
   - CONFIG-SLUG: Point ops/loop/config*.json transcript_dir at the live E-- project slug (TDD, verifier gate)
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)

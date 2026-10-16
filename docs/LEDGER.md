@@ -27,6 +27,30 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+324. DONE **2026-10-15 (session 77 triage: CI-76 closed; PUBREPO ORDER recovered and committed; 898a891, db55624, 470abad, 94f4494).**
+   CI-76: run 38829245692 on a9a7fcc concluded success (clears 1a273c9's red 38828696490).
+   MAIN ORDER 2026-10-15-1925 (PUBREPO, ONE-ANSWER) verify_main True. The responder's work run
+   for it timed out at 1800s (runs.jsonl 01:01:59Z) before committing; its owner session was
+   dead and its claim stale, and its full suite on the dirty content read 4344 passed, 19
+   skipped. The work was coherent and was recovered (cited tests 139 passed, ruff clean):
+   898a891 CodeQL fixes (16 py/path-injection via normpath/realpath + startswith(root + sep)
+   containment in lw_ab_r4 / lw_monitor / lw_review_threads; 4 py/redos guard regexes ->
+   `[\\/]+`), db55624 merge-subject template `merge: <topic>` with no agent worktree names
+   (2b), 470abad README "How this repo is built" (2d, Apache-2.0 stated plainly). CodeQL
+   alert 17 (py/clear-text-storage, lw_headless_env.log_refusal) dismissed false-positive
+   with a written reason (redacted by _URLISH, pinned by test_headless_env). Dependabot PR
+   #2 applied locally as 94f4494 under the operator identity; close after push. Read-backs:
+   tags none (local + origin), operatorIdent noreply-only, Dependabot alerts ON (204),
+   outsider read of the 7 named files 0 findings, Actions sweep 11 failed runs / 30 days ->
+   token shapes 0, echoed env 0, installer proven in fresh 3.14.4 venvs (requirements.txt 12
+   pkgs, requirements-cv.txt 18 pkgs, --require-hashes, pip check clean). Section 1 of the
+   ORDER rules NO history rewrite: PUBPATH-WATCH and PUBPATH-D1 closed. ONE ANSWER drafted in
+   ops/runtime (gitignored), delivered only after the /done push fills its AT-PUSH fields
+   (decision: an answer before the push would report 20 still-open alerts and an open bot
+   PR; alternative rejected: answer now and again later, which breaks ONE ANSWER). Inbox:
+   SS 1941 ANSWER is TERMINAL, no reply; no GATE-FIFO reply, no RETIRE-JUNCTION
+   confirmations. R4 0/19 voted (tally refused). WATCH-SWAP tripwire 3/3 green. Not pushed.
+
 323. DONE **2026-10-15 (PUBPATH: absolute machine paths scrubbed + path guard; 1a273c9, CI fixes 9043e4c + 9039afe).**
    MAIN ORDER 2026-10-15-1901 (PUBPATH, ONE-ANSWER), digest VERIFIED MATCH against MAIN's outbox
    (3385 bytes). Shipped 1a273c9 by the inbox responder: absolute machine paths scrubbed in 51
