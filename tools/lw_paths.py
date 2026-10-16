@@ -171,7 +171,8 @@ def claude_project_dir(slug: str) -> Path:
 def slug_for(path: str | os.PathLike[str]) -> str:
     """The transcript-store key Claude Code gives a checkout: every
     non-alphanumeric character of its path becomes one hyphen
-    (`E:\\Legion Wallpaper` -> `E--Legion-Wallpaper`)."""
+    (a `Legion Wallpaper` checkout at the root of drive E encodes as
+    `E--Legion-Wallpaper`)."""
     return "".join(c if c.isascii() and c.isalnum() else "-" for c in str(path))
 
 
