@@ -196,3 +196,16 @@ def test_weights_pins_are_the_fetched_bytes():
     assert ab.ANIME_WEIGHTS_MD5 == "29f284f36a0a510bcacf39ecf4c4d54f"
     assert len(ab.ANIME_WEIGHTS_SHA256) == 64
     assert ab.ANIME_WEIGHTS_URL.startswith("https://github.com/Sanster/models/")
+
+
+@pytest.mark.parametrize("parts", [("..", "key.json"), ("alpha", "..", "..", "x.png")])
+def test_contained_refuses_traversal_out_of_the_root(tmp_path, parts):
+    assert ab._contained(tmp_path / "ab", *parts) is None
+
+
+def test_contained_refuses_an_absolute_part_and_a_sibling_prefix(tmp_path):
+    root = tmp_path / "ab"
+    assert ab._contained(root, str(tmp_path / "elsewhere.png")) is None
+    assert ab._contained(root, "..", "ab2", "left_tight.png") is None
+    p = ab._contained(root, "alpha", "left_tight.png")
+    assert p is not None and p.name == "left_tight.png" and p.parent.name == "alpha"

@@ -76,6 +76,19 @@ def _check_id(mid):
     return mid
 
 
+def _contained(root, *parts) -> Path:
+    """`root / parts`, refused unless the normalized result stays strictly
+    inside `root`. Belt over the slug/id allowlists, written as normpath +
+    startswith(root + sep) so the containment is also visible to static
+    analysis (CodeQL py/path-injection). Lexical: every part reaching here is
+    allowlisted, so there is no symlink to chase."""
+    base = os.path.abspath(root)
+    full = os.path.normpath(os.path.join(base, *parts))
+    if not full.startswith(os.path.join(base, "")):
+        raise ReviewError("path outside the review root")
+    return Path(full)
+
+
 def _ascii_text(text):
     if not isinstance(text, str) or not text.strip():
         raise ReviewError("said is required")
@@ -126,7 +139,8 @@ def latest_image(slug, images_root=IMAGES_ROOT):
     root = Path(images_root)
     dirs = []
     for s in lw_pipeline.STAGES:
-        dirs += [root / lw_pipeline.SCRATCH_DIR[s] / slug, root / lw_pipeline.DONE_DIR[s] / slug]
+        dirs += [_contained(root, lw_pipeline.SCRATCH_DIR[s], slug),
+                 _contained(root, lw_pipeline.DONE_DIR[s], slug)]
     best = None
     for d in dirs:
         if not d.is_dir():
@@ -175,7 +189,7 @@ def render_view(image_path, view, out_path):
 
 # ---------------------------------------------------------------- threads
 def _path(review_root, slug, mid):
-    return Path(review_root) / _check_slug(slug) / f"{_check_id(mid)}.json"
+    return _contained(review_root, _check_slug(slug), f"{_check_id(mid)}.json")
 
 
 def new_id(now=None):
@@ -208,7 +222,7 @@ def submit(slug, xy, r, said, view, review_root=REVIEW_ROOT, images_root=IMAGES_
            "image": {"name": img.name, "sha256": _sha256(img), "size": list(size)},
            "shots": {"before": f"{mid}_before.png"},
            "thread": [{"role": "operator", "said": _ascii_text(said), "ts": _now()}]}
-    render_view(img, v, Path(review_root) / slug / rec["shots"]["before"])
+    render_view(img, v, _contained(review_root, slug, rec["shots"]["before"]))
     _atomic_json(_path(review_root, slug, mid), rec)
     return rec
 
@@ -225,7 +239,7 @@ def list_threads(review_root=REVIEW_ROOT, slug=None):
     out = []
     if not root.is_dir():
         return out
-    dirs = [root / _check_slug(slug)] if slug else sorted(p for p in root.iterdir() if p.is_dir())
+    dirs = [_contained(root, _check_slug(slug))] if slug else sorted(p for p in root.iterdir() if p.is_dir())
     for d in dirs:
         if not d.is_dir() or not SLUG_RE.match(d.name):
             continue
@@ -283,7 +297,7 @@ def answer(slug, mid, said, review_root=REVIEW_ROOT, images_root=IMAGES_ROOT,
         raise ReviewError("no image for slug")
     n = sum(1 for e in t["thread"] if e["role"] == "agent") + 1
     shot = f"{mid}_reply_{n:02d}.png"
-    render_view(img, t["view"], Path(review_root) / slug / shot)
+    render_view(img, t["view"], _contained(review_root, slug, shot))
     t["thread"].append({"role": "agent", "said": _ascii_text(said), "shot": shot,
                         "image": {"name": img.name, "sha256": _sha256(img)}, "ts": _now()})
     t["state"] = "answered"
@@ -321,7 +335,7 @@ def promote(slug, mid, review_root=REVIEW_ROOT):
     seed = {"slug": slug, "from_mark": mid, "box": [max(0, x - r), max(0, y - r),
                                                   min(w, x + r), min(h, y + r)],
             "said": t["said"], "created": _now(), "by": "operator"}
-    _atomic_json(Path(review_root) / slug / f"{mid}_seed.json", seed)
+    _atomic_json(_contained(review_root, slug, f"{mid}_seed.json"), seed)
     return seed
 
 
@@ -335,7 +349,7 @@ def seed_mask(slug, review_root=REVIEW_ROOT, clean_root=CLEAN_RUNTIME):
     marks. A seed is a LOCATOR from the operator's eye: the lane still builds
     its complete mask around it. Edits no image."""
     from PIL import Image, ImageDraw
-    d = Path(review_root) / _check_slug(slug)
+    d = _contained(review_root, _check_slug(slug))
     seeds = [json.loads(p.read_text(encoding="ascii")) for p in sorted(d.glob("m*_seed.json"))]
     if not seeds:
         raise ReviewError("no promoted seeds for slug")
@@ -345,7 +359,7 @@ def seed_mask(slug, review_root=REVIEW_ROOT, clean_root=CLEAN_RUNTIME):
     for sd in seeds:
         x0, y0, x1, y1 = sd["box"]
         draw.rectangle([x0, y0, x1 - 1, y1 - 1], fill=255)
-    out_dir = Path(clean_root) / slug
+    out_dir = _contained(clean_root, slug)
     out_dir.mkdir(parents=True, exist_ok=True)
     mpath = out_dir / f"{slug}_review_seed_mask.png"
     tmp = mpath.with_name(mpath.name + ".part")

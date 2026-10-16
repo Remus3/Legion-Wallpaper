@@ -275,7 +275,7 @@ if __name__ == "__main__":
 # is the operator's runbook, so both are live instructions, not history; the
 # placeholders are `<repo>`, `<repo-slug>` and `<account>`.
 CHECKOUT_ROOT = re.compile(
-    r"(?:[A-Za-z]:(?:\\\\|\\|/)+|/[a-z]/)Legion ?Wallpaper", re.IGNORECASE)
+    r"(?:[A-Za-z]:[\\/]+|/[a-z]/)Legion ?Wallpaper", re.IGNORECASE)
 CHECKOUT_SLUG = re.compile(r"\b[A-Za-z]--Legion-?Wallpaper\b", re.IGNORECASE)
 
 _RRF34_FIXED = ("docs/OPERATIONS.md",)

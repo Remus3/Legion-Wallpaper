@@ -261,6 +261,18 @@ def tally(root=AB_ROOT):
     return {"counts": counts, "n": len(rows), "per_slug": rows}
 
 
+def _contained(root, *parts):
+    """`root / parts` when the normalized result stays strictly inside `root`,
+    else None. Belt over the slug/name allowlists, written as normpath +
+    startswith(root + sep) so the containment is also visible to static
+    analysis (CodeQL py/path-injection)."""
+    base = os.path.abspath(root)
+    full = os.path.normpath(os.path.join(base, *parts))
+    if not full.startswith(os.path.join(base, "")):
+        return None
+    return Path(full)
+
+
 def image_path(root, slug, name):
     """Path of a served crop, or None (bad slug, unknown name, missing file)."""
     try:
@@ -269,8 +281,8 @@ def image_path(root, slug, name):
         return None
     if not isinstance(name, str) or not IMG_NAME_RE.match(name):
         return None
-    p = Path(root) / slug / name
-    return p if p.is_file() else None
+    p = _contained(root, slug, name)
+    return p if p is not None and p.is_file() else None
 
 
 def guard_fresh(root):

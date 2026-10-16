@@ -161,3 +161,24 @@ def test_seed_mask_unions_promoted_marks_for_the_cleaning_lane(tmp_path):
     assert m.shape == (144, 256) and m[60, 100] == 255 and m[30, 30] == 255 and m[0, 255] == 0
     assert sorted(out["from_marks"]) == sorted([a["id"], b["id"]])
     assert path.read_bytes() == path.read_bytes()  # the artifact is never edited
+
+
+@pytest.mark.parametrize("parts", [("..", "x.json"), ("ahri", "..", "..", "x.json")])
+def test_contained_refuses_traversal_out_of_the_root(tmp_path, parts):
+    with pytest.raises(RT.ReviewError, match="outside"):
+        RT._contained(tmp_path / "review", *parts)
+
+
+def test_contained_refuses_an_absolute_part_and_a_sibling_prefix(tmp_path):
+    root = tmp_path / "review"
+    with pytest.raises(RT.ReviewError, match="outside"):
+        RT._contained(root, str(tmp_path / "elsewhere.json"))
+    with pytest.raises(RT.ReviewError, match="outside"):
+        RT._contained(root, "..", "review2", "x.json")
+
+
+def test_contained_returns_the_joined_path_inside_the_root(tmp_path):
+    root = tmp_path / "review"
+    p = RT._contained(root, "ahri", "m20261004T000000-abcdef.json")
+    assert p.name == "m20261004T000000-abcdef.json" and p.parent.name == "ahri"
+    assert p.parent.parent == Path(RT.os.path.abspath(root))

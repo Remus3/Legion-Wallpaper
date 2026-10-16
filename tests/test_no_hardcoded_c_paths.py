@@ -32,7 +32,7 @@ CODE_SUFFIXES = (".py", ".ps1", ".psm1", ".json", ".toml", ".cmd", ".bat", ".ahk
 
 # `C:\Legion Wallpaper`, `C:/Legion Wallpaper`, the JSON/Python-escaped
 # `C:\\Legion Wallpaper`, and the pre-2026-09-06 `C:\LegionWallpaper`.
-LW_ROOT_LITERAL = re.compile(r"[cC]:(?:\\\\|\\|/)+Legion ?Wallpaper", re.IGNORECASE)
+LW_ROOT_LITERAL = re.compile(r"[cC]:[\\/]+Legion ?Wallpaper", re.IGNORECASE)
 
 # Path prefix (directory, ends in "/") or exact file -> reason.
 ALLOWLIST: dict[str, str] = {

@@ -344,6 +344,18 @@ def test_validate_thumb_path(tmp_path):
     assert lw_monitor._validate_thumb_path("", roots) is None
 
 
+def test_validate_thumb_path_refuses_a_sibling_prefix_root(tmp_path):
+    # `imgroot2/a.png` shares the string prefix `imgroot` - containment must
+    # compare whole path components, not a bare startswith on the root
+    root = tmp_path / "imgroot"
+    root.mkdir()
+    sib = tmp_path / "imgroot2"
+    sib.mkdir()
+    (sib / "a.png").write_bytes(PNG_1X1)
+    assert lw_monitor._validate_thumb_path(str(sib / "a.png"), [root]) is None
+    assert lw_monitor._validate_thumb_path(str(root / ".." / "imgroot2" / "a.png"), [root]) is None
+
+
 # ---------------------------------------------------------------- case 12
 # HTTP round-trips on an ephemeral port
 

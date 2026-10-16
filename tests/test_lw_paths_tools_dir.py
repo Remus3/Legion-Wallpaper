@@ -79,7 +79,7 @@ def test_upscale_inline_default_matches_resolver():
 
 
 ASSIGNED_TOOLS_LITERAL = re.compile(
-    r"""=\s*r?["'][cC]:(\\\\|\\|/)+Tools""")
+    r"""=\s*r?["'][cC]:[\\/]+Tools""")
 
 
 def test_no_tracked_py_assigns_a_c_tools_literal():

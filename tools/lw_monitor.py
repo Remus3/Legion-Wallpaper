@@ -445,33 +445,31 @@ _RAW_CTYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
 
 def _validate_thumb_path(raw, roots):
     """Spec 5.1: resolve + is_relative_to root(s) + suffix allowlist + is_file."""
+    # realpath + startswith(root + sep): the containment check runs on the
+    # normalized string BEFORE any filesystem call touches the candidate, in
+    # the form static analysis recognizes (CodeQL py/path-injection).
     if not isinstance(raw, str) or not raw.strip():
         return None
     try:
-        p = Path(raw.strip())
-        if not p.is_absolute():
-            p = ROOT / p
-        resolved = p.resolve()
+        full = os.path.realpath(os.path.join(str(ROOT), raw.strip()))
     except (OSError, ValueError):
         return None
-    if resolved.suffix.lower() not in THUMB_SUFFIXES:
+    if os.path.splitext(full)[1].lower() not in THUMB_SUFFIXES:
         return None
-    inside = False
     for root in roots:
         try:
-            if resolved.is_relative_to(Path(root).resolve()):
-                inside = True
-                break
+            base = os.path.join(os.path.realpath(str(root)), "")
         except (OSError, ValueError):
             continue
-    if not inside:
-        return None
-    try:
-        if not resolved.is_file():
-            return None
-    except OSError:
-        return None
-    return resolved
+        # both sides are realpath'd, so an existing root is in its canonical
+        # on-disk case on Windows and a plain startswith is a sound compare
+        if full.startswith(base):
+            resolved = Path(full)
+            try:
+                return resolved if resolved.is_file() else None
+            except OSError:
+                return None
+    return None
 
 
 def make_thumb(resolved):

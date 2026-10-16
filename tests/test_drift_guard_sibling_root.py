@@ -77,7 +77,7 @@ def test_no_tracked_code_hardcodes_the_rc_root_as_a_drive_literal():
     import sibling_names as sn
     import tracked_corpus
 
-    drive = re.compile(r"[A-Za-z]:(?:\\\\|\\|/)+$")
+    drive = re.compile(r"[A-Za-z]:[\\/]+$")
     suffixes = (".py", ".ps1", ".psm1", ".json", ".toml", ".cmd", ".bat", ".ahk")
     hits = []
     for rel in (n for n in tracked_corpus.tracked_files() if n.lower().endswith(suffixes)):
