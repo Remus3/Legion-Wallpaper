@@ -37,9 +37,9 @@ From `pipeline_state.json` counts: pending_intake, first_scratch, first_done, cl
 One line per tool with INSTALLED/MISSING - each MISSING line points at the `docs/RESTORATION_PLAN.md` install checklist entry (these paths are the plan's install targets):
 
 - `.venv-upscale` (torch cu128 + spandrel + IllustrationJaNai) - /first-pass primary
-- `C:\Tools\realesrgan\realesrgan-ncnn-vulkan.exe` - /first-pass fallback
-- `C:\Tools\lw-clean\venv` (ultralytics + easyocr + simple-lama-inpainting) - /cleaning-pass
-- `C:\Tools\iopaint\venv` (iopaint 1.6.0) - /cleaning-pass human QA
+- `%SystemDrive%\Tools\realesrgan\realesrgan-ncnn-vulkan.exe` - /first-pass fallback
+- `%SystemDrive%\Tools\lw-clean\venv` (ultralytics + easyocr + simple-lama-inpainting) - /cleaning-pass
+- `%SystemDrive%\Tools\iopaint\venv` (iopaint 1.6.0) - /cleaning-pass human QA
 - ComfyUI portable cu128 + illustration checkpoint - /final-pass
 - metrics venv (pyiqa) - G1/G2 numbers everywhere
 - `gallery-dl`, `imagehash`, `API-Key-SauceNAO.txt` - /intake recovery tiers

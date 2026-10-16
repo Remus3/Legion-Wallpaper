@@ -7,7 +7,7 @@ API-Key-*.txt
 !.env.example
 
 # Claude Desktop app data lives INSIDE this project folder on this machine
-# (C:\Legion Wallpaper\Claude\). It is app data, not project content - NEVER
+# (<repo>\Claude\). It is app data, not project content - NEVER
 # track it.
 /Claude/
 
@@ -177,7 +177,7 @@ data/golden/candidates/
 # images/**). Two reasons NEVER to commit any of this: (1) gallery-dl lands
 # third-party art on this box under data/recovery/fetched/<slug>/... ; (2) the
 # hash / match / saucenao JSON caches embed ABSOLUTE paths into the operator's
-# personal corpus (C:\Users\...\Pictures, Desktop\Found) plus per-image pHashes
+# personal corpus (%USERPROFILE%\Pictures, Desktop\Found) plus per-image pHashes
 # - personal machine state, NOT shareable process. The shareable process is the
 # recovery CODE (tools/lw_recover*.py) + the spec (docs/research/SOURCE_RECOVERY
 # .md section 5), which ARE tracked. Keep the dir on checkout via .gitkeep only.

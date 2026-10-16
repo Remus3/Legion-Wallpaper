@@ -252,17 +252,17 @@ Python 3.12 for ML venvs; keep 3.14 for everything else.
 winget install Python.Python.3.12
 
 :: 2. Detection + inpaint venv
-%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv C:\Tools\lw-clean\venv
-C:\Tools\lw-clean\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-C:\Tools\lw-clean\venv\Scripts\pip install ultralytics easyocr simple-lama-inpainting opencv-python pillow
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv %SystemDrive%\Tools\lw-clean\venv
+%SystemDrive%\Tools\lw-clean\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+%SystemDrive%\Tools\lw-clean\venv\Scripts\pip install ultralytics easyocr simple-lama-inpainting opencv-python pillow
 
 :: 3. Watermark detector weights (115 MB)
-curl -L -o C:\Tools\lw-clean\yolo11x-train28-best.pt https://huggingface.co/spaces/fancyfeast/joycaption-watermark-detection/resolve/main/yolo11x-train28-best.pt
+curl -L -o %SystemDrive%\Tools\lw-clean\yolo11x-train28-best.pt https://huggingface.co/spaces/fancyfeast/joycaption-watermark-detection/resolve/main/yolo11x-train28-best.pt
 
 :: 4. IOPaint in its OWN venv (archived project, old pins - isolate it)
-%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv C:\Tools\iopaint\venv
-C:\Tools\iopaint\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-C:\Tools\iopaint\venv\Scripts\pip install iopaint==1.6.0
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv %SystemDrive%\Tools\iopaint\venv
+%SystemDrive%\Tools\iopaint\venv\Scripts\pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+%SystemDrive%\Tools\iopaint\venv\Scripts\pip install iopaint==1.6.0
 
 :: 5. Optional reconstruction tier: ComfyUI portable for Blackwell
 ::    (embedded Python 3.12+, torch cu128 - no system Python involvement)

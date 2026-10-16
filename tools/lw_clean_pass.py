@@ -6,7 +6,7 @@ lw_pipeline commands for the caller to run. It PRODUCES pixels (into a
 non-pipeline runtime dir) plus a verdict; it does NOT mutate pipeline state
 itself. Keeping the save-working / submit / start-stage transitions in the
 caller preserves the single-writer invariant (PIPELINE_STATE_MACHINE.md) and
-avoids cross-venv shelling: the ML deps live only in C:\\Tools\\lw-clean\\venv
+avoids cross-venv shelling: the ML deps live only in %SystemDrive%\\Tools\\lw-clean\\venv
 while lw_pipeline.py is stdlib-only under system Python314.
 
 TWO-LAYER IMPORT DISCIPLINE (mandatory - mirrors lw_first_pass.py +
@@ -61,7 +61,7 @@ from pathlib import Path
 # `uv pip install --python <venv> pi-heif --index-strategy=unsafe-best-match
 # --break-system-packages`. That resolves a DIFFERENT Pillow and replaces the
 # one in the venv: measured 2026-08-11, it deleted 91 of Pillow's 103 files
-# mid-run and left C:\Tools\lw-clean\venv unimportable. A cleaning run meets
+# mid-run and left %SystemDrive%\Tools\lw-clean\venv unimportable. A cleaning run meets
 # corrupt/odd images by design, so this is a production path, not just a test
 # one. tests/conftest.py pins the same var for the suite.
 os.environ.setdefault("YOLO_AUTOINSTALL", "false")

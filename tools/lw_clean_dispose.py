@@ -16,7 +16,7 @@ transition goes through `lw_pipeline` so the ledger + rails stay authoritative
 slug is skipped, never forced.
 
 Run under the lw-clean venv (process_slug needs cv2 + torch):
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_dispose.py \
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_dispose.py \
       --triage <path> --out <results.jsonl> [--only clean,auto,qa] [--limit N]
       [--dry-run]
 """

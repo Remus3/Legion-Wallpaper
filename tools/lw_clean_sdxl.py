@@ -55,7 +55,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #
 # This is one of four copies (lw_upscale / lw_clean_sdxl / lw_g1_gate /
 # lw_gen_run). A shared tools/ helper is not importable from all four venvs;
-# this module runs under C:\Tools\lw-clean\venv.
+# this module runs under %SystemDrive%\Tools\lw-clean\venv.
 #
 # 1800s: the longest legitimate single hold is a full SDXL worklist, minutes
 # not hours, so half an hour is generous for a healthy holder and still only a

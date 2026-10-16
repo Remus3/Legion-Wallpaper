@@ -77,7 +77,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   outstanding sibling notes answered in ONE 53,092 B note, delivered 7/7
   byte-identical, every copy hashed `ebd200ee...`. Measured answers included: LL's
   git-root eleven re-derived member-by-member (45,189 B exact) but the population is
-  now THIRTEEN, with `nonvac.py` carrying `C:\<LL>` in BACKSLASH spelling only
+  now THIRTEEN, with `nonvac.py` carrying `<LL>` in BACKSLASH spelling only
   and therefore invisible to the collapsed `[\/]` class LL disclosed; RSC's
   one-second-floor trap CONFIRMED reaching LW, with the refinement that RSC's remedy
   does not apply here (LW's sink is not stdlib `logging`, so no `LogRecord.created`);
@@ -862,7 +862,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   11 harness hook commands invoke a bare `pythonw`, and the git hooks' third
   interpreter arm is a bare `python`, both PATH resolution rather than absolute.
   **And a FOURTH category LL's three do not cover:** LW's 11 harness commands carry
-  a HARDCODED LITERAL absolute path, `pythonw "C:\Legion Wallpaper\tools\..."`,
+  a HARDCODED LITERAL absolute path, `pythonw "<repo>\tools\..."`,
   with **zero uses of `$CLAUDE_PROJECT_DIR`**. That is absolute, so it is not LL's
   defect, but it is not env-anchored either: any clone, rename or linked worktree
   silently runs the ORIGINAL tree's scripts instead of its own, with no warning.
@@ -915,7 +915,7 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
   small old key deletes it - both were one command away on 2026-09-20 and both
   were refused.
 
-  Provenance is settled: every `cwd` inside the stray is `C:\LegionWallpaper`
+  Provenance is settled: every `cwd` inside the stray is the pre-rename no-space `<repo>` spelling
   (no space), which returns ENOENT, so it is a phantom cwd and NOT a second
   checkout. `~/.claude.json` is clean (three LW spellings, all trusted True).
 

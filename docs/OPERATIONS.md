@@ -295,7 +295,7 @@ python -m py_compile <file.py>
 | `docs/LEDGER.md` | Append-only per-item completion ledger |
 | `WAKEUP_NOTES.md` | Session hand-off notes (newest-first) |
 | `docs/adr/` | Decision records |
-| `moon_sync_inbox/` | Cross-repo channel with RC (gitignored on BOTH sides). RC's mirror is `C:\<RC>\moon_sync_inbox\`. Read it at session start whenever the shared `ops/loop/slots.py` / `winmutex.py` are in play - a change to either is a joint act, never unilateral. Both sessions independently invented a channel on 2026-07-26 before finding the other's; this table entry exists so the next one does not. |
+| `moon_sync_inbox/` | Cross-repo channel with RC (gitignored on BOTH sides). RC's mirror is `<RC>\moon_sync_inbox\`. Read it at session start whenever the shared `ops/loop/slots.py` / `winmutex.py` are in play - a change to either is a joint act, never unilateral. Both sessions independently invented a channel on 2026-07-26 before finding the other's; this table entry exists so the next one does not. |
 
 ## Machine state - PowerShell 7 (standing reference)
 
@@ -306,7 +306,7 @@ standing reference living there gets archived by design._
 - **PowerShell 7 - INSTALLED BY RC 2026-07-26. LW migration = NO-OP.**
   Authority doc: `%USERPROFILE%\Desktop\POWERSHELL_7_MIGRATION.md` (RC,
   machine-wide). Read it before touching any call site; do not re-derive.
-  - Live state verified 2026-07-26: `C:\Program Files\PowerShell\7\pwsh.exe` =
+  - Live state verified 2026-07-26: `%ProgramFiles%\PowerShell\7\pwsh.exe` =
     **7.6.4 Core**, MSI machine-scope, on machine PATH. `powershell.exe` is
     untouched 5.1 and stays forever. Side-by-side; nothing auto-switched.
   - MSI not winget: the winget manifest ships only an MSIX, whose exe path carries
@@ -322,7 +322,7 @@ standing reference living there gets archived by design._
   - **Agent sessions stay on 5.1** (RC doc sec 4c): Claude Code's PowerShell tool
     invokes `powershell.exe` and no setting selects the binary. So KEEP WRITING
     5.1-COMPATIBLE POWERSHELL - no `&&`/`||`, no ternary, no `??`. Escape hatch if
-    ever needed: `& 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -File <s>`.
+    ever needed: `& '%ProgramFiles%\PowerShell\7\pwsh.exe' -NoProfile -File <s>`.
   - **The no-em-dash ASCII rule STANDS - do not relax it.** RC measured that PS7
     parses a no-BOM UTF-8 `.ps1` containing an em-dash with 0 errors, so that one
     5.1 failure mode is gone under pwsh. It remains LIVE anywhere `powershell.exe`

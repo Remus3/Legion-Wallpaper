@@ -20,7 +20,7 @@ What it records per slug is diagnostic, never a verdict:
 
 Needs the lw-clean venv - easyocr, and simple-lama for the fill.
 
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_run.py
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_run.py
 """
 from __future__ import annotations
 

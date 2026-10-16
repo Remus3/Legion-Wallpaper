@@ -271,6 +271,21 @@ def test_render_lists_every_pending_task_and_passes_the_handoff_gate(tmp_path):
     assert str(tmp_path) not in block
 
 
+@pytest.mark.parametrize("sep", ["/", "\\"])
+def test_render_rewrites_this_checkout_root_to_a_placeholder(tmp_path, sep):
+    """PUBPATH (MAIN 2026-10-15): the hand-off is tracked in a PUBLIC repo, so an
+    "open first" step naming this checkout renders as `<repo>`, not a drive path,
+    and is shown rather than withheld by the hand-off gate."""
+    eng = _engine(tmp_path)
+    root = str(ot.ROOT).replace("\\", sep).replace("/", sep)
+    tid = _req(eng, _exists_argv(tmp_path / "f"), subject="dup",
+               handoffs=["File Explorer > " + root + sep + "images" + sep + "0.Originals"])
+    block = ot.render_operator_asks(eng.pending())
+    assert tid in block and "withheld" not in block
+    assert "File Explorer > <repo>" + sep + "images" + sep + "0.Originals" in block
+    assert scan_handoff_text(block) == []
+
+
 def test_render_with_nothing_pending_says_none(tmp_path):
     block = ot.render_operator_asks([])
     assert "none open" in block

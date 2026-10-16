@@ -64,7 +64,7 @@ you are worried about.
    the `pipeline_state.json` schema the monitor reads TOLERANTLY (an unknown
    field is ignored, so a rename is silent); the append-only `PIPELINE_LOG.md`
    line format; the SHA-256 manifests; the multi-venv split (`.venv-upscale`,
-   `.venv-metrics`, `.venv-gen`, `C:\Tools\lw-clean\venv` - a change to a
+   `.venv-metrics`, `.venv-gen`, `%SystemDrive%\Tools\lw-clean\venv` - a change to a
    shared module is read by interpreters this suite never imports); the
    `ops/loop/slots.py` + `ops/loop/winmutex.py` pair that is
    BYTE-IDENTICAL-by-contract with the sibling tree; the git hooks under

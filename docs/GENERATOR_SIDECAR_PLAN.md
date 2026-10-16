@@ -16,7 +16,7 @@
 
 Durable planning doc. Strict 7-bit ASCII. Local-first on the RTX 5070 (12GB GDDR7,
 Blackwell sm_120). Authored 2026-07-06. All live claims below were probed against
-C:\Legion Wallpaper (torch 2.11.0+cu128, get_device_capability()==(12,0), RTX 5070,
+<repo> (torch 2.11.0+cu128, get_device_capability()==(12,0), RTX 5070,
 12227 MiB, driver 610.62 - all CONFIRMED). This is a build spec, not a paste-prompt.
 
 --------------------------------------------------------------------------------
@@ -474,22 +474,22 @@ upgrade needed.
 
 ```
 # 1. create the new side-venv (gitignored, like .venv-upscale / .venv-metrics)
-%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "<repo>\.venv-gen"
 
 # 2. install the SAME cu128 torch channel the box already runs (do NOT let pip pull a CPU/cu12x wheel)
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+"<repo>\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
 
 # 3. add the generation stack (pure-python / torch-dependent; no new CUDA toolkit; NO xformers)
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install diffusers transformers accelerate safetensors
+"<repo>\.venv-gen\Scripts\python.exe" -m pip install diffusers transformers accelerate safetensors
 
 # 4. add a working CLIP into .venv-metrics (the existing pyiqa/clip import is BROKEN)
-"C:\Legion Wallpaper\.venv-metrics\Scripts\python.exe" -m pip install open-clip-torch
+"<repo>\.venv-metrics\Scripts\python.exe" -m pip install open-clip-torch
 
 # 5. download ONE painterly/semi-realistic SDXL finetune (safetensors) into tools\models\ (gitignored)
 #    plus, if the spike shows anime leakage, one splash-art/key-art LoRA.
 
 # 6. LIVE PROOF (retire the runtime + attention risks before building on top):
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -c "import torch; print(torch.cuda.get_device_capability())"
+"<repo>\.venv-gen\Scripts\python.exe" -c "import torch; print(torch.cuda.get_device_capability())"
    # MUST print (12, 0)  -> confirms sm_120 kernels load on the 5070
 ```
 
@@ -673,7 +673,7 @@ matching the repo's precommit hygiene lineage.
 
 --------------------------------------------------------------------------------
 
-## APPENDIX - cited source lines (verified live against C:\Legion Wallpaper)
+## APPENDIX - cited source lines (verified live against <repo>)
 
 - `tools/lw_pipeline.py`: slugify (L129), cmd_intake (L626) + MIN_AGE_SECONDS (L67) +
   PROBE_SECONDS, eligibility_reason "modified too recently" (L609-623), unique_slug

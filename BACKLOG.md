@@ -62,7 +62,7 @@ _Product is defined by ADR-002/ADR-003 (staged self-auditing restoration pipelin
     for PreToolUse/PostToolUse/Stop, exit-0 stdout goes to the DEBUG LOG only
     and never reaches the model; use `additionalContext` or exit 2.
   - **P2 - DONE 2026-08-01, commit `9d63303`.** mockd v0.7.1 installed at
-    `C:\Tools\mockd` (operator-approved, sha256 verified), real oEmbed
+    `%SystemDrive%\Tools\mockd` (operator-approved, sha256 verified), real oEmbed
     exchanges recorded to `tests/fixtures/deviantart/`, replayed by a headless
     `mockd engine` in `tests/test_lw_recover_replay.py` (11 tests, skip when
     mockd is absent). **The recording refuted the suite**: `_default_http`

@@ -16,7 +16,7 @@ so this produces no score and picks no winner. It produces one sheet: the same
 crop at native resolution, once per percentile, labelled with what the run did.
 The operator's eye picks.
 
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_sweep.py --slug 259f
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_sweep.py --slug 259f
 """
 from __future__ import annotations
 

@@ -18,7 +18,7 @@ Contract references: `docs/research/PIPELINE_STATE_MACHINE.md` (stage semantics 
 3. Identify targets: slugs in `images\1.First Pass Scratch\` in EDITING substate (a `_firstinitial` present, no `_firstneedauth`).
 4. Tooling readiness - each item is an INSTALL TARGET from the `docs/RESTORATION_PLAN.md` install checklist, not an assumption. Check availability HERE and pick the path; never fail mid-image:
    - **Primary upscaler:** `.venv-upscale\Scripts\python.exe` exists AND `import torch; torch.cuda.is_available()` is True AND an IllustrationJaNai model file is present (spandrel-loadable .pth/.safetensors). Missing -> report the exact install steps (venv + torch cu128 + spandrel + model download per RESTORATION_PLAN.md) and fall back.
-   - **Fallback upscaler:** `C:\Tools\realesrgan\realesrgan-ncnn-vulkan.exe` with the `realesrgan-x4plus-anime` model (Vulkan; no CUDA/torch dependency). Missing too -> STOP cleanly before any transition and report both install targets.
+   - **Fallback upscaler:** `%SystemDrive%\Tools\realesrgan\realesrgan-ncnn-vulkan.exe` with the `realesrgan-x4plus-anime` model (Vulkan; no CUDA/torch dependency). Missing too -> STOP cleanly before any transition and report both install targets.
    - **Metrics (G1):** the metrics venv (pyiqa: MS-SSIM/LPIPS/DISTS) per RESTORATION_PLAN.md. Missing -> run the OpenCV-only subset of G1 (sharpness/halo/banding) and flag the image for operator review instead of auto-passing FR metrics.
 
 ### 1. Best-source selection (per slug)

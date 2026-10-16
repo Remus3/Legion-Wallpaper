@@ -22,15 +22,15 @@ copy's LAST uuid. One session was written into two keys across a mid-session key
 Appending the stray after the canonical bytes therefore reconstructs the original causal
 order exactly - it is not merely lossless, it is correct.
 
-Every `cwd` in both copies of all three sessions is `C:\\LegionWallpaper` (no space), a
+Every `cwd` in both copies of all three sessions is `<drive>:\\LegionWallpaper` (no space), a
 path that does not exist today, and it is recorded in the CANONICAL copies too, so cwd does
 not distinguish the two keys.
 
 CORRECTED 2026-09-20 (root-cause probe, `docs/_archive/2026-09/TRANSCRIPT_KEY_FLIP_2026-09-20.md`). Two
 claims above were WRONG and both matter to whether `--apply` should ever run:
 
-  1. That cwd is NOT a phantom. `C:\\LegionWallpaper` was LW's REAL root until 2026-09-06
-     (LEDGER 146 re-spelled it to `C:\\Legion Wallpaper`); it ENOENTs because it was renamed
+  1. That cwd is NOT a phantom. `<drive>:\\LegionWallpaper` was LW's REAL root until 2026-09-06
+     (LEDGER 146 re-spelled it to `<drive>:\\Legion Wallpaper`); it ENOENTs because it was renamed
      away. 37 of 66 canonical transcripts record it and were written into the canonical key
      LIVE, so the records are right and it is the KEY that carried a spelling the root did
      not have.

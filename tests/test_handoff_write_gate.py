@@ -90,6 +90,11 @@ def test_the_live_tracked_handoff_passes_the_gate():
         ("see /home/someaccount/notes.txt\n", "user-profile"),
         ("see /Users/someaccount/notes.txt\n", "user-profile"),
         ("cd %USERPROFILE%\\Desktop\n", "user-profile"),
+        # PUBPATH (MAIN 2026-10-15): any absolute drive-letter path, not only a
+        # profile one - the hand-off is tracked in a PUBLIC repo.
+        ("repo lives at E:\\Legion Wallpaper\n", "absolute path"),
+        ("open first: File Explorer > E:/Legion Wallpaper/images\n", "absolute path"),
+        ("\"root\": \"D:\\\\Sidecars\\\\LW\"\n", "absolute path"),
         ("pinned at 0123456789abcdef0123456789abcdef\n", "32-hex"),
         ("blob e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n", "32-hex"),
     ],
@@ -108,7 +113,9 @@ def test_a_handoff_carrying_gated_content_is_refused(tmp_path, body, rule):
         "pinned 0123456789abcdef0123456789abcde\n",     # 31 hex, one under
         "the token bucket refilled\n",                  # the word, no assignment
         "images/0.Originals holds the loose files\n",   # repo-relative path
-        "C:\\Legion Wallpaper\\ops\\runtime\\ - project root, not a profile\n",
+        "<repo>\\ops\\runtime\\ - project root placeholder, not a path\n",
+        "the C: spelling is a junction; E: holds the tree\n",   # a drive named, no path
+        "see https://example.com/x and HKCU:\\Software\n",      # URL and registry drive
     ],
 )
 def test_the_gate_is_not_over_broad(tmp_path, body):

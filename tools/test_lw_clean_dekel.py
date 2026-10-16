@@ -7,7 +7,7 @@ sibling of the module it exercises. Pure-math coverage only - no cluster solve,
 no disk I/O of real images.
 
 Run:
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe -m pytest tools/test_lw_clean_dekel.py -q
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe -m pytest tools/test_lw_clean_dekel.py -q
 """
 import os
 import sys

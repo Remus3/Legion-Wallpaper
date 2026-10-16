@@ -13,7 +13,7 @@ Three questions, and the third is the one the repo has been burned by before:
 
 Needs the lw-clean venv - easyocr, and simple-lama for the --fill half.
 
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_census.py
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_creditline_census.py
 """
 from __future__ import annotations
 

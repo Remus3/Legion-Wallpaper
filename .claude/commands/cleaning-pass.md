@@ -17,9 +17,9 @@ Contract references: `docs/research/CLEANING_INPAINT.md` (stack + install), `doc
 2. Read the tail (last ~20 lines) of `PIPELINE_LOG.md` at the project root - prior REJECT notes on target slugs are the retry hints.
 3. Targets: slugs in `images\3.Cleaning Scratch\` (EDITING substate). Images still in `images\2.First Pass Done\` enter via `... lw_pipeline.py start-stage <slug>` (dry-run first) which creates `_cleaninitial`.
 4. Tooling readiness - each item is an INSTALL TARGET from the `docs/RESTORATION_PLAN.md` install checklist, not an assumption; report exact install steps when absent, never fail mid-image:
-   - **Detection + inpaint venv:** `C:\Tools\lw-clean\venv` (torch cu128 + ultralytics + easyocr + simple-lama-inpainting + opencv-python). Missing -> detection degrades to the cheap high-pass corner/edge pre-filter + operator eyeballing; inpainting is unavailable -> queue images for the human QA route instead.
+   - **Detection + inpaint venv:** `%SystemDrive%\Tools\lw-clean\venv` (torch cu128 + ultralytics + easyocr + simple-lama-inpainting + opencv-python). Missing -> detection degrades to the cheap high-pass corner/edge pre-filter + operator eyeballing; inpainting is unavailable -> queue images for the human QA route instead.
    - **Watermark detector weights:** anti-watermark YOLO weights (e.g. joycaption-watermark-detection yolo11x) downloaded per RESTORATION_PLAN.md. Missing -> OCR-only detection (EasyOCR) + template sweep.
-   - **Human QA fallback:** IOPaint 1.6.0 under `%LOCALAPPDATA%\Python\pythoncore-3.11-64\python.exe` (verified live 2026-08-22). The old `C:\Tools\iopaint\venv` path was NEVER created - LEDGER 30 recorded that in 2026-07-16 and the string outlived the correction; do not restore it. Missing -> note the install target; rejects queue as manifest notes until it exists.
+   - **Human QA fallback:** IOPaint 1.6.0 under `%LOCALAPPDATA%\Python\pythoncore-3.11-64\python.exe` (verified live 2026-08-22). The old `%SystemDrive%\Tools\iopaint\venv` path was NEVER created - LEDGER 30 recorded that in 2026-07-16 and the string outlived the correction; do not restore it. Missing -> note the install target; rejects queue as manifest notes until it exists.
 
 ### 1. DETECT (per slug, on the current working image)
 

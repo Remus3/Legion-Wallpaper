@@ -37,7 +37,7 @@ The bicubic up-to-8K round trip that softened batch 2 is dead forever.
 
 ## 2. The four stages
 
-Images move through the 10-folder scheme in `C:\Legion Wallpaper\images\`
+Images move through the 10-folder scheme in `<repo>\images\`
 (ADR-003): `0.Originals` -> first -> clean -> final -> last -> `8.End Review`
 -> `9.Image Backup` (+ optional Pictures delivery). Each stage is
 scratch-then-done with the four phase tokens `_<stage>initial`,
@@ -218,7 +218,7 @@ threshold config).
 
 ## 6. Environment strategy
 
-- Python 3.14 (system, `C:\...\Python314\python.exe`): orchestration only -
+- Python 3.14 (system, `%LOCALAPPDATA%\Programs\Python\Python314\python.exe`): orchestration only -
   lw_pipeline.py, lw_monitor.py, gallery-dl (supports 3.14), imagehash
   (PyWavelets 1.9.0+ has cp314 wheels), Pillow, opencv cheap checks.
 - Python 3.12 side-venvs for every torch/ML stack: the wider ML ecosystem
@@ -239,11 +239,11 @@ The original 8-item install checklist is archived verbatim in
 
 - DONE: py 3.12 side-install; `.venv-upscale` (torch 2.11.0+cu128 + spandrel,
   CUDA verified on the 5070); models in `tools/models/` (V3detail DAT2 primary
-  per ADR-004 + V1 DAT2 spandrel-confirmed fallback); `C:\Tools\lw-clean\venv`
+  per ADR-004 + V1 DAT2 spandrel-confirmed fallback); `%SystemDrive%\Tools\lw-clean\venv`
   (ultralytics + easyocr + simple-lama + yolo11x watermark weights); py 3.14
   orchestration deps (gallery-dl, imagehash); API keys
   (`API-Key-SauceNAO.txt`, `API-Key-DeviantArt.txt`).
-- CHANGED: the planned dedicated IOPaint venv (`C:\Tools\iopaint\venv`) was
+- CHANGED: the planned dedicated IOPaint venv (`%SystemDrive%\Tools\iopaint\venv`) was
   never created; the manual QA lane runs the operator's local py3.11 install
   (`%LOCALAPPDATA%\Python\pythoncore-3.11-64\python.exe -m iopaint start
   --model=lama --device=cuda`, iopaint 1.6.0 pinned there; WAKEUP 2026-07-16).

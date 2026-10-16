@@ -434,8 +434,8 @@ def resolve_sibling_root(configured):
       renamed  - it does not, but a name-equivalent directory sits beside it
       absent   - nothing resembling it is there (a CI runner, legitimately)
 
-    WHY THIS EXISTS. RC's cross-repo guards held C:\\LegionWallpaper. LW's
-    2026-09-06 rename to "C:\\Legion Wallpaper" turned both of them from
+    WHY THIS EXISTS. RC's cross-repo guards held <drive>:\\LegionWallpaper. LW's
+    2026-09-06 rename to "<drive>:\\Legion Wallpaper" turned both of them from
     checking into SKIPPING, and RC's suite stayed green for about three hours
     with nothing being compared. The bytes happened to agree, so nothing broke -
     which is the uncomfortable part, not the reassuring one. A skip-when-absent
@@ -479,7 +479,7 @@ def check_shared_loop_files() -> None:
     """slots.py + winmutex.py must be BYTE-IDENTICAL in LW and RC.
 
     They coordinate the two repos' concurrent runs with each other through
-    C:\\ProgramData\\lw-loop and the OS mutex namespace, so a divergence is not a
+    %ProgramData%\\lw-loop and the OS mutex namespace, so a divergence is not a
     merge conflict anyone notices - it is a silent concurrency bug (two loops
     each believing they hold the only slot). A NOTE while RC has not adopted
     them yet; a BREACH the moment both copies exist and differ.
@@ -597,7 +597,7 @@ def scan_hook_script(text: str, name: str) -> list[str]:
 def collide_path_keys(projects: dict) -> list[tuple]:
     """Project keys in ~/.claude.json that name ONE directory but disagree.
 
-    The keys are path-separator- and case-sensitive, so `C:/x` and `C:\\x` are
+    The keys are path-separator- and case-sensitive, so `<drive>:/x` and `<drive>:\\x` are
     two entries for one project. Only DISAGREEING duplicates are returned:
     agreeing ones are untidy but harmless, and reporting them would bury the
     case that actually breaks a run - a headless session landing on the
@@ -622,7 +622,7 @@ def collide_store_keys(names) -> list[tuple]:
 
     A SECOND key surface, separate from ~/.claude.json: `~/.claude/projects/`
     names a directory per project, encoding the colon, the backslash and a
-    space all as `-`. So `C:/Legion Wallpaper` and `C:/LegionWallpaper` land
+    space all as `-`. So `<drive>:/Legion Wallpaper` and `<drive>:/LegionWallpaper` land
     one hyphen
     apart, and nothing in this store carries a trust bit for
     `collide_path_keys` to grade - which is why that checker reported clean

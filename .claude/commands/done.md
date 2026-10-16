@@ -180,7 +180,7 @@ python tools/done_gate.py verify-push
 ### 7b. GitHub CI verification
 
 - After the push lands, confirm CI goes green for the pushed SHA:
-  - `gh run list --branch <branch> --limit 1` to find the run id (gh = `C:/Program Files/GitHub CLI/gh.exe`; use the absolute path in older shells).
+  - `gh run list --branch <branch> --limit 1` to find the run id (gh = `%ProgramFiles%/GitHub CLI/gh.exe`; use the absolute path in older shells).
   - Do NOT block on `gh run watch` (median ~165 s, MAIN REPO-REVIEW perf 2.2). Record the run id in the hand-off; the next session (or LW-CIWatchdog, when its HALT is lifted) reads the conclusion with `gh run view <run-id> --json conclusion`.
 - Record the CI result (`green | red | pending`, pending + run id when not yet finished) in the hand-off file, not in chat.
 - If CI goes RED on a real test/lint failure: the single failure line is `CI red: <job> - resolve before /clear`. The binding gate (section 7) should have caught it, so a red here usually means an env-only delta - investigate before declaring the session cleanly wrapped.

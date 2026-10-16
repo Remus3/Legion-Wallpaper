@@ -14,7 +14,7 @@ report-*.html) plus a sidecar JSON facts blob for inspection / future enrichment
 Usage:
   python tools/repo_insights.py                 # last 30 days -> .claude/usage-data/
   python tools/repo_insights.py --days 14
-  python tools/repo_insights.py --out C:/tmp/r.html --author SomeAuthor
+  python tools/repo_insights.py --out out/r.html --author SomeAuthor
 
 To MOLD THE LOOK later: the palette + every section live in clearly marked
 blocks below (search "SECTION:" and "PALETTE"). Add/remove a section by editing

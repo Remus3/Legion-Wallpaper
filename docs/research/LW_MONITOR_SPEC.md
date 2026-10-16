@@ -3,9 +3,9 @@
 Date: 2026-07-03
 Author: monitor-design agent (research wave, Task 7)
 Status: PROPOSED - awaiting ADR + coordination with the state-machine agent
-Reference implementation (read-only): `C:\<RC>\dashboard\routes_loop_monitor.py`,
-`C:\<RC>\dashboard\routes_loop_status.py`,
-`C:\<RC>\tests\test_loop_monitor_route.py`
+Reference implementation (read-only): `<RC>\dashboard\routes_loop_monitor.py`,
+`<RC>\dashboard\routes_loop_status.py`,
+`<RC>\tests\test_loop_monitor_route.py`
 
 ---
 
@@ -13,7 +13,7 @@ Reference implementation (read-only): `C:\<RC>\dashboard\routes_loop_monitor.py`
 
 The RC "loop monitor" is NOT a separate web asset. The whole page (HTML + CSS + JS)
 is one inline `_PAGE` string inside `routes_loop_monitor.py`, served at
-`GET /loop-monitor`. A grep of `C:\<RC>\web\` for loop-monitor assets
+`GET /loop-monitor`. A grep of `<RC>\web\` for loop-monitor assets
 confirms: zero hits - the page is fully self-contained in the route file.
 
 ### 1.1 Polling model (extract)
@@ -275,12 +275,12 @@ The server (not the page) does the grouping, exactly as RC's
 ### 5.1 GET /api/thumb?path=...
 
 - Query `path` may be absolute or repo-relative; repo-relative resolves
-  against `C:\Legion Wallpaper`.
+  against `<repo>`.
 - VALIDATION (all must pass, else 403 `{ok:false}`; no path echo in errors):
   1. `resolved = Path(p).resolve()` (resolves `..` and symlinks).
   2. `resolved.is_relative_to(root)` for at least one configured root.
-     Default roots: `C:\Legion Wallpaper\data` and
-     `C:\Legion Wallpaper\ops\runtime\thumbs`. Overridable via
+     Default roots: `<repo>\data` and
+     `<repo>\ops\runtime\thumbs`. Overridable via
      `--images-root` (repeatable). NOTE: the corpus location is not final -
      when the state-machine agent fixes the intake/output folders, add them
      here. Windows is case-insensitive: compare case-folded, which
@@ -474,8 +474,8 @@ console flash. Analysis of the launcher options:
 
 Shortcut spec:
 
-- Target: `pythonw "C:\Legion Wallpaper\tools\lw_monitor.py" --open`
-- Start in: `C:\Legion Wallpaper`
+- Target: `pythonw "<repo>\tools\lw_monitor.py" --open`
+- Start in: `<repo>`
 - Icon: `imageres.dll,109` (monitor glyph) - cosmetic, optional.
 
 Exact one-time creation commands (PowerShell 5.1 safe, ASCII only):
@@ -484,9 +484,9 @@ Exact one-time creation commands (PowerShell 5.1 safe, ASCII only):
 $ws  = New-Object -ComObject WScript.Shell
 $lnk = $ws.CreateShortcut("$env:USERPROFILE\Desktop\LW Monitor.lnk")
 $lnk.TargetPath       = pythonw
-$lnk.Arguments        = '"C:\Legion Wallpaper\tools\lw_monitor.py" --open'
-$lnk.WorkingDirectory = "C:\Legion Wallpaper"
-$lnk.IconLocation     = "C:\Windows\System32\imageres.dll,109"
+$lnk.Arguments        = '"<repo>\tools\lw_monitor.py" --open'
+$lnk.WorkingDirectory = "<repo>"
+$lnk.IconLocation     = "%SystemRoot%\System32\imageres.dll,109"
 $lnk.Description      = "Legion Wallpaper pipeline monitor (127.0.0.1:8901)"
 $lnk.Save()
 ```
@@ -496,7 +496,7 @@ Stop path (documented, not on the shortcut): `POST /api/shutdown` via
 `taskkill /F /PID <pid>` (pid from `/api/health`) - never `Stop-Process`
 (CLAUDE.md hard rule: it hangs the MCP pipe).
 
-## 9. Test plan (mirrors C:\<RC>\tests\test_loop_monitor_route.py)
+## 9. Test plan (mirrors <RC>\tests\test_loop_monitor_route.py)
 
 `tests/test_lw_monitor.py`, pure-builder-first:
 

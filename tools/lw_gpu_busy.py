@@ -2,7 +2,7 @@
 
 This module imports NOTHING, and that is the whole design. The four tools that
 own a `gpu_lock` - lw_g1_gate, lw_upscale, lw_gen_run, lw_clean_sdxl - run under
-four different venvs (.venv-metrics, .venv-upscale, .venv-gen, C:\\Tools\\lw-clean).
+four different venvs (.venv-metrics, .venv-upscale, .venv-gen, %SystemDrive%\\Tools\\lw-clean).
 They each forked their own `class GpuBusy(RuntimeError)` to avoid dragging one
 venv's dependencies into another, which was the right instinct and the wrong fix:
 Python matches exceptions by class IDENTITY, so a forked class means

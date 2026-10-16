@@ -449,7 +449,7 @@ disagree with the thing being guarded. The raw-repair safety claim is an ARM, no
 a comment. Warnings went 2 -> 0.
 
 **A machine-wide fix that did not stay fixed.** `~/.claude.json` carried
-`C:/<SS>` at `trust=False` against the backslash spelling at `True` - the
+`<SS>` (forward-slash spelling) at `trust=False` against the backslash spelling at `True` - the
 documented confound where headless silently DROPS `permissions.allow`. Fixed
 machine-wide 2026-09-05; regressed onto a tree that did not exist then.
 Reconciled, and `drift_guard`'s note was proven to CLEAR (7 notes -> 6), not

@@ -170,7 +170,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 # LW rules (tree-specific, below the fleet block)
 
 ## Paths
-- Root `C:\Legion Wallpaper\`. Python 3.14 = `python` on PATH. Health `ops/runtime/health.json`; logs `logs/YYYY-MM-DD.log`; API keys `API-Key-*.txt` (gitignored).
+- Root `<repo>\`. Python 3.14 = `python` on PATH. Health `ops/runtime/health.json`; logs `logs/YYYY-MM-DD.log`; API keys `API-Key-*.txt` (gitignored).
 - Repo is PUBLIC: never write an account home path into a tracked file (`tests/test_no_account_paths.py`). Resolve via `tools/lw_paths.py`, `$LOCALAPPDATA` in hooks/.ps1, `~`/`%USERPROFILE%` in config, `<account>` in prose.
 
 ## Hard rules

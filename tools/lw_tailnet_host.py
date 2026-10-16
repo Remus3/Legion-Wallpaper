@@ -23,7 +23,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lw_httpd  # noqa: E402
 
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-TAILSCALE = Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Tailscale" / "tailscale.exe"
+# Resolved at run time; the fallback is derived from the system drive, never a
+# drive literal (PUBPATH: tests/test_no_absolute_machine_paths.py).
+TAILSCALE = (Path(os.environ.get("ProgramFiles")
+                  or (os.environ.get("SystemDrive") or "C:") + "\\Program Files")
+             / "Tailscale" / "tailscale.exe")
 MONITOR_PORT = 8901
 
 

@@ -4,7 +4,7 @@
 
 WHY THIS EXISTS. LW has been PUBLIC under Apache-2.0 since 2026-08-01, and until
 2026-09-07 sixty-eight tracked files spelled the operator's home directory out
-in full. A literal `C:\\Users\\<account>\\...` buys nothing an environment lookup
+in full. A literal `<drive>:\\Users\\<account>\\...` buys nothing an environment lookup
 does not, and it publishes the account name plus the machine's layout. This
 module is the one place the layout is written down, so the eight tool sites that
 used to carry their own copy now carry an import instead.

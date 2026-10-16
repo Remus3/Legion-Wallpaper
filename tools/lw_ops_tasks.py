@@ -488,6 +488,27 @@ def _gate(lines: list[str]) -> list[str]:
     return scan_handoff_text("\n".join(lines))
 
 
+def _root_pattern(root: Path) -> re.Pattern:
+    """This checkout's absolute root in any drive / separator / case spelling.
+
+    The drive letter is generic on purpose: the C: junction and the E: tree are
+    the same checkout. On POSIX the root has no drive, so the drive is optional.
+    """
+    parts = [re.escape(p) for p in root.parts[1:]]
+    return re.compile(
+        r"(?<![A-Za-z0-9_])(?:[A-Za-z]:)?[\\/]+" + r"[\\/]+".join(parts)
+        + r"(?=[\\/\s\"'`)\]]|$)", re.IGNORECASE)
+
+
+_ROOT_RX = _root_pattern(ROOT)
+
+
+def _repo_placeholder(text: str) -> str:
+    """PUBPATH (MAIN 2026-10-15): the hand-off is tracked in a PUBLIC repo, so a
+    step naming this checkout's absolute root renders it as `<repo>`."""
+    return _ROOT_RX.sub("<repo>", text)
+
+
 def render_operator_asks(tasks: list[Task]) -> str:
     """The hand-off's "Operator asks" block, from the pending task list.
 
@@ -504,6 +525,7 @@ def render_operator_asks(tasks: list[Task]) -> str:
             lines.append("      open first: " + " -> ".join(t.handoffs))
         if t.last_error:
             lines.append(f"      last check: not done ({t.attempts} tries)")
+        lines = [_repo_placeholder(x) for x in lines]
         if _gate(lines):
             lines = [f"  - {t.id} {t.cap}: text withheld (fails the hand-off gate); "
                      f"see python tools/lw_ops_tasks.py pending"]

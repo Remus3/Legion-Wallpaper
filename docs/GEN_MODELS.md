@@ -185,7 +185,7 @@ Multi-GB fetches are OPERATOR-RUN by the policy in "Phase-0 setup" below - Claud
 does not execute them. Command for the pending row:
 
 ```
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -c "from huggingface_hub import hf_hub_download; print(hf_hub_download('h94/IP-Adapter', 'sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors', local_dir=r'C:\Legion Wallpaper\tools\models\ip-adapter'))"
+"<repo>\.venv-gen\Scripts\python.exe" -c "from huggingface_hub import hf_hub_download; print(hf_hub_download('h94/IP-Adapter', 'sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors', local_dir=r'<repo>\tools\models\ip-adapter'))"
 ```
 
 ### Subject-QA CLIP (open-clip ViT-L-14, openai pretrained - into .venv-metrics)
@@ -206,17 +206,17 @@ get_device_capability()==(12,0) on the RTX 5070) - no CUDA/PyTorch upgrade neede
 
 ```
 # 1. create the new side-venv (gitignored, like .venv-upscale / .venv-metrics)
-%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "C:\Legion Wallpaper\.venv-gen"
+%LOCALAPPDATA%\Programs\Python\Python312\python.exe -m venv "<repo>\.venv-gen"
 
 # 2. install the SAME cu128 torch channel the box already runs
 #    (do NOT let pip pull a CPU/cu12x wheel)
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+"<repo>\.venv-gen\Scripts\python.exe" -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 --index-url https://download.pytorch.org/whl/cu128
 
 # 3. add the generation stack (pure-python / torch-dependent; no new CUDA toolkit; NO xformers)
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -m pip install diffusers transformers accelerate safetensors
+"<repo>\.venv-gen\Scripts\python.exe" -m pip install diffusers transformers accelerate safetensors
 
 # 4. add a working CLIP into .venv-metrics (the existing pyiqa/clip import is BROKEN)
-"C:\Legion Wallpaper\.venv-metrics\Scripts\python.exe" -m pip install open-clip-torch
+"<repo>\.venv-metrics\Scripts\python.exe" -m pip install open-clip-torch
 
 # 5. download ONE painterly/semi-realistic SDXL finetune (safetensors) into
 #    tools\models\ (gitignored); plus, if the spike shows anime leakage, one
@@ -224,7 +224,7 @@ get_device_capability()==(12,0) on the RTX 5070) - no CUDA/PyTorch upgrade neede
 #    BEFORE downloading.
 
 # 6. LIVE PROOF (retire the runtime + attention risks before building on top):
-"C:\Legion Wallpaper\.venv-gen\Scripts\python.exe" -c "import torch; print(torch.cuda.get_device_capability())"
+"<repo>\.venv-gen\Scripts\python.exe" -c "import torch; print(torch.cuda.get_device_capability())"
    # MUST print (12, 0)  -> confirms sm_120 kernels load on the 5070
 ```
 

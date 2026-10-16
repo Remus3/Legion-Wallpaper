@@ -59,8 +59,8 @@ has no pytest; the suite runs under the Python 3.14 install that has it
 | config | 3 | tracked | per file |
 | scripts | 2 | 1 tracked, 1 ignored | per file |
 
-Outside the repo (LIST ONLY, never moved): `E:\Sidecars\LW`, the
-`C:\Legion Wallpaper` junction, account-side Claude project memory, LOCALAPPDATA
+Outside the repo (LIST ONLY, never moved): `<sidecar-drive>:\Sidecars\LW`, the
+system-drive `<repo>` junction, account-side Claude project memory, LOCALAPPDATA
 state, scheduled tasks `LW-*`, worktree parents.
 
 ## 3. Slices (sized to finish inside the run)

@@ -6,9 +6,9 @@
 ## Context
 
 Legion Wallpaper is a new project on the Legion machine (repo
-`C:\Legion Wallpaper\`). The product - some kind of wallpaper app - is not yet
+`<repo>\`). The product - some kind of wallpaper app - is not yet
 defined. The operator's other project on this machine, RC (RC,
-`C:\<RC>\`), evolved a proven operating discipline over hundreds of
+`<RC>\`), evolved a proven operating discipline over hundreds of
 ledgered items: TDD RED-first, tiered verification gates, subagent-first
 delegation with independent verifier confirmation, session rituals
 (wakeup/wrapup), an append-only per-item ledger, ADR-recorded decisions, an

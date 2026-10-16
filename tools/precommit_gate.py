@@ -158,6 +158,12 @@ _USER_PROFILE = re.compile(
     re.IGNORECASE,
 )
 
+# PUBPATH (MAIN 2026-10-15): any absolute drive-letter path - a letter that
+# does not follow a letter or digit (so `https://` and `HKCU:` pass), a
+# colon, then a separator. Same shape as tests/test_no_absolute_machine_paths.py;
+# the hand-off is tracked in a PUBLIC repo. Value withheld in the report.
+_ABSOLUTE_PATH = re.compile(r"(?<![A-Za-z0-9_])[A-Za-z]:[\\/]")
+
 _SECRET = re.compile(
     r"sk-[A-Za-z0-9_-]{16,}"
     r"|gh[pousr]_[A-Za-z0-9]{20,}"
@@ -210,6 +216,9 @@ def scan_handoff_text(text: str, label: str = "hand-off") -> list[str]:
         m = _USER_PROFILE.search(line)
         if m:
             out.append(f"  {label}:{i}  user-profile path: {_mask_user(m.group(0))}")
+        if _ABSOLUTE_PATH.search(line):
+            out.append(f"  {label}:{i}  absolute path (drive-letter; use <repo> or a "
+                       "relative path)")
         if _SECRET.search(line):
             out.append(f"  {label}:{i}  secret-shaped literal (value withheld)")
     return out
@@ -218,7 +227,7 @@ def scan_handoff_text(text: str, label: str = "hand-off") -> list[str]:
 def _is_commit(command: str) -> bool:
     s = command.strip()
     # tolerate leading env assignments, `&&`/`;` chains, PowerShell `{` blocks,
-    # and global flags with quoted args (git -C "C:\path" commit).
+    # and global flags with quoted args (git -C "<drive>:\path" commit).
     return bool(re.search(
         r"(^|[;&|{(]\s*)git\s+(?:(?:-\S+|\"[^\"]*\"|'[^']*')\s+)*commit\b", s
     ))
@@ -258,7 +267,7 @@ _NAMES_A_TREE = re.compile(
     re.IGNORECASE,
 )
 
-# Git Bash / MSYS hand over `/c/Users/...` for `C:\Users\...`. Left unconverted
+# Git Bash / MSYS hand over `/<d>/Users/...` for `<drive>:\Users\...`. Left unconverted
 # it is not a directory on Windows, `_git` raises OSError there, `_staged_added`
 # swallows that into an empty diff, and an empty diff reads as "no findings" -
 # a false green of exactly the family CLAUDE.md already records.
@@ -266,7 +275,7 @@ _MSYS_DRIVE = re.compile(r"^/([A-Za-z])(/.*)?$")
 
 
 def _normalise_root(path: str) -> str:
-    """Strip quoting and convert an MSYS `/c/...` path to `C:/...`."""
+    """Strip quoting and convert an MSYS `/c/...` path to `<drive>:/...`."""
     p = path.strip().strip("\"'")
     m = _MSYS_DRIVE.match(p)
     if m:

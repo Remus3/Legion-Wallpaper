@@ -5,7 +5,7 @@ Author: LW research subagent (Claude)
 Scope: local upscaling and restoration toolchain for splash-art / illustration
 content on THIS box (Windows 10 Pro, RTX 5070 12GB Blackwell sm_120, driver
 610.62, Python 3.14 system install, existing realesrgan-ncnn-vulkan at
-C:\Tools\realesrgan).
+%SystemDrive%\Tools\realesrgan).
 Verification discipline: claims checked against official repos / package
 indexes where possible. Anything not directly confirmed is marked UNVERIFIED.
 
@@ -294,7 +294,7 @@ Components:
 - spandrel (latest; PyPI page fetch failed today - version UNVERIFIED,
   check pip).
 - Pillow (Lanczos + UnsharpMask) or OpenCV; Pillow is lighter and enough.
-- Models (download to C:\Legion Wallpaper\tools\models\):
+- Models (download to <repo>\tools\models\):
   - 4x_IllustrationJaNai_V3detail (DAT2 variant) - primary quality model.
   - 4x_IllustrationJaNai_V3denoise (DAT2) - for the compression/banding
     subset.
@@ -306,7 +306,7 @@ Components:
 
 Install steps (new venv, PowerShell):
 
-    cd C:\Legion Wallpaper
+    cd <repo>
     & python -m venv .venv-upscale
     .\.venv-upscale\Scripts\python.exe -m pip install --upgrade pip
     .\.venv-upscale\Scripts\pip.exe install torch torchvision --index-url https://download.pytorch.org/whl/cu128
@@ -323,7 +323,7 @@ need smaller tiles.
 
 ### 6.2 Fallback stack (zero-CUDA, works today)
 
-- Existing C:\Tools\realesrgan\realesrgan-ncnn-vulkan.exe with
+- Existing %SystemDrive%\Tools\realesrgan\realesrgan-ncnn-vulkan.exe with
   realesrgan-x4plus-anime, driven by subprocess. Already Blackwell-safe.
 - Upgrade option: upscayl-bin from github.com/upscayl/upscayl-ncnn
   (maintained fork, custom NCNN model support). Community NCNN conversions

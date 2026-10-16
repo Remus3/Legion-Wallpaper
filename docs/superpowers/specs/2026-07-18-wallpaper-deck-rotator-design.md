@@ -13,7 +13,7 @@ Probed ground truth (2026-07-18, this machine):
 
 - `HKCU\Control Panel\Personalization\Desktop Slideshow`:
   `Shuffle=1`, `Interval=60000`, `LastTickLow=0`, `LastTickHigh=0`
-- `C:\Users\Administrator\Pictures`: 242 images, flat, no subdirectories
+- `%USERPROFILE%\Pictures`: 242 images, flat, no subdirectories
 - 1 monitor, `\\.\DISPLAY1`, 2560x1440, primary
 - `HKCU\Control Panel\Desktop`: `WallpaperStyle=10` (Fill)
 
@@ -84,7 +84,7 @@ rule, because a tick can land while another reader is mid-read.
 ```json
 {
   "version": 1,
-  "source_dir": "C:\\Users\\Administrator\\Pictures",
+  "source_dir": "%USERPROFILE%\\Pictures",
   "deck": ["a.png", "b.png", "c.png"],
   "cursor": 1,
   "cycle": 7,
@@ -168,7 +168,7 @@ be inspected without consuming it.
 
 ```json
 {
-  "source_dir": "C:\\Users\\Administrator\\Pictures",
+  "source_dir": "%USERPROFILE%\\Pictures",
   "interval_minutes": 3,
   "state_path": "ops/runtime/wallpaper_deck.json",
   "extensions": [".jpg", ".jpeg", ".png", ".bmp"]

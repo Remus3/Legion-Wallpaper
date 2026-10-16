@@ -1,8 +1,8 @@
 # F1 - SDK executor channel (retire the AHK GUI bridge), concurrency-safe
 
 Status: SPEC (not built). Author date 2026-07-26.
-Supersedes the FUTURE-lane sketch F1 in `C:\<RC>\docs\LOOP_IMPROVEMENTS_2026-06-27.md`.
-Sibling precedent: `C:\<RC>\ops\loop\adjudicator.py` (LEDGER 993) did exactly this
+Supersedes the FUTURE-lane sketch F1 in `<RC>\docs\LOOP_IMPROVEMENTS_2026-06-27.md`.
+Sibling precedent: `<RC>\ops\loop\adjudicator.py` (LEDGER 993) did exactly this
 refactor for the BRAIN side. This spec does it for the EXECUTOR side, and adds the
 machine-wide concurrency contract the adjudicator swap never needed.
 
@@ -152,7 +152,7 @@ the list.
 | CLI session store | no - `~\.claude\projects\<repo-slug>` | disjoint; plus per-cycle uuid |
 | Transcript .jsonl metering | per-repo dir, but mtime-races if two loops write | RETIRED - cost from the result JSON |
 | git index / working tree | no - separate repos | unchanged |
-| Worktrees | RC hardcodes `C:\rc-worktrees` | `<base>\<run_id>\<slice>` per run |
+| Worktrees | RC hardcodes `%SystemDrive%\rc-worktrees` | `<base>\<run_id>\<slice>` per run |
 | Gemini CLI quota | YES - one metered account | serialize via named mutex (below) |
 | Anthropic rate limit | YES - one account | slot governor (below) |
 | GPU (LW upscale / cleaning CUDA) | YES - one 5070 | named mutex `winmutex.GPU_MUTEX` |
@@ -161,7 +161,7 @@ the list.
 
 ### 4a. Slot governor (`ops/loop/slots.py`, shared implementation, identical file in both repos)
 
-A machine-wide token bucket in `C:\ProgramData\lw-loop\slots\`. Not per-repo - the point is
+A machine-wide token bucket in `%ProgramData%\lw-loop\slots\`. Not per-repo - the point is
 to bound TOTAL concurrent executor calls on the Legion box across every caller.
 
 - acquire: try `os.open(slots/<i>.lock, O_CREAT|O_EXCL|O_WRONLY)` for `i` in
@@ -549,7 +549,7 @@ Then, and only then, phase 6 deletes the ahk-only code listed in section 5.
 Build in LW first (smaller loop, cheaper cycles, no live-game coupling), then port
 `executor.py` + `slots.py` + `winmutex.py` to RC verbatim. `slots.py` and `winmutex.py`
 MUST stay byte-identical across the two repos - they coordinate with each other through
-`C:\ProgramData\lw-loop\`, so a divergence is a silent concurrency bug. Add a drift check
+`%ProgramData%\lw-loop\`, so a divergence is a silent concurrency bug. Add a drift check
 to the weekly hygiene pass comparing the two file hashes.
 
 RC gets a bonus on arrival: its already-built `ops/loop/run_lane.ps1` +

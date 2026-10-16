@@ -346,7 +346,7 @@ FAINT_BRIGHT_THR = 42.0
 # Calibrated on n=3, so it is a tripwire and not a classifier - but it errs
 # toward REFUSING, and a refusal routes to a human, which is the safe direction.
 # The MANUAL lane's launch line, verified live 2026-08-22: IOPaint 1.6.0 under
-# pythoncore-3.11. `C:\Tools\iopaint\venv` was recorded as stale and
+# pythoncore-3.11. `%SystemDrive%\Tools\iopaint\venv` was recorded as stale and
 # never-created back in LEDGER 30 (2026-07-16) and STILL shipped in two log lines
 # and a slash command, which cost the operator a failed launch. One constant now,
 # so the next drift is a one-line fix instead of a scavenger hunt.

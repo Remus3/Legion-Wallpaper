@@ -16,7 +16,7 @@ Both are reported, against the operator's own frames.
 
 Run it under the lw-clean venv - the fill needs simple-lama.
 
-  C:\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_condition_census.py
+  %SystemDrive%\\Tools\\lw-clean\\venv\\Scripts\\python.exe tools/lw_clean_condition_census.py
 """
 from __future__ import annotations
 
