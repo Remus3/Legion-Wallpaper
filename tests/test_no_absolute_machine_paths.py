@@ -119,7 +119,7 @@ def test_every_allowlist_entry_is_load_bearing():
     r"D:\Sidecars\LW",
     "[x](file:///C:/Legion%20Wallpaper/images/a.png)",
     r"pythonw (C:\Tools\lw-clean\venv)",
-    "cd /c/Users/someone/Desktop",
+    "cd /c/Users/example/Desktop",
     r"default C:\ProgramData\lw-loop\slots",
 ])
 def test_a_planted_absolute_path_is_caught(planted):
