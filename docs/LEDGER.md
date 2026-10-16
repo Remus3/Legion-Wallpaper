@@ -27,6 +27,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+325. DONE **2026-10-15 (session 77 ship: CONFIG-SLUG merged, C-SLUG-SIBLINGS, PUBREPO pushed and answered; b14ce18, da8e3b5, b66fbeb).**
+   CONFIG-SLUG worktree commit 16066db cherry-picked as b14ce18 (10 passed). C-SLUG-SIBLINGS:
+   the dead C-- project slug hardcoded in claimed_green_gate, drift_guard, lw_agent_mirror,
+   lw_rundash and lw_transcript_union now routes through lw_paths.project_slug() /
+   claude_project_sessions(): the slug is read from ops/loop/config.json transcript_dir
+   (CI and worktrees agree with the operator's checkout), falling back to slug_for() of the
+   main checkout (a linked worktree resolves to its main). DEFAULT_STRAY_KEY stays the
+   historical literal. New tests/test_lw_paths_project_slug.py red (6 failed) then green;
+   cited tests 235 passed (da8e3b5). done_gate bind on da8e3b5 RED: 1 failed (the slug_for
+   docstring spelled a drive path, test_no_absolute_machine_paths), 4177 passed, 19 skipped
+   + 182 passed, 1 skipped; fixed b66fbeb; rebind GREEN (ruff 0, lw_suite 0, drift_guard 0)
+   and BOUND to b66fbeb. ONE push a9a7fcc..b66fbeb; done_gate verify-push VERIFIED. CI run
+   38835978817 success, CodeQL run 38835978839 success; CodeQL open alerts read back 0.
+   Dependabot PR #2 closed with a comment naming 94f4494, read back CLOSED, open PRs 0.
+   PUBREPO ANSWER to MAIN delivered (HOP 2, TERMINAL, OutboundCap 2/6), destination re-hashed,
+   reached 1/1. responder-run progress marked failed (pid 28576 dead, timed out 1800s).
+   Worktrees removed: agent-a51f6a5baa26ec35c (merged as b14ce18) and agent-a3b50d28a7b9f6792
+   (uncommitted diff identical to 898a891, --force); merged branches deleted:
+   worktree-agent-a6608fdf6d94503e6, -a77aee88821594e07, -ad6f0167d0529b955. Kept:
+   worktree-agent-a6b282fa560024205 (unmerged MIG-1 WIP b29005e).
+
 324. DONE **2026-10-15 (session 77 triage: CI-76 closed; PUBREPO ORDER recovered and committed; 898a891, db55624, 470abad, 94f4494).**
    CI-76: run 38829245692 on a9a7fcc concluded success (clears 1a273c9's red 38828696490).
    MAIN ORDER 2026-10-15-1925 (PUBREPO, ONE-ANSWER) verify_main True. The responder's work run

@@ -21,11 +21,6 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
 Acceptance: CONFIG-SLUG test red then green, config*.json point at the live slug,
   ROADMAP row flipped DONE with a LEDGER entry, CI green on the push.
 CHECKLIST:
-  - PUBREPO-PUSH: Push 898a891..HEAD in ONE push at /done (done_gate bind first), read CI green, then read back CodeQL open counts after the re-scan (expect 0 open; 20 fixed by 898a891, alert 17 dismissed) (LEDGER 324)
-  - PUBREPO-PR2: After the push, close Dependabot PR #2 with a comment naming 94f4494 (applied locally, operator identity); read back open bot PRs = 0 (LEDGER 324)
-  - PUBREPO-ANSWER: Fill the AT-PUSH fields in ops/runtime/inbox_responder/reply_draft_MAIN1925_PUBREPO.md from the read-backs, then deliver it as the ONE ANSWER to MAIN (OutboundCap, HOP 2) and report N/M reached (LEDGER 324)
-  - PUBREPO-WT: Remove the dead PUBREPO run's merged worktree agent-a3b50d28a7b9f6792 (content landed in 898a891; git worktree remove); worktree agent-a51f6a5baa26ec35c (locked) holds an uncommitted CONFIG-SLUG slice - reuse it for CONFIG-SLUG below, do not discard it (LEDGER 324)
-  - CONFIG-SLUG: Point ops/loop/config*.json transcript_dir at the live E-- project slug (TDD, verifier gate)
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
   - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at 2026-10-13 session 75)
