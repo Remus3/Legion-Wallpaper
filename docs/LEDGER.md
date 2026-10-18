@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+326. DONE **2026-10-18 (FLEET-KIT v18 adopted; 7ada747, pushed; answer delivered 1/1).**
+   READ BACK: MAIN ORDER 2026-10-17-1018 note sha256 dab99ba5...0f220132 (11470 B),
+   verify_main True. ops/fleet_kit at HEAD 7ada747: 23/23 files equal the note's section-1
+   hashes, MANIFEST.json 9a02b143...2cdfa0; origin/main == HEAD. Answer
+   2026-10-18-0453-from-LW-ANSWER-to-MAIN-batched-1-answers.md: MAIN inbox copy re-hashed
+   equal (1/1 reached). Suite per that answer: 4178 passed 19 skipped parallel, 182 passed
+   1 skipped serial, 0 failed. Adoption landed by a concurrent agent (progress kit-rollout-v18)
+   while the responder child read the note; the child touched no kit file and sent no
+   second answer. OPEN (V18-PROVENANCE): the parent responder's kit_adoption stops at stage
+   provenance on every v18+ note - bundle_verified() checks <outbox>/<bundle>/<file>, and
+   v18 ships no outbox bundle (FI-10); 0/23 matched there, while 23/23 bundle files equal
+   MAIN's fleet-kit/ at KIT-COMMIT 97a16fe (an ancestor of MAIN HEAD). Fix: verify against
+   KIT-COMMIT:fleet-kit/ (plus the note hashes) in tools/lw_inbox_responder.py, TDD.
+
 325. DONE **2026-10-15 (session 77 ship: CONFIG-SLUG merged, C-SLUG-SIBLINGS, PUBREPO pushed and answered; b14ce18, da8e3b5, b66fbeb).**
    CONFIG-SLUG worktree commit 16066db cherry-picked as b14ce18 (10 passed). C-SLUG-SIBLINGS:
    the dead C-- project slug hardcoded in claimed_green_gate, drift_guard, lw_agent_mirror,
