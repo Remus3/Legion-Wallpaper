@@ -27,6 +27,18 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+327. DONE **2026-10-18 (INSPECT-A6B2 retired: archive tag archive/mig-1-v6-wip, branch deleted).**
+   DECISION: RETIRE branch worktree-agent-a6b282fa560024205 (single commit b29005e, "chore(wip):
+   preserve abandoned v6 responder attempt before prune (MIG-1)"). It is an abandoned FLEET-KIT
+   v6 attempt superseded on main by 6a75eeb and every later kit (now v18); LEDGER 281/282
+   already called it superseded. ALTERNATIVES: merge - rejected, it would revert kit v18 and
+   conflicts in 18 files; keep the branch - rejected, dead ref clutter. METHOD (bytes kept,
+   reversible): local lightweight tag archive/mig-1-v6-wip at b29005e (NOT pushed; repo is
+   public), then git branch -D. READ BACK: git rev-parse archive/mig-1-v6-wip =
+   b29005e7dbc7113b4243387274677c28b64832db; git branch --list worktree-agent-a6b282fa560024205
+   empty; git cat-file -t b29005e = commit. REVERSE: git branch
+   worktree-agent-a6b282fa560024205 archive/mig-1-v6-wip.
+
 326. DONE **2026-10-18 (FLEET-KIT v18 adopted; 7ada747, pushed; answer delivered 1/1).**
    READ BACK: MAIN ORDER 2026-10-17-1018 note sha256 dab99ba5...0f220132 (11470 B),
    verify_main True. ops/fleet_kit at HEAD 7ada747: 23/23 files equal the note's section-1
