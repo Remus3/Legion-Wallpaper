@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+330. DONE **2026-10-18 (FLEET-KIT v19 adopted: status board, stop sentinels, pre-push ls-remote).**
+   READ BACK: MAIN ORDER 2026-10-18-1235 note main_provenance MATCH (8309 B); bundle_verified
+   True at KIT-COMMIT 3ade709. tools/lw_kit_adopt.py adopt: ok, stage done; ops/fleet_kit
+   24/24 files equal the note's section-1 hashes, conformance() == []. Tree wiring:
+   ops/status_board.json (LW board, dataset_version 2); .gitignore ops/loop/control/board/;
+   /done section 9 pushes the board with `fleet_board.py calls --final` before the done
+   marker; the SessionStart HOOK_RULE (tools/lw_checklist.py) orders the push at session
+   start and every item-13 b reprint. Stop sentinels declared: 0 (LW's HALT files are
+   per-task kill switches each task already checks; a tree-wide spawn veto would let the
+   CI-watchdog HALT silence the responder). Version pins 18 -> 19 (conformance, headless_env,
+   lw_promise_probes + its test). Step 6: no LW test fakes pre_push for a new ref.
+   FIX: tests/test_inbox_responder_kit_adopt.py _spawn now points R.HALT_PATH at tmp_path -
+   the live responder HALT (held by this run to keep the responder off the same note) made
+   4 tests red, a test-isolation leak, not a kit defect. Gated suite (lw_suite via
+   fleet_suite_gate): 4187 passed 19 skipped parallel, 182 passed 1 skipped serial, 0 failed.
+   KIT-PUBLIC-GIT still open (v19 ships no public KIT-COMMIT helper); carried in the answer.
+
 329. DONE **2026-10-18 (CI-77 + CI-78 read back green; session 79 inbox; docs-only).**
    CI-78: run 39117243862 success on cf2e95d and run 39117479993 success on d93c290;
    CI-77: run 39030888507 success on c97c7d5 - all read back via gh run view

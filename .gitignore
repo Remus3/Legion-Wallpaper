@@ -98,6 +98,8 @@ ops/loop/control/session_done.seen
 ops/loop/control/claims/
 ops/loop/control/locks/
 ops/loop/control/claims.jsonl
+# Fleet kit v19 status board (MAIN 1235; FLEET-COMMON 18): runtime state.
+ops/loop/control/board/
 ops/loop/control/claims.mode
 ops/loop/control/gitlock.jsonl
 # Fleet kit v13 (MAIN 2246 section 1 step 5; FLEET-COMMON 17): identity hook log.

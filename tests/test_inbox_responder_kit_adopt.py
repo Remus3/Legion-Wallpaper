@@ -150,6 +150,8 @@ def _seams(seen):
 
 
 def _spawn(monkeypatch, tmp_path, adoption):
+    # The live HALT kill switch must not reach the spawn under test (kit v19 run).
+    monkeypatch.setattr(R, "HALT_PATH", tmp_path / "HALT")
     monkeypatch.setattr(R, "main_provenance", lambda p: MATCH)
     monkeypatch.setattr(R, "kit_adoption", lambda p, prov: adoption)
     seen = {}

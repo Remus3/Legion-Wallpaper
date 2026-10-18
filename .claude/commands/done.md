@@ -199,6 +199,12 @@ python tools/done_gate.py verify-push
 
 ### 9. Final line - nothing else
 
+Board push first (FLEET-COMMON item 18, MAIN FLEET-KIT v19, 2026-10-18): once the hand-off is READ BACK and before the done marker, pipe the last printed checklist into the kit's board renderer and make the two tool calls it prints (Artifact publish of the rendered status.json, then ArtifactData update of datasets/board with the printed if_version and `__URL__` replaced by the returned blob url; on a version mismatch run `fleet_board.py pushed --version <current>` and redo the update). Board URL: `ops/status_board.json`. A headless run prints `no push: headless` and skips it. A failed push is a hand-off line, never a ritual failure.
+
+```
+python ops/fleet_kit/fleet_board.py calls --final --session <n>
+```
+
 Last act before the chat line (FLEET-COMMON item 15, MAIN FLEET-KIT v9, 2026-10-07): once the commit and the hand-off are READ BACK, write the kit's /done marker - the signal of record the Stop hook and status surfaces validate:
 
 ```
