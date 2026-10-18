@@ -1422,7 +1422,7 @@ def test_a_timeout_comes_back_as_a_kit_line_not_a_raise():
     seams = _kit_seams()
     seams["run"] = lambda argv, **kw: (_ for _ in ()).throw(
         subprocess.TimeoutExpired(argv, kw.get("timeout")))
-    line = responder.lw_headless_env.spawn("p", note="n.md", **seams)
+    line = responder.lw_headless_env.spawn("p", note="n.md", kind="inbox", **seams)
     assert line["error"] == "timeout" and line["rc"] is None
 
 

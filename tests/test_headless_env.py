@@ -81,7 +81,7 @@ def test_the_kit_is_bound_from_the_vendored_copy():
     assert Path(he.kit.__file__).resolve() == (ROOT / "ops" / "fleet_kit" /
                                                "fleet_headless.py").resolve()
     assert sys.modules["fleet_headless"] is he.kit
-    assert he.kit.KIT_VERSION == 17
+    assert he.kit.KIT_VERSION == 18
 
 
 def test_the_refusal_class_is_the_kits():
@@ -209,7 +209,7 @@ def _fake_run(seen):
 
 def test_spawn_is_kit_spawn_at_fleet_root_with_lw_code():
     seen = {}
-    line = he.spawn("hello", note="2026-10-03-from-RC-ACK-x.md", url_source=lambda: _URL,
+    line = he.spawn("hello", note="2026-10-03-from-RC-ACK-x.md", kind="inbox", url_source=lambda: _URL,
                     connect=_up, run=_fake_run(seen), exe_source=lambda: "claude.exe")
     assert line["code"] == "LW" and line["result"] == "done"
     assert line["bare"] is False
@@ -227,7 +227,7 @@ def test_spawn_takes_the_kits_triage_kwargs_without_a_duplicate_keyword():
     seen = {}
     import lw_inbox_responder
     kw = lw_inbox_responder.fleet_inbox.triage_spawn_kwargs(True)
-    line = he.spawn("hello", url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
+    line = he.spawn("hello", note="n.md", kind="triage", url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
                     exe_source=lambda: "claude.exe", **kw)
     assert line["bare"] is False
     assert "--bare" not in seen["argv"]
@@ -389,7 +389,7 @@ def test_cli_spawn_runs_kit_spawn_with_extra_flags(tmp_path, capsys):
     prompt = tmp_path / "p.txt"
     prompt.write_text('say "hi"\nline two', encoding="utf-8")
     seen = {}
-    rc = he.main(["spawn", "--note", "weekly-hygiene", "--prompt-file", str(prompt),
+    rc = he.main(["spawn", "--note", "weekly-hygiene", "--kind", "build", "--prompt-file", str(prompt),
                   "--", "--allowedTools", "Edit,Read", "--dangerously-skip-permissions"],
                  url_source=lambda: _URL, connect=_up, run=_fake_run(seen),
                  exe_source=lambda: "claude.exe")

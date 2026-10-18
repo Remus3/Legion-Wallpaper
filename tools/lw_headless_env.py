@@ -342,6 +342,9 @@ def main(argv: list[str] | None = None, *, log_dir: Path | None = None,
     sub.add_parser("check", help="print OK host:port or REFUSED reason")
     sp = sub.add_parser("spawn", help="one synchronous kit.spawn run")
     sp.add_argument("--note", default="")
+    sp.add_argument("--kind", default=None, choices=("build", "inbox", "triage", "order"))
+    sp.add_argument("--slot", default=None)
+    sp.add_argument("--progress-task", default=None)
     sp.add_argument("--prompt-file", type=Path, required=True)
     sp.add_argument("--writes-code", action="store_true")
     sp.add_argument("--timeout", type=float, default=3600.0)
@@ -369,6 +372,12 @@ def main(argv: list[str] | None = None, *, log_dir: Path | None = None,
                                 "run": run, "exe_source": exe_source}.items()
               if v is not None}
         try:
+            if args.kind:
+                kw["kind"] = args.kind
+            if args.slot:
+                kw["slot_id"] = args.slot
+            if args.progress_task:
+                kw["progress_task"] = args.progress_task
             line = spawn(prompt, note=args.note, writes_code=args.writes_code,
                          timeout=args.timeout, extra=_strip_dashdash(args.extra), **kw)
         except HeadlessRefused as exc:

@@ -152,7 +152,7 @@ def test_kit_spawn_hands_run_the_no_window_flag(tmp_path):
         seen.update(kw)
         return subprocess.CompletedProcess(argv, 0, '{"result": "ok"}', "")
 
-    kit.spawn(tmp_path, "LW", "hi", run=run,
+    kit.spawn(tmp_path, "LW", "hi", note="t.md", kind="build", run=run,
               url_source=lambda: "http://127.0.0.1:9", connect=lambda *a, **k: _Conn(),
               exe_source=lambda: "claude.exe")
     assert seen["creationflags"] == kit._NO_WINDOW

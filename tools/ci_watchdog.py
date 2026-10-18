@@ -298,7 +298,7 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, kit_seams=None):
     # A fix run is its own fire: run count 1.
     prompt = f"{prompt}\n{_bind_checklist().child_rule(FIX_NOTE, 1)}\n"
     try:
-        line = he.spawn(prompt, note=FIX_NOTE, writes_code=True, model=model or None,
+        line = he.spawn(prompt, note=FIX_NOTE, kind="build", writes_code=True, model=model or None,
                         effort=FIX_EFFORT, cwd=wt, return_stderr=True, timeout=timeout,
                         governor=FIX_GOVERNOR, governor_timeout=FIX_SLOT_WAIT_S,
                         extra=("--permission-mode", "bypassPermissions",

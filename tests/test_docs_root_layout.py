@@ -53,9 +53,10 @@ def test_every_cited_docs_path_resolves():
     tracked = set(files)
     dangling = []
     for rel in files:
+        # ops/fleet_kit/ is vendored byte-pinned MAIN text citing MAIN rulings.
         # tests/ is skipped: its dated paths are often RULE INPUTS (a skip or
         # exemption arm fed a docs-root spelling on purpose), not citations.
-        if (rel.startswith(("docs/_archive/", "tests/"))
+        if (rel.startswith(("docs/_archive/", "tests/", "ops/fleet_kit/"))
                 or not rel.endswith((".md", ".py", ".txt", ".json"))):
             continue
         try:

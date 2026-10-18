@@ -923,7 +923,7 @@ def claude_oracle(prompt_body, instruction):
     out = ""
     for tryn in range(1, 4):
         try:
-            line = headless_env.spawn(prompt, note=ORACLE_NOTE, writes_code=False,
+            line = headless_env.spawn(prompt, note=ORACLE_NOTE, kind="build", writes_code=False,
                                       model=model, stdin=True, return_stderr=True,
                                       timeout=timeout, extra=claude_oracle_extra(CFG))
         except headless_env.HeadlessRefused as exc:
