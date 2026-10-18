@@ -27,6 +27,14 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+329. DONE **2026-10-18 (CI-77 + CI-78 read back green; session 79 inbox; docs-only).**
+   CI-78: run 39117243862 success on cf2e95d and run 39117479993 success on d93c290;
+   CI-77: run 39030888507 success on c97c7d5 - all read back via gh run view
+   (conclusion). Inbox: no new note for LW; the only unread note was an SS->MAIN
+   TERMINAL (2026-10-18-1010, not for LW); marked seen with lw_facts.py
+   --mark-inbox-seen. Open after this session: V18-READBACK (no MAIN read-back of
+   "LW OK v18" yet), KIT-PUBLIC-GIT (LEDGER 328; goes in the next batched MAIN note).
+
 328. DONE **2026-10-18 (V18-PROVENANCE fixed: v18+ kit bundles verified at KIT-COMMIT; 34fa4f3, merge 18939da).**
    FIX: bundle_verified() in tools/lw_inbox_responder.py routes v18+ FLEET-KIT notes to a
    KIT-COMMIT check against MAIN fleet-kit/: exact file set, per-file sha256 equal to the

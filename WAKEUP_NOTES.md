@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-18, session 79) - V18-PROVENANCE fixed, INSPECT-A6B2 retired
+
+Commits: c5f7068 (LEDGER 327, INSPECT-A6B2 retired: local tag archive/mig-1-v6-wip =
+b29005e, not pushed - public repo; branch deleted), 34fa4f3 + merge 18939da
+(V18-PROVENANCE: bundle_verified() routes v18+ notes to a KIT-COMMIT check against MAIN
+fleet-kit/; verifier 139/0), fea8484 (LEDGER 328). CI-78 read green (39117243862 on
+cf2e95d, 39117479993 on d93c290); CI-77 read green (39030888507 on c97c7d5). Inbox: no
+new note for LW, marked seen. Gap filed: KIT-PUBLIC-GIT (fix uses private
+fleet_headless._git; ask MAIN for a public verify_kit_commit helper in the next batched note).
+Do NOT redo: CI-77, CI-78, V18-PROVENANCE, INSPECT-A6B2.
+Next: V18-READBACK watch + one batched MAIN note (KIT-PUBLIC-GIT) if the outbound cap allows.
+
 ## PREVIOUS SESSION (2026-10-18, session 78 / responder 177) - FLEET-KIT v18 adopted
 
 Commits: 7ada747 (fleet kit v18 vendored by a concurrent agent, pin 6a02c058 -> 9a02b143),
