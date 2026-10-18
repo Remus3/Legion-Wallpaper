@@ -79,6 +79,16 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-18, session 78 / responder 177) - FLEET-KIT v18 adopted
+
+Commits: 7ada747 (fleet kit v18 vendored by a concurrent agent, pin 6a02c058 -> 9a02b143),
+cf2e95d (LEDGER 326). MAIN v18 ORDER 2026-10-17-1018 provenance MATCH; reply
+2026-10-18-0453 ANSWER reached 1/1; inbox marked seen. Gap filed: bundle_verified() in
+tools/lw_inbox_responder.py cannot verify v18+ notes (no outbox bundle since FI-10) ->
+V18-PROVENANCE. None of the session-78 checklist items were acted on - all carried.
+Do NOT redo: v18 adoption (7ada747), the v18 reply note.
+Next: CI-77/CI-78, V18-PROVENANCE, INSPECT-A6B2, then the carried watches.
+
 ## PREVIOUS SESSION (2026-10-15, session 77) - PUBREPO answered, CONFIG-SLUG + C-SLUG-SIBLINGS
 
 Commits: 898a891 (20 CodeQL fixes: path containment, ReDoS-free guard regexes), db55624
