@@ -102,6 +102,7 @@ import hashlib
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -783,9 +784,63 @@ def kit_bundle(note_path: Path) -> Path | None:
     return bundle if bundle.is_dir() else None
 
 
-def bundle_verified(bundle: Path) -> bool:
+# V18-PROVENANCE (LEDGER 326): from kit v18 (MAIN FI-10) there is no outbox
+# bundle. The note (itself verify_main MATCH) carries KIT-COMMIT and one
+# "    <file>  sha256 <hex>" line per kit file; the bundle must equal MAIN's
+# fleet-kit/ tree at that commit, and the commit must be on MAIN's HEAD history.
+KIT_COMMIT_FROM = 18
+MAIN_KIT_DIR = "fleet-kit"
+_KIT_COMMIT = re.compile(r"^KIT-COMMIT:[ \t]*([0-9a-f]{40})[ \t]*$", re.M)
+_KIT_HASH = re.compile(r"^[ \t]+(\S+)[ \t]+sha256[ \t]+([0-9a-f]{64})[ \t]*$", re.M)
+
+
+def _note_kit_section(text: str) -> tuple[str | None, dict[str, str]]:
+    """(KIT-COMMIT, {file: sha256}) from the note's kit section: the hash lines
+    after the one KIT-COMMIT line, up to the next `## ` heading. A missing or
+    repeated KIT-COMMIT gives None (the caller fails closed)."""
+    commits = _KIT_COMMIT.findall(text)
+    if len(commits) != 1:
+        return None, {}
+    start = _KIT_COMMIT.search(text).end()
+    nxt = re.search(r"^## ", text[start:], re.M)
+    section = text[start:start + nxt.start()] if nxt else text[start:]
+    return commits[0], dict(_KIT_HASH.findall(section))
+
+
+def _bundle_at_kit_commit(bundle: Path, note_path: Path) -> bool:
+    """True only when every bundle file is listed in the note with its sha256 and
+    is byte-identical to MAIN's <fleet-kit>/<file> at KIT-COMMIT, the file sets
+    are equal, and KIT-COMMIT is an ancestor of (or is) MAIN's HEAD. Git runs
+    through the kit's provenance primitive (fleet_headless._git: replace refs
+    off, no console window); any error = False (fail closed)."""
+    k = lw_headless_env.kit
+    try:
+        commit, listed = _note_kit_section(note_path.read_text(encoding="utf-8"))
+        files = sorted(f for f in bundle.iterdir() if f.is_file())
+        if commit is None or not files or sorted(f.name for f in files) != sorted(listed):
+            return False
+        top = Path(k._git(main_outbox(), "rev-parse", "--show-toplevel")
+                   .decode("utf-8").strip())
+        k._git(top, "merge-base", "--is-ancestor", commit, "HEAD")
+        for f in files:
+            want = hashlib.sha256(f.read_bytes()).hexdigest()
+            blob = k._git(top, "cat-file", "blob", f"{commit}:{MAIN_KIT_DIR}/{f.name}")
+            if listed[f.name] != want or hashlib.sha256(blob).hexdigest() != want:
+                return False
+    except (OSError, ValueError, KeyError, TypeError, AttributeError,
+            subprocess.SubprocessError):
+        return False
+    return True
+
+
+def bundle_verified(bundle: Path, note_path: Path | None = None) -> bool:
     """True only when the bundle holds files and EVERY one matches MAIN's
+    committed copy. A FLEET-KIT-v18+ note: MAIN's fleet-kit/ at the note's
+    KIT-COMMIT (_bundle_at_kit_commit). Older notes (or no note): MAIN's
     committed outbox copy (kit verify_main, rel = <bundle dir>/<file>)."""
+    m = _KIT_NOTE.match(note_path.name) if note_path is not None else None
+    if m is not None and int(m.group(2)) >= KIT_COMMIT_FROM:
+        return _bundle_at_kit_commit(bundle, note_path)
     try:
         outbox = main_outbox()
         files = sorted(f for f in bundle.iterdir() if f.is_file())
@@ -808,10 +863,12 @@ def kit_adoption(note_path: Path, provenance: str, *, adopt=None,
     bundle = kit_bundle(note_path)
     if bundle is None:
         return None
-    if not (bundle_ok or bundle_verified)(bundle):
+    ok = bundle_ok(bundle) if bundle_ok else bundle_verified(bundle, note_path)
+    if not ok:
         return {"ok": False, "stage": "provenance", "residual": [],
                 "problems": [f"{bundle.name}: not every file matches MAIN's committed "
-                             "outbox copy; nothing copied"]}
+                             "copy (outbox bundle before v18, fleet-kit/ at KIT-COMMIT "
+                             "from v18); nothing copied"]}
     try:
         if adopt is None:
             import lw_kit_adopt
@@ -833,7 +890,8 @@ def adoption_prompt(adoption: dict) -> str:
     result = json.dumps(adoption, sort_keys=True)
     if hands_residual(adoption):
         return (f"{head}: tools/lw_kit_adopt.py checked every bundle file against MAIN's "
-                "committed outbox and the bundle manifest, copied the kit into "
+                "committed copy (outbox bundle before v18, fleet-kit/ at KIT-COMMIT "
+                "from v18) and the bundle manifest, copied the kit into "
                 "ops/fleet_kit/ byte for byte, re-embedded the CLAUDE.md block, passed "
                 "conformance() and ran the kit tests; do NOT copy the bundle again. Your "
                 "work is ONLY the residual: the tree-specific wiring the note describes "

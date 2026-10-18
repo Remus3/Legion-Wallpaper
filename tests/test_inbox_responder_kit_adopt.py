@@ -9,7 +9,10 @@ the copy done and nothing committed - the deterministic half had been paid
 for at model rates."""
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -195,3 +198,138 @@ def test_a_dry_run_never_adopts(monkeypatch, tmp_path):
     monkeypatch.setattr(R, "kit_adoption", _never)
     out = R.spawn(_note(tmp_path), dry_run=True, kit_seams=_seams({}))
     assert out.verdict == R.AUTO
+
+
+# ------------------------------------------------------------- v18+ provenance
+# V18-PROVENANCE (LEDGER 326): from kit v18 (FI-10) MAIN ships no outbox
+# bundle; the note carries KIT-COMMIT and the per-file hashes, and the bundle
+# must equal MAIN's fleet-kit/ tree at that commit. Real git repos in tmp_path,
+# built with plumbing (commit-tree) so no hook runs.
+
+V18_NOTE = "2026-10-17-1018-from-MAIN-ORDER-to-ALL-SIX-FLEET-KIT-v18-x-ONE-ANSWER.md"
+V18_BUNDLE = "2026-10-17-1018-from-MAIN-FLEET-KIT-v18"
+KIT_FILES = {"MANIFEST.json": b'{"v": 18}\n', "fleet_headless.py": b"KIT_VERSION = 18\n"}
+
+
+def _git(top, *args):
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    env.update(GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.invalid",
+               GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.invalid")
+    return subprocess.run(["git", "-C", str(top), *args], capture_output=True, check=True,
+                          env=env).stdout.decode("ascii").strip()
+
+
+def _commit(top, files, parent=None):
+    """Plumbing commit of fleet-kit/<files> on top of parent; HEAD moves to it."""
+    for name, data in files.items():
+        p = top / "fleet-kit" / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(data)
+    _git(top, "add", "-A")
+    tree = _git(top, "write-tree")
+    sha = _git(top, "commit-tree", tree, "-m", "kit", *(["-p", parent] if parent else []))
+    _git(top, "update-ref", "HEAD", sha)
+    return sha
+
+
+def _main_repo(tmp_path, monkeypatch, files=KIT_FILES):
+    top = tmp_path / "main"
+    top.mkdir()
+    _git(top, "init", "-q")
+    (top / "moon_sync_outbox").mkdir()
+    kit_commit = _commit(top, files)
+    head = _commit(top, {"later.txt": b"later\n"}, parent=kit_commit)
+    monkeypatch.setattr(R, "main_outbox", lambda: top / "moon_sync_outbox")
+    hashes = {n: hashlib.sha256(d).hexdigest() for n, d in files.items()}
+    return top, kit_commit, head, hashes
+
+
+def _v18(tmp_path, kit_commit, hashes, bundle_files=KIT_FILES, commit_line=True):
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    lines = ["# From MAIN - ORDER to ALL SIX: FLEET-KIT v18", "", "KIT-VERSION: 18"]
+    if commit_line:
+        lines.append(f"KIT-COMMIT: {kit_commit}")
+    lines.append("")
+    lines += [f"    {n:<24} sha256 {h}" for n, h in hashes.items()]
+    note = inbox / V18_NOTE
+    note.write_text("\n".join(lines) + "\n", encoding="ascii")
+    bundle = inbox / V18_BUNDLE
+    bundle.mkdir()
+    for name, data in bundle_files.items():
+        (bundle / name).write_bytes(data)
+    return note, bundle
+
+
+def _no_outbox(monkeypatch):
+    def _never(*_a, **_k):
+        raise AssertionError("a v18+ bundle must not be checked against the outbox")
+    monkeypatch.setattr(R.lw_headless_env.kit, "verify_main", _never)
+
+
+def test_a_v18_bundle_is_verified_against_main_fleet_kit_at_kit_commit(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    _, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    note, bundle = _v18(tmp_path, kit_commit, hashes)
+    assert R.bundle_verified(bundle, note) is True
+
+
+def test_a_v18_bundle_file_that_differs_from_the_kit_commit_tree_fails(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    _, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    tampered = dict(KIT_FILES, **{"fleet_headless.py": b"KIT_VERSION = 99\n"})
+    note, bundle = _v18(tmp_path, kit_commit, hashes, bundle_files=tampered)
+    assert R.bundle_verified(bundle, note) is False
+
+
+def test_a_v18_bundle_whose_note_hash_disagrees_fails(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    _, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    note, bundle = _v18(tmp_path, kit_commit, dict(hashes, **{"MANIFEST.json": "0" * 64}))
+    assert R.bundle_verified(bundle, note) is False
+
+
+def test_a_v18_bundle_with_a_file_the_note_does_not_list_fails(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    _, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    extra = dict(KIT_FILES, **{"stray.py": b"x\n"})
+    note, bundle = _v18(tmp_path, kit_commit, hashes, bundle_files=extra)
+    assert R.bundle_verified(bundle, note) is False
+
+
+def test_a_v18_note_without_kit_commit_fails_closed(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    _, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    note, bundle = _v18(tmp_path, kit_commit, hashes, commit_line=False)
+    assert R.bundle_verified(bundle, note) is False
+
+
+def test_a_v18_kit_commit_not_in_mains_history_fails(tmp_path, monkeypatch):
+    _no_outbox(monkeypatch)
+    top, kit_commit, _, hashes = _main_repo(tmp_path, monkeypatch)
+    # same tree, but a commit HEAD does not reach: in the object store only
+    tree = _git(top, "rev-parse", f"{kit_commit}^{{tree}}")
+    orphan = _git(top, "commit-tree", tree, "-m", "orphan")
+    note, bundle = _v18(tmp_path, orphan, hashes)
+    assert R.bundle_verified(bundle, note) is False
+
+
+def test_a_pre_v18_note_keeps_the_outbox_bundle_check(tmp_path, monkeypatch):
+    note = _note(tmp_path)
+    bundle = tmp_path / BUNDLE
+    (bundle / "MANIFEST.json").write_bytes(b"x")
+    asked = []
+    monkeypatch.setattr(R, "main_outbox", lambda: tmp_path / "outbox")
+    monkeypatch.setattr(R.lw_headless_env.kit, "verify_main",
+                        lambda path, outbox, rel=None: asked.append(rel) or True)
+    assert R.bundle_verified(bundle, note) is True
+    assert asked == [f"{BUNDLE}/MANIFEST.json"]
+
+
+def test_the_default_adoption_check_is_handed_the_note(tmp_path, monkeypatch):
+    seen = []
+    monkeypatch.setattr(R, "bundle_verified", lambda b, n=None: seen.append((b, n)) or False)
+    note = _note(tmp_path)
+    out = R.kit_adoption(note, MATCH, adopt=lambda *a, **k: None)
+    assert seen == [(tmp_path / BUNDLE, note)]
+    assert out["stage"] == "provenance"
