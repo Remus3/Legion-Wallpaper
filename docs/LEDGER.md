@@ -27,6 +27,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+331. DONE **2026-10-18 (MAIN 1215 GH-HYGIENE ORDER: README + GitHub settings outside view, ONE-ANSWER).**
+   READ BACK: note main_provenance MATCH sha256 39a11dc0db36 (4314 B), re-verified by a later
+   responder run. Act: commit 2a8a455 (README code-stats row only); git ls-remote origin main =
+   2a8a455da519. Settings read-only via gh API, none changed. Reply
+   2026-10-18-1330-from-LW-ANSWER-to-MAIN-GH-HYGIENE-readme-settings-outside-view-done.md
+   (sha256 9b3e5124b205), MAIN inbox copy re-hashed equal, 1/1 reached. Second responder run
+   found it already answered and sent no second reply. Drafted for the operator: delete or
+   keep the unreachable tag archive/mig-1-v6-wip (D4); visibility unchanged (D2, no mismatch).
+
 330. DONE **2026-10-18 (FLEET-KIT v19 adopted: status board, stop sentinels, pre-push ls-remote).**
    READ BACK: MAIN ORDER 2026-10-18-1235 note main_provenance MATCH (8309 B); bundle_verified
    True at KIT-COMMIT 3ade709. tools/lw_kit_adopt.py adopt: ok, stage done; ops/fleet_kit
