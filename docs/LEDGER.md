@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+328. DONE **2026-10-18 (V18-PROVENANCE fixed: v18+ kit bundles verified at KIT-COMMIT; 34fa4f3, merge 18939da).**
+   FIX: bundle_verified() in tools/lw_inbox_responder.py routes v18+ FLEET-KIT notes to a
+   KIT-COMMIT check against MAIN fleet-kit/: exact file set, per-file sha256 equal to the
+   note's hashes, byte-identical to KIT-COMMIT:fleet-kit/<file>, KIT-COMMIT reachable from
+   MAIN HEAD (merge-base --is-ancestor); any miss fails closed. Pre-v18 notes keep the
+   verify_main outbox-bundle path. Tests in tests/test_inbox_responder_kit_adopt.py.
+   READ BACK: live read-only check on the MAIN 2026-10-17-1018 v18 note returned True (old
+   path False). Verifier gate MERGE-OK 139 passed / 0 failed, ruff clean, merge-tree clean;
+   on main after the merge: py_compile OK, tests/test_inbox_responder_kit_adopt.py +
+   tests/test_inbox_responder.py 139 passed. OPEN GAP (KIT-PUBLIC-GIT): the check uses the
+   kit's private helper fleet_headless._git (ops/fleet_kit/fleet_headless.py:1094) for
+   replace-ref-safe git reads; request MAIN ship a public verify_kit_commit helper. REVISIT
+   when the kit ships one: swap to it and drop the private call.
+
 327. DONE **2026-10-18 (INSPECT-A6B2 retired: archive tag archive/mig-1-v6-wip, branch deleted).**
    DECISION: RETIRE branch worktree-agent-a6b282fa560024205 (single commit b29005e, "chore(wip):
    preserve abandoned v6 responder attempt before prune (MIG-1)"). It is an abandoned FLEET-KIT
