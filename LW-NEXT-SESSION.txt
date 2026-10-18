@@ -1,15 +1,14 @@
 NEXT SESSION
 ------------
-SESSION: 80
-Task: V18-READBACK watch (read the inbox for MAIN's read-back of "LW OK v18"), then send
-  MAIN ONE batched note carrying the KIT-PUBLIC-GIT ask if the outbound cap allows
-  (fleet_inbox OutboundCap, 6/day); then read the session 79 wrap push's CI; then the
-  carried watches.
+SESSION: 81
+Task: CI-79 read (ci run 39151095027 on fc0edf3, which also carries the session 79
+  wrap commits), then V19-READBACK + V18-READBACK inbox watch (MAIN's read-back of the LW
+  v19 ANSWER 2026-10-18-1246 and of "LW OK v18"), then the carried watches.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
-  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v18 (7ada747, LEDGER
-  326); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified() (LEDGER 328).
+  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v19 (fc0edf3, LEDGER
+  330; v18 7ada747, LEDGER 326); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified() (LEDGER 328).
   Commit/push via fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via
   fleet_suite_gate.py (machine FLEET_SUITE_SLOTS=1 is intentional, LEDGER 322: a gate
   waits 20-30 min - budget for it; --lf over tests/ counts as a whole suite). Full suite
@@ -19,13 +18,13 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   progress file before editing shared files). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: MAIN's v18 read-back read (or still absent and carried); the KIT-PUBLIC-GIT
-  ask delivered in one batched note with N/M reached-count (or deferred by the cap and
-  carried); CI-79 read green.
+Acceptance: CI-79 read green (or red investigated); MAIN's v19/v18 read-backs read (or
+  still absent and carried); KIT-PUBLIC-GIT helper shipped by MAIN and swapped in (or carried).
 CHECKLIST:
-  - CI-79: Read the session 79 /done push's CI conclusion (CI for the wrap push tip of main: read via gh run list --branch main --limit 1; gh run view <id> --json conclusion) - the run id is created after this file is committed
+  - CI-79: Read CI conclusion of ci run 39151095027 (fc0edf3; covers the session 79 wrap da39901, which had no own run) and of the session 80 wrap push (gh run list --branch main --limit 1; gh run view <id> --json conclusion)
+  - V19-READBACK: Watch the inbox for MAIN's read-back of the LW v19 ANSWER (2026-10-18-1246, reached 1/1)
   - V18-READBACK: Watch the inbox for MAIN's read-back of "LW OK v18" from committed HEAD
-  - KIT-PUBLIC-GIT: Ask MAIN for a public verify_kit_commit kit helper (the V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328); fold into the next batched outbound note to MAIN (outbound cap), swap to it when shipped
+  - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
@@ -35,6 +34,12 @@ CHECKLIST:
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
+  - Session 80 (Maint-KitRollout) /done: FLEET-KIT v19 adopted fc0edf3 (LEDGER 330), pushed,
+    ls-remote == HEAD read back; ANSWER 2026-10-18-1246 (KIT-PUBLIC-GIT ask) reached 1/1;
+    responder HALT set then removed; v19 note marked seen. CI 39151095027 (ci) +
+    39151095019 (codeql) in_progress at wrap. The previous done_gate receipt (da39901)
+    read passed=false (suite rc 1); this wrap re-binds. No background agents left running.
+    Suite gate queue at wrap: 1 slot, 4 waiters ahead (pre-flight --lf timed out queued).
   - Session 79 /done: CI-78 read green (39117243862 on cf2e95d, 39117479993 on
     d93c290); CI-77 read green (39030888507 on c97c7d5); INSPECT-A6B2 RETIRED (local tag
     archive/mig-1-v6-wip = b29005e, not pushed - public repo; branch deleted; LEDGER 327,
@@ -145,7 +150,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 79 - CI-77 (39030888507 success), CI-78 (39117243862 +
+Do NOT redo: session 80 - FLEET-KIT v19 adoption (fc0edf3, LEDGER 330), v19 ANSWER
+  2026-10-18-1246 (1/1, KIT-PUBLIC-GIT asked) - read back via git log on main, git ls-remote
+  and LEDGER 330. session 79 - CI-77 (39030888507 success), CI-78 (39117243862 +
   39117479993 success), INSPECT-A6B2 retired (c5f7068, LEDGER 327), V18-PROVENANCE
   (34fa4f3, merge 18939da, LEDGER 328) - read back via gh run view, git log on main and
   LEDGER 327-329. session 78 - FLEET-KIT v18 adoption (7ada747) and the v18 reply note
@@ -196,16 +203,16 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > <repo>/images/0.Originals
-      last check: not done (2736 tries)
+      last check: not done (2739 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (1738 tries)
+      last check: not done (1741 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (1738 tries)
+      last check: not done (1741 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   (end operator asks)

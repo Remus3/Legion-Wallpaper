@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-18, session 80 / Maint-KitRollout) - FLEET-KIT v19 adopted
+
+Commits: fc0edf3 (FLEET-KIT v19 vendored: status board, stop sentinels, pre-push
+ls-remote; LEDGER 330), pushed, ls-remote == HEAD read back. ONE ANSWER
+2026-10-18-1246 (batched, carries the KIT-PUBLIC-GIT ask) reached 1/1. Responder HALT
+set for the rollout, then removed; v19 note marked seen in the responder seen list.
+CI for fc0edf3 (ci 39151095027, codeql 39151095019) in_progress at wrap; the session 79
+wrap commits (da39901) had no own run - covered by the fc0edf3 push. Note: the last
+done_gate receipt (da39901) recorded passed=false (suite rc 1) - re-graded at this bind.
+Do NOT redo: v19 adoption, the v19 ANSWER, the KIT-PUBLIC-GIT ask (sent; wait for MAIN).
+Next: CI-79 read (39151095027), V19-READBACK + V18-READBACK watch, carried watches.
+
 ## PREVIOUS SESSION (2026-10-18, session 79) - V18-PROVENANCE fixed, INSPECT-A6B2 retired
 
 Commits: c5f7068 (LEDGER 327, INSPECT-A6B2 retired: local tag archive/mig-1-v6-wip =
