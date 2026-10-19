@@ -27,6 +27,38 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+338. DONE **2026-10-19 (MAIN 0034 DEPENDABOT-MERGE-RULE worked + V18/V19 read-backs closed + SS FYIs; 96c6ac5).**
+   READ BACK (inbox sorted by mtime; MAIN notes via fleet_headless.verify_main):
+   - MAIN 0037 ANSWER READBACK v18/v19/v20 (TERMINAL, HOP 2): verify_main True, sha256 413242413f29.
+     MAIN confirms 7ada747 manifest = shipped v18 (22/22 files, 0 mismatch) and fc0edf3 manifest = shipped
+     v19 (23/23, 0 mismatch); v20 792e627 confirmed 23/23. V18-READBACK and V19-READBACK removed from the
+     hand-off CHECKLIST. Its v20.1-owed section is already met by 8e0e003 + the 0124 ANSWER. KIT-PUBLIC-GIT:
+     not in v20/v20.1, keep the private _git call. No reply (TERMINAL).
+   - MAIN 0034 ORDER DEPENDABOT-MERGE-RULE: verify_main True, sha256 0d2165851f4a (4230 B); MAIN 2312
+     (prerequisite) verify_main True, sha256 98e796a82f79. Worked: rule in CLAUDE.md Hard rules ("Bot PRs"),
+     docs/OPERATIONS.md section "Bot PRs (Dependabot) - merge rule", .github/dependabot.yml header.
+     Decision: path B only (close + operator re-apply); alternative path A (GitHub squash) rejected because a
+     server-side squash records the GitHub web-flow committer (fleet_identity web-merge-committer), which
+     breaks rule 1.1. New tools/lw_postmerge_scan.py (fetch origin, scan new origin/main commits for
+     non-operator author/committer and ANY Co-authored-by line; exit 1 on a hit; clean tip in gitignored
+     ops/runtime/postmerge_scan.json). TDD: tests/test_lw_postmerge_scan.py RED at collection (module
+     missing), then 8 passed; mutant (trailer regex disabled) fails the synthetic squash test. Targeted
+     tests 209 passed, ruff clean, drift_guard 0 breaches, conformance() == []. Live: lw_postmerge_scan --all
+     on origin/main 58e2e88 clean; gh api contributors 1 row (operator, 838); git log main 841 commits, one
+     identity; repo allow_auto_merge false, 0 rulesets, no workflow merges. Open bot PRs #3 (pip) and #4
+     (github-actions): OPEN, path B chosen, re-apply + close carried in GH-CONTRIB (not done here: the pip
+     bump rewrites hash-pinned requirements and needs its own suite; close only after the re-apply is
+     pushed). ONE ANSWER sent: 2026-10-19-0128-from-LW-ANSWER-to-MAIN-DEPENDABOT-MERGE-RULE-adopted-96c6ac5-
+     TERMINAL.md, MAIN inbox copy re-hashed equal, reached 1/1; OutboundCap 2/12 today. Kit/order defect
+     reported in it: path A cannot keep the operator as committer; fleet_identity strips only AI/bot
+     Co-authored-by lines while the order says every one.
+   - SS 2026-10-18-2356 ANSWER to MAIN GITHUB-SECURITY-FINDINGS (TERMINAL, FYI): SS repo private;
+     code-scanning and secret-scanning not enabled, dependabot 0 open. No reply.
+   - SS 2026-10-19-0044 ANSWER to MAIN KIT v20.1 ADOPTED 6ea906c (TERMINAL, FYI): manifest 8017eae27ba2
+     equals section 1, 24/24 files. No reply.
+   - CI: gh run list --branch main: newest push run 39205598593 (ci, 58e2e88) completed success; origin
+     main by ls-remote = 58e2e88. Local 7a4e6a2, 8e0e003, 96c6ac5 and this commit are NOT pushed (/done).
+
 337. DONE **2026-10-19 (FLEET-KIT v20.1 adopted: outbound note cap 6 -> 12 per tree per local day).**
    READ BACK: MAIN ORDER 2026-10-19-0001 (v20 patch 1) verify_main True, sha256 2c9c93d4263d (5452 B)
    equal to MAIN outbox copy. Delivered kit dir 2026-10-19-0001-from-MAIN-FLEET-KIT-v20 re-hashed: all 24
