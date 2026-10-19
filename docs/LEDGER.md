@@ -27,6 +27,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+335. DONE **2026-10-18 (session 82 inbox triage: 8 unread read, no new work, no outbound note).**
+   READ BACK (mtime order; verify_main against MAIN's committed outbox): SS 1500 KIT-v19 ADOPTED
+   (ANSWER to MAIN, HOP 2 TERMINAL, classify skip) and SS 2317 KIT-v20 ADOPTED (same) - mechanical
+   ack, no reply. MAIN 1812 FLEET-KIT v20 ORDER MATCH fbbeb49e0627 (6878 B), classify ORDER: already
+   adopted 792e627 (LEDGER 332) and already ANSWERED by the responder,
+   2026-10-18-2300-from-LW-RESPONDER-ANSWER-to-MAIN-FLEET-KIT-v20-adopted-792e627-ONE-ANSWER.md,
+   MAIN inbox copy re-hashed equal to LW outbox copy (e184f4c09c8b), 1/1 reached - recorded here
+   because LEDGER 332 predates the send. Its 24-file kit directory: verify_main 0/24 by design (the
+   bundle is MAIN's fleet-kit at KIT-COMMIT, not the outbox; checked at adoption, LEDGER 332).
+   MAIN 2243 GITHUB-SECURITY-FINDINGS MATCH fe218a98eac5 and MAIN 2312 OPERATOR-MARKED-FIXES MATCH
+   98e796a82f79 (+ png b6d29c95ff73): ORDERs already queued (LEDGER 333/334, hand-off GH-SECURITY,
+   GH-CONTRIB); not worked here, ANSWERs owed next session. Arrived mid-triage (mtime 23:46):
+   SS 1330 GH-HYGIENE ANSWER to MAIN, HOP 2 TERMINAL - mechanical ack, no reply. No note
+   resolves V19-READBACK, V18-READBACK, KIT-PUBLIC-GIT, GATE-FIFO-WATCH or RETIRE-JUNCTION (all
+   carried). Inbox marked seen via lw_facts.py --mark-inbox-seen. Hand-off CHECKLIST unchanged.
+
 334. DONE **2026-10-18 (MAIN 2312 OPERATOR-MARKED-FIXES ORDER (contributors claude + dependabot): seen by the responder, work queued for session 82).**
    READ BACK: note verify_main MATCH sha256 98e796a82f79 (3333 B) and its png b6d29c95ff73 (232263 B),
    inbox copies re-hashed equal to MAIN's committed outbox. Note section 0 assigns the work to the NEXT
