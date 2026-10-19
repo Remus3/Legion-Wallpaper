@@ -27,6 +27,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+332. DONE **2026-10-18 (FLEET-KIT v20 adopted: explicit headless route, acct fallback, ETA clock, LANE-95).**
+   READ BACK: MAIN ORDER 2026-10-18-1812 note re-hashed sha256 fbbeb49e0627 (6878 B) equal to
+   MAIN provenance; vendored MANIFEST.json sha256 9e4f9980c753 equals note section 1; CLAUDE.md
+   FLEET-COMMON block re-embedded. Version pins moved 19 -> 20 in tests/test_fleet_kit_conformance.py:36,
+   tests/test_headless_env.py:84, tests/test_promise_probe_fleet_kit.py:40, tools/lw_promise_probes.py:24.
+   Gated suite 4369 passed, 19 skipped, rc 0. Section 3 exact-key-set assertions changed: none
+   (tests/test_inbox_status.py:88 is the inbox status file, not a progress file). GITHUB-SECURITY-FINDINGS
+   ORDER (2243) is a separate note, still unanswered.
+
 331. DONE **2026-10-18 (MAIN 1215 GH-HYGIENE ORDER: README + GitHub settings outside view, ONE-ANSWER).**
    READ BACK: note main_provenance MATCH sha256 39a11dc0db36 (4314 B), re-verified by a later
    responder run. Act: commit 2a8a455 (README code-stats row only); git ls-remote origin main =
