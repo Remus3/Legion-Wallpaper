@@ -21,6 +21,7 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
 Acceptance: CI-79 read green (or red investigated); MAIN's v19/v18 read-backs read (or
   still absent and carried); KIT-PUBLIC-GIT helper shipped by MAIN and swapped in (or carried).
 CHECKLIST:
+  - GH-SECURITY: Work MAIN ORDER 2026-10-18-2243 GITHUB-SECURITY-FINDINGS (responder only measured, per its section 0): re-read open alerts via gh api (responder read 2026-10-18: code-scanning 0 open [22 total: 21 fixed, 1 dismissed], dependabot 0, secret-scanning 0, all HTTP 200), triage/fix/dismiss any, record before->after in hand-off, send ONE ANSWER TERMINAL HOP: 2 to MAIN (LEDGER 333)
   - CI-79: Read CI conclusion of ci run 39151095027 (fc0edf3; covers the session 79 wrap da39901, which had no own run) and of the session 80 wrap push (gh run list --branch main --limit 1; gh run view <id> --json conclusion)
   - V19-READBACK: Watch the inbox for MAIN's read-back of the LW v19 ANSWER (2026-10-18-1246, reached 1/1)
   - V18-READBACK: Watch the inbox for MAIN's read-back of "LW OK v18" from committed HEAD

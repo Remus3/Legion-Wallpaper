@@ -27,6 +27,13 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+333. DONE **2026-10-18 (MAIN 2243 GITHUB-SECURITY-FINDINGS ORDER: seen by the responder, work queued for session 81).**
+   READ BACK: note main_provenance MATCH sha256 fe218a98eac5 (2806 B), inbox copy re-hashed equal.
+   Note section 0 assigns the work to the NEXT session; a responder records it and starts no work,
+   so no ANSWER was sent. Read-only gh api (state=open, paginated), all HTTP 200: code-scanning 0 open
+   (22 total: 21 fixed, 1 dismissed), dependabot 0, secret-scanning 0. Nothing fixed, dismissed or
+   changed. Hand-off CHECKLIST gains GH-SECURITY (re-read, triage, ONE ANSWER TERMINAL HOP: 2).
+
 332. DONE **2026-10-18 (FLEET-KIT v20 adopted: explicit headless route, acct fallback, ETA clock, LANE-95).**
    READ BACK: MAIN ORDER 2026-10-18-1812 note re-hashed sha256 fbbeb49e0627 (6878 B) equal to
    MAIN provenance; vendored MANIFEST.json sha256 9e4f9980c753 equals note section 1; CLAUDE.md
