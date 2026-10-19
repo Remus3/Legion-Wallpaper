@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+334. DONE **2026-10-18 (MAIN 2312 OPERATOR-MARKED-FIXES ORDER (contributors claude + dependabot): seen by the responder, work queued for session 82).**
+   READ BACK: note verify_main MATCH sha256 98e796a82f79 (3333 B) and its png b6d29c95ff73 (232263 B),
+   inbox copies re-hashed equal to MAIN's committed outbox. Note section 0 assigns the work to the NEXT
+   session; the responder measured only and sent no ANSWER. Read-only: gh api contributors (and anon=1)
+   = 1 row, the operator, 835 contributions; git log main 835 commits, every author and committer the
+   operator, 0 Co-authored-by / Signed-off-by trailers (one grep hit ef09286 is a body sentence about
+   the ban, not a trailer). fleet_rewrite.py plan PLAN a830aa1c7f87: 837 scanned, 0 to rewrite, SHA change
+   0, NO REWRITE - so no rewrite and no kit defect. The only bot-authored commits are on two open
+   Dependabot PR branches (PRs 3 and 4, off the default branch). The sidebar rows are GitHub lag; the
+   API read-back governs. Hand-off CHECKLIST gains GH-CONTRIB.
+
 333. DONE **2026-10-18 (MAIN 2243 GITHUB-SECURITY-FINDINGS ORDER: seen by the responder, work queued for session 81).**
    READ BACK: note main_provenance MATCH sha256 fe218a98eac5 (2806 B), inbox copy re-hashed equal.
    Note section 0 assigns the work to the NEXT session; a responder records it and starts no work,
