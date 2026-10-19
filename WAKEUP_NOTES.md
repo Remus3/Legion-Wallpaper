@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-18, session 81 / responder) - MAIN 2243 GH-SECURITY seen, kit v20
+
+Commits: 792e627 (FLEET-KIT v20 adopted: headless route, acct fallback, ETA clock, LANE-95;
+LEDGER 332, gated suite 4369 passed / 19 skipped), dea2767 (LEDGER 333), both pushed.
+MAIN ORDER 2026-10-18-2243 GITHUB-SECURITY-FINDINGS: provenance MATCH; read-only gh api,
+all HTTP 200: code-scanning 0 open (22 total: 21 fixed, 1 dismissed), dependabot 0,
+secret-scanning 0. Note section 0 defers the work to the next session, so NO answer sent.
+Do NOT redo: v20 adoption, the 2243 measurement. Still owed: GH-SECURITY ONE ANSWER
+TERMINAL HOP: 2 after a fresh re-read. Session 81 checklist items (CI-79, V19/V18 read-backs)
+not acted on - carried.
+Next: GH-SECURITY, then CI-79 + read-back watches.
+
 ## PREVIOUS SESSION (2026-10-18, session 80 / Maint-KitRollout) - FLEET-KIT v19 adopted
 
 Commits: fc0edf3 (FLEET-KIT v19 vendored: status board, stop sentinels, pre-push
