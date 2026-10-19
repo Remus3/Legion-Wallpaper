@@ -79,6 +79,17 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-18, session 82) - inbox triage only, 8 notes, no new work
+
+Commit: 6b3d94f (LEDGER 335). Operator ask: check inbox and update, then /done; next
+session is all other open items. 8 unread read by mtime (SS 1500 v19 + SS 2317 v20
+ADOPTED, MAIN 1812 v20 ORDER + 24-file kit dir, MAIN 2243 GH-SECURITY ORDER, MAIN 2312
+OPERATOR-MARKED-FIXES ORDER + png, SS 1330 GH-HYGIENE); MAIN notes sha256 MATCH; no
+outbound note (v20 ANSWER already sent 2300 by the responder, 1/1); inbox 0 unread of 628.
+Do NOT redo: the session 82 triage (LEDGER 335). Still owed to MAIN: GH-SECURITY and
+GH-CONTRIB ONE ANSWER each. No checklist item acted on - all carried.
+Next: GH-SECURITY + GH-CONTRIB ANSWERs, then CI-79 and the rest of the checklist.
+
 ## PREVIOUS SESSION (2026-10-18, session 81 / responder) - MAIN 2243 GH-SECURITY seen, kit v20
 
 Commits: 792e627 (FLEET-KIT v20 adopted: headless route, acct fallback, ETA clock, LANE-95;
