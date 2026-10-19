@@ -1,7 +1,9 @@
 # Dependabot version updates (MAIN supply-chain order 2026-10-05). One entry per
 # ecosystem actually present in this tree, weekly, one group per ecosystem so a
-# week is at most one PR per ecosystem. PRs are merged by hand once the gating
-# CI is green on them; nothing here auto-merges.
+# week is at most one PR per ecosystem. Nothing here auto-merges. A bot PR is
+# NEVER merged as-is (MAIN 0034 DEPENDABOT-MERGE-RULE; CLAUDE.md "Bot PRs"):
+# close it with a one-line reason and re-apply the bump as an operator commit
+# (path B), then read back tools/lw_postmerge_scan.py.
 #
 # pip: requirements.txt and requirements-cv.txt at the root are hash-pinned
 # outputs compiled from requirements.in / requirements-cv.in; Dependabot

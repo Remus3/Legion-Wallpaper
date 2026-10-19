@@ -256,6 +256,27 @@ hooks that do not fire.
 python -c "import json;json.load(open('.claude/settings.json'))"
 python tools/drift_guard.py --check
 ```
+## Bot PRs (Dependabot) - merge rule
+
+MAIN 0034 DEPENDABOT-MERGE-RULE (LEDGER 338). No bot identity ever enters
+default-branch history: every commit has the operator as author AND committer.
+
+1. Never merge a bot PR as-is (no merge commit, no rebase-merge).
+2. LW uses path B only: close the PR with a one-line reason (`gh pr close <n>
+   --comment "re-applied as operator commit <sha>"`) and re-apply the bump as an
+   ordinary operator commit through fleet_gitlock (fleet_identity hooks active),
+   pushed per policy. Close only AFTER the re-applied commit is pushed.
+3. Path A (GitHub squash with the operator as author, every `Co-authored-by:`
+   removed) is not used here: a server-side squash records GitHub's web-flow
+   committer, which fleet_identity classes `web-merge-committer`.
+4. Read-back after any merge done on GitHub: `python tools/lw_postmerge_scan.py`
+   (fetches origin, scans new origin/main commits for a non-operator author or
+   committer and any `Co-authored-by:` line; exit 1 on a hit). Fix a hit only with
+   `ops/fleet_kit/fleet_rewrite.py` (plan, bundle, run) under MAIN 2312's scope.
+5. `gh api repos/<owner>/<repo>/contributors` must list only the operator.
+   Repo `allow_auto_merge` is false; no workflow merges PRs. Dependabot alerts
+   and security updates stay on.
+
 ## Pre-flight before any restart
 
 ```powershell
