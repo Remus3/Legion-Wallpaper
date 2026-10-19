@@ -31,6 +31,7 @@ CHECKLIST:
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
+  - BOARD-URL: Board push failed S83 (asset upload not_found on ops/status_board.json url); re-check the url with Artifact list, re-create the board if gone
 Carried forward:
   - Session 83 /done (re-run 2026-10-19 ~01:40): KIT-V20-DIRTY resolved (tree clean,
     kit-v20-1.json done 8e0e003); CI-80 read success (39205598593 on 58e2e88); done_gate
