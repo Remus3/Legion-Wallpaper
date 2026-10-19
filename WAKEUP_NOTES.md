@@ -79,6 +79,15 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-19, session 83 / responder 189) - MAIN 0034 DEPENDABOT-MERGE-RULE seen
+
+Commit: 58e2e88 (LEDGER 336, pushed). Responder child verified MAIN ORDER 2026-10-19-0034
+(sha256 MATCH), measured only (contributors operator-only, auto-merge off), queued GH-DEPMERGE;
+no ANSWER sent. CI-79 read green (39201677701). Wrap commit NOT pushed: done_gate bind refused
+the uncommitted in-flight kit vendoring (KIT-V20-DIRTY, owner progress kit-v20-1.json).
+Do NOT redo: the 0034 measurement (LEDGER 336). Next: KIT-V20-DIRTY, then GH-SECURITY,
+GH-CONTRIB, GH-DEPMERGE ANSWERs and the rest of the checklist.
+
 ## PREVIOUS SESSION (2026-10-18, session 82) - inbox triage only, 8 notes, no new work
 
 Commit: 6b3d94f (LEDGER 335). Operator ask: check inbox and update, then /done; next
