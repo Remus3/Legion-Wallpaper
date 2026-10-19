@@ -227,7 +227,7 @@ def test_a_triage_answer_with_no_carrier_row_is_logged_not_lost(tmp_path, inbox,
 
 
 # --------------------------------------------------------------------------
-# outbound cap: 6 a day, ORDER / FIX / RULING exempt
+# outbound cap: OUTBOUND_CAP a day (12 since kit v20.1), ORDER / FIX / RULING exempt
 # --------------------------------------------------------------------------
 
 def _spend_cap(n: int = fi.OUTBOUND_CAP) -> None:

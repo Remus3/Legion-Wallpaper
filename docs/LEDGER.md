@@ -27,6 +27,18 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+337. DONE **2026-10-19 (FLEET-KIT v20.1 adopted: outbound note cap 6 -> 12 per tree per local day).**
+   READ BACK: MAIN ORDER 2026-10-19-0001 (v20 patch 1) verify_main True, sha256 2c9c93d4263d (5452 B)
+   equal to MAIN outbox copy. Delivered kit dir 2026-10-19-0001-from-MAIN-FLEET-KIT-v20 re-hashed: all 24
+   files equal to note section 1 and to ops/fleet_kit/ after vendoring (vendored first from MAIN commit
+   41f3c75 on branch kit-v20-1 via tools/lw_kit_adopt.py adopt, before the note landed; bytes identical).
+   Vendored MANIFEST.json sha256 8017eae27ba2 (equals section 1, KIT-COMMIT c945f8d); version stays 20,
+   KIT_PATCH 1. Changed: FLEET-COMMON.md, MANIFEST.json, fleet_headless.py, fleet_inbox.py; CLAUDE.md
+   block re-embedded (14c only). lw_kit_adopt.py check ok (conformance() == []). Section 3 cap-6
+   assertions changed: none (tests/test_inbox_responder_triage.py loops range(fi.OUTBOUND_CAP); its
+   section comment line 230 updated). Gated suite (fleet_suite_gate, two passes): 4187 passed 19 skipped
+   + serial 182 passed 1 skipped = 4369 passed, 20 skipped, rc 0. ONE ANSWER HOP 2 sent to MAIN.
+
 336. DONE **2026-10-19 (MAIN 0034 DEPENDABOT-MERGE-RULE ORDER: seen by the responder, work queued for session 83).**
    READ BACK: note verify_main MATCH sha256 0d2165851f4a (4230 B), inbox copy re-hashed equal to MAIN's
    committed outbox. Note section 0 assigns the work to the NEXT session; a responder records it and
