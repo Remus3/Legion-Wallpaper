@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+340. DONE **2026-10-19 (session 83 /done: KIT-V20-DIRTY resolved, ONE push 58e2e88..fda063e, CI green on the bumped pins, PRs #3/#4 closed; docs-only).**
+   READ BACK: tree clean at start, ops/loop/control/progress/kit-v20-1.json status done (8e0e003) -
+   KIT-V20-DIRTY dropped. CI-80: run 39205598593 on 58e2e88 conclusion success. done_gate.py bind on
+   fda063e GREEN (ruff 0, fleet_suite_gate lw_suite 0, drift_guard 0); push via fleet_gitlock
+   58e2e88..fda063e (8e0e003, 96c6ac5, a2dfa08, 5f9a043, 67973e8, fda063e + the 7a4e6a2 wrap);
+   done_gate.py verify-push: origin/main = HEAD = graded fda063e. CI on fda063e: ci 39211011697
+   success, codeql 39211012722 success - numpy 2.5.4 / ruff 0.17.1 pins green.
+   - PRs: Dependabot auto-closed #3 (06:38:45Z) and #4 (06:40:21Z) on its own once main carried the
+     bumps ("no longer updatable"), before the path-B close ran; gh pr close reported already closed.
+     Path-B reason comments added: #3 "re-applied as operator commit 5f9a043", #4 "re-applied as
+     operator commit 67973e8". gh pr view --json state read back CLOSED for both. lw_postmerge_scan clean.
+   - Hand-off rewritten from the session 83 base (SESSION 84): PR-CLOSE-3-4, CI-80, KIT-V20-DIRTY
+     removed; CI-81 (read the wrap push CI) added; every other item carried.
+
 339. DONE **2026-10-19 (MAIN 2243 GITHUB-SECURITY-FINDINGS + MAIN 2312 OPERATOR-MARKED-FIXES worked; PRs #3/#4 re-applied 5f9a043, 67973e8).**
    READ BACK (MAIN notes via fleet_headless.verify_main): 2243 True sha256 fe218a98eac5; 2312 True
    98e796a82f79 and its png True b6d29c95ff73.

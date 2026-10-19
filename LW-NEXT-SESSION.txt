@@ -1,14 +1,14 @@
 NEXT SESSION
 ------------
 SESSION: 84
-Task: Work ALL open checklist items. PR-CLOSE-3-4 right after the /done push (GH-SECURITY
-  and GH-CONTRIB ANSWERed 2026-10-19 0134, LEDGER 339), then KIT-V20-DIRTY, CI-80, the read-back
-  watches and every remaining item in order.
+Task: Work ALL open checklist items. CI-81 first (read the session 83 wrap push CI), then the
+  read-back watches and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
-  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v20 (792e627, LEDGER
-  332; v19 fc0edf3, LEDGER 330; v18 7ada747, LEDGER 326); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified() (LEDGER 328).
+  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v20.1 (8e0e003; v20 792e627,
+  LEDGER 332; v19 fc0edf3, LEDGER 330; v18 7ada747, LEDGER 326); v18+ MAIN notes are verified
+  at KIT-COMMIT by bundle_verified() (LEDGER 328).
   Commit/push via fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via
   fleet_suite_gate.py (machine FLEET_SUITE_SLOTS=1 is intentional, LEDGER 322: a gate
   waits 20-30 min - budget for it; --lf over tests/ counts as a whole suite). Full suite
@@ -18,13 +18,10 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   progress file before editing shared files). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: PRs 3 and 4 read back CLOSED after the push;
-  KIT-V20-DIRTY resolved, CI-80 read green (or red investigated); every other checklist item acted on or carried
-  with a reason.
+Acceptance: CI-81 read green (or red investigated); every other checklist item acted on or
+  carried with a reason.
 CHECKLIST:
-  - PR-CLOSE-3-4: AFTER /done pushes 5f9a043 + 67973e8 to origin main (ls-remote read-back), close Dependabot PR 3 with gh pr close 3 --comment "re-applied as operator commit 5f9a043" and PR 4 with "re-applied as operator commit 67973e8" (docs/OPERATIONS.md Bot PRs: close only after push), then read back gh pr view --json state = CLOSED and lw_postmerge_scan clean (LEDGER 339)
-  - CI-80: Read CI conclusion of 58e2e88 (LEDGER 336) run 39205598593 (in_progress at session 83 wrap; gh run view 39205598593 --json conclusion); then push the session 83 wrap commit once done_gate.py bind passes (see KIT-V20-DIRTY)
-  - KIT-V20-DIRTY: Uncommitted in-flight kit vendoring in the tree (CLAUDE.md, ops/fleet_kit/FLEET-COMMON.md + MANIFEST.json + fleet_headless.py + fleet_inbox.py, tests/test_inbox_responder_triage.py; mtimes 00:01-00:07 2026-10-19; owner progress ops/loop/control/progress/kit-v20-1.json read running 70 pct, last updated 00:24, stale past 2x ETA at 00:39). It blocks done_gate.py bind (dirty tree). Check that progress file and live claude processes first; if the owner is dead, finish (suite + commit via fleet_gitlock) or hand to MAIN - never revert blind
+  - CI-81: Read CI conclusion of the session 83 wrap push (tip = newest commit on origin main; gh run list --branch main --limit 2 --json databaseId,headSha,conclusion); the first push fda063e ran ci 39211011697 success; red -> investigate (numpy 2.5.4 / ruff 0.17.1 pins first)
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
@@ -35,6 +32,12 @@ CHECKLIST:
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
   - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
+  - Session 83 /done (re-run 2026-10-19 ~01:40): KIT-V20-DIRTY resolved (tree clean,
+    kit-v20-1.json done 8e0e003); CI-80 read success (39205598593 on 58e2e88); done_gate
+    bind on fda063e passed; ONE push 58e2e88..fda063e, verify-push remote == HEAD; ci 39211011697
+    success + codeql success (numpy 2.5.4 / ruff 0.17.1 pins green); PR #3 and PR #4 were
+    auto-closed by Dependabot (06:38Z / 06:40Z) after the push, path-B reason comments added
+    (5f9a043 / 67973e8), gh pr view read back CLOSED; lw_postmerge_scan clean (LEDGER 340).
   - GH-DEPMERGE DONE 2026-10-19 (LEDGER 338, 96c6ac5): MAIN 0034 rule adopted (path B only), tools/lw_postmerge_scan.py
     added (8 tests), ANSWER 0128 reached 1/1. V18/V19 read-backs closed by MAIN 0037. PRs #3/#4 path B stays in GH-CONTRIB.
   - Session 83 (responder run 189) /done: the responder child handled MAIN ORDER
@@ -175,7 +178,11 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 83 - 0034 DEPENDABOT-MERGE-RULE measurement (LEDGER 336,
+Do NOT redo: session 83 /done - PR #3/#4 closed (gh pr view state CLOSED), KIT-V20.1
+  (8e0e003), Dependabot rule (96c6ac5, LEDGER 338), PRs re-applied 5f9a043 + 67973e8
+  (LEDGER 339), CI-80, CI-79, V18/V19 read-backs, GH-SECURITY, GH-CONTRIB - read back via
+  git log on main, LEDGER 338-340 and gh run view.
+  session 83 - 0034 DEPENDABOT-MERGE-RULE measurement (LEDGER 336,
   58e2e88) and CI-79 (39201677701 success) - read back via git log on main and gh run list.
   session 82 - inbox triage (LEDGER 335, 6b3d94f) and CI-79's earlier runs (all
   success) - read back via LEDGER 335, git log on main and gh run list.
@@ -234,21 +241,21 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > <repo>/images/0.Originals
-      last check: not done (2869 tries)
+      last check: not done (2881 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (1871 tries)
+      last check: not done (1883 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (1871 tries)
+      last check: not done (1883 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   - decision.d4-tag-archive decision/d4-tag-archive: D4 deletion floor: delete-or-keep the local-only tag archive/mig-1-v6-wip (abandoned MIG-1 v6 WIP b29005e, not reachable from main, never pushed; LEDGER 327)
       steps: 1) Tell the next session 'delete tag' (it runs git tag -d archive/mig-1-v6-wip) or 'keep tag' (it writes ops/runtime/d4-tag-archive-keep.ok)
       open first: Claude Code session > reply 'delete tag' or 'keep tag'
-      last check: not done (127 tries)
+      last check: not done (139 tries)
       close: python tools/lw_ops_tasks.py done decision.d4-tag-archive (closes only when its check passes)
   (end operator asks)
