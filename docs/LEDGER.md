@@ -27,6 +27,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+339. DONE **2026-10-19 (MAIN 2243 GITHUB-SECURITY-FINDINGS + MAIN 2312 OPERATOR-MARKED-FIXES worked; PRs #3/#4 re-applied 5f9a043, 67973e8).**
+   READ BACK (MAIN notes via fleet_headless.verify_main): 2243 True sha256 fe218a98eac5; 2312 True
+   98e796a82f79 and its png True b6d29c95ff73.
+   - 2243: gh api code-scanning / dependabot / secret-scanning alerts, state=open, paginated, each HTTP 200:
+     open 0 / 0 / 0 before and after (no triage needed). All-state: code-scanning 22 = 21 fixed + 1
+     dismissed; dependabot 0; secret-scanning 0. Fixed 0, dismissed 0, left 0; nothing for the operator.
+   - 2312: gh api contributors?anon=1 = 1 row, the operator, 838. git log main: 843 commits pre-change,
+     one identity (operator author + committer), 0 Co-authored-by / Signed-off-by lines.
+     lw_postmerge_scan --all clean on origin/main 58e2e88 and on local main a2dfa08. fleet_rewrite.py
+     plan da7cf5dbd1a9: 845 scanned, 0 to rewrite, SHA change 0, NO REWRITE (no rewrite run). Finding:
+     plan scans all local refs - with the PR heads fetched as temp branches it read PLAN d9546106dc59,
+     2 to rewrite (the two unmerged bot commits); temp refs deleted (git branch -D, own refs, bytes
+     still on the GitHub PR branches), re-plan clean. Reported to MAIN as FYI.
+   - PR #3 (pip) path B: regenerated with the requirements*.in command (uv 0.11.8 pip compile
+     --universal --python-version 3.14 --generate-hashes, --upgrade-package numpy==2.5.4 [ruff==0.17.1]).
+     Diff vs PR #3 branch: equal except colorama 0.4.6 (win32 marker, via pytest), which Dependabot
+     dropped and LW keeps (Dependabot compile defect). ruff 0.17.1 check . clean. Commit 5f9a043.
+   - PR #4 (github-actions) path B: codeql-action v4.38.3 -> v4.39.0; tag 48870fdd6b42 dereferenced by
+     gh api to commit 6f2ac81f5cd8; codeql.yml byte-equal to the PR #4 branch. Commit 67973e8.
+   - Gated suite (fleet_suite_gate, lw_suite): 4196 passed 19 skipped + serial 182 passed 1 skipped =
+     4378 passed, 20 skipped, rc 0. Local interpreter still numpy/ruff pre-bump; CI on the push tests
+     the bumped pins.
+   - PRs #3 and #4 left OPEN on purpose: docs/OPERATIONS.md "Bot PRs" says close only AFTER the
+     re-applied commit is pushed, and this run does not push (/done does). Carried as PR-CLOSE-3-4.
+   - ONE ANSWER for both orders: 2026-10-19-0134-from-LW-ANSWER-to-MAIN-2243-SECURITY-0-open-2312-
+     CONTRIB-operator-only-PR3-PR4-reapplied-TERMINAL.md, MAIN inbox copy re-hashed equal
+     (c84280c39a04), reached 1/1; OutboundCap 3/12 today. Hand-off: GH-SECURITY, GH-CONTRIB removed.
+
 338. DONE **2026-10-19 (MAIN 0034 DEPENDABOT-MERGE-RULE worked + V18/V19 read-backs closed + SS FYIs; 96c6ac5).**
    READ BACK (inbox sorted by mtime; MAIN notes via fleet_headless.verify_main):
    - MAIN 0037 ANSWER READBACK v18/v19/v20 (TERMINAL, HOP 2): verify_main True, sha256 413242413f29.

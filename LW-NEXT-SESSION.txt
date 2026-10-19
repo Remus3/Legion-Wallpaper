@@ -1,8 +1,8 @@
 NEXT SESSION
 ------------
 SESSION: 84
-Task: Work ALL open checklist items. GH-SECURITY and GH-CONTRIB ANSWERs first (both owed to
-  MAIN, ONE ANSWER TERMINAL HOP: 2 each, or one batched note), then KIT-V20-DIRTY, CI-80, the read-back
+Task: Work ALL open checklist items. PR-CLOSE-3-4 right after the /done push (GH-SECURITY
+  and GH-CONTRIB ANSWERed 2026-10-19 0134, LEDGER 339), then KIT-V20-DIRTY, CI-80, the read-back
   watches and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
@@ -18,12 +18,11 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   progress file before editing shared files). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: GH-SECURITY and GH-CONTRIB ANSWERs sent (reached 1/1, before->after recorded);
+Acceptance: PRs 3 and 4 read back CLOSED after the push;
   KIT-V20-DIRTY resolved, CI-80 read green (or red investigated); every other checklist item acted on or carried
   with a reason.
 CHECKLIST:
-  - GH-SECURITY: Work MAIN ORDER 2026-10-18-2243 GITHUB-SECURITY-FINDINGS (responder only measured, per its section 0): re-read open alerts via gh api (responder read 2026-10-18: code-scanning 0 open [22 total: 21 fixed, 1 dismissed], dependabot 0, secret-scanning 0, all HTTP 200), triage/fix/dismiss any, record before->after in hand-off, send ONE ANSWER TERMINAL HOP: 2 to MAIN (LEDGER 333)
-  - GH-CONTRIB: Work MAIN ORDER 2026-10-18-2312 OPERATOR-MARKED-FIXES (responder only measured, per its section 0): re-read gh api contributors (responder read 2026-10-18: operator only, 835; git log main 0 AI/bot author/committer/trailer; fleet_rewrite plan a830aa1c7f87 NO REWRITE, SHA change 0); land open Dependabot PRs 3 and 4 as operator commits and close them with a reason (no bot author on main), record the going-forward rule, send ONE ANSWER TERMINAL HOP: 2 to MAIN (LEDGER 334)
+  - PR-CLOSE-3-4: AFTER /done pushes 5f9a043 + 67973e8 to origin main (ls-remote read-back), close Dependabot PR 3 with gh pr close 3 --comment "re-applied as operator commit 5f9a043" and PR 4 with "re-applied as operator commit 67973e8" (docs/OPERATIONS.md Bot PRs: close only after push), then read back gh pr view --json state = CLOSED and lw_postmerge_scan clean (LEDGER 339)
   - CI-80: Read CI conclusion of 58e2e88 (LEDGER 336) run 39205598593 (in_progress at session 83 wrap; gh run view 39205598593 --json conclusion); then push the session 83 wrap commit once done_gate.py bind passes (see KIT-V20-DIRTY)
   - KIT-V20-DIRTY: Uncommitted in-flight kit vendoring in the tree (CLAUDE.md, ops/fleet_kit/FLEET-COMMON.md + MANIFEST.json + fleet_headless.py + fleet_inbox.py, tests/test_inbox_responder_triage.py; mtimes 00:01-00:07 2026-10-19; owner progress ops/loop/control/progress/kit-v20-1.json read running 70 pct, last updated 00:24, stale past 2x ETA at 00:39). It blocks done_gate.py bind (dirty tree). Check that progress file and live claude processes first; if the owner is dead, finish (suite + commit via fleet_gitlock) or hand to MAIN - never revert blind
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
