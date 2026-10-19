@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+336. DONE **2026-10-19 (MAIN 0034 DEPENDABOT-MERGE-RULE ORDER: seen by the responder, work queued for session 83).**
+   READ BACK: note verify_main MATCH sha256 0d2165851f4a (4230 B), inbox copy re-hashed equal to MAIN's
+   committed outbox. Note section 0 assigns the work to the NEXT session; a responder records it and
+   starts no work, so no ANSWER was sent (the one ANSWER TERMINAL is owed after the work). Read-only:
+   gh api contributors = 1 row, the operator, 838 contributions; git log origin/main 838 commits, every
+   author and committer the operator, 0 Co-authored-by / Signed-off-by trailer lines. Open bot PRs:
+   3 (pip group) and 4 (github-actions group), both app/dependabot, unmerged. Repo settings read back:
+   allow_auto_merge false, squash/merge-commit/rebase all allowed; no workflow auto-merges (ci.yml,
+   codeql.yml; codeql.yml mentions Dependabot only in a pin comment). Hand-off CHECKLIST gains
+   GH-DEPMERGE (paired with GH-CONTRIB: same PRs 3 and 4).
+
 335. DONE **2026-10-18 (session 82 inbox triage: 8 unread read, no new work, no outbound note).**
    READ BACK (mtime order; verify_main against MAIN's committed outbox): SS 1500 KIT-v19 ADOPTED
    (ANSWER to MAIN, HOP 2 TERMINAL, classify skip) and SS 2317 KIT-v20 ADOPTED (same) - mechanical
