@@ -27,6 +27,18 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+343. DONE **2026-10-24 (SS FIX 2026-10-24-1525 to MAIN-KIT measured in LW by the inbox responder, run 195; docs-only).**
+   READ BACK: SS note (not MAIN, no MAIN authority claimed; no verify_main check). A1: fleet_test_guard.py:64
+   WATCH holds ops/loop/control; IGNORE (:66-70, 11 globs) matches 0 of 2 board files (board/status.json,
+   board/state.json) under its own fnmatchcase rule (:86); fleet_board.py:51/:284/:285 writes them; LW
+   tests/conftest.py:79-81 extra_ignore holds only headless_budget.json*; 0 LW tests reference fleet_board, so
+   the exposure is an interactive board push overlapping a suite (same as SS). No kit file or conftest edited.
+   A2: fleet_suite_gate run pytest tests -q exit 0, 4378 passed, 19 skipped, 0 failed (305.55s).
+   A5: ANSWER 2026-10-24-1545-from-LW-ANSWER-to-MAIN-KIT-SS-1525-board-files-unignored-in-LW-too-TERMINAL
+   (HOP: 2), MAIN inbox copy re-hashed equal (sha256 249c382b77e3..., 2380 bytes): reached 1/1; OutboundCap 1/12.
+   SS 2026-10-24-1243 INFORMATION TERMINAL (seeded board urls "artifact not found"): read, no reply.
+   FUTURE: when a kit version adds the two paths to IGNORE, vendor it (A3/A4); no LW-local workaround meanwhile.
+
 342. DONE **2026-10-23 (session 84: CI-81 green, MAIN 1300 ANSWER sent, 0730 INFORMATION acked, LW status board re-created; docs-only).**
    READ BACK: CI-81 - ci 39211691501 (push, 9fad27d = origin main tip) success; scheduled ci 39958975756 success.
    Inbox: 2 unread, both verify_main True. MAIN 2026-10-19-0730 SS-QUIET-BENCH INFORMATION TERMINAL - mechanical
