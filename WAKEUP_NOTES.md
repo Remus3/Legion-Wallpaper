@@ -79,6 +79,13 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-23, session 84) - CI-81 green, MAIN 1300 answered, board re-created
+
+Commits: f874787 (responder leftovers + LEDGER 341 correction), LEDGER 342 + hand-off (this wrap).
+CI-81: ci 39211691501 success on 9fad27d. MAIN 1300 SETTINGS-INERT-KEYS ANSWER reached 1/1 (the
+responder child had done the edit but timed out before answering). LW board re-created at
+https://claude.ai/artifact/4PeonWKZxgrX92CheHAx4D. Do NOT redo: CI-81, the 1300 FIX/ANSWER, BOARD-URL.
+
 ## PREVIOUS SESSION (2026-10-19, session 83 /done re-run) - pushed, CI green, PRs #3/#4 closed
 
 Commits: LEDGER 340 + hand-off (this wrap). ONE push 58e2e88..fda063e after done_gate bind (verify-push
