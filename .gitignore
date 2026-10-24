@@ -16,6 +16,7 @@ API-Key-*.txt
 # content) and ignores only the machine-local pieces, preserving RC's intent
 # that per-machine config, tokens, and worktree checkouts never get tracked.
 .claude/settings.local.json
+.claude/settings.local.json.bak-*
 .claude/local/
 .claude/worktrees/
 # Root worktree parent. ANCHORED: an unanchored `worktrees/` matches at every

@@ -27,6 +27,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+341. DONE **2026-10-21 (MAIN FIX 2026-10-21-1300 SETTINGS-INERT-KEYS worked by the inbox responder; settings file gitignored).**
+   READ BACK: inbox copy sha256 86fb6cc8...b52be = MAIN outbox copy (MATCH, 2067 bytes).
+   Backup: timestamped copy beside it (.claude/settings.local.json.bak-20261021-130243, byte-equal
+   to the pre-edit file; new .gitignore pattern .claude/settings.local.json.bak-*). Removed from
+   .claude/settings.local.json top level: dangerouslySkipPermissions, bypassPermissions, defaultMode;
+   under permissions: skipDangerousModePermissionPrompt, autoUpdates, dangerouslySkipPermissions,
+   bypassPermissions. json.loads read-back: permissions.defaultMode = bypassPermissions, top-level
+   skipDangerousModePermissionPrompt + autoUpdates still true, listed keys absent, ASCII, no CR.
+   .claude/settings.json: grep for the seven keys found none (unchanged). install_git_hooks --check 0.
+   CORRECTION (session 84): the responder child timed out after 1800s BEFORE sending the ANSWER (runs.jsonl
+   2026-10-21T18:31:59Z); session 84 re-read the file and sent ANSWER
+   2026-10-23-1945-from-LW-ANSWER-to-MAIN-1300-SETTINGS-INERT-KEYS-removed-TERMINAL (HOP: 2), reached 1/1 re-hashed.
+
 340. DONE **2026-10-19 (session 83 /done: KIT-V20-DIRTY resolved, ONE push 58e2e88..fda063e, CI green on the bumped pins, PRs #3/#4 closed; docs-only).**
    READ BACK: tree clean at start, ops/loop/control/progress/kit-v20-1.json status done (8e0e003) -
    KIT-V20-DIRTY dropped. CI-80: run 39205598593 on 58e2e88 conclusion success. done_gate.py bind on
