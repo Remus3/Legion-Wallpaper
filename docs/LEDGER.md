@@ -42,6 +42,9 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    Hand-off fix: checklist IDs are capped at 16 chars (tools/lw_checklist.py:41, fleet_checklist._ID), so
    WALLPAPER-PICKLOG (17) and the carried REPO-REVIEW-DRIVER (18) were silently dropped by the SessionStart
    printer; renamed WP-PICKLOG / REVIEW-DRIVER (long name kept in the task text); printer read back 11 tasks + /done.
+   CI fix: ci 40236189169 (push ba1197a) check FAILED 2 tests - c32c678's tests spelled source_dir `%VAR%`, which
+   posixpath.expandvars ignores on the Linux runner (Windows-only bind passed). Tests now use `${VAR}` (both
+   ntpath and posixpath expand it); 43 passed locally; production code unchanged.
 
 343. DONE **2026-10-24 (SS FIX 2026-10-24-1525 to MAIN-KIT measured in LW by the inbox responder, run 195; docs-only).**
    READ BACK: SS note (not MAIN, no MAIN authority claimed; no verify_main check). A1: fleet_test_guard.py:64

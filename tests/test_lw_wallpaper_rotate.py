@@ -432,12 +432,13 @@ def test_status_on_a_fresh_install_does_not_raise(tmp_path):
 
 
 def _env_cfg(tmp_path, monkeypatch) -> dict:
-    """A config whose source_dir is an UNEXPANDED `%VAR%` spelling, like the
-    tracked `~/Pictures` in tools/lw_wallpaper_config.json."""
+    """A config whose source_dir is an UNEXPANDED `${VAR}` spelling, like the
+    tracked `~/Pictures` in tools/lw_wallpaper_config.json. `${VAR}` (not
+    `%VAR%`) because posixpath.expandvars ignores `%VAR%` and CI runs Linux."""
     src = _corpus(tmp_path)
     monkeypatch.setenv("LW_TEST_WALLPAPER_SRC", str(src))
     cfg = _cfg(tmp_path, src)
-    cfg["source_dir"] = "%LW_TEST_WALLPAPER_SRC%"
+    cfg["source_dir"] = "${LW_TEST_WALLPAPER_SRC}"
     return cfg
 
 
@@ -454,7 +455,7 @@ def test_reshuffle_expands_the_configured_source_dir(tmp_path, monkeypatch):
     assert rot.reshuffle(cfg, rng=random.Random(4)) == 0
     st = _state(cfg)
     assert sorted(st["deck"]) == sorted(NAMES)
-    assert "%" not in st["source_dir"]
+    assert "$" not in st["source_dir"]
 
 
 def test_reshuffle_starts_a_new_cycle_without_setting_the_wallpaper(tmp_path):
