@@ -431,6 +431,32 @@ def test_status_on_a_fresh_install_does_not_raise(tmp_path):
     assert rot.status(cfg)
 
 
+def _env_cfg(tmp_path, monkeypatch) -> dict:
+    """A config whose source_dir is an UNEXPANDED `%VAR%` spelling, like the
+    tracked `~/Pictures` in tools/lw_wallpaper_config.json."""
+    src = _corpus(tmp_path)
+    monkeypatch.setenv("LW_TEST_WALLPAPER_SRC", str(src))
+    cfg = _cfg(tmp_path, src)
+    cfg["source_dir"] = "%LW_TEST_WALLPAPER_SRC%"
+    return cfg
+
+
+def test_status_expands_the_configured_source_dir(tmp_path, monkeypatch):
+    # Live 2026-10-25: `status` printed present=0 against a 555-image corpus
+    # because it read "~/Pictures" literally while `tick` expanded it.
+    cfg = _env_cfg(tmp_path, monkeypatch)
+    text = "\n".join(rot.status(cfg))
+    assert f"present={len(NAMES)}" in text
+
+
+def test_reshuffle_expands_the_configured_source_dir(tmp_path, monkeypatch):
+    cfg = _env_cfg(tmp_path, monkeypatch)
+    assert rot.reshuffle(cfg, rng=random.Random(4)) == 0
+    st = _state(cfg)
+    assert sorted(st["deck"]) == sorted(NAMES)
+    assert "%" not in st["source_dir"]
+
+
 def test_reshuffle_starts_a_new_cycle_without_setting_the_wallpaper(tmp_path):
     cfg = _cfg(tmp_path, _corpus(tmp_path))
     rec = _Recorder()

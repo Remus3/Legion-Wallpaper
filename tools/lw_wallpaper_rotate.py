@@ -309,10 +309,19 @@ def set_wallpaper(path) -> bool:
 
 # --------------------------------------------------------------- commands
 
+def _source_dir(config) -> Path:
+    """The configured corpus dir with `~` / `%VAR%` expanded.
+
+    One resolver for every command: `status` and `reshuffle` once read the
+    tracked `~/Pictures` literally (present=0, reshuffle "not found") while
+    `tick` expanded it.
+    """
+    return lw_paths.expand(config.get("source_dir") or DEFAULT_CONFIG["source_dir"])
+
+
 def tick(config, dry_run: bool = False, rng=None, set_wallpaper_fn=None):
     """Advance one image. Returns (exit_code, pick_or_None)."""
-    source_dir = lw_paths.expand(
-        config.get("source_dir") or DEFAULT_CONFIG["source_dir"])
+    source_dir = _source_dir(config)
     state_path = Path(str(config.get("state_path") or DEFAULT_CONFIG["state_path"]))
     extensions = config.get("extensions") or DEFAULT_CONFIG["extensions"]
 
@@ -366,7 +375,7 @@ def tick(config, dry_run: bool = False, rng=None, set_wallpaper_fn=None):
 
 def status(config) -> list:
     """Human-readable deck status lines."""
-    source_dir = Path(str(config.get("source_dir") or DEFAULT_CONFIG["source_dir"]))
+    source_dir = _source_dir(config)
     state_path = Path(str(config.get("state_path") or DEFAULT_CONFIG["state_path"]))
     extensions = config.get("extensions") or DEFAULT_CONFIG["extensions"]
     state = load_state(state_path, source_dir=str(source_dir))
@@ -385,7 +394,7 @@ def status(config) -> list:
 
 def reshuffle(config, rng=None) -> int:
     """Force a new cycle now. Does not set a wallpaper - the next tick does."""
-    source_dir = Path(str(config.get("source_dir") or DEFAULT_CONFIG["source_dir"]))
+    source_dir = _source_dir(config)
     state_path = Path(str(config.get("state_path") or DEFAULT_CONFIG["state_path"]))
     extensions = config.get("extensions") or DEFAULT_CONFIG["extensions"]
     if not source_dir.is_dir():
