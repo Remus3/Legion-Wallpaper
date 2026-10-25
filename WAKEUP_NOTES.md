@@ -79,6 +79,15 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-25, session 85) - wallpaper repeat report investigated, ~ fix shipped
+
+Commits: c32c678 (status/reshuffle expand ~ via shared _source_dir(), 75 tests), LEDGER 344 + hand-off (this wrap).
+Operator reported the desktop switcher repeating a small pool; LW-Wallpaper -> lw_wallpaper_rotate.py tick
+every 3 min over a persisted shuffle deck (555 unique images, cycle 116): no repeat bug found. ref_181f named
+as repeated: set once this cycle (deck pos 193, 21:13:58Z); BackgroundHistoryPath0-4 = deck 193-197; no other
+setter; no duplicates. Unproven because the run log has no filename. Next: WALLPAPER-PICKLOG (log each tick's
+chosen filename), then ask the operator for the next repeat name+time. CI-82 read: 40046816812 success (200368d).
+
 ## PREVIOUS SESSION (2026-10-23, session 84) - CI-81 green, MAIN 1300 answered, board re-created
 
 Commits: f874787 (responder leftovers + LEDGER 341 correction), LEDGER 342 + hand-off (this wrap).

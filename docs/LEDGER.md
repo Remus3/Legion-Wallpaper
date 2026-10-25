@@ -27,6 +27,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+344. DONE **2026-10-25 (session 85: wallpaper-repeat report investigated, no bug found; status/reshuffle ~ fix c32c678).**
+   Operator reported the desktop wallpaper switcher repeating a small pool. READ BACK: LW-Wallpaper task runs
+   tools/lw_wallpaper_rotate.py tick every 3 min over the persisted shuffle deck ops/runtime/wallpaper_deck.json;
+   555 unique images in ~/Pictures, cycle 116. No repeat bug found. Operator then named ref_181f as repeated ~5
+   images earlier: it was set once this cycle at 21:13:58Z (deck pos 193; cycle began 11:34:57Z); Windows
+   BackgroundHistoryPath0-4 match deck 193-197; no other wallpaper setter; no duplicate files in Pictures. Likely
+   explanation: the Settings recent-wallpaper strip (last 5) or look-alike images (Ahri at deck pos 187/191). NOT
+   proven: the run log records no filename. Shipped c32c678: `status` / `reshuffle` now expand ~ via a shared
+   _source_dir() (tick already did); 75 tests passed. Progress wallpaper-shuffle.json done.
+   OPEN: WALLPAPER-PICKLOG (promised to the operator, not yet dispatched) - log each tick's chosen filename to the
+   run log so a reported repeat can be proven or disproven; then ask the operator for the next repeat name + time.
+   CI-82 read: session 84 wrap push ci 40046816812 success (200368d); 90ba4b3 push ci 40131266917 success.
+
 343. DONE **2026-10-24 (SS FIX 2026-10-24-1525 to MAIN-KIT measured in LW by the inbox responder, run 195; docs-only).**
    READ BACK: SS note (not MAIN, no MAIN authority claimed; no verify_main check). A1: fleet_test_guard.py:64
    WATCH holds ops/loop/control; IGNORE (:66-70, 11 globs) matches 0 of 2 board files (board/status.json,
