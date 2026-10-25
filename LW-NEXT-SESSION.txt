@@ -1,7 +1,7 @@
 NEXT SESSION
 ------------
 SESSION: 86
-Task: WALLPAPER-PICKLOG first (log each tick's chosen filename in tools/lw_wallpaper_rotate.py,
+Task: WP-PICKLOG (WALLPAPER-PICKLOG) first (log each tick's chosen filename in tools/lw_wallpaper_rotate.py,
   TDD, one slice), then CI-82 (read the session 85 wrap push CI) and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
@@ -18,10 +18,10 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   progress file before editing shared files). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: WALLPAPER-PICKLOG shipped green; CI-82 read green (or red investigated); every other
+Acceptance: WP-PICKLOG shipped green; CI-82 read green (or red investigated); every other
   checklist item acted on or carried with a reason.
 CHECKLIST:
-  - WALLPAPER-PICKLOG: Log each tick's chosen filename to the run log in tools/lw_wallpaper_rotate.py so a reported repeat can be proven or disproven (promised to the operator session 85, not yet dispatched; LEDGER 344)
+  - WP-PICKLOG: (WALLPAPER-PICKLOG) Log each tick's chosen filename to the run log in tools/lw_wallpaper_rotate.py so a reported repeat can be proven or disproven (promised to the operator session 85, not yet dispatched; LEDGER 344)
   - CI-82: Read CI conclusion of the session 85 wrap push (tip = newest commit on origin main; gh run list --branch main --limit 3 --json databaseId,headSha,conclusion,event - take the push event row); session 84 wrap push read: 40046816812 success on 200368d
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
@@ -31,7 +31,7 @@ CHECKLIST:
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator task visual.readback-2237-statusline; on the operator's OK write ops/runtime/readback-2237.ok; feedback-line half PASSED session 68, LEDGER 289)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
-  - REPO-REVIEW-DRIVER: DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
+  - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
   - Operator reported ref_181f repeat 2026-10-25 ~21:13Z; unconfirmed; once PICKLOG ships, ask operator for next repeat name+time.
   - Session 85 /done: wallpaper-repeat investigation (LW-Wallpaper tick every 3 min, persisted deck
@@ -40,6 +40,8 @@ Carried forward:
     likely the Settings recent-wallpaper strip or look-alikes (Ahri pos 187/191); unproven (no filename in run log).
     c32c678 shipped (status/reshuffle expand ~ via _source_dir(), 75 tests). LEDGER 344. Pre-flight --lf skipped
     (whole-suite gate slot; section-7 bind is the graded run). Session jsonl < 10 MB. No background agents left.
+    Checklist IDs are capped at 16 chars (lw_checklist._ITEM / fleet_checklist._ID): WALLPAPER-PICKLOG and
+    REPO-REVIEW-DRIVER were silently dropped by the SessionStart printer, so they carry as WP-PICKLOG / REVIEW-DRIVER.
   - Session 84 /done: CI-81 read success (39211691501 push on 9fad27d). MAIN 1300 SETTINGS-INERT-KEYS:
     responder child did the edit 2026-10-21 (7 inert keys removed from the gitignored
     .claude/settings.local.json, backup .bak-20261021-130243 beside it) but timed out before the

@@ -39,6 +39,9 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    OPEN: WALLPAPER-PICKLOG (promised to the operator, not yet dispatched) - log each tick's chosen filename to the
    run log so a reported repeat can be proven or disproven; then ask the operator for the next repeat name + time.
    CI-82 read: session 84 wrap push ci 40046816812 success (200368d); 90ba4b3 push ci 40131266917 success.
+   Hand-off fix: checklist IDs are capped at 16 chars (tools/lw_checklist.py:41, fleet_checklist._ID), so
+   WALLPAPER-PICKLOG (17) and the carried REPO-REVIEW-DRIVER (18) were silently dropped by the SessionStart
+   printer; renamed WP-PICKLOG / REVIEW-DRIVER (long name kept in the task text); printer read back 11 tasks + /done.
 
 343. DONE **2026-10-24 (SS FIX 2026-10-24-1525 to MAIN-KIT measured in LW by the inbox responder, run 195; docs-only).**
    READ BACK: SS note (not MAIN, no MAIN authority claimed; no verify_main check). A1: fleet_test_guard.py:64
