@@ -27,6 +27,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+351. DONE **2026-10-26 (Maint-KitRollout: fleet kit v24 adopted; supersedes v23).**
+   MAIN ORDER 2026-10-26-0315 FLEET-KIT-v24 (HOP 1): verify_main True (inbox == MAIN committed outbox copy,
+   sha256 de515317931a...); bundle verified at KIT-COMMIT 3ce416e (lw_inbox_responder.bundle_verified True).
+   The working tree already held the v24 bytes from an earlier half-done rollout (all 24 files == bundle
+   sha256, CLAUDE.md diff = item 19 only; claims: one DEAD owner, no live one; nothing re-copied). READ BACK:
+   23/23 kit files + MANIFEST.json (a41ff08e...) match section 1; conformance() == []; KIT_VERSION 24;
+   FLEET-COMMON block byte-exact (item 19 new). Section 4: no chart_order / item-18 / shell_targets / _lanes
+   order asserts in tests/. Adoption fixes: KIT_VERSION pins 23 -> 24 (tests/test_fleet_kit_conformance.py,
+   tests/test_headless_env.py, tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py);
+   tests/test_no_absolute_machine_paths.py drops the ops/fleet_kit/ allowlist row (v24 KIT-SIDECAR-PATH: the
+   kit has 0 drive-path lines, so the row was dead). reap dry-run: 0 removable, 0 kept, 0 listed. Gated suite
+   (fleet_suite_gate, tools/lw_suite.py -q): 4204 passed 19 skipped + serial 183 passed 1 skipped; drift_guard
+   0 breaches; ruff clean.
+
 350. DONE **2026-10-26 (responder: MAIN ORDER 2026-10-26-0300 U5 - timing tests to fleet_test_guard.budget()).**
    MAIN provenance: verify_main True, inbox == MAIN outbox sha256 35783c7a4f0704781508ce84e5b140d22472ce184ac3b9bd09b93e8880217193
    (1061 bytes). tests/test_lw_facts_stdin_is_bounded.py (2 arms, elapsed < 3.0) and
