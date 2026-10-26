@@ -39,6 +39,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+import fleet_test_guard  # noqa: E402
 import lw_facts as F  # noqa: E402
 
 
@@ -88,7 +89,7 @@ def test_a_writer_that_never_closes_does_not_hang_the_hook(pipe_stdin):
     out = F._read_stdin_bounded(cap_bytes=1024, cap_s=0.2)
     elapsed = time.monotonic() - t0
     assert out == b"", out
-    assert elapsed < 3.0, f"the bounded read took {elapsed:.2f}s - it is not bounded"
+    assert elapsed < fleet_test_guard.budget(3.0), f"the bounded read took {elapsed:.2f}s - it is not bounded"
 
 
 def test_a_partial_write_with_no_close_still_returns(pipe_stdin):
@@ -100,7 +101,7 @@ def test_a_partial_write_with_no_close_still_returns(pipe_stdin):
     t0 = time.monotonic()
     out = F._read_stdin_bounded(cap_bytes=64 * 1024, cap_s=0.3)
     elapsed = time.monotonic() - t0
-    assert elapsed < 3.0, f"the bounded read took {elapsed:.2f}s"
+    assert elapsed < fleet_test_guard.budget(3.0), f"the bounded read took {elapsed:.2f}s"
     # Whatever it managed to read must not be MORE than what was written.
     assert len(out) <= 64 * 1024
 

@@ -45,6 +45,7 @@ import textwrap
 import time
 from pathlib import Path
 
+import fleet_test_guard
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -213,7 +214,7 @@ def test_a_full_bucket_raises_slot_timeout_rather_than_waiting(tmp_path: Path):
         with ctrl.held_slot(1, timeout=0.25, backoff=0.01, jitter=0.0,
                             root=root, corpus=tmp_path / "c.jsonl"):
             raise AssertionError("the body must not run")
-    assert time.monotonic() - t0 < 30, "the wait did not respect the bound"
+    assert time.monotonic() - t0 < fleet_test_guard.budget(30), "the wait did not respect the bound"
 
 
 def test_a_slot_timeout_is_handled_at_the_call_site_and_the_cycle_continues():

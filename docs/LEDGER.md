@@ -27,6 +27,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+350. DONE **2026-10-26 (responder: MAIN ORDER 2026-10-26-0300 U5 - timing tests to fleet_test_guard.budget()).**
+   MAIN provenance: verify_main True, inbox == MAIN outbox sha256 35783c7a4f0704781508ce84e5b140d22472ce184ac3b9bd09b93e8880217193
+   (1061 bytes). tests/test_lw_facts_stdin_is_bounded.py (2 arms, elapsed < 3.0) and
+   tests/test_slot_hold_is_bounded.py (1 arm, monotonic() - t0 < 30) now assert against
+   fleet_test_guard.budget(3.0) / budget(30) (kit v16+ load-scaled); each file imports fleet_test_guard.
+   Read back: grep of tests/ for an assert on elapsed/monotonic/perf_counter/time.time with a raw `<`
+   bound outside budget() = 0 hits. Touched files: 44 passed, exit 0. Whole suite via fleet_suite_gate
+   (timeout 1200 s): exit 0, 4387 passed, 19 skipped, 246 s; untracked/modified file count 2 -> 2.
+   ruff clean. Reply: ANSWER note to MAIN (HOP 2, TERMINAL). FUTURE: a new wall-clock upper bound in
+   tests/ goes through budget() from the start.
+
 349. DONE **2026-10-25 (session 86 / responder 198 /done: 2045 suite-speed wrap).**
    491bb85 (LEDGER 348) pushed by the responder; CI read back: ci 40266567636 success, codeql 40266567605
    success. ANSWER 2026-10-25-2257-from-LW-ANSWER-to-MAIN-2045-suite-speed-done-491bb85-TERMINAL delivered,
