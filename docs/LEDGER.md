@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+347. DONE **2026-10-25 (responder: MAIN FIX 2026-10-25-1935 gh-review - Pillow 13.0.0, Dependabot PRs #5 #6 re-applied as operator commits).**
+   Inbox copy re-hashed: sha256 2b7ff2c8966a092dd50e341d56398e59a8c62df709d0633d33fe2d264d2b42d0, 2125 bytes;
+   verify_main True (MAIN committed outbox copy). READ BEFORE: 82 open Dependabot alerts (gh api), PRs #5 #6 open.
+   No private Pillow internals used (grep of `_save_netpbm`, `Image._`, `ImageFile._`, `GifImagePlugin`: 0 hits).
+   PR #6 (head 539ab9b) applied with `git cherry-pick --no-commit`: setup-python v7.0.0 -> v7.1.0 (3 sites),
+   codeql-action init/analyze v4.39.0 -> v4.39.1. PR #5 (head 9ef1ece) NOT taken byte-for-byte: its
+   requirements files drop colorama (win32 marker) and list every pillow hash twice; both files regenerated
+   locally with `uv pip compile ... --generate-hashes --upgrade-package pillow [--upgrade-package ruff]`
+   instead. Pins: pillow 12.3.0 -> 13.0.0 (requirements.txt, requirements-cv.txt), ruff 0.17.1 -> 0.17.2
+   (requirements.txt); colorama kept; 0 duplicate hashes. Gated suite (fleet_suite_gate, python -m pytest
+   tests -q, local Pillow 13.0.0): exit 0, 4381 passed, 19 skipped. CV lane in a fresh venv installed
+   `--require-hashes` from requirements-cv.txt (cv2 5.0.0, numpy 2.5.4, scipy 1.18.1, skimage 0.26.0,
+   Pillow 13.0.0): exit 0, 18 passed. CLAUDE.md Session gains the MAIN-ordered rule: read the previous
+   push's CI verdict before the next push.
+
 346. DONE **2026-10-25 (responder re-verify of MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23; no residual work).**
    Inbox copy re-hashed: sha256 e29369dc8aeee59db49c1481a5cfbe491268a2b6a66e0ca7c09221253da638ee, 13931 bytes
    (== MAIN outbox copy). READ BACK at HEAD 121eb25: MANIFEST.json sha256 f5d82861...ba527c == section 1;

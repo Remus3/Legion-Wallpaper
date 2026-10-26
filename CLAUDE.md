@@ -246,7 +246,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 ## Session
 - Session checklist (FLEET-COMMON item 13, kit v7): the counter is the `SESSION: <n>` line in `LW-NEXT-SESSION.txt` (stamped n+1 by `tools/lw_next_session.py --write` at /done); tasks come from its `CHECKLIST:` section. Printers: SessionStart hook `tools/lw_checklist.py session-start` (interactive); `ops/loop/loop_controller.py` per cycle into `progress/lane-<i>.json` (main checkout); `tools/lw_inbox_responder.py` per tick into `progress/inbox-responder.json`, and its child prompt (plus the CI-fix prompt) carries `lw_checklist.child_rule`.
 - /done: tests, commit, push, append the item to `docs/LEDGER.md` (never CLAUDE.md), confirm CI green, rewrite `LW-NEXT-SESSION.txt` carrying forward every un-acted item, commit it; chat output only per FLEET-COMMON item 5. CLAUDE.md is CI size-budgeted (< 60 KB, `drift_guard`).
-- Push verified-green commits to origin main at /done and at the end of a responder or driver run - one push, not one per commit (MAIN REPO-REVIEW perf 2.5); CI runs only the tip of a push.
+- Push verified-green commits to origin main at /done and at the end of a responder or driver run - one push, not one per commit (MAIN REPO-REVIEW perf 2.5); CI runs only the tip of a push. Read the previous push's CI verdict before the next push (MAIN FIX 2026-10-25-1935: 035a814 went out on top of a red run).
 
 ## Settled - do not re-litigate
 One line each; reasoning and evidence in `docs/claude-md-history.md` (and the cited LEDGER/ADR). "Reverse if" names what would reopen it.
