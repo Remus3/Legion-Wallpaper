@@ -46,10 +46,11 @@ HOOK_RULE = (
     "adding or dropping tasks to match what this session will actually do "
     "(the operator's ask first). Reprint REMAINING tasks only after every 4 "
     "completions, new ones marked +. When none remain, run /done unprompted. "
-    "FLEET-COMMON item 18 (kit v19): after printing it, and after every reprint, "
-    "pipe the printed checklist into `python ops/fleet_kit/fleet_board.py calls "
-    "--session <n>` and make the two tool calls it prints; a failed push is a "
-    "hand-off line, never a blocker.")
+    "FLEET-COMMON item 18 (kit v23, LOCAL ONLY): after printing it, and after "
+    "every reprint, pipe the printed checklist into `python "
+    "ops/fleet_kit/fleet_board.py render --session <n>` (it writes board.html "
+    "locally; no Artifact or ArtifactData call, nothing to push); a failed "
+    "render is a hand-off line, never a blocker.")
 
 
 def _bind(name: str, filename: str):

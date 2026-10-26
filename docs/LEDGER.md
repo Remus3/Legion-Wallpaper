@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+345. DONE **2026-10-25 (Maint-KitRollout: fleet kit v23 adopted, cumulative v21+v22+v23; status board LOCAL ONLY).**
+   MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23 (HOP 1): verify_main True (MAIN committed outbox copy); bundle
+   verified at KIT-COMMIT 03d1c08 (lw_inbox_responder.bundle_verified True). The working tree already held the
+   v23 bytes from an earlier half-done rollout (all 24 files == bundle sha256, nothing re-copied). READ BACK:
+   23/23 kit files + MANIFEST.json (f5d82861...) match section 1; conformance() == []; KIT_VERSION 23.
+   Board push sites removed (v23 item 18): .claude/commands/done.md section 9 (Artifact / ArtifactData
+   push -> `fleet_board.py render --final --session <n>`), tools/lw_checklist.py HOOK_RULE (`calls` -> `render`).
+   ops/status_board.json left in place (only "code" is read); claude.ai board artifact NOT deleted (operator's
+   call). v22 reap step added to done.md section 6; reap dry-run: 0 removable, 0 kept, 0 listed. Section 4
+   tests: none of the listed board / route-bare / ls-remote shapes in tests/. Adoption fixes: KIT_VERSION pins
+   20 -> 23 (tests/test_headless_env.py, tests/test_fleet_kit_conformance.py, tests/test_promise_probe_fleet_kit.py,
+   tools/lw_promise_probes.py); tests/test_no_console_flash.py asserts the CREATE_NO_WINDOW bit (v21 ORs
+   CREATE_SUSPENDED in); tests/test_no_absolute_machine_paths.py allowlists ops/fleet_kit/ (vendored, never
+   edited; v22 SIDECAR_DEFAULT is a drive path in a PUBLIC repo - reported to MAIN). Gated suite
+   (fleet_suite_gate, tools/lw_suite.py): 4199 passed 19 skipped + serial 182 passed 1 skipped; drift_guard 0
+   breaches; ruff clean.
+
 344. DONE **2026-10-25 (session 85: wallpaper-repeat report investigated, no bug found; status/reshuffle ~ fix c32c678).**
    Operator reported the desktop wallpaper switcher repeating a small pool. READ BACK: LW-Wallpaper task runs
    tools/lw_wallpaper_rotate.py tick every 3 min over the persisted shuffle deck ops/runtime/wallpaper_deck.json;

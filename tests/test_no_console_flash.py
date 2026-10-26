@@ -181,7 +181,9 @@ def test_kit_run_forwards_the_flag_to_popen(monkeypatch):
 
     monkeypatch.setattr(kit.subprocess, "Popen", _P)
     kit._run(["x"], creationflags=0x08000000)
-    assert seen["creationflags"] == 0x08000000
+    # kit v21 (CS-1231) ORs CREATE_SUSPENDED (0x4) in while it builds the job
+    # object, so the caller's CREATE_NO_WINDOW bit must survive, not equal.
+    assert seen["creationflags"] & 0x08000000 == 0x08000000
 
 
 class _Conn:

@@ -45,6 +45,8 @@ ALLOWLIST: dict[str, str] = {
     "scratchpad/": "dated one-off artifacts, never rewritten",
     "tests/": "fixtures: drive-path strings are the input under test",
     "ops/loop/slots.py": "byte-identical with RC by contract (DEFAULT_ROOT); never edited alone",
+    "ops/fleet_kit/": "vendored byte-for-byte from MAIN (FLEET-COMMON 11), never edited here; "
+                      "kit v22+ SIDECAR_DEFAULT drive path reported to MAIN",
 }
 
 
