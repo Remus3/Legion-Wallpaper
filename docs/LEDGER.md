@@ -27,6 +27,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+346. DONE **2026-10-25 (responder re-verify of MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23; no residual work).**
+   Inbox copy re-hashed: sha256 e29369dc8aeee59db49c1481a5cfbe491268a2b6a66e0ca7c09221253da638ee, 13931 bytes
+   (== MAIN outbox copy). READ BACK at HEAD 121eb25: MANIFEST.json sha256 f5d82861...ba527c == section 1;
+   no v20/v22 pins left (KIT_VERSION 23 in tests and tools/lw_promise_probes.py); done.md carries the local
+   render and the reap step; `fleet_done.py reap` dry-run 0 removable, 0 kept, 0 listed. Gated suite
+   (fleet_suite_gate, python -m pytest tests -q): exit 0, 4381 passed, 19 skipped. The one ANSWER (HOP 2,
+   TERMINAL) was already delivered 2026-10-25 2135 (moon_sync_outbox); no second note written (never answer
+   twice).
+
 345. DONE **2026-10-25 (Maint-KitRollout: fleet kit v23 adopted, cumulative v21+v22+v23; status board LOCAL ONLY).**
    MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23 (HOP 1): verify_main True (MAIN committed outbox copy); bundle
    verified at KIT-COMMIT 03d1c08 (lw_inbox_responder.bundle_verified True). The working tree already held the
