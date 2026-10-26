@@ -48,7 +48,8 @@ class EchoHandler(lw_httpd.BaseLWHandler):
 @pytest.fixture
 def server():
     srv = lw_httpd.LWServer(("127.0.0.1", 0), EchoHandler)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv
@@ -327,7 +328,8 @@ def test_unimplemented_route_does_not_crash_the_server():
         logger_name = "lw_httpd_test"
 
     srv = lw_httpd.LWServer(("127.0.0.1", 0), Bare)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         status, body = _get(srv.server_address[1], "/")
@@ -480,7 +482,8 @@ def test_unreadable_hosts_file_keeps_loopback_only(tmp_path):
 def test_tailnet_host_rejected_by_default_and_accepted_when_listed(tmp_path):
     p = tmp_path / "hosts.json"
     srv = lw_httpd.LWServer(("127.0.0.1", 0), EchoHandler, hosts_path=p)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         port = srv.server_address[1]
@@ -490,7 +493,8 @@ def test_tailnet_host_rejected_by_default_and_accepted_when_listed(tmp_path):
         srv.server_close()
     p.write_text(json.dumps({"hosts": [TAILNET]}), encoding="ascii")
     srv = lw_httpd.LWServer(("127.0.0.1", 0), EchoHandler, hosts_path=p)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         port = srv.server_address[1]

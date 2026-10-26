@@ -542,7 +542,8 @@ def server(tmp_path):
         config_path=cfg, page_path=page, repo_root=tmp_path, session_dir=None,
         runner=fake_git(worktrees=[{"path": str(tmp_path), "branch": "main"}]),
         pid_alive=lambda pid: False, cache={}, mirror_path=tmp_path / "mirror.json")
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv

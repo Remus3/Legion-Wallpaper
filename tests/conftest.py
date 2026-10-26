@@ -38,6 +38,13 @@ import tempfile
 from pathlib import Path
 
 os.environ.setdefault("YOLO_AUTOINSTALL", "false")
+# BLAS / OpenMP pools capped to one thread per test process (MAIN suite-speed
+# ORDER 2026-10-25): with 16 logical CPUs the default pools commit ~0.5-1 GB per
+# xdist worker and oversubscribe the box. Must run before any module imports
+# the array stack. Pinned by tests/test_suite_thread_caps.py.
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 # FLEET-KIT v14 (MAIN 0930 step 3.4): fleet_lanes.worktree_path() reads the user
 # variable FLEET_SIDECAR_ROOT (process env first; an EMPTY value turns it off).

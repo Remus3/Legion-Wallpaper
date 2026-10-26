@@ -378,7 +378,8 @@ def server(tmp_path):
         ("127.0.0.1", 0), lw_monitor.Handler,
         state_path=state, log_path=logp, page_path=page,
         image_roots=[imgroot], cache={})
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv, imgroot

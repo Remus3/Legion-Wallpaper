@@ -27,6 +27,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+348. DONE **2026-10-25 (responder: MAIN ORDER 2026-10-25-2045 suite speed - veil fixture module-scoped, test httpd poll 0.05 s, -n 8, BLAS thread caps, torch test serial).**
+   MAIN provenance: verify_main True, inbox == MAIN outbox sha256 d1e2037b1fa9dd581d47fbf6cf7967d82571ef1af349900b3e8c2c6c98f92b05
+   (2155 bytes). (1) tests/test_lw_clean_overlay_veil.py: estimate_veil built once per module, deep copy per
+   test (file 24.70 s -> 6.93 s). (2) every test serve_forever thread (7 files) gets poll_interval 0.05; the
+   httpd + served_version + rundash_jobs trio 11.97 s -> 3.04 s; tools/lw_httpd.py production default left as is.
+   (3) tools/lw_suite.py parallel pass -n auto -> -n 8 (RED first in test_pytest_parallel_config); CI keeps
+   -n auto (small runners). Peak commit located with a temp psutil per-test sampler in a gated -n 8 run:
+   test_lw_usm_halo_probe::test_worker_spandrel_branch_produces_both_variants (real torch + IJN child) 10605 MB
+   tree peak on one worker, plus ~0.6-1.1 GB per worker of OpenBLAS per-thread buffers (import numpy 500 MB,
+   scipy.ndimage 1010 MB private vs 18 / 46 MB at one thread). Fixes: that test marked serial; tests/conftest.py
+   setdefaults OPENBLAS/OMP/MKL_NUM_THREADS=1 before any array import (tests/test_suite_thread_caps.py, RED
+   first). Gate durations, same command: `python tools/lw_suite.py -q` hold 84.5 / 96.5 s, peak 15563 / 15629 MB
+   -> 93.6 s, 9606 MB (exit 0; 4204 passed 19 skipped + serial 183 passed 1 skipped). `python -m pytest tests
+   -q` hold 320.8 s, peak 11165 MB -> 289.6 s, 9718 MB (exit 0, 4387 passed, 19 skipped).
+
 347. DONE **2026-10-25 (responder: MAIN FIX 2026-10-25-1935 gh-review - Pillow 13.0.0, Dependabot PRs #5 #6 re-applied as operator commits).**
    Inbox copy re-hashed: sha256 2b7ff2c8966a092dd50e341d56398e59a8c62df709d0633d33fe2d264d2b42d0, 2125 bytes;
    verify_main True (MAIN committed outbox copy). READ BEFORE: 82 open Dependabot alerts (gh api), PRs #5 #6 open.

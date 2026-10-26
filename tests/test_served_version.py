@@ -40,7 +40,8 @@ def served(monkeypatch, tmp_path):
     cfg.write_text('{"x": 1}', encoding="utf-8")
     monkeypatch.setattr(lw_httpd, "git_head", lambda: A)
     srv = lw_httpd.LWServer(("127.0.0.1", 0), _H, config_paths=(cfg,))
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv
@@ -126,7 +127,8 @@ class _Html(BaseHTTPRequestHandler):
 
 def test_probe_treats_html_as_no_commit_reported_never_a_guess():
     srv = ThreadingHTTPServer(("127.0.0.1", 0), _Html)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         rec = probe.probe_one("x", srv.server_address[1], head=A)

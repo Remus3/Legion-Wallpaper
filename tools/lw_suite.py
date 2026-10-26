@@ -6,7 +6,7 @@
     python tools/lw_suite.py [extra pytest args, e.g. -q]
 
 Pass 1 runs everything not marked `serial` under pytest-xdist with
-`-n auto --dist loadfile`. Pass 2 runs the `serial` set with `-n0`. Both passes
+`-n 8 --dist loadfile`. Pass 2 runs the `serial` set with `-n0`. Both passes
 always run, so a red first pass still reports the serial set. The exit code is
 the first non-zero pass code; an empty serial pass (pytest exit 5, "no tests
 collected") is red, because an emptied serial set is a guard that vanished.
@@ -27,7 +27,11 @@ ROOT = Path(__file__).resolve().parent.parent
 # CREATE_NO_WINDOW: 0 on non-Windows so the module imports in CI.
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
-PARALLEL = ["tests/", "-n", "auto", "--dist", "loadfile", "-m", "not serial"]
+# -n 8, not -n auto (MAIN suite-speed ORDER 2026-10-25): auto = 16 workers on
+# the Legion box while the suite gate runs 2 suites machine-wide; 8 lets two
+# gated suites share the 16 logical CPUs and cuts the per-worker peak commit.
+# CI runners are small and keep -n auto in ci.yml.
+PARALLEL = ["tests/", "-n", "8", "--dist", "loadfile", "-m", "not serial"]
 SERIAL = ["tests/", "-n0", "-m", "serial"]
 
 

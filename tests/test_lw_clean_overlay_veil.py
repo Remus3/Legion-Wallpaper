@@ -28,6 +28,7 @@ cv2.medianBlur asserts k < 16 at that width).
 """
 from __future__ import annotations
 
+import copy
 import os
 import sys
 
@@ -83,9 +84,31 @@ def _frames(n=16):
     return [_marked(i)[1] for i in range(n)]
 
 
-def test_veil_estimator_finds_the_flat_region_the_high_pass_misses():
+@pytest.fixture(scope="module")
+def _veil16():
+    """estimate_veil over the 16-frame collection, built ONCE per module.
+
+    Six tests read the identical estimate and it was rebuilt per test at
+    4.6-5.8 s each (MAIN suite-speed ORDER 2026-10-25). Built once here; each
+    test gets its own deep copy, so a test that mutates its dict or arrays
+    cannot leak into the next.
+    """
+    return ov.estimate_veil(_frames(), band=BAND, **SMALL)
+
+
+@pytest.fixture
+def veil(_veil16):
+    return copy.deepcopy(_veil16)
+
+
+def test_veil_fixture_hands_each_test_an_independent_copy(_veil16, veil):
+    assert veil is not _veil16
+    assert veil["support"] is not _veil16["support"]
+    assert np.array_equal(veil["support"], _veil16["support"])
+
+
+def test_veil_estimator_finds_the_flat_region_the_high_pass_misses(veil):
     """The planted square is recovered as a FILLED support, art is not."""
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
     sup = veil["support"]
     planted = np.zeros((H, W_PX), dtype=bool)
     planted[VEIL_BOX] = True
@@ -98,14 +121,13 @@ def test_veil_estimator_finds_the_flat_region_the_high_pass_misses():
     assert outside < 0.05, f"art must not be veil, got {outside:.2f}"
 
 
-def test_veil_alpha_is_calibrated_to_the_boundary_step():
+def test_veil_alpha_is_calibrated_to_the_boundary_step(veil):
     """The recovered alpha must match the truth, not just its shape.
 
     The raw whitening reads LOW (the background window still partly follows the
     veil). The gain is fitted so that removal leaves no step across the veil's own
     boundary, which is the one observable that pins the amplitude.
     """
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
     assert abs(veil["alpha"] - ALPHA_TRUE) < 0.04, veil["alpha"]
     assert veil["raw"] < veil["alpha"], "the raw whitening is expected to underread"
 
@@ -131,9 +153,8 @@ def test_a_gain_on_the_grid_ceiling_is_reported_as_a_boundary_solution():
     assert ov.VEIL_GAIN_GRID[-1] >= 10.0, ov.VEIL_GAIN_GRID[-1]
 
 
-def test_removal_with_the_veil_erases_the_step():
+def test_removal_with_the_veil_erases_the_step(veil):
     """End to end: the corrected frame has no level difference at the boundary."""
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
     art, marked = _marked(3)
     matte = {"alpha": np.zeros((H, W_PX)), "W": ov._w_map(np.zeros((H, W_PX)),
                                                          np.asarray(ov.W_REF)),
@@ -145,7 +166,7 @@ def test_removal_with_the_veil_erases_the_step():
     assert err_after < err_before / 3.0, (err_before, err_after)
 
 
-def test_the_veil_correction_does_not_cliff_at_its_own_support_edge():
+def test_the_veil_correction_does_not_cliff_at_its_own_support_edge(veil):
     """The support edge is NOT an edge of the original, so removal must not make one.
 
     Measured on the corpus 2026-08-12: across six frames the ORIGINAL carries no
@@ -155,7 +176,6 @@ def test_the_veil_correction_does_not_cliff_at_its_own_support_edge():
     that was never in the art, which is what the old ring handed to LaMa. The
     ramp is the fix at the cause: correct the interior in full, then fade out.
     """
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
     art, marked = _marked(3)
     matte = {"alpha": np.zeros((H, W_PX)), "W": ov._w_map(np.zeros((H, W_PX)),
                                                          np.asarray(ov.W_REF)),
@@ -182,7 +202,7 @@ def test_the_veil_correction_does_not_cliff_at_its_own_support_edge():
     assert soft < 8.0, f"the correction still cliffs {soft:.1f} levels"
 
 
-def test_the_veil_is_never_handed_to_the_inpainter_at_all():
+def test_the_veil_is_never_handed_to_the_inpainter_at_all(veil):
     """Interior AND boundary are the inversion's job - the filler gets neither.
 
     The ring existed only to blend the cliff the hard-edged correction made. With
@@ -191,7 +211,6 @@ def test_the_veil_is_never_handed_to_the_inpainter_at_all():
     sits, and on pale flat art (mecha-ahri) it crossed the nose and upper lip -
     LaMa deformed both.
     """
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
     matte = {"alpha": np.zeros((H, W_PX)), "W": ov._w_map(np.zeros((H, W_PX)),
                                                          np.asarray(ov.W_REF)),
              "band": BAND, "veil": veil}
@@ -211,8 +230,7 @@ def test_a_matte_without_a_veil_still_removes_exactly_as_before():
     assert int(changed.sum()) == int((a > 0).sum())
 
 
-def test_veil_round_trips_through_disk(tmp_path):
-    veil = ov.estimate_veil(_frames(), band=BAND, **SMALL)
+def test_veil_round_trips_through_disk(tmp_path, veil):
     a = np.zeros((H, W_PX))
     matte = {"alpha": a, "W": ov._w_map(a, np.asarray(ov.W_REF)), "band": BAND,
              "n": 16, "gain": 2.0, "score": 0.11, "veil": veil}

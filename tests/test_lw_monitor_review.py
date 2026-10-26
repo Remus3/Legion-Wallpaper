@@ -41,7 +41,8 @@ def bench(tmp_path):
         ("127.0.0.1", 0), lw_monitor.Handler, state_path=state,
         log_path=tmp_path / "log.md", page_path=tmp_path / "monitor.html",
         image_roots=[images], cache={}, review_root=review, review_page=page)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv, d / "ahri_cleanworking_01.png", review

@@ -79,7 +79,11 @@ def test_suite_runner_pairs_the_parallel_and_serial_passes():
     passes = lw_suite.passes(["-q"])
     assert len(passes) == 2
     par, ser = (" ".join(p) for p in passes)
-    assert "pytest tests/ -n auto --dist loadfile -m not serial -q" in par
+    # -n 8, not -n auto (MAIN suite-speed ORDER 2026-10-25): auto = 16 workers
+    # on the Legion box, and the suite gate runs 2 suites machine-wide, so one
+    # auto suite oversubscribes the CPU and doubles its own peak commit. CI's
+    # small runners keep -n auto (test_ci_suite_jobs_run_both_passes).
+    assert "pytest tests/ -n 8 --dist loadfile -m not serial -q" in par
     assert "pytest tests/ -n0 -m serial -q" in ser
 
 

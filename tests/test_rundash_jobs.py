@@ -74,7 +74,8 @@ def _serve(tmp_path, **kw):
         manifest_path=tmp_path / "m.json", config_path=tmp_path / "c.json",
         repo_root=tmp_path, pid_alive=lambda pid: False, cache={},
         mirror_path=tmp_path / "mirror.json", **kw)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     return srv, t
 

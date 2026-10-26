@@ -415,6 +415,10 @@ def test_main_default_usm_specs_are_the_shipped_recipe_plus_none(tmp_path, monke
 _HAVE_UPSCALER = os.path.isfile(probe.fp.UP_PY) and os.path.isfile(probe.fp.MODEL_PATH)
 
 
+# serial: its child loads torch + the IJN model and commits ~10 GB (measured
+# 2026-10-25, 10605 MB tree peak); beside 7 other xdist workers that set the
+# suite's 15.3 GB peak commit, which holds the second gate slot for every tree.
+@pytest.mark.serial
 @pytest.mark.skipif(not _HAVE_UPSCALER,
                     reason="upscale venv or IJN model absent (CI / non-Legion box)")
 def test_worker_spandrel_branch_produces_both_variants(tmp_path):

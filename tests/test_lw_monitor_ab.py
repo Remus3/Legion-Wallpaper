@@ -43,7 +43,8 @@ def bench(tmp_path):
         log_path=tmp_path / "log.md", page_path=tmp_path / "monitor.html",
         image_roots=[tmp_path / "images"], cache={}, review_root=tmp_path / "review",
         review_page=tmp_path / "review.html", ab_root=root, ab_page=page)
-    t = threading.Thread(target=srv.serve_forever, daemon=True)
+    t = threading.Thread(target=srv.serve_forever,
+                         kwargs={"poll_interval": 0.05}, daemon=True)
     t.start()
     try:
         yield srv, root
