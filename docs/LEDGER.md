@@ -27,6 +27,11 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+352. DONE **2026-10-26 (responder re-verify of MAIN ORDER 2026-10-26-0315 FLEET-KIT-v24; no residual work).**
+   Inbox copy sha256 de515317931aad51e6d6f1d226c39a3ee14219601a32635f3c03a75d556e81bb (re-hashed; == MAIN outbox
+   copy). Wiring already landed by b8a2057 / LEDGER 351 (KIT_VERSION pins 24, MANIFEST a41ff08e... == section 1).
+   Gated suite re-run: exit 0, 4387 passed 19 skipped. CI on b8a2057 (ci + codeql): success. One HOP 2 answer sent.
+
 351. DONE **2026-10-26 (Maint-KitRollout: fleet kit v24 adopted; supersedes v23).**
    MAIN ORDER 2026-10-26-0315 FLEET-KIT-v24 (HOP 1): verify_main True (inbox == MAIN committed outbox copy,
    sha256 de515317931a...); bundle verified at KIT-COMMIT 3ce416e (lw_inbox_responder.bundle_verified True).
