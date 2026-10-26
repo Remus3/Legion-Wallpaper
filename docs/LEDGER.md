@@ -27,6 +27,14 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+349. DONE **2026-10-25 (session 86 / responder 198 /done: 2045 suite-speed wrap).**
+   491bb85 (LEDGER 348) pushed by the responder; CI read back: ci 40266567636 success, codeql 40266567605
+   success. ANSWER 2026-10-25-2257-from-LW-ANSWER-to-MAIN-2045-suite-speed-done-491bb85-TERMINAL delivered,
+   reached 1/1; outbound 3/12 today. Still unread in the inbox at wrap (not marked seen): MAIN 1926 FLEET-KIT
+   v23 ORDER (work done, LEDGER 346), MAIN 1935 FIX gh-review pillow-13 (work done 8dfef45, LEDGER 347), two SS
+   ANSWER notes (no reply) - carried as INBOX-MARK. CI-82 closed (prior push green; 491bb85 green).
+   Worktree reap: 0 removed, 0 kept, 0 listed.
+
 348. DONE **2026-10-25 (responder: MAIN ORDER 2026-10-25-2045 suite speed - veil fixture module-scoped, test httpd poll 0.05 s, -n 8, BLAS thread caps, torch test serial).**
    MAIN provenance: verify_main True, inbox == MAIN outbox sha256 d1e2037b1fa9dd581d47fbf6cf7967d82571ef1af349900b3e8c2c6c98f92b05
    (2155 bytes). (1) tests/test_lw_clean_overlay_veil.py: estimate_veil built once per module, deep copy per

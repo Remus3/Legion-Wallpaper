@@ -1,8 +1,8 @@
 NEXT SESSION
 ------------
-SESSION: 86
+SESSION: 87
 Task: WP-PICKLOG (WALLPAPER-PICKLOG) first (log each tick's chosen filename in tools/lw_wallpaper_rotate.py,
-  TDD, one slice), then CI-82 (read the session 85 wrap push CI) and every remaining item in order.
+  TDD, one slice), then CI-83 (read the session 86 wrap push CI), INBOX-MARK, and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
@@ -18,11 +18,12 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   progress file before editing shared files). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: WP-PICKLOG shipped green; CI-82 read green (or red investigated); every other
+Acceptance: WP-PICKLOG shipped green; CI-83 read green (or red investigated); every other
   checklist item acted on or carried with a reason.
 CHECKLIST:
   - WP-PICKLOG: (WALLPAPER-PICKLOG) Log each tick's chosen filename to the run log in tools/lw_wallpaper_rotate.py so a reported repeat can be proven or disproven (promised to the operator session 85, not yet dispatched; LEDGER 344)
-  - CI-82: Read CI conclusion of the session 85 wrap push (tip = newest commit on origin main; gh run list --branch main --limit 3 --json databaseId,headSha,conclusion,event - take the push event row); session 84 wrap push read: 40046816812 success on 200368d
+  - CI-83: Read CI conclusion of the session 86 wrap push (tip = newest commit on origin main; gh run list --branch main --limit 3 --json databaseId,headSha,conclusion,event - take the push event row); 491bb85 read: ci 40266567636 success, codeql 40266567605 success
+  - INBOX-MARK: Triage + mark seen the 4 unread notes: MAIN 2026-10-25-1926 FLEET-KIT v23 ORDER (done, LEDGER 346), MAIN 2026-10-25-1935 FIX gh-review pillow-13 82 alerts (done 8dfef45, LEDGER 347 - re-check alert count), 2 SS ANSWER notes (no reply)
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
@@ -33,6 +34,13 @@ CHECKLIST:
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
   - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
+  - Session 86 (responder 198) /done: MAIN ORDER 2026-10-25-2045 suite speed (sha256 MATCH) shipped 491bb85
+    (LEDGER 348): veil fixture module scope 24.7->6.9 s, test httpd poll 0.05 s (7 files) 12.0->3.0 s, lw_suite -n 8
+    (CI -n auto), torch usm-halo test serial, conftest BLAS/OpenMP caps 1 thread; suite exit 0, 4387 passed 19
+    skipped; serial 320.8->289.6 s, peak 11165->9718 MB; lw_suite 93.6 s 9606 MB. ANSWER 2026-10-25-2257 TERMINAL
+    reached 1/1; outbound 3/12. CI-82 closed (prior push green; 491bb85 ci 40266567636 + codeql 40266567605
+    success). LEDGER 349. Worktree reap: 0 removed, 0 kept, 0 listed (base main). inbox-responder progress read
+    running (66 pct, 22:38) at wrap - not touched. Session jsonl < 10 MB. No background agents of this wrap left.
   - Operator reported ref_181f repeat 2026-10-25 ~21:13Z; unconfirmed; once PICKLOG ships, ask operator for next repeat name+time.
   - Session 85 /done: wallpaper-repeat investigation (LW-Wallpaper tick every 3 min, persisted deck
     ops/runtime/wallpaper_deck.json, 555 unique images, cycle 116): no repeat bug found; ref_181f set once this
@@ -195,7 +203,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 85 /done - c32c678 status/reshuffle ~ fix (75 tests), wallpaper-repeat
+Do NOT redo: session 86 - MAIN 2045 suite speed (491bb85, LEDGER 348), its ANSWER (1/1), CI-82 (40266567636 +
+  40266567605 success) - read back via git log on main, LEDGER 348/349 and gh run list.
+  session 85 /done - c32c678 status/reshuffle ~ fix (75 tests), wallpaper-repeat
   investigation (no deck bug; LEDGER 344), CI-82 for session 84 (40046816812 success) - read back via git log on
   main, LEDGER 344 and gh run list.
   session 84 /done - CI-81, MAIN 1300 FIX + ANSWER (1/1), 0730 ack, BOARD-URL
@@ -263,21 +273,21 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > <repo>/images/0.Originals
-      last check: not done (4727 tries)
+      last check: not done (4783 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (3729 tries)
+      last check: not done (3785 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (3729 tries)
+      last check: not done (3785 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   - decision.d4-tag-archive decision/d4-tag-archive: D4 deletion floor: delete-or-keep the local-only tag archive/mig-1-v6-wip (abandoned MIG-1 v6 WIP b29005e, not reachable from main, never pushed; LEDGER 327)
       steps: 1) Tell the next session 'delete tag' (it runs git tag -d archive/mig-1-v6-wip) or 'keep tag' (it writes ops/runtime/d4-tag-archive-keep.ok)
       open first: Claude Code session > reply 'delete tag' or 'keep tag'
-      last check: not done (1985 tries)
+      last check: not done (2041 tries)
       close: python tools/lw_ops_tasks.py done decision.d4-tag-archive (closes only when its check passes)
   (end operator asks)

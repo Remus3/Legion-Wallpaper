@@ -79,6 +79,16 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-25, session 86 / responder 198) - MAIN 2045 suite speed shipped
+
+Commits: 491bb85 (suite speed + LEDGER 348), LEDGER 349 + hand-off (this wrap).
+MAIN ORDER 2026-10-25-2045 (sha256 MATCH): overlay-veil fixture module-scoped (24.7 s -> 6.9 s), test httpd
+poll 0.05 s in 7 files (12.0 s -> 3.0 s), lw_suite.py -n 8 (CI keeps -n auto), torch usm-halo test serial,
+conftest pins BLAS/OpenMP to 1 thread. Full serial 320.8 s -> 289.6 s, peak 11165 -> 9718 MB; lw_suite
+93.6 s, 9606 MB. ANSWER 2026-10-25-2257 (TERMINAL) reached 1/1; outbound 3/12 today. CI on 491bb85: ci
+40266567636 success, codeql 40266567605 success. Do NOT redo: the 2045 order, MAIN 1926 v23 (LEDGER 346),
+MAIN 1935 FIX (LEDGER 347). Next: WP-PICKLOG, then CI-83.
+
 ## PREVIOUS SESSION (2026-10-25, session 85) - wallpaper repeat report investigated, ~ fix shipped
 
 Commits: c32c678 (status/reshuffle expand ~ via shared _source_dir(), 75 tests), LEDGER 344 + hand-off (this wrap).
