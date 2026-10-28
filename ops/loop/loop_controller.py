@@ -154,8 +154,8 @@ CFG.setdefault("repo_root", str(ROOT))
 CFG.setdefault("control_dir", str(CTL))
 # FLEET-KIT v6 (MAIN 2237): main() re-points ROOT at this run's lane worktree
 # and CTL at this lane's own control dir. MAIN_ROOT / ROOT_CTL keep the main
-# tree's: lane locks, the governor slot's repo key and the operator's
-# all-lanes STOP live there.
+# tree's: lane locks and the operator's all-lanes STOP live there (the
+# governor slot's repo key is the tree code LANE_CODE since kit v25).
 MAIN_ROOT = ROOT
 ROOT_CTL = CTL
 DRY = bool(CFG.get("dry_run", False))
@@ -1172,23 +1172,68 @@ def stall_recovery_directive(cycle):
 # ---- FLEET-KIT v6 lanes (MAIN 2237 sections 3 + 4a) ----------------------
 # The per-repo guard used to be ONE controller per repo (control/RUNNING.lock),
 # because the control-dir handshake files are not namespaced. v6 lifts it onto
-# fleet_lanes: up to LANE_CAP_MAX (3) lanes per repo, lane i always in its own
+# fleet_lanes: up to the live lane_cap_max lanes per repo, lane i in its own
 # git worktree <parent>/lw-worktrees/lane-<i> (fleet_lanes.worktree_path,
 # fleet_lanes.py:537), and each lane gets its OWN control dir, keyed by the
 # lane NAME - names are exclusive per repo (try_acquire_lane exclusive=True,
 # fleet_lanes.py:612-644), so two lanes can never share handshake files, and a
 # name's directive chain survives a run landing on a different index.
-# run_lane (fleet_lanes.py:724-739) takes NO governor slot: the slots.hold(3)
-# around the executor call in main() stays this lane's ONE slot - never also
-# spawn(governor=...), never a slot around git.
+# run_lane takes NO governor slot: the slots.hold() around the executor call
+# in _run_lane stays this lane's ONE slot - never also spawn(governor=...),
+# never a slot around git.
+#
+# FLEET-KIT v25 LANE-CAP (MAIN ORDER 2026-10-27-2136 section 5): the lane cap
+# and the executor slot count are no longer a tree-pinned 3. Both follow the
+# MACHINE config fleet_lanes.load_config() (~/.fleet/lanes.json, MAIN owns it,
+# re-read live; missing = width 3 / cap 3). A config value is only the tree's
+# own SMALLER ask: lane_cap / max_concurrent_lanes absent or null = the live
+# machine value, a number = clamped to it. Between cycles the driver asks
+# fleet_lanes.should_yield("LW") and, on True, ends the lane after the cycle
+# that just finished - advisory, it never kills or signals a worker.
+
+def lane_cap_request(cfg):
+    """The cap handed to run_lane: None (the live machine lane_cap_max) unless
+    the config asks for its own number."""
+    return cfg.get("lane_cap")
+
 
 def lane_settings(cfg):
-    """(lane name, cap) from the loop config; defaults "loop" and the kit's 3.
-    The cap is validated by fleet_lanes.lane_cap (fleet_lanes.py:527-534)."""
+    """(lane name, effective cap) from the loop config; defaults "loop" and the
+    live machine lane_cap_max. fleet_lanes.lane_cap validates (below 1 or not
+    an integer raises) and clamps a cap above the machine's."""
     name = str(cfg.get("lane", "loop"))
     if not _LANE_NAME.match(name):
         raise ValueError(f"lane name {name!r} is not a safe directory name")
-    return name, fleet_lanes.lane_cap(cfg.get("lane_cap", fleet_lanes.LANE_CAP_MAX))
+    return name, fleet_lanes.lane_cap(lane_cap_request(cfg))
+
+
+def executor_slot_count(cfg, config=None):
+    """max_slots for the per-cycle slots.hold(): the live machine
+    governor_width, or the config's own max_concurrent_lanes when smaller.
+    Re-read every cycle, so a widened machine config needs no restart."""
+    width = int(fleet_lanes.load_config()["governor_width"] if config is None
+                else config["governor_width"])
+    own = cfg.get("max_concurrent_lanes")
+    if own is None:
+        return width
+    return max(1, min(int(own), width))
+
+
+def cycle_boundary_yield(cycle, should_yield=None, log=None):
+    """True when this lane should END now, before starting `cycle`: some cycle
+    has run and fleet_lanes.should_yield("LW") says another tree waits while
+    LW holds more than its fair share. Advisory and read only - the caller
+    simply returns; nothing is killed, terminated or signalled. An unreadable
+    governor answers False (keep running)."""
+    if cycle <= 1:
+        return False
+    ask = fleet_lanes.should_yield if should_yield is None else should_yield
+    try:
+        return bool(ask(LANE_CODE, root=headless_env.governor_root()))
+    except Exception as e:  # noqa: BLE001 - advisory check never crashes the lane
+        if log:
+            log(f"should_yield unreadable ({e.__class__.__name__}) - continuing")
+        return False
 
 
 def lane_control_dir(root_ctl, lane_name):
@@ -1268,7 +1313,8 @@ def main():
         sys.exit(2)
     run_id = uuid.uuid4().hex[:8]
     try:
-        with fleet_lanes.run_lane(MAIN_ROOT, LANE_CODE, lane_name, run_id, cap) as claim:
+        with fleet_lanes.run_lane(MAIN_ROOT, LANE_CODE, lane_name, run_id,
+                                  lane_cap_request(CFG)) as claim:
             _run_lane(claim, lane_name)
     except fleet_lanes.LaneRefused as e:
         sys.stderr.write(f"lane refused ({lane_name}, cap {cap}): {e}\n")
@@ -1317,6 +1363,10 @@ def _run_lane(claim, lane_name):
         if stop_requested():
             log("external STOP seen (cycle top)")
             sys.exit(0)
+        if cycle_boundary_yield(cycle, log=log):
+            log(f"cycle {cycle}: should_yield - another tree waits for a slot; "
+                f"ending lane {lane_name} after cycle {cycle - 1} (nothing killed)")
+            return
         fire = cycle_fire(cycle)
         fire.start()
         override = consume_directive_override()
@@ -1360,8 +1410,8 @@ def _run_lane(claim, lane_name):
         slot_timeout = slot_wait_timeout()
         fire.running("X", "executor running", CFG.get("cycle_deadline_sec"))
         try:
-            with held_slot(int(CFG.get("max_concurrent_lanes", 3)),
-                           repo=str(MAIN_ROOT), run_id=RUN_ID, cycle=cycle,
+            with held_slot(executor_slot_count(CFG),
+                           repo=LANE_CODE, run_id=RUN_ID, cycle=cycle,
                            timeout=slot_timeout, log=log):
                 rec = EXEC.run(cycle, body, src)
         except slots.SlotTimeout as e:

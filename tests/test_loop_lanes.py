@@ -112,10 +112,15 @@ def test_lane_settings_default_to_the_kit_cap_of_three():
     assert lc.lane_settings({"lane": "refs", "lane_cap": 2}) == ("refs", 2)
 
 
-@pytest.mark.parametrize("bad", [0, 4, "x"])
-def test_lane_settings_refuse_a_cap_outside_the_kit_range(bad):
+@pytest.mark.parametrize("bad", [0, "x"])
+def test_lane_settings_refuse_a_cap_below_one_or_not_an_integer(bad):
     with pytest.raises(ValueError):
         lc.lane_settings({"lane_cap": bad})
+
+
+def test_lane_settings_clamp_a_cap_above_the_machine_cap():
+    # kit v25: above lane_cap_max CLAMPS (3 with no machine config under pytest)
+    assert lc.lane_settings({"lane_cap": 4}) == ("loop", 3)
 
 
 @pytest.mark.parametrize("bad", ["", "../up", "a b", "x" * 65])
@@ -124,8 +129,10 @@ def test_lane_settings_refuse_a_name_that_is_not_a_safe_directory_name(bad):
         lc.lane_settings({"lane": bad})
 
 
-def test_the_production_config_declares_cap_three():
+def test_the_production_config_follows_the_machine_cap():
+    # v25: config.json says null = the live lane_cap_max (3 with no machine config)
     cfg = json.loads((ROOT / "ops" / "loop" / "config.json").read_text(encoding="utf-8"))
+    assert cfg["lane_cap"] is None
     assert lc.lane_settings(cfg)[1] == 3
 
 
@@ -272,7 +279,10 @@ def test_the_executor_call_holds_exactly_one_slot_keyed_to_the_main_tree():
     import ast
     src = (ROOT / "ops" / "loop" / "loop_controller.py").read_text(encoding="utf-8")
     assert src.count("with held_slot(") == 1
-    assert "repo=str(MAIN_ROOT)" in src, "the slot's repo key stays the main tree"
+    # v25 LANE-CAP: the key is the tree CODE (one value for every lane, like the
+    # main-tree path it replaces) so fleet_lanes.should_yield("LW") and the
+    # kit's borrowing count this slot as LW's.
+    assert "repo=LANE_CODE" in src, "the slot's repo key is the tree code"
     governed = [n.lineno for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Call)
                 and any(k.arg == "governor" for k in n.keywords)]
     assert governed == [], "never both slots.hold and spawn(governor=...)"

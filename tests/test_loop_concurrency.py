@@ -772,12 +772,15 @@ def test_the_byte_hygiene_scanner_is_silent_over_clean_lf_ascii(tmp_path: Path):
 
 # ---- the shared surface no digest can pin: a VALUE, not a file --------------
 #
-# One slot root (C:\ProgramData\lw-loop\slots) serves both repos, but each repo
-# reads its OWN config for max_concurrent_lanes. If the two disagree the
-# effective machine-wide ceiling silently becomes max(lw, rc) - the governor
-# stops governing and nothing fails. SHARED_SHA256 cannot cover this: the
-# contract is a number living in six mutually-diverged config files across two
-# trees, not a byte-identical file. Raised by RC 2026-07-27.
+# One slot root (C:\ProgramData\lw-loop\slots) serves every carrier. Until kit
+# v25 each repo read its OWN config for max_concurrent_lanes, so the configs had
+# to agree or the effective ceiling silently became max(lw, rc) (raised by RC
+# 2026-07-27). FLEET-KIT v25 LANE-CAP (MAIN ORDER 2026-10-27-2136) moves the
+# value to ONE machine file, fleet_lanes.load_config() (MAIN owns it): LW's
+# executor slot count is its live governor_width, and a tree number may only
+# ask for FEWER (it clamps). The invariant these arms keep is therefore: no LW
+# config declares a ceiling of its own, no in-code literal default survives,
+# and a sibling's declared number never exceeds the machine width.
 #
 # The INTERNAL half below is the one that matters for CI, because CI checks out
 # ONE tree: a cross-repo comparison can only ever skip there.
@@ -792,31 +795,31 @@ def _declared_lane_counts():
     return out
 
 
-def test_every_config_declaring_lanes_agrees_with_the_others():
+def test_no_config_declares_its_own_lane_ceiling():
     declared = _declared_lane_counts()
-    assert declared, "no config declares max_concurrent_lanes - the key was renamed or lost"
-    assert len(set(declared.values())) == 1, (
-        f"LW configs disagree on the machine-wide lane ceiling: {declared}. "
-        f"They share one slot root, so the loosest value wins and the tighter "
-        f"ones are decoration.")
+    assert declared == {}, (
+        f"LW configs declare max_concurrent_lanes {declared}: since kit v25 the "
+        f"machine-wide ceiling is fleet_lanes.load_config()['governor_width'], "
+        f"one file for every tree; a per-config number re-opens the drift this "
+        f"guard was written for.")
 
 
-def test_the_code_default_matches_what_the_configs_declare():
-    """config.dry.json omits the key, so the in-code default IS the ceiling for
-    any config that does not declare one. A default that drifts from the
-    declared value means the omitting configs silently run a different ceiling."""
-    declared = set(_declared_lane_counts().values())
+def test_the_code_has_no_literal_lane_ceiling_default():
+    """The pre-v25 `CFG.get("max_concurrent_lanes", 3)` default IS the ceiling
+    for every config that omits the key; v25 replaces it with the live machine
+    width via executor_slot_count()."""
     src = (ROOT / "ops" / "loop" / "loop_controller.py").read_text(encoding="utf-8")
-    m = re.search(r'CFG\.get\(\s*["\']max_concurrent_lanes["\']\s*,\s*(\d+)\s*\)', src)
-    assert m, "could not find the max_concurrent_lanes default in loop_controller.py"
-    assert int(m.group(1)) in declared, (
-        f"loop_controller defaults to {m.group(1)} but the configs declare "
-        f"{declared} - any config omitting the key runs the wrong ceiling")
+    m = re.search(r"CFG\.get\(\s*[\"']max_concurrent_lanes[\"']\s*,\s*(\d+)\s*\)", src)
+    assert m is None, f"a literal lane-ceiling default survives: {m.group(0)}"
+    assert "fleet_lanes.load_config()" in src
+    assert "held_slot(executor_slot_count(CFG)" in src
 
 
-def test_rc_agrees_on_the_lane_ceiling():
+def test_rc_never_declares_more_than_the_machine_width():
     """Cross-repo half. SKIPS on a CI runner by design - that is exactly why the
-    internal half above exists and is not redundant with this one."""
+    internal half above exists and is not redundant with this one. A sibling
+    still declaring a number (pre-v25 tree side) is fine at or below the
+    machine width; above it, that tree alone would widen the shared bucket."""
     sys.path.insert(0, str(ROOT / "tools"))
     import drift_guard
 
@@ -848,11 +851,13 @@ def test_rc_agrees_on_the_lane_ceiling():
             rc[cfg.name] = data["max_concurrent_lanes"]
     if not rc:
         pytest.skip("no RC config declares max_concurrent_lanes")
-    assert set(rc.values()) | set(_declared_lane_counts().values()) == \
-        set(_declared_lane_counts().values()), (
-        f"RC declares {rc}, LW declares {_declared_lane_counts()} - one slot "
-        f"root, so the higher number is the real ceiling in BOTH repos. "
-        f"Change them in the same round or re-sync now.")
+    import lw_headless_env
+
+    width = lw_headless_env.lanes().load_config()["governor_width"]
+    wider = {k: v for k, v in rc.items() if int(v) > width}
+    assert wider == {}, (
+        f"RC declares {wider}, above the machine governor_width {width} - one "
+        f"slot root, so RC alone would widen the bucket past the machine config.")
 
 
 def test_acquired_is_logged_only_when_actually_held():

@@ -27,6 +27,28 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+353. DONE **2026-10-28 (Maint-KitRollout: fleet kit v25 LANE-CAP adopted).**
+   MAIN ORDER 2026-10-27-2136 FLEET-KIT-v25 (HOP 1): verify_main True (inbox == MAIN committed outbox copy,
+   sha256 ac203570c0b7...); bundle verified at KIT-COMMIT 7db5d9d (lw_inbox_responder.bundle_verified True).
+   The working tree already held the v25 kit bytes from an earlier half-done rollout (claims: one DEAD owner,
+   released; no live one); nothing re-copied. READ BACK: 23/23 kit files + MANIFEST.json (fa04c87c...) match
+   section 1; conformance() == []; KIT_VERSION 25; FLEET-COMMON unchanged. Tree side (section 5): the loop
+   driver follows fleet_lanes.load_config() - ops/loop/config.json lane_cap 3 -> null (live lane_cap_max),
+   max_concurrent_lanes 3 -> removed from config.json / config.gate.json / config.p5.json and the
+   loop_controller literal default `CFG.get("max_concurrent_lanes", 3)` -> executor_slot_count() (live
+   governor_width, a tree number only asks for fewer and clamps); run_lane gets cap=None; the executor slot's
+   repo key str(MAIN_ROOT) -> LANE_CODE so should_yield("LW") counts it; cycle_boundary_yield() calls
+   fleet_lanes.should_yield("LW") at each cycle top and on True returns (ends the lane, never kills); an
+   admission refusal exits like lanes_full (LaneRefused, retry next tick). Guard test
+   tests/test_loop_lane_cap_v25.py (width 5 / cap 5 config reads 5, missing reads 3, no kill on yield).
+   Section 4: tests/test_loop_lanes.py (lane_cap 4 clamps instead of raising; slot repo key); the
+   pre-v25 config-agreement arms in tests/test_loop_concurrency.py now assert no LW config declares a
+   ceiling, no literal default survives, and RC never declares more than the machine width.
+   KIT_VERSION pins 24 -> 25 (tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py). Graceful restart: no LW lane loop
+   running (nothing to restart; the next start loads v25). Gated suite (fleet_suite_gate, tools/lw_suite.py
+   -q): 4210 passed 19 skipped + serial 183 passed 1 skipped, exit 0; drift_guard 0 breaches; ruff clean.
+
 352. DONE **2026-10-26 (responder re-verify of MAIN ORDER 2026-10-26-0315 FLEET-KIT-v24; no residual work).**
    Inbox copy sha256 de515317931aad51e6d6f1d226c39a3ee14219601a32635f3c03a75d556e81bb (re-hashed; == MAIN outbox
    copy). Wiring already landed by b8a2057 / LEDGER 351 (KIT_VERSION pins 24, MANIFEST a41ff08e... == section 1).
