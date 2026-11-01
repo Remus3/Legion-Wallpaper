@@ -154,8 +154,8 @@ def test_every_declared_hook_script_exists():
         for entry in entries:
             for hook in entry.get("hooks", []):
                 for token in hook.get("command", "").split('"'):
-                    if token.lower().endswith(".py"):
-                        name = PureWindowsPath(token).name
+                    if token.strip().lower().endswith(".py"):
+                        name = PureWindowsPath(token.strip()).name
                         if name not in present:
                             missing.append((event, name))
     assert not missing, f"hook script(s) declared but absent from the tree: {missing}"

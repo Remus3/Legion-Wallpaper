@@ -74,7 +74,7 @@ def test_every_hook_command_names_a_bare_interpreter():
         "no hook command starts with a bare interpreter name - if these went "
         "back to absolute paths, check they do not carry an account name "
         "(tests/test_no_account_paths.py)")
-    assert names <= {"python", "pythonw"}, f"unexpected interpreter(s): {names}"
+    assert names <= {"python", "pythonw", "bash"}, f"unexpected interpreter(s): {names}"
 
 
 @pytest.mark.parametrize("name", sorted(_interpreter_names()))
@@ -101,6 +101,12 @@ def test_the_interpreter_actually_runs(name):
     `pythonw` has no console, so the version is written to a file rather than
     read off stdout - reading stdout would test the console, not the binary.
     """
+    if name == "bash":
+        # v26 (CS-815): bash runs fleet_hook.sh, which launches the python hooks.
+        proc = subprocess.run([name, "-c", "echo 3.ok"], capture_output=True, text=True,
+                              timeout=60, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        assert proc.returncode == 0 and proc.stdout.strip() == "3.ok", proc
+        return
     proc = subprocess.run(
         [name, "-c", "import sys; sys.stdout.write(sys.version.split()[0])"],
         capture_output=True, text=True, timeout=60,

@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 import lw_race_guards as rg  # noqa: E402
 
 SETTINGS = ROOT / ".claude" / "settings.json"
-CLAIMS_HOOK = 'python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_claims.py" hook'
+CLAIMS_HOOK = 'bash "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_hook.sh" fleet_claims.py hook'
 RELEASE_HOOK = 'python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_claims.py" release-hook'
 MATCHER = "Edit|Write|NotebookEdit|MultiEdit|Bash|PowerShell"
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if sys.platform == "win32" else 0
@@ -45,8 +45,8 @@ def test_claims_pretooluse_hook_is_wired_once_exactly():
     assert len(hits) == 1, hits
     matcher, hook = hits[0]
     assert matcher == MATCHER
-    assert hook["timeout"] == 10
-    assert hook["command"] in (CLAIMS_HOOK, CLAIMS_HOOK + " || true"), hook["command"]
+    assert hook["timeout"] == 15
+    assert hook["command"] == CLAIMS_HOOK, hook["command"]
 
 
 def test_claims_release_hook_is_wired_on_subagentstop_exactly():

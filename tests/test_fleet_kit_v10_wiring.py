@@ -3,9 +3,9 @@
 The kit's conformance() pins the vendored bytes; it does not see how a tree
 WIRES the new SUBAGENT-FIRST hook. These arms do:
   * the tracked PreToolUse list runs the kit's `fleet_subagent_first.py`
-    exactly once, anchored to $CLAUDE_PROJECT_DIR, with timeout 10 and the
+    exactly once, anchored to $CLAUDE_PROJECT_DIR, with timeout 15 and the
     matcher MAIN ordered (every guarded tool, MultiEdit included);
-  * the interpreter is `python`, not `pythonw`: a deny is a JSON decision on
+  * the launcher is `bash fleet_hook.sh` (v26), never `pythonw`: a deny is a JSON decision on
     stdout, and pythonw discards stdout, so a pythonw hook could never deny;
   * the mode file and the decision log are gitignored (runtime state).
 
@@ -24,7 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SETTINGS = ROOT / ".claude" / "settings.json"
 MATCHER = "Bash|PowerShell|Read|Edit|Write|Grep|Glob|NotebookEdit|MultiEdit"
-SCRIPT = "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_subagent_first.py"
+LAUNCHER = "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_hook.sh"
 _NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if sys.platform == "win32" else 0
 
 
@@ -39,23 +39,25 @@ def test_subagent_first_hook_is_wired_once_with_the_ordered_matcher():
     assert len(hits) == 1, hits
     matcher, hook = hits[0]
     assert matcher == MATCHER
-    assert hook["timeout"] == 10
-    assert SCRIPT in hook["command"]
+    assert hook["timeout"] == 15
+    assert LAUNCHER in hook["command"]
 
 
-ANCHORED = 'python "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_subagent_first.py"'
+ANCHORED = 'bash "$CLAUDE_PROJECT_DIR/ops/fleet_kit/fleet_hook.sh" fleet_subagent_first.py'
 
 
 def test_subagent_first_hook_is_the_anchored_fleet_form():
     """Kit v11 ruling R3 (MAIN 1840): the command is EXACTLY the anchored form,
     optionally followed by ` || true`; the v10 cwd-relative form is drift."""
     _, hook = _hits()[0]
-    assert hook["command"] in (ANCHORED, ANCHORED + " || true"), hook["command"]
+    assert hook["command"] == ANCHORED, hook["command"]
 
 
 def test_subagent_first_hook_runs_under_an_interpreter_that_keeps_stdout():
+    """v26 (CS-815): the nonce-checked launcher fails closed, never pythonw."""
     _, hook = _hits()[0]
-    assert hook["command"].split()[0] == "python", hook["command"]
+    assert hook["command"].split()[0] == "bash", hook["command"]
+    assert "pythonw" not in hook["command"]
 
 
 def test_subagent_first_runtime_files_are_gitignored():

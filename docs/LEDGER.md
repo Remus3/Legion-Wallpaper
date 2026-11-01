@@ -27,6 +27,18 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+354. DONE **2026-10-31 (responder: MAIN ORDER 2026-10-31-2200 FLEET-KIT v26 adopted; supersedes v25).**
+   Inbox copy sha256 4e4084a6e3068108572ab638616153fb5daf625248a66034af88be421f104290 (re-hashed; == MAIN outbox
+   copy, 12621 bytes). Kit vendored byte-for-byte (24 files + fleet_hook.sh), MANIFEST.json sha256
+   45b5088e202a0c0c453fb1dc4ca8969783563d60d3b7b02e8d2c5c547fe4edae == section 1; FLEET-COMMON block re-embedded.
+   .claude/settings.json: both PreToolUse hooks now `bash fleet_hook.sh <script>` with timeout 15, no `|| true`;
+   `{}` piped into each: exit 0, empty stdout. Section 4 tests changed: tests/test_fleet_kit_v10_wiring.py,
+   tests/test_fleet_kit_v12_race_guards.py (launcher form, timeout 15), tests/test_hook_interpreter_resolves.py
+   (bash allowed, run-check is `echo`), tests/test_tracked_settings_is_safe.py (strip token before basename).
+   KIT_VERSION pins 25 -> 26 (tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py). No LW lane loop running (nothing to restart).
+   No run budget was hand-reset. One HOP 2 answer to MAIN.
+
 353. DONE **2026-10-28 (Maint-KitRollout: fleet kit v25 LANE-CAP adopted).**
    MAIN ORDER 2026-10-27-2136 FLEET-KIT-v25 (HOP 1): verify_main True (inbox == MAIN committed outbox copy,
    sha256 ac203570c0b7...); bundle verified at KIT-COMMIT 7db5d9d (lw_inbox_responder.bundle_verified True).
