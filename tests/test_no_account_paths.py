@@ -115,7 +115,7 @@ def _would_be_exempt(rel: str) -> bool:
     """True for the recorded exceptions. One decision point, so it is testable."""
     if rel in SELF_EXEMPT or rel in _APPEND_ONLY:
         return True
-    if rel.startswith("docs/_archive/"):
+    if rel.startswith(("docs/_archive/", "docs/ledger/")):
         return True
     return bool(_DATED.search(Path(rel).name))
 

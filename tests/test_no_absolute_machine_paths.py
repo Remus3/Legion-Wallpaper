@@ -39,7 +39,7 @@ ABSOLUTE_PATH = re.compile(
 # Path prefix (directory ends in "/") or exact file -> reason.
 ALLOWLIST: dict[str, str] = {
     "docs/_archive/": "archived history, immutable (CLAUDE.md sweep exclusion)",
-    "docs/LEDGER.md": "append-only ledger: records where the tree lived when written",
+    "docs/ledger/": "the same ledger's older entries, moved verbatim per month",
     "docs/history_notes.md": "append-only history record",
     "docs/claude-md-history.md": "verbatim pre-condense CLAUDE.md text, a record",
     "scratchpad/": "dated one-off artifacts, never rewritten",

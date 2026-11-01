@@ -10,7 +10,12 @@ The catalogue lives in the tool's own doc, never in CLAUDE.md (CI size budget).
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import lw_ledger  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "docs" / "LEDGER.md"
@@ -28,7 +33,7 @@ CATALOGUES = {
 
 def ledger_ids(ledger=LEDGER):
     try:
-        text = Path(ledger).read_text(encoding="utf-8")
+        text = lw_ledger.read_all(ledger)
     except OSError:
         return set()
     return {int(m.group(1)) for m in re.finditer(r"(?m)^(\d+)\. ", text)}

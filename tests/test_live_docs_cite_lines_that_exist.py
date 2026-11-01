@@ -151,14 +151,16 @@ def test_the_citation_sweep_selects_a_real_corpus():
     empty - no parametrize, so `empty_parameter_set_mark = fail_at_collect` does
     not reach it. An empty `git ls-files`, a renamed doc set or a regex that
     stopped matching all produce zero failures and a green arm. Measured
-    2026-10-02: 22 docs, 110 citations, 103 of them decidable.
+    2026-10-02: 22 docs, 110 citations, 103 of them decidable. Floors lowered
+    2026-11-01 for the ledger split (MAIN 1223 item 5): older entries left the live
+    set, measured 26 citations; docs/ledger/ is a record, not a live doc.
     """
     tracked = _tracked()
     docs = _live_docs(tracked)
     assert len(docs) >= 15, f"only {len(docs)} live docs selected: {docs}"
     seen, decided, _ = _sweep()
-    assert seen >= 80, f"only {seen} citations matched - the regex is wrong"
-    assert decided >= 70, (
+    assert seen >= 20, f"only {seen} citations matched - the regex is wrong"
+    assert decided >= 15, (
         f"only {decided} of {seen} citations resolved to a tracked file - "
         f"path resolution is broken, not the docs")
 

@@ -86,7 +86,7 @@ Update the living docs based on what shipped this session. These are surgical ed
 - Do NOT touch items that are already DONE or haven't been worked on.
 
 **Per-item completion ledger -> `docs/LEDGER.md` (NOT CLAUDE.md)**
-- Append the new item entry at the TOP of the `docs/LEDGER.md` body (newest-first), in the existing entry format.
+- Append the new item entry at the TOP of the `docs/LEDGER.md` body (newest-first), in the existing entry format, then run `python tools/lw_ledger.py rotate` (keeps the newest 20; older entries move to `docs/ledger/`).
 - CLAUDE.md "Active priorities" is a STATIC POINTER - do NOT add item entries to CLAUDE.md (CI size-budgeted < 60KB).
 - In CLAUDE.md touch only the `### Settled` summary or a one-line product reference when relevant - never the ledger.
 

@@ -416,8 +416,10 @@ LEDGER_PATH = ROOT / "docs" / "LEDGER.md"
 
 def _ledger_ids(ledger_path) -> set:
     import re
+
+    import lw_ledger
     try:
-        text = Path(ledger_path).read_text(encoding="utf-8")
+        text = lw_ledger.read_all(ledger_path)
     except OSError:
         return set()
     return {int(m.group(1)) for m in re.finditer(r"(?m)^(\d+)\. ", text)}

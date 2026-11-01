@@ -32,6 +32,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import lw_ledger  # flat tools/ directory, imported by bare name
+
 ROOT = Path(__file__).resolve().parent.parent
 
 # CREATE_NO_WINDOW: 0 on non-Windows so the module still imports/tests in CI.
@@ -148,7 +150,7 @@ def parse_ledger(cutoff: str) -> dict:
     txt = ""
     p = ROOT / "docs" / "LEDGER.md"
     if p.exists():
-        txt = p.read_text(encoding="utf-8", errors="replace")
+        txt = lw_ledger.read_all(p)
     items = _LEDGER_ITEM.findall(txt)
     in_window = [(int(n), d, _short(t)) for (n, d, t) in items if d >= cutoff]
     # friction counts within the windowed blocks only
