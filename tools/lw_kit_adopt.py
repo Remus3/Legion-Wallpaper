@@ -16,6 +16,7 @@ its KIT_VERSION is the new one) and the kit tests:
 
     python tools/lw_kit_adopt.py adopt <bundle dir> [--root R] [--no-tests]
     python tools/lw_kit_adopt.py check [--root R]
+    python tools/lw_kit_adopt.py closeout --owner ID --order TEXT [--push]
 
 Stages, in order, each stopping the chain: verify (bundle vs its manifest),
 version (no downgrade), embed (CLAUDE.md markers checked BEFORE any write),
@@ -33,8 +34,10 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 # Must equal fleet_headless.BEGIN / END (pinned by tests/test_lw_kit_adopt.py):
@@ -213,6 +216,9 @@ def adopt(bundle, root, run_tests=None, conformance_fn=None):
         return _result(False, "copy", problems)
     if embedded != text:
         _atomic_write_bytes(claude, embedded.encode("ascii"))
+    missing = []
+    if old is not None and new != old:
+        missing = bump_pins(root, old, new)[1]
     try:
         problems = (conformance_fn or load_conformance(root))(root)
     except Exception as exc:  # noqa: BLE001 - a broken new kit is a reported stage, not a crash
@@ -224,7 +230,9 @@ def adopt(bundle, root, run_tests=None, conformance_fn=None):
     runner = run_tests if callable(run_tests) else run_kit_tests  # True / None -> default
     rc, tail = runner(root, kit_test_files(root))
     if rc != 0:
-        return _result(False, "tests", [f"kit tests rc={rc}"], [f"kit tests rc={rc}: {tail}"])
+        pins = [f"pin not moved: {rel}" for rel in missing]
+        return _result(False, "tests", [f"kit tests rc={rc}"],
+                       [*pins, f"kit tests rc={rc}: {tail}"])
     return _result(True, "done")
 
 
@@ -237,8 +245,97 @@ def check(root, conformance_fn=None):
     return _result(not problems, "done" if not problems else "conformance", problems)
 
 
+# The tree's own KIT_VERSION pins (LEDGER 357 hand-edited these four). {v} is the version.
+VERSION_PINS = (
+    ("tests/test_fleet_kit_conformance.py", "    assert _kit().KIT_VERSION == {v}"),
+    ("tests/test_headless_env.py", "    assert he.kit.KIT_VERSION == {v}"),
+    ("tests/test_promise_probe_fleet_kit.py",
+     '    assert pp.FLEET_KIT_VERSION == man["version"] == {v}'),
+    ("tools/lw_promise_probes.py", "FLEET_KIT_VERSION = {v}"),
+)
+
+
+def bump_pins(root, old, new):
+    """Move each KIT_VERSION pin line old -> new, atomically. Returns (changed,
+    missing): a pin that is not where this table says is reported, never guessed."""
+    changed, missing = [], []
+    for rel, line in VERSION_PINS:
+        path = Path(root) / rel
+        try:
+            data = path.read_bytes().decode("ascii")
+        except (OSError, UnicodeDecodeError):
+            missing.append(rel)
+            continue
+        have, want = line.format(v=old), line.format(v=new)
+        if have not in data:
+            missing.append(rel)
+            continue
+        _atomic_write_bytes(path, data.replace(have, want, 1).encode("ascii"))
+        changed.append(rel)
+    return changed, missing
+
+
+def commit_message(version, order):
+    """The adoption commit's message: ASCII, no trailer (FLEET-COMMON 17)."""
+    return f"chore(kit): adopt fleet kit v{version} ({order})\n"
+
+
+def _run_step(root):
+    def run(argv):
+        return subprocess.run(argv, cwd=str(root), creationflags=_NO_WINDOW,
+                              capture_output=True, check=False).returncode
+    return run
+
+
+def _last_ci_conclusion(root):
+    done = subprocess.run(
+        ["gh", "run", "list", "--branch", "main", "--workflow", "ci", "--limit", "1",
+         "--json", "conclusion", "--jq", ".[0].conclusion"],
+        cwd=str(root), creationflags=_NO_WINDOW, capture_output=True, text=True, check=False)
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+def closeout(root, version, owner, order, *, runner=None, push=False, ci_conclusion=None):
+    """The fixed steps after adopt(): stage, ONE gated suite, gitlock commit, optional
+    push on a green previous run. A rollout run stops here and runs NO /done.
+
+    WHY (MAIN 2026-11-01-1223 item 3, measured). The v27 rollout run took 1647.4 s:
+    about 480 s for the adoption with its 128 s suite, then a nested /done whose
+    second suite, on a docs-only commit, queued 683 s behind the other trees' nightly
+    adoptions and held 179 s. The hand-off belongs to the next session's /done."""
+    root = Path(root)
+    run = runner or _run_step(root)
+    gitlock = [sys.executable, "ops/fleet_kit/fleet_gitlock.py", "run", "--owner", owner, "--"]
+    paths = [KIT_REL.as_posix(), "CLAUDE.md", *[rel for rel, _ in VERSION_PINS]]
+    if run(["git", "add", "--", *paths]) != 0:
+        return _result(False, "add", ["git add failed"])
+    suite = [sys.executable, "ops/fleet_kit/fleet_suite_gate.py", "run", "--owner", owner, "--",
+             sys.executable, "tools/lw_suite.py", "-q"]
+    rc = run(suite)
+    if rc != 0:
+        return _result(False, "suite", [f"suite rc={rc}"])
+    fd, name = tempfile.mkstemp(prefix="lw_kit_adopt_", suffix=".txt")
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(commit_message(version, order).encode("ascii"))
+        rc = run([*gitlock, "git", "commit", "-F", name])
+    finally:
+        Path(name).unlink(missing_ok=True)
+    if rc != 0:
+        return _result(False, "commit", [f"commit rc={rc}"])
+    if push:
+        verdict = (ci_conclusion or _last_ci_conclusion)(root)
+        if verdict != "success":
+            return _result(False, "ci", [f"previous push reads {verdict or 'unknown'}, not pushed"])
+        rc = run([*gitlock, "git", "push", "origin", "main"])
+        if rc != 0:
+            return _result(False, "push", [f"push rc={rc}"])
+    return _result(True, "done")
+
+
 USAGE = ("usage: lw_kit_adopt.py adopt <bundle> [--root R] [--no-tests]\n"
-         "       lw_kit_adopt.py check [--root R]")
+         "       lw_kit_adopt.py check [--root R]\n"
+         "       lw_kit_adopt.py closeout --owner ID --order TEXT [--root R] [--push]")
 
 
 def main(argv=None):
@@ -253,6 +350,11 @@ def main(argv=None):
     a.add_argument("--no-tests", action="store_true")
     c = sub.add_parser("check")
     c.add_argument("--root", default=str(REPO))
+    z = sub.add_parser("closeout")
+    z.add_argument("--root", default=str(REPO))
+    z.add_argument("--owner", required=True)
+    z.add_argument("--order", required=True)
+    z.add_argument("--push", action="store_true")
     try:
         args = ap.parse_args(argv)
     except SystemExit:
@@ -262,6 +364,9 @@ def main(argv=None):
                     run_tests=False if args.no_tests else run_kit_tests)
     elif args.cmd == "check":
         res = check(args.root)
+    elif args.cmd == "closeout":
+        res = closeout(args.root, _version(_manifest(Path(args.root) / KIT_REL)),
+                       args.owner, args.order, push=args.push)
     else:
         print(USAGE, file=sys.stderr)
         return 2

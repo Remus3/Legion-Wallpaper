@@ -901,6 +901,8 @@ def adoption_prompt(adoption: dict) -> str:
                 "(for example KIT_VERSION / FLEET_KIT_VERSION pins in tests and tools), "
                 "the full suite through fleet_suite_gate, ONE commit through "
                 "fleet_gitlock, a LEDGER entry and the one answer the note asks for. "
+                "Run NO /done: `python tools/lw_kit_adopt.py closeout` is the fixed "
+                "close, and a nested /done's second suite cost 862 s of the v27 run. "
                 f"Result: {result}")
     return (f"{head}: adoption STOPPED at stage {adoption.get('stage')}; nothing past "
             f"that stage was written. Do the note's steps yourself. Result: {result}")

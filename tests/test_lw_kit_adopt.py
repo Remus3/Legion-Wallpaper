@@ -283,3 +283,89 @@ def test_cli_no_tests_skips_the_kit_tests(tmp_path, capsys, monkeypatch):
     assert ka.main(["adopt", str(b), "--root", str(root), "--no-tests"]) == 0
     out = json.loads(capsys.readouterr().out)
     assert out["ok"] is True and out["stage"] == "done"
+
+
+# ---------------------------------------------------------------------------
+# MAIN 2026-11-01-1223 item 3 (LW-3): the v27 rollout run took 1647.4 s. The gate's
+# durations.jsonl and done_gate.json show its nested /done queued 683 s and held
+# 179 s for a SECOND suite on a docs-only commit. The fixed steps live here now.
+# ---------------------------------------------------------------------------
+
+def _pinned_tree(tmp_path, version=26):
+    for rel, line in ka.VERSION_PINS:
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(f"x = 1\n{line.format(v=version)}\ny = {version}\n".encode("ascii"))
+    return tmp_path
+
+
+def test_bump_pins_moves_every_pin_and_nothing_else(tmp_path):
+    root = _pinned_tree(tmp_path)
+    assert ka.bump_pins(root, 26, 27) == ([rel for rel, _ in ka.VERSION_PINS], [])
+    for rel, line in ka.VERSION_PINS:
+        body = (root / rel).read_bytes().decode("ascii")
+        assert line.format(v=27) in body
+        assert body.endswith("y = 26\n"), "only the pin line moves"
+
+
+def test_bump_pins_reports_a_pin_it_cannot_find(tmp_path):
+    root = _pinned_tree(tmp_path)
+    rel = ka.VERSION_PINS[0][0]
+    (root / rel).write_bytes(b"no pin here\n")
+    changed, missing = ka.bump_pins(root, 26, 27)
+    assert missing == [rel]
+    assert rel not in changed
+
+
+def test_every_listed_pin_exists_in_the_live_tree_at_the_vendored_version():
+    version = ka._version(ka._manifest(ROOT / ka.KIT_REL))
+    for rel, line in ka.VERSION_PINS:
+        assert line.format(v=version) in (ROOT / rel).read_text(encoding="ascii"), rel
+
+
+def _steps_run(results=None):
+    seen = []
+
+    def run(argv):
+        seen.append(argv)
+        return (results or {}).get(len(seen), 0)
+
+    return seen, run
+
+
+def test_closeout_runs_one_suite_then_commits_and_never_done(tmp_path):
+    seen, run = _steps_run()
+    res = ka.closeout(tmp_path, 27, "own.id", "MAIN ORDER x", runner=run)
+    assert res["ok"] is True and res["stage"] == "done"
+    text = [" ".join(a) for a in seen]
+    assert sum("fleet_suite_gate" in t for t in text) == 1, "one suite per tree sha"
+    add, suite, commit = (next(i for i, t in enumerate(text) if k in t)
+                          for k in (" add ", "fleet_suite_gate", " commit "))
+    assert add < suite < commit
+    assert all("/done" not in t for t in text)
+    assert "--owner own.id" in text[commit]
+    assert not any(" push" in t for t in text), "a push needs --push"
+
+
+def test_closeout_stops_at_a_red_suite_and_commits_nothing(tmp_path):
+    seen, run = _steps_run({2: 1})
+    res = ka.closeout(tmp_path, 27, "own.id", "x", runner=run)
+    assert (res["ok"], res["stage"]) == (False, "suite")
+    assert all(" commit " not in " ".join(a) for a in seen)
+
+
+def test_closeout_push_refuses_on_top_of_a_red_previous_run(tmp_path):
+    seen, run = _steps_run()
+    res = ka.closeout(tmp_path, 27, "own.id", "x", runner=run, push=True,
+                      ci_conclusion=lambda _root: "failure")
+    assert (res["ok"], res["stage"]) == (False, "ci")
+    assert all(" push" not in " ".join(a) for a in seen)
+    seen, run = _steps_run()
+    res = ka.closeout(tmp_path, 27, "own.id", "x", runner=run, push=True,
+                      ci_conclusion=lambda _root: "success")
+    assert res["ok"] is True and any(" push" in " ".join(a) for a in seen)
+
+
+def test_closeout_message_is_ascii_with_no_trailer():
+    msg = ka.commit_message(27, "MAIN ORDER x")
+    assert msg.isascii() and "Co-Authored" not in msg and "v27" in msg
