@@ -97,6 +97,7 @@ as the mechanical-ack record, never consulted as the gate.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import hashlib
 import importlib.util
@@ -681,7 +682,9 @@ _INBOX_COST_RULE = (
     "<TO>`. Several answers to one destination go in ONE note. Never answer an "
     "ANSWER, ACK or INFORMATION note. Your reply is this note's ONE answer channel "
     "(RRF-2.8): the tick sends no batched answer for it and no session may answer it "
-    "again, so put everything the note asks for in that one reply."
+    "again, so put everything the note asks for in that one reply. A reply to an "
+    "ORDER, FIX or RULING names that note's sha256 or full file name: that line is "
+    "what closes its row in the pending-ORDER list."
 )
 
 
@@ -1206,14 +1209,61 @@ def verify_operator_tasks(payload: dict, runlog: Path) -> None:
                       still_open=res["open"])
 
 
+def reconcile_orders(root: Path | None = None, outbox: Path | None = None,
+                     *, dry_run: bool = False) -> dict:
+    """Read the kit's pending-ORDER list and close what has really been answered.
+
+    Kit v27: `mark_seen` QUEUES a WORK note and only `mark_work_done` closes it,
+    so without this every ORDER stays pending for good. A row closes only on
+    evidence: an ANSWER note of ours in the outbox whose body names the row's
+    sha256 or its file name. A child that spawned and wrote no reply leaves its
+    row open, and the row keeps showing in `pending_orders`. Never the failure.
+    """
+    root = Path(lw_headless_env.FLEET_ROOT) if root is None else Path(root)
+    outbox = OUTBOX if outbox is None else Path(outbox)
+    rows = fleet_inbox.pending_work(root)
+    closed: list[str] = []
+    if rows:
+        replies = []
+        if outbox.is_dir():
+            for path in outbox.glob(f"*-from-{SELF_CODE}-ANSWER-*"):
+                with contextlib.suppress(OSError):
+                    replies.append((path.name,
+                                    path.read_text(encoding="utf-8", errors="replace")))
+        for row in rows:
+            hit = next((name for name, body in replies
+                        if str(row.get("sha256")) in body or str(row.get("note")) in body),
+                       None)
+            if hit is not None and not dry_run:
+                fleet_inbox.mark_work_done(root, row, outcome=f"answered: {hit}")
+                closed.append(str(row.get("note")))
+    return {"pending_orders": [str(r.get("note")) for r in rows
+                               if str(r.get("note")) not in closed],
+            "orders_closed": closed}
+
+
+def _orders(payload: dict, runlog: Path, dry_run: bool) -> None:
+    """`reconcile_orders` into the payload; an error is reported, never raised."""
+    try:
+        res = reconcile_orders(dry_run=dry_run)
+    except Exception as exc:  # noqa: BLE001 - advisory, like _publish
+        payload["orders_error"] = f"{type(exc).__name__}: {exc}"
+        return
+    payload["pending_orders"] = res["pending_orders"]
+    if res["orders_closed"]:
+        payload["orders_closed"] = payload.get("orders_closed", []) + res["orders_closed"]
+        _record_cycle(runlog, payload, event="orders_closed", closed=res["orders_closed"])
+
+
 def within_budget(mail: list[Note]) -> tuple[list[Note], dict]:
     """The notes this cycle may spawn on, oldest first, and the run count.
 
     The per-tick cap and the kit's ONE rolling budget apply; the rest stay
     unseen. `kit.spawn` re-checks the budget itself before each launch.
     """
-    used = lw_headless_env.budget().used()
-    room = min(MAX_SPAWNS_PER_CYCLE, max(0, lw_headless_env.kit.RUNS_CAP - used))
+    b = lw_headless_env.budget()
+    used = b.used()
+    room = min(MAX_SPAWNS_PER_CYCLE, max(0, b.cap - used))
     return mail[:room], {"runs_24h": used}
 
 
@@ -1297,6 +1347,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "today, 1 if the cap is spent (ORDER/FIX/RULING exempt)")
     ap.add_argument("--outbound-record", nargs=3, metavar=("NOTE", "CLASS", "TO"),
                     default=None, help="record one written note against the cap")
+    ap.add_argument("--pending-orders", action="store_true",
+                    help="read the pending-ORDER list, close the answered rows, print it")
     ap.add_argument("--answer-channel", nargs=2, metavar=("NOTE", "CHANNEL"),
                     default=None,
                     help="RRF-2.8: claim NOTE's one answer channel (child / tick / "
@@ -1372,6 +1424,10 @@ def _main(argv: list[str] | None = None) -> int:
                           "claimed": owner == channel}))
         return 0 if owner == channel else 1
 
+    if args.pending_orders:
+        print(json.dumps(reconcile_orders(), indent=1))
+        return 0
+
     if args.outbound_check or args.outbound_record:
         cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
         if args.outbound_record:
@@ -1406,6 +1462,7 @@ def _main(argv: list[str] | None = None) -> int:
     if not args.dry_run:
         _publish(announced, tick_start, "running", "Checking Inbox")
         verify_operator_tasks(announced, args.runlog)
+    _orders(announced, args.runlog, args.dry_run)       # pending ORDERs FIRST (kit v27)
 
     # THE WATCH (ingest P0-2): `lw_watch.run_source` owns "what did I already
     # answer". Baseline on the first run, advance ONLY for notes this tick
@@ -1573,6 +1630,7 @@ def _main(argv: list[str] | None = None) -> int:
         payload["deliver_error"] = res["detail"]
     # An IDLE cycle writes NOTHING. See RUNLOG_PATH: liveness has a better
     # source, and 288 empty lines a day would bury the ones that matter.
+    _orders(payload, args.runlog, args.dry_run)         # this tick's replies close rows
     if notes and not args.dry_run:
         extra = {"checklist": ctx["checklist"]} if ctx.get("checklist") else {}
         _record_cycle(args.runlog, payload, event="cycle", new_notes=len(notes),

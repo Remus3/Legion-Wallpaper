@@ -213,7 +213,7 @@ def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool 
 # ---------------------------------------------------------------------------
 
 def budget():
-    return kit.RunBudget(Path(FLEET_ROOT) / kit.BUDGET_REL)
+    return kit.tree_budget(FLEET_ROOT, CODE)
 
 
 def can_start() -> bool:
