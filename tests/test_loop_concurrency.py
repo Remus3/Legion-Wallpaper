@@ -199,7 +199,8 @@ def _claims_its_lane(tmp_path: Path, cfgp: Path) -> None:
     try:
         ready = tmp_path / "control" / "lane-runs" / "loop" / "run_id.txt"
         claimed = False
-        for _ in range(300):
+        deadline = time.monotonic() + fleet_test_guard.budget(30)
+        while time.monotonic() < deadline:
             if ready.is_file():
                 claimed = True
                 break

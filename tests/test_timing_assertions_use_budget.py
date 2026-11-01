@@ -61,6 +61,13 @@ def bare_bounds(source: str) -> list[int]:
                 and isinstance(node.value.op, ast.Add)
                 and _is_clock(node.value.left) and _is_number(node.value.right)):
             hits.append(node.lineno)
+        if (isinstance(node, ast.For) and isinstance(node.iter, ast.Call)
+                and isinstance(node.iter.func, ast.Name) and node.iter.func.id == "range"
+                and any(_is_number(arg) for arg in node.iter.args)
+                and any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Attribute)
+                        and sub.func.attr == "sleep"
+                        for stmt in node.body for sub in ast.walk(stmt))):
+            hits.append(node.lineno)
     return sorted(set(hits))
 
 
@@ -71,6 +78,7 @@ def bare_bounds(source: str) -> list[int]:
     "assert ev.wait(timeout=10)",
     "deadline = time.time() + 5",
     "deadline = time.monotonic() + 30.0",
+    "for _ in range(300):\n    time.sleep(0.1)",
 ])
 def test_the_scanner_catches_a_bare_bound(bad):
     assert bare_bounds(bad) == [1]
@@ -85,6 +93,8 @@ def test_the_scanner_catches_a_bare_bound(bad):
     "old = time.time() - 9000",
     "proc.wait(timeout=30)",
     "os.utime(path, (time.time() + 10_000, time.time() + 10_000))",
+    "for _ in range(3):\n    os.remove(path)",
+    "for _ in range(n):\n    time.sleep(0.1)",
 ])
 def test_the_scanner_passes_a_budgeted_bound_and_a_non_bound(good):
     assert bare_bounds(good) == []
