@@ -27,6 +27,16 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+356. DONE **2026-10-31 (session 87 / responder 209 /done; docs-only).** Wrap of the session that shipped 12fe2f6
+   (FLEET-KIT v26, LEDGER 354) and 9308fae (MAIN 2215 W44 + UI/UX batch, LEDGER 355). CI-83 CLOSED: 9308fae ci
+   41270362926 success + codeql 41270363046 success; 12fe2f6 ci 41268603050 + codeql 41268603049 success (gh run
+   list read back). ANSWER 2026-10-31-2246 TERMINAL reached 1/1. WP-PICKLOG closed (ROADMAP flipped DONE, live pick
+   line in logs/2026-10-31.log 22:28:58). Pre-flight: ruff all checks passed, drift_guard 0 breaches; the
+   responder's suite read 4406 passed / 19 skipped with its exit code lost to a shell timeout, so the section-7
+   done_gate bind is the graded run. Inbox: 9 unread of 658 left UNMARKED (INBOX-MARK carried with the list).
+   inbox-responder progress read running (N1, pct 0, updated 22:22) while responder-run read done 22:47 - not
+   touched. Wrap push CI = CI-84.
+
 355. DONE **2026-10-31 (responder: MAIN ORDER 2026-10-31-2215 public view + W44 + UI/UX batched, 6 items).**
    Inbox copy sha256 b873714f7e7428c29deb93858765714280ddfd30d8dbe4ab6b61761a5e21288d (re-hashed; verify_main True
    against MAIN's committed outbox copy, 2405 bytes). Items: (1) README "Where it stands" Corpus + Code rows lose

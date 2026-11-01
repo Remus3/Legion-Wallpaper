@@ -79,6 +79,15 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-10-31, session 87 / responder 209) - MAIN 2215 W44 + UI/UX batch shipped
+
+Commits: 12fe2f6 (kit v26, LEDGER 354), 9308fae (W44 batch, LEDGER 355), LEDGER 356 + hand-off (this wrap).
+MAIN ORDER 2026-10-31-2215 (sha256 MATCH): README counts de-hand-typed + hero docs/assets/social-preview.png;
+WP-PICKLOG done (tick logs `pick <file> pos <i>/<n> cycle <c>`, live line read back 22:28:58); R4 park date
+2026-11-14; LW-IOPAINT-RISK recorded in cleaning-pass.md (iopaint==1.6.0 pinned); tools/lw_qa_slider.py + 8
+tests. ANSWER 2026-10-31-2246 TERMINAL reached 1/1. CI on 9308fae: ci 41270362926 success, codeql 41270363046
+success. Do NOT redo: WP-PICKLOG, the 2215 order, kit v26. Next: CI-84 (this wrap push), INBOX-MARK.
+
 ## PREVIOUS SESSION (2026-10-25, session 86 / responder 198) - MAIN 2045 suite speed shipped
 
 Commits: 491bb85 (suite speed + LEDGER 348), LEDGER 349 + hand-off (this wrap).
