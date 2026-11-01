@@ -31,6 +31,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+359. DONE **2026-11-01 (MAIN ORDER 2026-11-01-1223 items 1-6 finished by MAIN drive-lw; 2cb0faa 9861028 6cd026c b689256 ca700f8 90917b6 6a3ddc6 cc5ad1a e7421cb).**
+   Provenance: inbox copy sha256 prefix df7ed16b, verify_main True. The responder's work run was killed at 1800 s at 12:57
+   after items 1-5, committed and unpushed; each ACCEPT was re-read against the tree, none fell short. Item 1: row stays open
+   without a reply (tests/test_inbox_responder_orders.py). Item 2: gate read back 2/500. Item 3: cause in lw_kit_adopt.py
+   closeout docstring (about 480 s adoption, then a nested /done with 683 s gate wait and a 179 s second suite).
+   Item 4: hand-off read back 18856 B (under 20 KB), this entry's commit. Item 5: 358 entries before and after, same digest multiset.
+   Item 6 FLEET-9: 8 bounds moved to budget() here (ca700f8 7, 6a3ddc6 1), 3 more already by 5c39ef3 (2026-10-26), pinned by
+   tests/test_timing_assertions_use_budget.py (AST scan; red on real offenders, mutant killed). About 90 timeout= hang guards NOT
+   converted: expiry there is not the claim under test. MAIN's "29 lines" NOT matched: pattern recorded nowhere; nearest grep at
+   395770f 33 lines, 30 without budget, 2 true timing bounds. tests/conftest.py extra_ignore for inbox_pending_orders.json (90917b6)
+   is a local widening of the guard; the same gap is in the kit IGNORE, reported to MAIN. Done-when open: FLEET9-READ on or
+   after 2026-11-08.
+   Suite: 6a3ddc6 RED, 2 failed test_the_interpreter_is_not_a_microsoft_store_stub[python, pythonw], 4271+183 passed: a Python Manager
+   package dir matched the whole-word WindowsApps rule though the interpreter runs; fixed cc5ad1a (rule narrowed, both arms pinned),
+   e7421cb (fixtures without an account-shaped path; cc5ad1a alone was red on test_no_account_paths, never pushed alone). Whole suite
+   on e7421cb through the gate: exit 0, 4278+183 passed, 19+1 skipped, 104 s, no gate wait; live-state guard armed (FLEET_TEST_GUARD
+   unset), its failure would be a non-zero exit. CI: 395770f ci 41297519489 success (CI-85); e7421cb ci 41351305098 + codeql
+   41351305099 success. Row closed by fleet_inbox.mark_work_done directly (reconcile_orders only closes on an outbox ANSWER): pending
+   read empty, scan and session_start do not list the note, enqueue_work on it returns None. No responder run started.
+   FUTURE: PY-ON-PATH, KIT-IGNORE-GAP rows. CI-85 and LW1-READ dropped. fleet_done.py mark not run: driver paperwork, not the ritual.
+
 358. DONE **2026-11-01 (session 88 /done wrap: CI-84 closed, RESPONDER-DUP-V27 read back; docs-only).**
    CI read back via gh run list --branch main: a5c05fb (tip of the push that also carried d903c51) ci 41295918326
    success, codeql 41295918373 success - CI-84 dropped. RESPONDER-DUP-V27: the LW-InboxResponder child spawned at
@@ -287,32 +308,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
      operator commit 67973e8". gh pr view --json state read back CLOSED for both. lw_postmerge_scan clean.
    - Hand-off rewritten from the session 83 base (SESSION 84): PR-CLOSE-3-4, CI-80, KIT-V20-DIRTY
      removed; CI-81 (read the wrap push CI) added; every other item carried.
-
-339. DONE **2026-10-19 (MAIN 2243 GITHUB-SECURITY-FINDINGS + MAIN 2312 OPERATOR-MARKED-FIXES worked; PRs #3/#4 re-applied 5f9a043, 67973e8).**
-   READ BACK (MAIN notes via fleet_headless.verify_main): 2243 True sha256 fe218a98eac5; 2312 True
-   98e796a82f79 and its png True b6d29c95ff73.
-   - 2243: gh api code-scanning / dependabot / secret-scanning alerts, state=open, paginated, each HTTP 200:
-     open 0 / 0 / 0 before and after (no triage needed). All-state: code-scanning 22 = 21 fixed + 1
-     dismissed; dependabot 0; secret-scanning 0. Fixed 0, dismissed 0, left 0; nothing for the operator.
-   - 2312: gh api contributors?anon=1 = 1 row, the operator, 838. git log main: 843 commits pre-change,
-     one identity (operator author + committer), 0 Co-authored-by / Signed-off-by lines.
-     lw_postmerge_scan --all clean on origin/main 58e2e88 and on local main a2dfa08. fleet_rewrite.py
-     plan da7cf5dbd1a9: 845 scanned, 0 to rewrite, SHA change 0, NO REWRITE (no rewrite run). Finding:
-     plan scans all local refs - with the PR heads fetched as temp branches it read PLAN d9546106dc59,
-     2 to rewrite (the two unmerged bot commits); temp refs deleted (git branch -D, own refs, bytes
-     still on the GitHub PR branches), re-plan clean. Reported to MAIN as FYI.
-   - PR #3 (pip) path B: regenerated with the requirements*.in command (uv 0.11.8 pip compile
-     --universal --python-version 3.14 --generate-hashes, --upgrade-package numpy==2.5.4 [ruff==0.17.1]).
-     Diff vs PR #3 branch: equal except colorama 0.4.6 (win32 marker, via pytest), which Dependabot
-     dropped and LW keeps (Dependabot compile defect). ruff 0.17.1 check . clean. Commit 5f9a043.
-   - PR #4 (github-actions) path B: codeql-action v4.38.3 -> v4.39.0; tag 48870fdd6b42 dereferenced by
-     gh api to commit 6f2ac81f5cd8; codeql.yml byte-equal to the PR #4 branch. Commit 67973e8.
-   - Gated suite (fleet_suite_gate, lw_suite): 4196 passed 19 skipped + serial 182 passed 1 skipped =
-     4378 passed, 20 skipped, rc 0. Local interpreter still numpy/ruff pre-bump; CI on the push tests
-     the bumped pins.
-   - PRs #3 and #4 left OPEN on purpose: docs/OPERATIONS.md "Bot PRs" says close only AFTER the
-     re-applied commit is pushed, and this run does not push (/done does). Carried as PR-CLOSE-3-4.
-   - ONE ANSWER for both orders: 2026-10-19-0134-from-LW-ANSWER-to-MAIN-2243-SECURITY-0-open-2312-
-     CONTRIB-operator-only-PR3-PR4-reapplied-TERMINAL.md, MAIN inbox copy re-hashed equal
-     (c84280c39a04), reached 1/1; OutboundCap 3/12 today. Hand-off: GH-SECURITY, GH-CONTRIB removed.
 
