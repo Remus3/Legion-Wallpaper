@@ -36,7 +36,7 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # CLAUDE.md budget is real and CI-enforced (CLAUDE.md: "CI size-budgeted < 60KB").
 # ROADMAP.md is advisory here - LW states no hard budget for it.
 DOC_BUDGETS = {"CLAUDE.md": 61440}
-DOC_BUDGETS_ADVISORY = {"ROADMAP.md": 81920}
+DOC_BUDGETS_ADVISORY = {"ROADMAP.md": 81920, "LW-NEXT-SESSION.txt": 20480}
 COMMANDS_DIR = ".claude/commands"
 COMMANDS_MARKER = "SUBAGENT-FIRST"
 MEMORY_DIR = lw_paths.claude_project_sessions() / "memory"  # C-SLUG-SIBLINGS: live slug
