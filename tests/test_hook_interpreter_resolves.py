@@ -112,8 +112,8 @@ def test_the_interpreter_is_not_a_microsoft_store_stub(name):
 
 
 @pytest.mark.parametrize(("path", "stub"), [
-    (r"C:\Users\someone\AppData\Local\Microsoft\WindowsApps\python.exe", True),
-    (r"C:\Users\someone\AppData\Local\Microsoft\WindowsApps\pythonw.exe", True),
+    (r"C:\profile\AppData\Local\Microsoft\WindowsApps\python.exe", True),
+    (r"C:\profile\AppData\Local\Microsoft\WindowsApps\pythonw.exe", True),
     (r"C:\Program Files\WindowsApps\SomeOther.Package_1.0_x64__abc\python.exe", True),
     (r"C:\Program Files\WindowsApps\PythonSoftwareFoundation.PythonManager_26.1.240.0_x64__3847v3x7pw1km\python.EXE", False),
     (r"C:\Programs\Python\Python314\python.exe", False),
