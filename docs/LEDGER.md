@@ -27,6 +27,25 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+355. DONE **2026-10-31 (responder: MAIN ORDER 2026-10-31-2215 public view + W44 + UI/UX batched, 6 items).**
+   Inbox copy sha256 b873714f7e7428c29deb93858765714280ddfd30d8dbe4ab6b61761a5e21288d (re-hashed; verify_main True
+   against MAIN's committed outbox copy, 2405 bytes). Items: (1) README "Where it stands" Corpus + Code rows lose
+   every hand-typed count (737/517/70/142/8, 124 tools, 240 files, 4,370 tests, 13 ADRs, 330 items, 830 commits);
+   dated pointer to ops/runtime/pipeline_state.json kept. (2) README hero img -> docs/assets/social-preview.png
+   (tracked, relative), alt text unchanged. (3) WP-PICKLOG: tools/lw_wallpaper_rotate.py tick() logs
+   `pick <file> pos <i>/<n> cycle <c>` after a successful apply (none on dry-run or failed apply); TDD RED 1 failed
+   -> green 45 passed; live LW-Wallpaper tick read back in logs/2026-10-31.log at 22:28:58 (pos 425/555 cycle 121).
+   (4) R4 park date 2026-11-14 written into the hand-off R4 line; LEDGER park line due on/after 11-14 if tally 0.
+   (5) LW-IOPAINT-RISK: .claude/commands/cleaning-pass.md records upstream archived (MAIN-reported, no fixes since
+   2025-04; PyPI newest still 1.6.0, read 2026-10-31), pin iopaint==1.6.0 (pip show read back, torch 2.11.0+cu128),
+   fallback = lw_clean_iopaint.py <slug> --region x0,y0,x1,y1 in the lw-clean venv. (6) LW-QA-SLIDER: new
+   tools/lw_qa_slider.py + tests/test_lw_qa_slider.py (8 tests, RED collection error -> green): static page, one
+   NEEDAUTH item, _<stage>initial vs _<stage>needauth in one box with a range divider, newest gate audit beside it;
+   live run on a queued first-pass item wrote ops/runtime/review/qa_slider.html with both file URIs and G1 metrics
+   (queue 132). 5-phase UI audit (subagent, before commit): 0 MUST-FIX; SHOULDs taken: header landmark,
+   aria-valuetext, visible divider bar, overflow-wrap. Not taken: drag on image, verdict emphasis, inline aspect.
+   One HOP 2 answer to MAIN.
+
 354. DONE **2026-10-31 (responder: MAIN ORDER 2026-10-31-2200 FLEET-KIT v26 adopted; supersedes v25).**
    Inbox copy sha256 4e4084a6e3068108572ab638616153fb5daf625248a66034af88be421f104290 (re-hashed; == MAIN outbox
    copy, 12621 bytes). Kit vendored byte-for-byte (24 files + fleet_hook.sh), MANIFEST.json sha256

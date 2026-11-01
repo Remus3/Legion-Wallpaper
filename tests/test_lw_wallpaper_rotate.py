@@ -620,3 +620,27 @@ def test_cli_tick_dry_run_writes_nothing(tmp_path, capsys):
     assert code == 0
     assert not Path(cfg["state_path"]).exists()
     assert any(n in out for n in NAMES)
+
+
+# -- WP-PICKLOG (MAIN W44): every applied tick logs its pick ----------------
+
+def test_tick_logs_pick_deck_pos_and_cycle(tmp_path, monkeypatch):
+    lines: list[str] = []
+    monkeypatch.setattr(rot, "_log", lines.append)
+    cfg = _cfg(tmp_path, _corpus(tmp_path))
+    rec = _Recorder()
+    picks = _ticks(cfg, 2, random.Random(7), rec)
+    pick_lines = [ln for ln in lines if ln.startswith("pick ")]
+    assert pick_lines == [
+        f"pick {picks[0]} pos 1/{len(NAMES)} cycle 1",
+        f"pick {picks[1]} pos 2/{len(NAMES)} cycle 1",
+    ]
+
+
+def test_tick_logs_no_pick_line_on_dry_run_or_failed_apply(tmp_path, monkeypatch):
+    lines: list[str] = []
+    monkeypatch.setattr(rot, "_log", lines.append)
+    cfg = _cfg(tmp_path, _corpus(tmp_path))
+    rot.tick(cfg, dry_run=True, rng=random.Random(7), set_wallpaper_fn=_Recorder())
+    rot.tick(cfg, rng=random.Random(7), set_wallpaper_fn=_Recorder(ok=False))
+    assert not [ln for ln in lines if ln.startswith("pick ")]

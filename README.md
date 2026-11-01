@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://repository-images.githubusercontent.com/1319743764/80e66398-958f-4624-93ce-f2c9de739f0c" width="100%" alt="Legion Wallpaper banner - staged, self-auditing AI image restoration pipeline">
+<img src="docs/assets/social-preview.png" width="100%" alt="Legion Wallpaper banner - staged, self-auditing AI image restoration pipeline">
 
 # Legion Wallpaper
 
@@ -60,9 +60,9 @@ _Probed live 2026-10-03. A static status table goes stale, so the machine-readab
 |---|---|
 | **Running on the corpus** | Intake, source recovery, first pass (spandrel DAT2 super-resolution plus the G1 fidelity gate), and cleaning (detect, mask, LaMa inpaint, verify, with IOPaint as the human QA lane) |
 | **Built, not yet exercised end to end** | Final pass, last pass and end review are coded, tested and gated, but no image has been carried through to delivery yet |
-| **Corpus** | 737 tracked illustrations on one Windows workstation: 517 through cleaning, 70 in cleaning scratch, 142 in first pass, 8 outside the active stages |
+| **Corpus** | Tracked illustrations on one Windows workstation; per-stage counts live in `ops/runtime/pipeline_state.json` (`lw_pipeline status`) |
 | **Approval** | First-pass results wait for the operator. An agent never approves its own output |
-| **Code** (re-probed 2026-10-18) | 124 tools, 240 test files, about 4,370 collected tests, 13 ADRs, 330 ledger items, 830 commits |
+| **Code** | Tools in `tools/`, tests in `tests/`, decisions in `docs/adr/`, ledger in `docs/LEDGER.md`; counts are read live (`git rev-list --count HEAD`, `pytest --collect-only -q`), never typed here |
 | **Autonomy** | Phase A (shadow). Promotion needs a window of 50 or more operator-reviewed images |
 
 ## What is next

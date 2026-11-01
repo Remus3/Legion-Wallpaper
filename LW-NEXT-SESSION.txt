@@ -21,14 +21,14 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
 Acceptance: WP-PICKLOG shipped green; CI-83 read green (or red investigated); every other
   checklist item acted on or carried with a reason.
 CHECKLIST:
-  - WP-PICKLOG: (WALLPAPER-PICKLOG) Log each tick's chosen filename to the run log in tools/lw_wallpaper_rotate.py so a reported repeat can be proven or disproven (promised to the operator session 85, not yet dispatched; LEDGER 344)
+  - WP-PICKLOG: SHIPPED by the responder 2026-10-31 (LEDGER 355): tick() logs `pick <file> pos <i>/<n> cycle <c>`; live line read back 22:28:58 - close this item
   - CI-83: Read CI conclusion of the session 86 wrap push (tip = newest commit on origin main; gh run list --branch main --limit 3 --json databaseId,headSha,conclusion,event - take the push event row); 491bb85 read: ci 40266567636 success, codeql 40266567605 success
   - INBOX-MARK: Triage + mark seen the 4 unread notes: MAIN 2026-10-25-1926 FLEET-KIT v23 ORDER (done, LEDGER 346), MAIN 2026-10-25-1935 FIX gh-review pillow-13 82 alerts (done 8dfef45, LEDGER 347 - re-check alert count), 2 SS ANSWER notes (no reply)
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
-  - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at session 77)
+  - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at session 77); PARK DATE 2026-11-14 (MAIN W44 ORDER 2026-10-31-2215): if the tally is still 0 on or after 2026-11-14, append a LEDGER park line naming reopen-on-vote
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator task visual.readback-2237-statusline; on the operator's OK write ops/runtime/readback-2237.ok; feedback-line half PASSED session 68, LEDGER 289)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22)
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)

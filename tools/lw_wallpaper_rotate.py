@@ -363,6 +363,8 @@ def tick(config, dry_run: bool = False, rng=None, set_wallpaper_fn=None):
     if started_new:
         state["cycle"] = int(state.get("cycle") or 0) + 1
         state["cycle_started_utc"] = now
+    # WP-PICKLOG (MAIN W44): one line per applied tick, so a rotation is auditable.
+    _log(f"pick {pick} pos {cursor}/{len(deck)} cycle {state.get('cycle')}")
     try:
         save_state(state_path, state)
     except OSError as exc:
