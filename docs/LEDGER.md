@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+360. DONE **2026-11-01 (session 90 inbox triage: 13 unread notes, all DONE or NO-ACTION, none open; docs-only).**
+   Operator asked to process the inbox. lw_facts unread set 13 of 664, read oldest first by mtime. 6 MAIN notes verify_main True:
+   FIX 1935 pillow-13 (8dfef45, LEDGER 347; live open Dependabot alerts 0), ORDER 2045 suite speed (491bb85, LEDGER 348), ORDER 1926
+   v23 (121eb25, LEDGER 346), ORDER 2200 v26 (12fe2f6, LEDGER 354), ORDER 2215 W44 (9308fae, LEDGER 355), ORDER 1223 (LEDGER 359): each
+   DONE with its ANSWER in MAIN's inbox, hash equal. 2 kit bundles v23 + v26 bundle_verified True, NO-ACTION: superseded, manifest reads v27,
+   24/24 files hash. 5 SS notes addressed to MAIN (2230, 2245, 0431, 1324, 1400), all ANSWER/TERMINAL, NO-ACTION. No outbound note, no code
+   change. Mark: lw_facts --mark-inbox-seen (no --all). READ BACK: lw_facts "0 unread of 664 notes". INBOX-MARK dropped.
+   Why the counts looked inconsistent: _inbox_lines sorts by display name and prints the last 10 (tools/lw_facts.py:893-894), and
+   UserPromptSubmit prints only what this session id was not yet shown, so the two hook lists are disjoint parts of the same 13.
+   Finished orders stay unread until an explicit lw_facts mark because the responder keeps its own seen store (three stores: lw_facts
+   sync_inbox_seen.json, responder state, kit ledger inbox_seen.jsonl).
+   Side findings, none acted on, all hand-off rows: DEPENDABOT-PR7 (gh pr view 7 reads OPEN, created 2026-11-01T22:38:50Z, requirements.txt
+   + requirements-cv.txt; path B), KIT-SCAN-STALE (fleet_inbox.scan on LW reads 571 unseen, 25 WORK, all pre-ledger; no LW code calls scan
+   or session_start), SS-MAIL (SS notes addressed to MAIN land in LW's inbox; cause not established).
+   Previous push CI read before this push: 180e340 ci 41351984310 success. FUTURE: CI-90 reads this push's run.
+
 359. DONE **2026-11-01 (MAIN ORDER 2026-11-01-1223 items 1-6 finished by MAIN drive-lw; 2cb0faa 9861028 6cd026c b689256 ca700f8 90917b6 6a3ddc6 cc5ad1a e7421cb).**
    Provenance: inbox copy sha256 prefix df7ed16b, verify_main True. The responder's work run was killed at 1800 s at 12:57
    after items 1-5, committed and unpushed; each ACCEPT was re-read against the tree, none fell short. Item 1: row stays open
@@ -294,18 +310,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    CORRECTION (session 84): the responder child timed out after 1800s BEFORE sending the ANSWER (runs.jsonl
    2026-10-21T18:31:59Z); session 84 re-read the file and sent ANSWER
    2026-10-23-1945-from-LW-ANSWER-to-MAIN-1300-SETTINGS-INERT-KEYS-removed-TERMINAL (HOP: 2), reached 1/1 re-hashed.
-
-340. DONE **2026-10-19 (session 83 /done: KIT-V20-DIRTY resolved, ONE push 58e2e88..fda063e, CI green on the bumped pins, PRs #3/#4 closed; docs-only).**
-   READ BACK: tree clean at start, ops/loop/control/progress/kit-v20-1.json status done (8e0e003) -
-   KIT-V20-DIRTY dropped. CI-80: run 39205598593 on 58e2e88 conclusion success. done_gate.py bind on
-   fda063e GREEN (ruff 0, fleet_suite_gate lw_suite 0, drift_guard 0); push via fleet_gitlock
-   58e2e88..fda063e (8e0e003, 96c6ac5, a2dfa08, 5f9a043, 67973e8, fda063e + the 7a4e6a2 wrap);
-   done_gate.py verify-push: origin/main = HEAD = graded fda063e. CI on fda063e: ci 39211011697
-   success, codeql 39211012722 success - numpy 2.5.4 / ruff 0.17.1 pins green.
-   - PRs: Dependabot auto-closed #3 (06:38:45Z) and #4 (06:40:21Z) on its own once main carried the
-     bumps ("no longer updatable"), before the path-B close ran; gh pr close reported already closed.
-     Path-B reason comments added: #3 "re-applied as operator commit 5f9a043", #4 "re-applied as
-     operator commit 67973e8". gh pr view --json state read back CLOSED for both. lw_postmerge_scan clean.
-   - Hand-off rewritten from the session 83 base (SESSION 84): PR-CLOSE-3-4, CI-80, KIT-V20-DIRTY
-     removed; CI-81 (read the wrap push CI) added; every other item carried.
 

@@ -79,6 +79,12 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-01, session 90) - inbox triage only, 13 notes, no new work
+
+Commits: LEDGER 360 + hand-off (this wrap); no code change, no outbound note. 13 unread notes all DONE or NO-ACTION;
+lw_facts read back 0 unread of 664. CI on 180e340 before the push: ci 41351984310 success. Do NOT redo: the 13-note
+triage. Next: CI-90 (this push's run), then the hand-off rows; new DEPENDABOT-PR7, KIT-SCAN-STALE, SS-MAIL.
+
 ## PREVIOUS SESSION (2026-11-01, session 88 / Maint-KitRollout) - fleet kit v27 adopted
 
 Commits: a5c05fb (kit v27, LEDGER 357), LEDGER 358 + hand-off (this wrap). Pushed d903c51 + a5c05fb in one push.
