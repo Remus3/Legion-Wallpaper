@@ -27,6 +27,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+358. DONE **2026-11-01 (session 88 /done wrap: CI-84 closed, RESPONDER-DUP-V27 read back; docs-only).**
+   CI read back via gh run list --branch main: a5c05fb (tip of the push that also carried d903c51) ci 41295918326
+   success, codeql 41295918373 success - CI-84 dropped. RESPONDER-DUP-V27: the LW-InboxResponder child spawned at
+   04:01 on MAIN ORDER 2026-10-31-2347 ended rc 0 at 04:07:53 (headless_usage.jsonl kind order, sonnet), its
+   progress file reads done; moon_sync_outbox holds exactly one 2347 ANSWER (2026-11-01-0407, TERMINAL) and
+   git log shows no commit after a5c05fb - no duplicate ANSWER, nothing to reconcile. KIT-V27-PENDING carried.
+   Pre-flight: ruff clean, drift_guard 0 breaches; --lf skipped (no code authored; the section-7 bind is the
+   graded run).
+
 357. DONE **2026-11-01 (Maint-KitRollout: fleet kit v27 adopted; MAIN ORDER 2026-10-31-2347).**
    Inbox copy sha256 056a54a1544fa4c51fe366f6ae11df5ee46c9088babfe7a4ab3ded7ad4f88d6f: verify_main True (MAIN
    committed outbox copy, 10399 bytes); bundle verified at KIT-COMMIT 56d000f (lw_inbox_responder.bundle_verified

@@ -79,6 +79,15 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-01, session 88 / Maint-KitRollout) - fleet kit v27 adopted
+
+Commits: a5c05fb (kit v27, LEDGER 357), LEDGER 358 + hand-off (this wrap). Pushed d903c51 + a5c05fb in one push.
+CI on a5c05fb: ci 41295918326 success, codeql 41295918373 success (CI-84 closed by the same read).
+ANSWER 2026-11-01-0407 TERMINAL reached 1/1. RESPONDER-DUP-V27 read back: the 04:01 responder child ended
+rc 0 at 04:07:53 (headless_usage.jsonl), moon_sync_outbox holds ONE 2347 ANSWER (0407), no commit after
+a5c05fb - no duplicate. Do NOT redo: kit v27, CI-84. Next: KIT-V27-PENDING (responder pending/mark_work_done),
+INBOX-MARK.
+
 ## PREVIOUS SESSION (2026-10-31, session 87 / responder 209) - MAIN 2215 W44 + UI/UX batch shipped
 
 Commits: 12fe2f6 (kit v26, LEDGER 354), 9308fae (W44 batch, LEDGER 355), LEDGER 356 + hand-off (this wrap).
