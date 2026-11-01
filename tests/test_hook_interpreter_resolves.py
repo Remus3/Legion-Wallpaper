@@ -29,7 +29,7 @@ import json
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath, PureWindowsPath
 
 import pytest
 
@@ -40,6 +40,23 @@ SETTINGS = REPO_ROOT / ".claude" / "settings.json"
 # and no Store stub to fall into.
 pytestmark = pytest.mark.skipif(
     sys.platform != "win32", reason="hook interpreter resolution is Windows-only")
+
+
+def _is_store_stub(path: PurePath) -> bool:
+    """True for a WindowsApps binary that is not an installed Python package.
+
+    The per-user alias sits directly in Microsoft\\WindowsApps. A process started
+    through the Python Manager alias inherits its package directory on PATH, ahead
+    of the real install (read back 2026-11-01 on a driver run; the entry is in
+    neither registry PATH). That binary is a real interpreter, so a whole-word
+    "WindowsApps" match made this verdict depend on how the suite's ancestor was
+    launched (FLEET-9). test_the_interpreter_actually_runs stays the running proof.
+    """
+    parts = [part.lower() for part in path.parts]
+    if "windowsapps" not in parts:
+        return False
+    below = parts[parts.index("windowsapps") + 1:]
+    return not (below and below[0].startswith("pythonsoftwarefoundation."))
 
 
 def _hook_commands() -> list[str]:
@@ -89,9 +106,21 @@ def test_the_interpreter_is_on_path(name):
 def test_the_interpreter_is_not_a_microsoft_store_stub(name):
     """A stub is on PATH and opens the Store. `which` alone cannot tell."""
     resolved = Path(shutil.which(name) or "")
-    assert "WindowsApps" not in resolved.parts, (
+    assert not _is_store_stub(resolved), (
         f"`{name}` resolves to the Microsoft Store stub at {resolved}, which "
         "launches the Store instead of running the script")
+
+
+@pytest.mark.parametrize(("path", "stub"), [
+    (r"C:\Users\someone\AppData\Local\Microsoft\WindowsApps\python.exe", True),
+    (r"C:\Users\someone\AppData\Local\Microsoft\WindowsApps\pythonw.exe", True),
+    (r"C:\Program Files\WindowsApps\SomeOther.Package_1.0_x64__abc\python.exe", True),
+    (r"C:\Program Files\WindowsApps\PythonSoftwareFoundation.PythonManager_26.1.240.0_x64__3847v3x7pw1km\python.EXE", False),
+    (r"C:\Programs\Python\Python314\python.exe", False),
+])
+def test_the_stub_rule_separates_the_alias_from_an_installed_python(path, stub):
+    """Both arms, on fixed strings, so the rule binds whatever this PATH holds."""
+    assert _is_store_stub(PureWindowsPath(path)) is stub
 
 
 @pytest.mark.parametrize("name", sorted(_interpreter_names()))
