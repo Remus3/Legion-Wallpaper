@@ -74,6 +74,8 @@ import pytest
 # headless spawn (the PT5M responder) on its own schedule; a test writing it
 # is already caught at the kit writer by _the_live_fleet_files_are_never_written.
 # Kit v14 adds it to IGNORE itself; extra_ignore ADDS (v14 step 3.3), harmless.
+# inbox_pending_orders.json (kit v27) is the same case: a responder tick queueing or
+# closing an ORDER rewrites it, which would read as this suite touching live state.
 import sys as _sys  # noqa: E402
 
 _ROOT = Path(__file__).resolve().parents[1]
@@ -85,7 +87,8 @@ import lw_race_guards  # noqa: E402
 
 fleet_test_guard.install(
     globals(), root=_ROOT, env_roots=lw_race_guards.ENV_ROOTS,
-    extra_ignore=("ops/loop/control/headless_budget.json*",))
+    extra_ignore=("ops/loop/control/headless_budget.json*",
+                  "ops/loop/control/inbox_pending_orders.json"))
 
 
 @pytest.fixture(autouse=True)
