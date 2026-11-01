@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 import pytest
+import fleet_test_guard  # noqa: E402
 
 # RRF-2.1: shares machine state across files or times itself - runs in the
 # -n0 serial pass, never under xdist (tools/lw_suite.py).
@@ -437,12 +438,12 @@ def test_serve_or_defer_serves_then_closes_cleanly():
 
     t = threading.Thread(target=run, daemon=True)
     t.start()
-    deadline = time.time() + 5
+    deadline = time.time() + fleet_test_guard.budget(5)
     while not made and time.time() < deadline:
         time.sleep(0.01)
     assert made, "factory never ran"
     port = made[0].server_address[1]
-    deadline = time.time() + 5
+    deadline = time.time() + fleet_test_guard.budget(5)
     while time.time() < deadline:
         try:
             assert _get(port, "/ok")[0] == 200

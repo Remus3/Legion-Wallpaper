@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 import pytest
+import fleet_test_guard  # noqa: E402
 
 # RRF-2.1: shares machine state across files or times itself - runs in the
 # -n0 serial pass, never under xdist (tools/lw_suite.py).
@@ -935,7 +936,7 @@ def test_posix_no_op_lets_a_second_caller_in_while_the_first_holds(monkeypatch):
     t = threading.Thread(target=holder)
     t.start()
     try:
-        assert inside.wait(timeout=10), "the first caller never entered its block"
+        assert inside.wait(timeout=fleet_test_guard.budget(10)), "the first caller never entered its block"
         with winmutex.hold(name, timeout=0.2, log=lines.append) as h:
             assert h is None, "the POSIX branch holds no handle"
             assert not release.is_set(), \
@@ -977,7 +978,7 @@ def test_mutex_timeout_raises_when_held_elsewhere():
 
     t = threading.Thread(target=holder)
     t.start()
-    assert got.wait(timeout=10)
+    assert got.wait(timeout=fleet_test_guard.budget(10))
     try:
         with pytest.raises(winmutex.MutexTimeout):
             with winmutex.hold("Global\\LWRC_TEST_TIMEOUT", timeout=0.2):

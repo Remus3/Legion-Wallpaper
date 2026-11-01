@@ -22,6 +22,7 @@ import time
 from pathlib import Path
 
 import pytest
+import fleet_test_guard  # noqa: E402
 
 # RRF-2.1: shares machine state across files or times itself - runs in the
 # -n0 serial pass, never under xdist (tools/lw_suite.py).
@@ -86,8 +87,9 @@ def _launch(cfgp: Path) -> subprocess.Popen:
         creationflags=NO_WINDOW)
 
 
-def _wait_for(path: Path, proc: subprocess.Popen, tries: int = 300) -> bool:
-    for _ in range(tries):
+def _wait_for(path: Path, proc: subprocess.Popen, seconds: float = 30) -> bool:
+    deadline = time.monotonic() + fleet_test_guard.budget(seconds)
+    while time.monotonic() < deadline:
         if path.is_file():
             return True
         if proc.poll() is not None:

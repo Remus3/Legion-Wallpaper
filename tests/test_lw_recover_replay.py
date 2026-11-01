@@ -24,6 +24,7 @@ import time
 import urllib.error
 
 import pytest
+import fleet_test_guard  # noqa: E402
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
 import lw_recover  # noqa: E402
@@ -68,7 +69,7 @@ def replay_port():
         creationflags=_NO_WINDOW,
     )
     port = None
-    deadline = time.time() + 30
+    deadline = time.time() + fleet_test_guard.budget(30)
     while time.time() < deadline and port is None:
         if proc.poll() is not None:
             pytest.fail(f"mockd engine exited early: {proc.stdout.read()[:500]}")

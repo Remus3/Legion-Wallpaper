@@ -231,7 +231,7 @@ def test_an_open_stdin_pipe_does_not_crash_interpreter_shutdown():
                          stderr=subprocess.PIPE,
                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     try:
-        deadline = time.monotonic() + 30.0
+        deadline = time.monotonic() + fleet_test_guard.budget(30.0)
         while p.poll() is None and time.monotonic() < deadline:
             time.sleep(0.05)
         if p.poll() is None:
