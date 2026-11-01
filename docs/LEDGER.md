@@ -27,6 +27,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+357. DONE **2026-11-01 (Maint-KitRollout: fleet kit v27 adopted; MAIN ORDER 2026-10-31-2347).**
+   Inbox copy sha256 056a54a1544fa4c51fe366f6ae11df5ee46c9088babfe7a4ab3ded7ad4f88d6f: verify_main True (MAIN
+   committed outbox copy, 10399 bytes); bundle verified at KIT-COMMIT 56d000f (lw_inbox_responder.bundle_verified
+   True, lw_kit_adopt.verify_bundle []). Vendored via lw_kit_adopt (byte copy): 8 files changed (MANIFEST.json,
+   fleet_claims, fleet_headless, fleet_hook.sh, fleet_inbox, fleet_lanes, fleet_rewrite, fleet_suite_gate); READ
+   BACK 24/24 files + MANIFEST.json sha256 0a90af35...e949c1 == section 1; FLEET-COMMON unchanged (no re-embed);
+   conformance() == [] at KIT_VERSION 27. Settings unchanged; `{}` piped into both PreToolUse launcher commands:
+   exit 0, empty stdout. KIT_VERSION pins 26 -> 27 (tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py). Section 4 tests changed: none (no exact
+   usage-key spy, no fleet_claims.subprocess patch, no lanes key-set pin hit). Gated suite (fleet_suite_gate, lw_suite):
+   4223 passed / 19 skipped parallel + 183 passed / 1 skipped serial, exit 0. NOT DONE, carried (KIT-V27-PENDING):
+   section 5 item 3 - lw_inbox_responder now enqueues an ORDER into inbox_work.jsonl on its post-spawn mark_seen
+   and never closes it; it must read `fleet_inbox.py pending` first and call mark_work_done after the ANSWER
+   (deferred: the responder was live mid-tick on this same note). The LW-InboxResponder tick (pid of 04:01) had
+   spawned a duplicate sonnet child on this ORDER concurrently; it was not touched. No rotator / lane loop to
+   restart. One HOP 2 answer to MAIN.
+
 356. DONE **2026-10-31 (session 87 / responder 209 /done; docs-only).** Wrap of the session that shipped 12fe2f6
    (FLEET-KIT v26, LEDGER 354) and 9308fae (MAIN 2215 W44 + UI/UX batch, LEDGER 355). CI-83 CLOSED: 9308fae ci
    41270362926 success + codeql 41270363046 success; 12fe2f6 ci 41268603050 + codeql 41268603049 success (gh run
