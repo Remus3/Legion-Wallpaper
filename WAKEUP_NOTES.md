@@ -79,6 +79,12 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-01, session 91 / Maint-KitRollout) - fleet kit v28 adopted
+
+Kit v28 shipped in dcec270 (LEDGER 361), ANSWER 2026-11-01-1848 HOP 2 reached 1/1. CI: dcec270 ci + codeql success; CI-90 closed.
+Next: read the v28 kit-rollout usage row (not written until this run exits), reconcile RESPONDER-STATE (schtasks Disabled vs
+CLAUDE.md ENABLED), then the carried checklist. Do NOT redo: the v28 adoption.
+
 ## PREVIOUS SESSION (2026-11-01, session 90) - inbox triage only, 13 notes, no new work
 
 Commits: LEDGER 360 + hand-off (this wrap); no code change, no outbound note. 13 unread notes all DONE or NO-ACTION;

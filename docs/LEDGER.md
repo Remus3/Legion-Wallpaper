@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+361. DONE **2026-11-01 (session 91 Maint-KitRollout /done: fleet kit v28 adopted dcec270; MAIN ORDER 2026-11-01-0825).**
+   Kit v27 -> v28: MANIFEST.json, fleet_headless.py, fleet_identity.py changed (pre-push scans a push whose remote old tip is
+   absent locally). KIT_VERSION pins moved in tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py. READ BACK at /done: MANIFEST version 28, 24/24 files hash
+   equal plus the manifest (25/25), conformance() == [], git show dcec270 author operator. Suite (adoption run, log
+   logs/kit-rollout-v28-suite.log): 4278 passed 19 skipped parallel, 183 passed 1 skipped serial, gated exit 0; the wrap bind is
+   the graded run. CI READ: dcec270 ci 41369084316 success, codeql 41369084350 success. CI-90 closed: a025932 ci 41364943000
+   success. ANSWER moon_sync_outbox/2026-11-01-1848-from-LW-ANSWER-to-MAIN-batched-1-answers.md, HOP 2, reached 1/1; MAIN's copy
+   re-hashed at /done equal to the outbox (d2b96815...6015). DEVIATIONS: (1) gitlock owner was the claims hook id instead of
+   the ordered kit-rollout.LW, the hook denied that id; the suite gate ran under kit-rollout.LW. (2) send_answers
+   (tools/lw_inbox_responder.py:1038) claims under channel "tick" though this was a rollout. (3) The ANSWER went out before CI on
+   dcec270 was read; CI read success afterwards. (4) LW-InboxResponder reads Disabled (schtasks 18:50, 18:51; last run 18:41:56,
+   result 0; no HALT file) while CLAUDE.md says ENABLED (read back 2026-10-03) and the hand-off said LIVE; not touched, carried as
+   RESPONDER-STATE. KIT-ROLLOUT-READ stays open: this run is that nightly but its usage row is not written until it exits.
+   Pre-flight: ruff clean, drift_guard 0 breaches; no code authored, --lf skipped.
+
 360. DONE **2026-11-01 (session 90 inbox triage: 13 unread notes, all DONE or NO-ACTION, none open; docs-only).**
    Operator asked to process the inbox. lw_facts unread set 13 of 664, read oldest first by mtime. 6 MAIN notes verify_main True:
    FIX 1935 pillow-13 (8dfef45, LEDGER 347; live open Dependabot alerts 0), ORDER 2045 suite speed (491bb85, LEDGER 348), ORDER 1926
@@ -297,17 +313,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    2026-08-22 (R5c blocked); fleet_watch swap tripwire 3 passed (green); no new MAIN/sibling note for
    KIT-PUBLIC-GIT / GATE-FIFO-WATCH / RETIRE-JUNCTION. LW-Cutover-E Disabled is expected (LEDGER 287/1056 note:
    stays disabled until the junction is retired). 0.Originals 2 loose files unchanged (operator's call).
-
-341. DONE **2026-10-21 (MAIN FIX 2026-10-21-1300 SETTINGS-INERT-KEYS worked by the inbox responder; settings file gitignored).**
-   READ BACK: inbox copy sha256 86fb6cc8...b52be = MAIN outbox copy (MATCH, 2067 bytes).
-   Backup: timestamped copy beside it (.claude/settings.local.json.bak-20261021-130243, byte-equal
-   to the pre-edit file; new .gitignore pattern .claude/settings.local.json.bak-*). Removed from
-   .claude/settings.local.json top level: dangerouslySkipPermissions, bypassPermissions, defaultMode;
-   under permissions: skipDangerousModePermissionPrompt, autoUpdates, dangerouslySkipPermissions,
-   bypassPermissions. json.loads read-back: permissions.defaultMode = bypassPermissions, top-level
-   skipDangerousModePermissionPrompt + autoUpdates still true, listed keys absent, ASCII, no CR.
-   .claude/settings.json: grep for the seven keys found none (unchanged). install_git_hooks --check 0.
-   CORRECTION (session 84): the responder child timed out after 1800s BEFORE sending the ANSWER (runs.jsonl
-   2026-10-21T18:31:59Z); session 84 re-read the file and sent ANSWER
-   2026-10-23-1945-from-LW-ANSWER-to-MAIN-1300-SETTINGS-INERT-KEYS-removed-TERMINAL (HOP: 2), reached 1/1 re-hashed.
 
