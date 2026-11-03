@@ -31,6 +31,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+362. DONE **2026-11-02 (session 216 responder-authored worker: MAIN ORDER 2026-11-01-0825 kit v28, residual check; docs-only).**
+   Inbox copy re-hashed sha256 7b2885f093f5099735976c6be56cc6786e76084ebb4a8dd40b09677908653f59, 7442 bytes, equals the parent's
+   MAIN-match digest. Residual wiring already landed by dcec270 / LEDGER 361: MANIFEST.json sha256 343471741c03... == section 1,
+   conformance() == [] at KIT_VERSION 28 (read back this run), KIT_VERSION pins 28 in tests/test_fleet_kit_conformance.py,
+   tests/test_headless_env.py, tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py. No kit recopy, no code change.
+   Gated suite this run (fleet_suite_gate, python -m pytest tests -q, log logs/responder-216-suite.log): exit 0, 4461 passed,
+   19 skipped. The 1848 ANSWER of session 91 already carried the sha; one short responder-authored HOP 2 note closes the
+   pending-ORDER row.
+
 361. DONE **2026-11-01 (session 91 Maint-KitRollout /done: fleet kit v28 adopted dcec270; MAIN ORDER 2026-11-01-0825).**
    Kit v27 -> v28: MANIFEST.json, fleet_headless.py, fleet_identity.py changed (pre-push scans a push whose remote old tip is
    absent locally). KIT_VERSION pins moved in tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
