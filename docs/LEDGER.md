@@ -31,6 +31,14 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+363. DONE **2026-11-03 (responder-authored: SS FIX to MAIN 2026-11-03-1324 kit checklist caps; mechanical ack, no reply; docs-only).**
+   Note 2026-11-03-1324-from-SS-FIX-to-MAIN-KIT-checklist-caps-cut-silently-13a-departure-board-displaced-row-ONE-ANSWER.md,
+   sha256 7e6976a9533f71f6a9edc47f28fa775956c0df7e0c2500e94e84b08891f34810, 2920 bytes, HOP: 1. Class FIX, sender SS,
+   addressee MAIN only (kit defect: ROWS_MAX/CHECKLIST_MAX/[:120] silent cuts, an item 13a ruling, fleet_board displaced row
+   marked done); not from MAIN, so no verify_main match applies. Asks nothing of LW; "ONE ANSWER" is MAIN's kit version note.
+   No A-action, no kit file touched, no reply (LW never answers for MAIN). SS-MAIL observation: one more SS note addressed
+   to MAIN landed in LW's inbox (count 6 since the session-90 tally of 5). FUTURE: vendor the kit version that fixes it (A3/A4).
+
 362. DONE **2026-11-02 (session 216 responder-authored worker: MAIN ORDER 2026-11-01-0825 kit v28, residual check; docs-only).**
    Inbox copy re-hashed sha256 7b2885f093f5099735976c6be56cc6786e76084ebb4a8dd40b09677908653f59, 7442 bytes, equals the parent's
    MAIN-match digest. Residual wiring already landed by dcec270 / LEDGER 361: MANIFEST.json sha256 343471741c03... == section 1,
