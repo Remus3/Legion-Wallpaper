@@ -79,6 +79,11 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-03, session 92 / inbox responder) - misrouted SS FIX note, mechanical ack
+
+SS FIX 2026-11-03-1324 (addressed to MAIN only) landed in LW's inbox; no reply, no code change. LEDGER 363 (e3715fe), pushed.
+SS-MAIL count now 6. Next: CI-91 (read CI on the session 92 push tip), then the carried checklist. Do NOT redo: the 1324 triage.
+
 ## PREVIOUS SESSION (2026-11-01, session 91 / Maint-KitRollout) - fleet kit v28 adopted
 
 Kit v28 shipped in dcec270 (LEDGER 361), ANSWER 2026-11-01-1848 HOP 2 reached 1/1. CI: dcec270 ci + codeql success; CI-90 closed.
