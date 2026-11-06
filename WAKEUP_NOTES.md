@@ -79,6 +79,17 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-05, session 93) - intake + first pass + rotation, PATH fix, Dependabot PR 7
+
+Operator ask done in 540da5b (LEDGER 364): intake 17/19 (2 exact dups refused, left in 0.Originals); first pass 17/17 G1
+pass, 148 now at _firstneedauth (none approved); 10 held in 1.First Pass Scratch (7 aspect-crop, 3 lap_ratio);
+~/Pictures rotation 555 -> 701 (146 `<slug>_firstneedauth.png` copies). gallery-dl config.json missing.
+93189fe pytest 9.2.0 + ruff 0.17.3 (Dependabot PR 7 path B, PR read back CLOSED). b7ce5df (LEDGER 365): child PATH
+sanitizer (Python Manager App Paths root cause), launch_loop Start-Direct, misaddressed-note SKIP. CI-91 green
+(41704024983). Kit v28 rollout row read (1020.3 s). Responder Enabled (MAIN quiesce/restore explained the Disabled read).
+Kit seen ledger baselined (571 SKIP). INFORMATION 2026-11-05-2104 to MAIN reached 1/1. LEDGER 366.
+Next: CI-92, then operator approval of the 148 needauth items. Do NOT redo: the 7 items closed in LEDGER 366.
+
 ## PREVIOUS SESSION (2026-11-03, session 92 / inbox responder) - misrouted SS FIX note, mechanical ack
 
 SS FIX 2026-11-03-1324 (addressed to MAIN only) landed in LW's inbox; no reply, no code change. LEDGER 363 (e3715fe), pushed.

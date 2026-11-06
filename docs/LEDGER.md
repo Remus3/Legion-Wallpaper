@@ -31,6 +31,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+366. DONE **2026-11-05 (session 93 wrap: DEPENDABOT-PR7, CI-91, KIT-ROLLOUT-READ, RESPONDER-STATE, KIT-SCAN-STALE closed; docs-only).**
+   DEPENDABOT-PR7: 93189fe re-applies pytest 9.2.0 + ruff 0.17.3 as an operator commit (path B); PR 7 read back CLOSED;
+   suite 4461 passed 20 skipped. CI-91: run 41704024983 on c728dc9 read success. KIT-ROLLOUT-READ: headless_usage.jsonl
+   line 64 is the `kit-rollout v28` row, 1020.3 s / 2.716 USD (v27 1647.4 s / 4.205 USD) - LW-3 done-when met.
+   RESPONDER-STATE: LW-InboxResponder read Enabled/Running every 5 min, no HALT file; the session-91 Disabled read was
+   MAIN's 2026-11-01 quiesce, re-enabled by MAIN Restore-Quiesce 2026-11-02 22:07:49 - CLAUDE.md ENABLED stands.
+   KIT-SCAN-STALE: 571 pre-ledger notes baselined as SKIP via fleet_inbox mark_seen (left 0, pending 0); the stray SS
+   FIX-to-MAIN pending row closed via mark_work_done. PY-ON-PATH + SS-MAIL: LEDGER 365 (b7ce5df). Inbox: 3 unread read,
+   none needs LW action (v28 closed in LEDGER 361/362; SS 1324 to MAIN, LEDGER 363; bundle 25 files byte-match
+   ops/fleet_kit); lw_facts --mark-inbox-seen run at /done (667 marked). OUTBOUND: INFORMATION
+   2026-11-05-2104-from-LW-INFORMATION-to-MAIN-classify-addressee-child-env-PATH-SS-deliver-fanout.md (sha256 485dd5c0...)
+   reached 1/1; LW has no SS carrier, so the SS deliver fan-out item is relayed via MAIN. Unchanged: GATE-FIFO-WATCH (no
+   reply), RETIRE-JUNCTION (3/6), WATCH-SWAP tripwire green. /done pre-flight: ruff clean, drift_guard 0 breaches,
+   pytest --lf via fleet_suite_gate 4494 passed 19 skipped exit 0.
+
 365. DONE **2026-11-05 (PY-ON-PATH child PATH sanitizer + launch_loop direct launch; SS-MAIL misaddressed-note skip).**
    PY-ON-PATH ROOT CAUSE (investigation this session): Python Manager registers App Paths python.exe /
    pythonw.exe / py.exe (HKCU+HKLM) with Path = its WindowsApps PythonSoftwareFoundation.PythonManager_* dir;
@@ -308,77 +323,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    `--require-hashes` from requirements-cv.txt (cv2 5.0.0, numpy 2.5.4, scipy 1.18.1, skimage 0.26.0,
    Pillow 13.0.0): exit 0, 18 passed. CLAUDE.md Session gains the MAIN-ordered rule: read the previous
    push's CI verdict before the next push.
-
-346. DONE **2026-10-25 (responder re-verify of MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23; no residual work).**
-   Inbox copy re-hashed: sha256 e29369dc8aeee59db49c1481a5cfbe491268a2b6a66e0ca7c09221253da638ee, 13931 bytes
-   (== MAIN outbox copy). READ BACK at HEAD 121eb25: MANIFEST.json sha256 f5d82861...ba527c == section 1;
-   no v20/v22 pins left (KIT_VERSION 23 in tests and tools/lw_promise_probes.py); done.md carries the local
-   render and the reap step; `fleet_done.py reap` dry-run 0 removable, 0 kept, 0 listed. Gated suite
-   (fleet_suite_gate, python -m pytest tests -q): exit 0, 4381 passed, 19 skipped. The one ANSWER (HOP 2,
-   TERMINAL) was already delivered 2026-10-25 2135 (moon_sync_outbox); no second note written (never answer
-   twice).
-
-345. DONE **2026-10-25 (Maint-KitRollout: fleet kit v23 adopted, cumulative v21+v22+v23; status board LOCAL ONLY).**
-   MAIN ORDER 2026-10-25-1926 FLEET-KIT-v23 (HOP 1): verify_main True (MAIN committed outbox copy); bundle
-   verified at KIT-COMMIT 03d1c08 (lw_inbox_responder.bundle_verified True). The working tree already held the
-   v23 bytes from an earlier half-done rollout (all 24 files == bundle sha256, nothing re-copied). READ BACK:
-   23/23 kit files + MANIFEST.json (f5d82861...) match section 1; conformance() == []; KIT_VERSION 23.
-   Board push sites removed (v23 item 18): .claude/commands/done.md section 9 (Artifact / ArtifactData
-   push -> `fleet_board.py render --final --session <n>`), tools/lw_checklist.py HOOK_RULE (`calls` -> `render`).
-   ops/status_board.json left in place (only "code" is read); claude.ai board artifact NOT deleted (operator's
-   call). v22 reap step added to done.md section 6; reap dry-run: 0 removable, 0 kept, 0 listed. Section 4
-   tests: none of the listed board / route-bare / ls-remote shapes in tests/. Adoption fixes: KIT_VERSION pins
-   20 -> 23 (tests/test_headless_env.py, tests/test_fleet_kit_conformance.py, tests/test_promise_probe_fleet_kit.py,
-   tools/lw_promise_probes.py); tests/test_no_console_flash.py asserts the CREATE_NO_WINDOW bit (v21 ORs
-   CREATE_SUSPENDED in); tests/test_no_absolute_machine_paths.py allowlists ops/fleet_kit/ (vendored, never
-   edited; v22 SIDECAR_DEFAULT is a drive path in a PUBLIC repo - reported to MAIN). Gated suite
-   (fleet_suite_gate, tools/lw_suite.py): 4199 passed 19 skipped + serial 182 passed 1 skipped; drift_guard 0
-   breaches; ruff clean.
-
-344. DONE **2026-10-25 (session 85: wallpaper-repeat report investigated, no bug found; status/reshuffle ~ fix c32c678).**
-   Operator reported the desktop wallpaper switcher repeating a small pool. READ BACK: LW-Wallpaper task runs
-   tools/lw_wallpaper_rotate.py tick every 3 min over the persisted shuffle deck ops/runtime/wallpaper_deck.json;
-   555 unique images in ~/Pictures, cycle 116. No repeat bug found. Operator then named ref_181f as repeated ~5
-   images earlier: it was set once this cycle at 21:13:58Z (deck pos 193; cycle began 11:34:57Z); Windows
-   BackgroundHistoryPath0-4 match deck 193-197; no other wallpaper setter; no duplicate files in Pictures. Likely
-   explanation: the Settings recent-wallpaper strip (last 5) or look-alike images (Ahri at deck pos 187/191). NOT
-   proven: the run log records no filename. Shipped c32c678: `status` / `reshuffle` now expand ~ via a shared
-   _source_dir() (tick already did); 75 tests passed. Progress wallpaper-shuffle.json done.
-   OPEN: WALLPAPER-PICKLOG (promised to the operator, not yet dispatched) - log each tick's chosen filename to the
-   run log so a reported repeat can be proven or disproven; then ask the operator for the next repeat name + time.
-   CI-82 read: session 84 wrap push ci 40046816812 success (200368d); 90ba4b3 push ci 40131266917 success.
-   Hand-off fix: checklist IDs are capped at 16 chars (tools/lw_checklist.py:41, fleet_checklist._ID), so
-   WALLPAPER-PICKLOG (17) and the carried REPO-REVIEW-DRIVER (18) were silently dropped by the SessionStart
-   printer; renamed WP-PICKLOG / REVIEW-DRIVER (long name kept in the task text); printer read back 11 tasks + /done.
-   CI fix: ci 40236189169 (push ba1197a) check FAILED 2 tests - c32c678's tests spelled source_dir `%VAR%`, which
-   posixpath.expandvars ignores on the Linux runner (Windows-only bind passed). Tests now use `${VAR}` (both
-   ntpath and posixpath expand it); 43 passed locally; production code unchanged.
-
-343. DONE **2026-10-24 (SS FIX 2026-10-24-1525 to MAIN-KIT measured in LW by the inbox responder, run 195; docs-only).**
-   READ BACK: SS note (not MAIN, no MAIN authority claimed; no verify_main check). A1: fleet_test_guard.py:64
-   WATCH holds ops/loop/control; IGNORE (:66-70, 11 globs) matches 0 of 2 board files (board/status.json,
-   board/state.json) under its own fnmatchcase rule (:86); fleet_board.py:51/:284/:285 writes them; LW
-   tests/conftest.py:79-81 extra_ignore holds only headless_budget.json*; 0 LW tests reference fleet_board, so
-   the exposure is an interactive board push overlapping a suite (same as SS). No kit file or conftest edited.
-   A2: fleet_suite_gate run pytest tests -q exit 0, 4378 passed, 19 skipped, 0 failed (305.55s).
-   A5: ANSWER 2026-10-24-1545-from-LW-ANSWER-to-MAIN-KIT-SS-1525-board-files-unignored-in-LW-too-TERMINAL
-   (HOP: 2), MAIN inbox copy re-hashed equal (sha256 249c382b77e3..., 2380 bytes): reached 1/1; OutboundCap 1/12.
-   SS 2026-10-24-1243 INFORMATION TERMINAL (seeded board urls "artifact not found"): read, no reply.
-   FUTURE: when a kit version adds the two paths to IGNORE, vendor it (A3/A4); no LW-local workaround meanwhile.
-
-342. DONE **2026-10-23 (session 84: CI-81 green, MAIN 1300 ANSWER sent, 0730 INFORMATION acked, LW status board re-created; docs-only).**
-   READ BACK: CI-81 - ci 39211691501 (push, 9fad27d = origin main tip) success; scheduled ci 39958975756 success.
-   Inbox: 2 unread, both verify_main True. MAIN 2026-10-19-0730 SS-QUIET-BENCH INFORMATION TERMINAL - mechanical
-   ack, this line, no reply. MAIN 2026-10-21-1300 FIX - work already done by the responder child (LEDGER 341;
-   the child timed out at 1800s before commit + ANSWER); session 84 re-read .claude/settings.local.json (7 keys
-   absent, permissions.defaultMode bypassPermissions, ASCII, no CR; settings.json has env + hooks only), committed
-   the leftovers f874787, sent ANSWER 2026-10-23-1945 (HOP: 2, TERMINAL), destination copy re-hashed: reached 1/1;
-   OutboundCap recorded. lw_facts --mark-inbox-seen: 637 seen.
-   BOARD-URL: Artifact list showed no LW board (old url gone); re-created from the Dashboard type as
-   https://claude.ai/artifact/4PeonWKZxgrX92CheHAx4D (dash/meta, datasets/board -> status.json blob,
-   files/index.html from fleet_board.py page), ops/status_board.json url + dataset_version 1.
-   Read-only watches: R4 tally refused (operator has not finished, no votes.json); hand captures newest
-   2026-08-22 (R5c blocked); fleet_watch swap tripwire 3 passed (green); no new MAIN/sibling note for
-   KIT-PUBLIC-GIT / GATE-FIFO-WATCH / RETIRE-JUNCTION. LW-Cutover-E Disabled is expected (LEDGER 287/1056 note:
-   stays disabled until the junction is retired). 0.Originals 2 loose files unchanged (operator's call).
 

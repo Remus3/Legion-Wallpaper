@@ -1,76 +1,56 @@
 NEXT SESSION
 ------------
-SESSION: 93
-Task: CI-91 first, then every remaining item in order.
+SESSION: 94
+Task: CI-92 first, then FIRSTPASS-APPROVE (operator) and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
   serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v28 (dcec270, LEDGER 361;
-  v27 a5c05fb, LEDGER 357; v26 12fe2f6, LEDGER 354; v25 00c72f7, LEDGER 353); v18+ MAIN notes are verified
-  at KIT-COMMIT by bundle_verified() (LEDGER 328).
-  Commit/push via fleet_gitlock.py run --owner <session_id>.<agent_id>, whole suites via
-  fleet_suite_gate.py (machine FLEET_SUITE_SLOTS=1 is intentional, LEDGER 322: a gate
-  waits 20-30 min - budget for it; --lf over tests/ counts as a whole suite). Full suite
-  is tools/lw_suite.py (xdist parallel pass + -n0 serial pass, RRF-2.1). The project slug
-  resolves via lw_paths.project_slug() (LEDGER 325). SUBAGENT-FIRST ARMED (deny, LEDGER
-  304). Inbox responder: schtasks read Disabled at session 91 (last run 18:41:56, result 0), see
-  RESPONDER-STATE; re-read it - if running, children COMMIT in this tree, so check its
-  progress file before editing shared files. Kill: HALT file or delete the proxy user
+  v27 a5c05fb, LEDGER 357); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified()
+  (LEDGER 328). Commit/push via fleet_gitlock.py run --owner <session_id>.<agent_id>, whole
+  suites via fleet_suite_gate.py (a gate may queue 20-30 min - budget for it; --lf over
+  tests/ counts as a whole suite). Full suite is tools/lw_suite.py (xdist parallel pass +
+  -n0 serial pass, RRF-2.1). The project slug resolves via lw_paths.project_slug() (LEDGER
+  325). SUBAGENT-FIRST ARMED (deny, LEDGER 304). Inbox responder: Enabled/Running every 5
+  min at session 93 (LEDGER 366); its children COMMIT in this tree, so check its progress
+  file before editing shared files. Headless child PATH is sanitized by
+  lw_headless_env.sane_path (b7ce5df, LEDGER 365). Kill: HALT file or delete the proxy user
   variable. MAIN notes carry operator authority after a sha256 check against MAIN's
   outbox. Never put a 64-hex digest here.
-Acceptance: CI-91 read; every other checklist item acted on or carried with a reason.
+Acceptance: CI-92 read; every other checklist item acted on or carried with a reason.
 CHECKLIST:
-  - CI-91: Read CI on the tip of the session 92 push (the /done commit after e3715fe, which carries LEDGER 363) with gh run list --branch main; e3715fe ci 41703525426 read in_progress at session 92 /done; state pending: this file is graded before the push, so no run id exists for the /done commit when it is written and a later commit would void the gate receipt
-  - KIT-ROLLOUT-READ: Read the `kit-rollout v28` row in ops/loop/control/headless_usage.jsonl (LW-3 done-when, MAIN 1223 item 3): session 91 was that nightly, its row was not written at its /done (newest row 15:36 `drive lw order-1223 s1`); v27 was 1647.4 s, 683 s gate wait + 179 s second suite in a nested /done
-  - RESPONDER-STATE: Reconcile LW-InboxResponder: schtasks read Disabled at session 91 (last run 18:41:56, result 0, no HALT file) but read Running at session 92 (run 2026-11-03 13:31:56, the 1324 tick); CLAUDE.md says ENABLED (read back 2026-10-03); verify live first, establish what toggled it, then fix whichever is wrong
+  - CI-92: Read CI on the tip of the session 93 push (the /done commit after b7ce5df, which carries LEDGER 366) with gh run list --branch main; state pending: this file is graded before the push, so no run id exists for the /done commit when it is written
+  - FIRSTPASS-APPROVE: Operator approves/rejects the 148 _firstneedauth items (lw_pipeline approve/reject); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures so rotation keeps one per slug
+  - FIRSTPASS-HOLDS: Decide the 7 aspect holds (alphacoders 1109171, 1125535, 663779, 706844 + 3 236px Pinterest thumbs; --crop-overrides or drop) and the 3 lap_ratio fails (1000040081 375w-2x, alphacoders 420408, lolwallpapers 13182; need better source)
+  - ORIGINALS-DUPS: Recycle-Bin or keep the 2 dup files in images/0.Originals (lux-coven dms9tlg-pre, mel-coven dmv2qac-pre)
+  - GALLERYDL-CONFIG: Restore %APPDATA%\gallery-dl\config.json for DeviantArt recovery (register as operator ask via tools/lw_ops_tasks.py request if it needs an OAuth/credential)
+  - MAIN-NOTE-2104: Read MAIN's response to LW INFORMATION 2026-11-05-2104 (classify addressee, child_env PATH, SS deliver fan-out relay); if no action by 2026-11-08, re-send the kit-defect parts as a FIX (INFORMATION is mechanically acked)
   - FLEET9-READ: On or after 2026-11-08 read 7 days of gated runs for live-state or timing failures (FLEET-9 done-when, MAIN 1223 item 6; failures = fleet_test_guard hits and budget() misses)
-  - PY-ON-PATH: Establish why bare python in a headless child resolves to a different 3.14 install with no pytest (Python Manager package dir ahead of Python314, in neither registry PATH; cause not established), and whether hooks naming pythonw run another interpreter there; test stub rule narrowed cc5ad1a, LEDGER 359
   - KIT-IGNORE-GAP: Drop the local extra_ignore for ops/loop/control/inbox_pending_orders.json (tests/conftest.py, 90917b6) when the kit IGNORE gains it; reported to MAIN in the 1223 ANSWER, LEDGER 359; do not edit the kit
-  - DEPENDABOT-PR7: Close open Dependabot PR 7 (pytest 9.1.1 -> 9.2.0 plus a ruff bump, opened 2026-11-01T22:38:50Z; read OPEN at session 90) with a one-line reason and re-apply the bump as an operator commit via fleet_gitlock (path B per CLAUDE.md; open alerts 0, not urgent; about 30 min with gate)
-  - KIT-SCAN-STALE: Decide how to baseline the kit seen ledger: fleet_inbox.scan on LW reads 571 unseen, 25 WORK, all pre-ledger notes; no LW code calls scan or session_start today, but a future caller would treat those 25 as fresh orders
-  - SS-MAIL: Establish why SS notes addressed to MAIN land in LW's inbox (6 at session 92: FIX 2026-11-03-1324, LEDGER 363; costs one triage line each)
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
-  - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
-  - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new since 2026-10-09-2155, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
+  - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply at session 93; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close
+  - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new at session 93, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287)
   - R4: Tally the R4 blind A/B once the operator has voted (operator task vote.r4-ab; lw_ab_r4.py tally; 0/19 at session 77); PARK DATE 2026-11-14 (MAIN W44 ORDER 2026-10-31-2215): if the tally is still 0 on or after 2026-11-14, append a LEDGER park line naming reopen-on-vote
   - READBACK-2237: Confirm the acct2 status line shows and no [Legion] line (operator task visual.readback-2237-statusline; on the operator's OK write ops/runtime/readback-2237.ok; feedback-line half PASSED session 68, LEDGER 289)
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22)
-  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 77)
+  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 93)
   - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292)
 Carried forward:
-  - Session 92 (inbox responder) /done: SS FIX 2026-11-03-1324 (to MAIN only, misrouted) mechanical ack, no reply, no code
-    change, LEDGER 363 (e3715fe, pushed a54b3b4..e3715fe). Previous push read first: a54b3b4 ci 41572411500 success.
-    Worktree reap: 0 removed, 0 kept, 0 listed (base main). Newest session jsonl 0.9 MB (< 10 MB). No restart_trigger.txt
-    on disk. The /done agent started no background work. CI for the /done push: pending, read gh run list at next session.
-  - Session 91 (Maint-KitRollout) /done: FLEET-KIT v28 adopted dcec270 (LEDGER 361), ANSWER 2026-11-01-1848 HOP 2 reached 1/1,
-    MAIN's copy re-hashed equal. CI-90 closed: a025932 ci 41364943000 success. dcec270 ci 41369084316 + codeql 41369084350 success.
-    Previous push read first. Worktree reap: 0 removed, 0 kept, 0 listed (base main). Session jsonl 0.9 MB (< 10 MB). No
-    restart_trigger.txt on disk. The /done agent started no background work; inbox not marked seen. Deviations in LEDGER 361.
-  - Session 90 /done: inbox triage only, LEDGER 360. INBOX-MARK dropped: 13 notes DONE or NO-ACTION, lw_facts read back 0 unread of 664.
-    Why the counts looked inconsistent: lw_facts _inbox_lines sorts by display name and prints the last 10 (tools/lw_facts.py:893-894),
-    and UserPromptSubmit prints only what the session was not yet shown, so the two hook lists are disjoint parts of the same 13.
-    Finished orders stay unread until an explicit lw_facts mark, because the responder keeps its own seen store.
-    Previous push read first: 180e340 ci 41351984310 success. Worktree reap: 0 removed, 0 kept, 0 listed (base main). Session jsonl
-    0.7 MB (< 10 MB). No restart_trigger.txt on disk. The /done agent started no background work. Board render + marker follow the graded commit.
-  - Session 89 (MAIN drive-lw, headless) paperwork, not a full /done ritual: MAIN ORDER 2026-11-01-1223 items 1-6
-    closed (LEDGER 359). Whole suite e7421cb exit 0 (4278+183 passed, 19+1 skipped). ORDER row closed by mark_work_done
-    directly, pending list read empty. CI-85 read: 395770f ci 41297519489 success. LW1-READ: size read in LEDGER 359.
-    fleet_done.py mark and board render not run: done.md names no driver run; board is not rendered headless.
-  - Session 88 (Maint-KitRollout) /done: FLEET-KIT v27 adopted a5c05fb (LEDGER 357), pushed with d903c51;
-    ANSWER 2026-11-01-0407 TERMINAL reached 1/1; only the v27 note + bundle marked seen. CI-84 closed (a5c05fb
-    ci 41295918326 + codeql 41295918373 success). RESPONDER-DUP-V27 closed: responder child (04:01) ended rc 0
-    04:07:53, one 2347 ANSWER in moon_sync_outbox, no commit after a5c05fb (LEDGER 358). Worktree reap: 0 removed,
-    0 kept, 0 listed (base main). Session jsonl < 10 MB. No background agents left. Board: not rendered: headless.
-  - Session 87 (responder 209) /done: MAIN ORDER 2026-10-31-2200 FLEET-KIT v26 adopted 12fe2f6 (LEDGER 354);
-    MAIN ORDER 2026-10-31-2215 W44 + UI/UX batch shipped 9308fae (LEDGER 355): README counts de-hand-typed + hero
-    docs/assets/social-preview.png, WP-PICKLOG (live pick line read back 22:28:58 in logs/2026-10-31.log), R4 park
-    date 2026-11-14, LW-IOPAINT-RISK in cleaning-pass.md (iopaint==1.6.0), tools/lw_qa_slider.py + 8 tests.
-    ANSWER 2026-10-31-2246 TERMINAL reached 1/1. CI-83 closed (9308fae ci 41270362926 + codeql 41270363046 success).
-    Responder suite read 4406 passed / 19 skipped, exit code lost to a shell timeout; the wrap done_gate bind is
-    the graded run. LEDGER 356. Worktree reap: 0 removed, 0 kept, 0 listed (base main). inbox-responder progress
-    read running (N1, pct 0, updated 22:22) while responder-run read done 22:47 - not touched; if still stale at
-    next session start, investigate it as a dead progress file. Session jsonl < 10 MB. No background agents left.
+  - Session 93 /done: operator ask intake + first pass + rotation (540da5b, LEDGER 364); 93189fe Dependabot PR 7 path B;
+    b7ce5df PY-ON-PATH + SS-MAIL (LEDGER 365); wrap LEDGER 366. Pre-flight: ruff clean, drift_guard 0 breaches, --lf via
+    suite gate 4494 passed 19 skipped. Inbox marked seen (667). Worktree reap: 0 removed, 0 kept, 0 listed (base main).
+    Newest session jsonl 1.1 MB (< 10 MB). No restart_trigger.txt on disk. The /done agent started no background work.
+    Memory dir unchanged since 2026-10-05 (index clean). CI for the /done push: pending, read gh run list at next session.
+  - Session 92 (inbox responder) /done: SS FIX 2026-11-03-1324 mechanical ack, LEDGER 363 (e3715fe); CI-91 closed at
+    session 93 (c728dc9 ci 41704024983 success).
+  - Session 91 (Maint-KitRollout) /done: FLEET-KIT v28 adopted dcec270 (LEDGER 361), ANSWER 2026-11-01-1848 HOP 2 reached 1/1.
+  - Session 90 /done: inbox triage only, LEDGER 360. lw_facts _inbox_lines sorts by display name and prints the last 10
+    (tools/lw_facts.py:893-894); UserPromptSubmit prints only what the session was not yet shown. Finished orders stay
+    unread until an explicit lw_facts mark, because the responder keeps its own seen store.
+  - Session 89 (MAIN drive-lw, headless): MAIN ORDER 2026-11-01-1223 items 1-6 closed (LEDGER 359).
+  - Session 88 (Maint-KitRollout) /done: FLEET-KIT v27 adopted a5c05fb (LEDGER 357); RESPONDER-DUP-V27 closed (LEDGER 358).
+  - Session 87 (responder 209) /done: kit v26 12fe2f6 (LEDGER 354); MAIN 2215 W44 + UI/UX batch 9308fae (LEDGER 355).
   - Operator reported ref_181f repeat 2026-10-25 ~21:13Z; unconfirmed; PICKLOG shipped (9308fae) - ask operator for next repeat name+time and grep `pick ` in logs/.
   - Session 79 /done: INSPECT-A6B2 RETIRED (local tag archive/mig-1-v6-wip = b29005e, not pushed - public repo;
     branch deleted; LEDGER 327, c5f7068; reverse: git branch worktree-agent-a6b282fa560024205
@@ -123,10 +103,9 @@ Carried forward:
     branch d65067f, local only.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-  - PIPELINE: 6 slugs (akali/janna/mel coven, diana x2, miss-fortune) at
-    _firstneedauth awaiting OPERATOR approval (never self-approve). Check banding on the
-    five -pre slugs (+0.008..+0.014) via cambi_delta. Miss Fortune DA fetch 403
-    (manual_queue.csv). 0.Originals has 2 loose files (katarina -pre, lux coven -pre dup).
+  - PIPELINE: 148 slugs at _firstneedauth awaiting OPERATOR approval (never self-approve; see FIRSTPASS-APPROVE),
+    incl. the older 6 (akali/janna/mel coven, diana x2, miss-fortune). Check banding on the five -pre slugs
+    (+0.008..+0.014) via cambi_delta. Miss Fortune DA fetch 403 (manual_queue.csv). 0.Originals: see ORIGINALS-DUPS.
   - SYNC INBOX: drained 220 -> 0 session 68 (mark clears only shown notes). Keep
     reading by mtime, not by filename stamp.
   - CONCURRENCY: before editing, check for live `claude -p` processes, the responder's
@@ -159,7 +138,11 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 92 - the SS 1324 triage (LEDGER 363) - read back via git log on main (e3715fe) and origin/main.
+Do NOT redo: session 93 - DEPENDABOT-PR7 (93189fe, PR 7 read back CLOSED), PY-ON-PATH + SS-MAIL (b7ce5df, LEDGER 365),
+  CI-91 (41704024983 success), KIT-ROLLOUT-READ (usage row line 64), RESPONDER-STATE (schtasks Enabled/Running),
+  KIT-SCAN-STALE (571 baselined, pending 0), intake/first pass/rotation (540da5b, LEDGER 364) - read back via git log on
+  main, gh pr view, gh run list, schtasks /Query and fleet_inbox pending (LEDGER 366).
+  session 92 - the SS 1324 triage (LEDGER 363) - read back via git log on main (e3715fe) and origin/main.
   session 91 - kit v28 adoption (dcec270, LEDGER 361), its ANSWER 1848 (1/1) and CI-90 - read back via MANIFEST
   24/24 + conformance() == [], gh run list (ci + codeql success) and MAIN's inbox copy hash.
   session 90 - the 13-note inbox triage (LEDGER 360) - read back via lw_facts 0 unread of 664.
@@ -193,21 +176,21 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - physical.lux-coven-pre-duplicate-2 physical/lux-coven-pre-duplicate: intake refused this byte-equal duplicate in 0.Originals (carried since 2026-10-03; re-opened 2026-10-08: the C: check false-closed during the junction-off proof 23:31Z, file still present)
       steps: 1) Move images/0.Originals/lux_coven_crimson_enchantment_by_volxinavesper_dms9tlg-pre.jpg to the Recycle Bin (the intaken slug keeps the same bytes)
       open first: File Explorer > <repo>/images/0.Originals
-      last check: not done (6853 tries)
+      last check: not done (7521 tries)
       close: python tools/lw_ops_tasks.py done physical.lux-coven-pre-duplicate-2 (closes only when its check passes)
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (5855 tries)
+      last check: not done (6523 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (5855 tries)
+      last check: not done (6523 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   - decision.d4-tag-archive decision/d4-tag-archive: D4 deletion floor: delete-or-keep the local-only tag archive/mig-1-v6-wip (abandoned MIG-1 v6 WIP b29005e, not reachable from main, never pushed; LEDGER 327)
       steps: 1) Tell the next session 'delete tag' (it runs git tag -d archive/mig-1-v6-wip) or 'keep tag' (it writes ops/runtime/d4-tag-archive-keep.ok)
       open first: Claude Code session > reply 'delete tag' or 'keep tag'
-      last check: not done (4111 tries)
+      last check: not done (4779 tries)
       close: python tools/lw_ops_tasks.py done decision.d4-tag-archive (closes only when its check passes)
   (end operator asks)

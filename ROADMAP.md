@@ -511,9 +511,17 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Now
 
-- **The 17 first-pass submissions await the operator - OPEN, blocked on the
-  operator only.** All 17 sit at `_firstneedauth.png` in
-  `images/1.First Pass Scratch`; first pass never self-approves. Approve with
+- **Session 93 maintenance - DONE 2026-11-05 (93189fe, b7ce5df; LEDGER 365/366).**
+  Dependabot PR 7 re-applied path B (pytest 9.2.0, ruff 0.17.3); headless child PATH
+  sanitizer + launch_loop direct launch (PY-ON-PATH root cause: Python Manager App
+  Paths); misaddressed-note SKIP in the inbox responder (SS-MAIL); kit seen ledger
+  baselined (KIT-SCAN-STALE).
+
+- **148 first-pass submissions await the operator - OPEN, blocked on the
+  operator only (17 added 2026-11-05, LEDGER 364).** All sit at
+  `_firstneedauth.png`; 146 copies are in the ~/Pictures rotation (remove a slug's
+  copy on promotion). 10 held in `images/1.First Pass Scratch`: 7 aspect-crop holds,
+  3 lap_ratio fails (need better source). First pass never self-approves. Approve with
   `python tools/lw_pipeline.py approve <slug>` or reject with `--note`. The 3
   FLAG rows (leona-dm0rd6j 0.0574, miss-fortune 0.0505, sona-dmiu77x 0.0504) are
   all `band_delta` marginally over the 0.05 threshold and carry their report.
