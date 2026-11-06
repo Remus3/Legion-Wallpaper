@@ -31,6 +31,30 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+365. DONE **2026-11-05 (PY-ON-PATH child PATH sanitizer + launch_loop direct launch; SS-MAIL misaddressed-note skip).**
+   PY-ON-PATH ROOT CAUSE (investigation this session): Python Manager registers App Paths python.exe /
+   pythonw.exe / py.exe (HKCU+HKLM) with Path = its WindowsApps PythonSoftwareFoundation.PythonManager_* dir;
+   every ShellExecute launch of a python.exe prepends it to the child PATH, so bare `python` in descendants
+   resolved to pythoncore-3.14-64 without pytest. kit child_env (fleet_headless.py:510) copies os.environ as-is.
+   FIX 1: tools/lw_headless_env.py sane_path (:153) drops every PATH entry containing
+   `\windowsapps\pythonsoftwarefoundation.` (case-insensitive), puts dirname(sys.executable) + its Scripts dir
+   (Windows) first, dedupes, keeps the key spelling; child_env (:178) and spawn (:259, via the _sane_run runner
+   wrapper :185 - kit.spawn builds its env from os.environ with no parent seam) both apply it; os.environ is
+   never mutated. FIX 2: ops/loop/launch_loop.ps1 Start-Direct (:30) = ProcessStartInfo UseShellExecute
+   $false + CreateNoWindow $true, replacing both `Start-Process $py` calls (:57 dry stub, :124 controller).
+   powershell.exe 5.1 ParseFile: 0 errors; smoke launch through Start-Direct: child PATH had no PSF entry.
+   SS-MAIL: SS's responder copies every note to every participant. tools/lw_inbox_responder.py decide (:476)
+   now returns SKIP reason `misaddressed` (why `misaddressed: addressed to <CODES> ...`) when addressees()
+   (:511) - the fleet-code run anchored right after `-from-<SNDR>-[<CLASS-WORDS>-]to-` (:507) - names neither
+   LW nor ALL and is not just the sender (self-correction broadcast); prose `...-owed-to-LL-...` never counts,
+   `-to-ALL-SIX-`/`-to-ALL-SEVEN-` parse as ALL, an unknown code ends the run (fail open). Kit SKIP reasons
+   (self/terminal) still win. Dry scan of the live inbox (read-only): 14 notes would be misaddressed, all
+   addressed to MAIN/RC/LL/RSC, 0 to LW or ALL.
+   TDD: tests/test_headless_env_path.py (6), tests/test_inbox_responder_misaddressed.py (23),
+   tests/test_launch_loop_direct_launch.py (4) - RED first (18 + 2 failed), then green.
+   READ BACK: ruff clean; fleet_suite_gate run lw_suite.py -q exit 0: parallel 4311 passed 19 skipped,
+   serial 183 passed 1 skipped (4494 passed, 20 skipped, 0 failed).
+
 364. DONE **2026-11-05 (operator ask: intake + first pass + wallpaper rotation; docs-only, data outside git).**
    INTAKE: 19 loose files in `images/0.Originals`; `lw_pipeline intake --all --dry-run` then execute: 17 intaken,
    2 refused as hash-equal duplicates of existing slugs (lux-coven-crimson-enchantment dms9tlg-pre,

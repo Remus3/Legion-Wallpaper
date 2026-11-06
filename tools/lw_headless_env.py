@@ -138,10 +138,63 @@ def resolve(url_source=None, connect=None) -> str:
     return url
 
 
+# PY-ON-PATH (2026-11-05): Python Manager's App Paths entries for python.exe /
+# pythonw.exe / py.exe carry a Path value of its WindowsApps package dir, and
+# ShellExecute PREPENDS it to the launched child's PATH - so a bare `python` in
+# every descendant resolved to a pythoncore install without pytest. The kit's
+# child_env copies os.environ as-is; LW sanitizes in this adapter.
+PSF_MARK = "\\windowsapps\\pythonsoftwarefoundation."
+
+
+def _norm(entry: str) -> str:
+    return os.path.normcase(os.path.normpath(entry))
+
+
+def sane_path(env: dict, exe: str | None = None) -> dict:
+    """A COPY of env whose PATH drops every Python Manager WindowsApps entry
+    (case-insensitive) and starts with dirname(exe) - default sys.executable -
+    and, on Windows, its Scripts dir; deduplicated, empty entries dropped. On
+    Windows the existing key's spelling (PATH / Path) is kept."""
+    out = dict(env)
+    key = "PATH"
+    if os.name == "nt":
+        key = next((k for k in out if k.upper() == "PATH"), "PATH")
+        for k in [k for k in out if k.upper() == "PATH" and k != key]:
+            del out[k]
+    pydir = os.path.dirname(exe or sys.executable)
+    head = [pydir, os.path.join(pydir, "Scripts")] if os.name == "nt" else [pydir]
+    seen, kept = set(), []
+    for entry in [*head, *out.get(key, "").split(os.pathsep)]:
+        if not entry or PSF_MARK in entry.lower().replace("/", "\\"):
+            continue
+        n = _norm(entry)
+        if n not in seen:
+            seen.add(n)
+            kept.append(entry)
+    out[key] = os.pathsep.join(kept)
+    return out
+
+
 def child_env(base: dict | None = None, *, bare: bool = False, url_source=None,
               connect=None) -> dict:
-    """The kit's child env (credentials stripped, proxy URL set), a COPY of base."""
-    return kit.child_env(resolve(url_source, connect), bare=bare, parent=base)
+    """The kit's child env (credentials stripped, proxy URL set, PATH through
+    sane_path), a COPY of base."""
+    return sane_path(kit.child_env(resolve(url_source, connect), bare=bare, parent=base))
+
+
+def _sane_run(run):
+    """Wrap kit.spawn's runner so the child's env goes through sane_path.
+    on_start is forwarded only to a runner that takes it (kit._accepts_on_start)."""
+    inner = kit._run if run is None else run
+    takes_start = inner is kit._run or kit._accepts_on_start(inner)
+
+    def runner(argv, **kw):
+        if "env" in kw:
+            kw["env"] = sane_path(kw["env"])
+        if not takes_start:
+            kw.pop("on_start", None)
+        return inner(argv, **kw)
+    return runner
 
 
 def describe(url_source=None, connect=None) -> str:
@@ -203,6 +256,7 @@ def spawn(prompt: str, *, note: str = "", writes_code: bool = False, bare: bool 
     params.setdefault("setting_sources", SETTING_SOURCES)
     if params.get("governor") is not None:
         params.setdefault("governor_root", governor_root())
+    params["run"] = _sane_run(params.get("run"))
     return kit.spawn(FLEET_ROOT, CODE, prompt, note=note, writes_code=writes_code,
                      bare=bare, rules_file=rules_file, timeout=timeout,
                      extra=tuple(extra), floors_in_hooks=True, **params)

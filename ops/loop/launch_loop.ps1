@@ -21,6 +21,22 @@ $stub = "$root\ops\loop\claude_stub.py"
 $env:GEMINI_API_KEY = [Environment]::GetEnvironmentVariable("GEMINI_API_KEY", "User")
 if (-not $Cfg) { $Cfg = if ($Mode -eq "live") { "$root\ops\loop\config.json" } else { "$root\ops\loop\config.dry.json" } }
 
+# PY-ON-PATH (2026-11-05): Start-Process without -NoNewWindow goes through
+# ShellExecute, which applies Python Manager's App Paths entry for python.exe
+# and PREPENDS its WindowsApps package dir to the child's PATH - every
+# descendant's bare `python` then resolved to a pythoncore install without
+# pytest. Start the interpreter directly instead: no App Paths, no console
+# window (pinned by tests/test_launch_loop_direct_launch.py).
+function Start-Direct([string]$exe, [string[]]$argList, [string]$cwd) {
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = $exe
+  $psi.Arguments = ($argList -join ' ')
+  $psi.WorkingDirectory = $cwd
+  $psi.UseShellExecute = $false
+  $psi.CreateNoWindow = $true
+  [void][System.Diagnostics.Process]::Start($psi)
+}
+
 New-Item -ItemType Directory -Force $ctl | Out-Null
 # pre-clean stale sentinels so a prior run's STOP cannot early-kill this one
 "STOP", "gemini.ready", "typed.flag", "claude.done", "cycle.txt" | ForEach-Object {
@@ -38,7 +54,7 @@ if ($Mode -eq "dry") {
   $sa = @("`"$stub`"")
   if ($Regressions) { $sa += "--regressions"; $sa += "1" }
   if ($Hang) { $sa += "--hang" }
-  Start-Process $py -ArgumentList $sa -WorkingDirectory $root
+  Start-Direct $py $sa $root
   Write-Host "dry: claude_stub launched (regress=$Regressions hang=$($Hang.IsPresent))"
 }
 elseif ((Get-Content $Cfg -Raw | ConvertFrom-Json).channel -eq "sdk") {
@@ -105,7 +121,7 @@ public class WinEnum {
   Start-Process $ahk -ArgumentList "`"$bridge`""
   Write-Host "live: AHK bridge -> hwnd $($wins[0].Hwnd) (claude pid $($wins[0].OwnerPid)) title '$title'"
 }
-Start-Process $py -ArgumentList "`"$ctrl`"", "`"$Cfg`"" -WorkingDirectory $root -WindowStyle Hidden
+Start-Direct $py @("`"$ctrl`"", "`"$Cfg`"") $root
 Write-Host "controller launched cfg=$(Split-Path $Cfg -Leaf)"
 Write-Host "control dir: $ctl"
 Write-Host "abort: create $ctl\STOP   |   live log: $ctl\controller.log"

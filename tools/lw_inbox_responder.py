@@ -483,9 +483,45 @@ def decide(path: Path):
         return (fleet_inbox.Decision(fleet_inbox.SKIP, None, None, "bundle", 1),
                 skip_reason(path))
     d = fleet_inbox.classify(path.name, SELF_CODE, inbox_head(path))
-    if d.action != fleet_inbox.SKIP:
-        return d, None
-    return d, (SELF_WHY if d.reason == "self" else TERMINAL_WHY)
+    if d.action == fleet_inbox.SKIP:
+        return d, (SELF_WHY if d.reason == "self" else TERMINAL_WHY)
+    codes = addressees(path.name)
+    if (codes and SELF_CODE not in codes and ALL_CODE not in codes
+            and set(codes) != {d.sender}):
+        return (fleet_inbox.Decision(fleet_inbox.SKIP, d.cls, d.sender, MISADDRESSED, d.hop),
+                f"misaddressed: addressed to {'-'.join(codes)}, not {SELF_CODE} or {ALL_CODE}"
+                f" - a copy of another tree's mail")
+    return d, None
+
+
+# SS-MAIL (2026-11-05): SS's responder copies every note to every participant
+# whatever its addressee, so LW's inbox holds `-from-SS-FIX-to-MAIN-...` notes
+# that the kit's classify() escalates to WORK on the class alone. The addressee
+# is the run of fleet codes right after `-from-<SNDR>-[<CLASS-WORDS>-]to-`,
+# ANCHORED there: prose `...-owed-to-LL-...` in a slug is not an addressee. A
+# code outside FLEET_CODES ends the run (fail open: an unknown tree keeps the
+# note). `-to-ALL-SIX-` / `-to-ALL-SEVEN-` parse as ALL.
+ALL_CODE = "ALL"
+MISADDRESSED = "misaddressed"
+FLEET_CODES = frozenset({"MAIN", "RC", "CS", "LW", "SS", "RSC", "EW", "LL", "RM", ALL_CODE})
+_ADDRESSEE = re.compile(r"(?:^|[-_])(?i:from)-[A-Z]+-(?:[A-Z]+-){0,3}to-((?:[A-Z]+-)*[A-Z]+)"
+                        r"(?=[-_.]|$)")
+
+
+def addressees(name: str) -> tuple[str, ...]:
+    """Fleet codes a note's filename addresses, in order; () when none is named."""
+    m = _ADDRESSEE.search(Path(name).name)
+    if not m:
+        return ()
+    out: list[str] = []
+    for tok in m.group(1).split("-"):
+        if tok not in FLEET_CODES:
+            break
+        if tok not in out:
+            out.append(tok)
+        if tok == ALL_CODE:
+            break
+    return tuple(out)
 
 
 def record_seen(inbox: Path, state_path: Path, notes: list[Note]) -> None:
