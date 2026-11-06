@@ -31,6 +31,33 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+364. DONE **2026-11-05 (operator ask: intake + first pass + wallpaper rotation; docs-only, data outside git).**
+   INTAKE: 19 loose files in `images/0.Originals`; `lw_pipeline intake --all --dry-run` then execute: 17 intaken,
+   2 refused as hash-equal duplicates of existing slugs (lux-coven-crimson-enchantment dms9tlg-pre,
+   mel-coven dmv2qac-pre; left in 0.Originals, deletion is the operator's call). Recovery: campaign run after
+   intake from verbatim backups staged in a scratch dir (memory recipe); Tier 1 resolved all 17 deviations
+   alive, annotated 17, but its fetch reported `not_configured` - `%APPDATA%/gallery-dl/config.json` is ABSENT
+   on this box (the DA client-id config the campaign reads is gone). Fetched directly with the documented
+   quota-free flags (original=false intermediary=true quality=100): 17 of 17 landed, verified on disk by
+   recursive file count; 9 -pre slugs gained pixels (1163-1194w -> 1280w, heimerdinger 1192x670 -> 1600x900),
+   8 fullviews same dims at 4-8x the bytes. Fetch sha256 + dims annotated per manifest (`recovery_fetch`);
+   `data/recovery/matches.json` merged back to 41 records (the campaign overwrites it).
+   FIRST PASS: `lw_first_pass.py --batch` (explicit 17-slug list, dry-run first; never --all-scratch):
+   17 PASS / 0 flag / 0 fail / 0 held, V3 DAT2 upscale-4x, 8 auto-cropped to 16:9 (crop_ok). All at
+   _firstneedauth, NONE approved. FIRST_SCRATCH now 148 needauth + 10 pre-existing EDITING left untouched:
+   7 HELD aspect_crop_heavy (alphacoders 1109171/1125535/663779/706844, 3 pintrest 236px thumbs) need an
+   operator `--crop-overrides` or drop; 3 failed G1 lap_ratio 0.91-0.93 < 1.0 on undersized sources
+   (1000040081 375w-2x, alphacoders 420408, lolwallpapers 13182) - unfixable without a better source.
+   ROTATION: LW-Wallpaper reads files flat under ~/Pictures (`tools/lw_wallpaper_config.json`) and splices new
+   files into the owed tail of the current cycle; no code change. 0 of the 148 needauth slugs had a Pictures
+   entry. pHash+dHash vs the 555 Pictures files: 2 are the same art as an existing `_cleaninitial`
+   (alphacoders 1011889 = djy560k Katarina dp8/dd5; alphacoders 1078487 = thousand-pierced-bear Volibear dp4/dd11),
+   confirmed by eye, NOT delivered; 1 review-band hit (hdqwalls caitlyn vs vayne2, 14/14) is different art,
+   delivered. 146 copied as `<slug>_firstneedauth.png`, sha256 equal 146/146. READ BACK after the next
+   scheduled tick: status present 555 -> 701, deck 701 entries (146 `_firstneedauth`), cycle 125 position
+   547/701, last_shown a newly delivered file. FUTURE: when one of these slugs advances, retire its
+   `_firstneedauth` twin from Pictures (one entry per slug, LEDGER 121); restore the gallery-dl DA config.
+
 363. DONE **2026-11-03 (responder-authored: SS FIX to MAIN 2026-11-03-1324 kit checklist caps; mechanical ack, no reply; docs-only).**
    Note 2026-11-03-1324-from-SS-FIX-to-MAIN-KIT-checklist-caps-cut-silently-13a-departure-board-displaced-row-ONE-ANSWER.md,
    sha256 7e6976a9533f71f6a9edc47f28fa775956c0df7e0c2500e94e84b08891f34810, 2920 bytes, HOP: 1. Class FIX, sender SS,
