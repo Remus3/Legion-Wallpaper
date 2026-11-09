@@ -29,7 +29,10 @@ SEP = os.pathsep
 PYDIR = os.path.join(os.sep, "fake", "Python314")
 EXE = os.path.join(PYDIR, "python.exe")
 SCRIPTS = os.path.join(PYDIR, "Scripts")
-PSF = ("C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.PythonManager_26.0.0_x64__"
+# No drive colon off Windows: there os.pathsep is ":" and "C:\\..." splits into a
+# stray "C" entry (CI nightly red 2026-11-06..08, run 42491770307).
+PSF = (("C:" if os.name == "nt" else "")
+       + "\\Program Files\\WindowsApps\\PythonSoftwareFoundation.PythonManager_26.0.0_x64__"
        "3847v3x7pw1km")
 PSF_LOWER = PSF.lower()
 OTHER = os.path.join(os.sep, "usr", "tools")

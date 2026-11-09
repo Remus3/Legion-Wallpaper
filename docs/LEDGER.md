@@ -31,6 +31,20 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+367. DONE **2026-11-08 (responder: MAIN ORDER 2026-11-08-1200 model-and-effort-fit-the-task).**
+   Inbox copy re-hashed: sha256 bc9731aecac1365118f2a3b704df4fb416c163fe19fbc4dafe5d4ca63df219dd, 2178 bytes;
+   verify_main True (MAIN committed outbox copy). Memory: no prior memory covered model/effort (grep of the
+   memory dir: 0 hits); feedback_model_and_effort_fit_the_task.md written byte-for-byte from the note's
+   File text block (1036 bytes, sha256 286cd894...ffacd) and the ordered MEMORY.md index line appended
+   (operator memory dir, untracked). Applied: the two LW spawns that left effort to a default now set it
+   deliberately - loop executor argv `--effort` from `executor_effort` (default high, code-writing cycle),
+   loop oracle spawn `effort=` from `oracle_effort` (default medium, read-only judgement); both keys added
+   to ops/loop/config.json. Responder and CI-watchdog already pass explicit effort. TDD: 3 new tests failed
+   first, then pass. Gated suite: exit 0, 4497 passed, 19 skipped. No reply note (the ORDER says TERMINAL).
+   CI-RED-PATHSEP: the push run on 35701f3 (42155626178) and nightlies 42245905502 / 42383018434 / 42491770307
+   read failure: tests/test_headless_env_path.py PSF constant carried "C:", which splits on Linux's ":" pathsep
+   into a stray "C" entry. Test-only fix (no drive colon off Windows); that file: 6 passed locally.
+
 366. DONE **2026-11-05 (session 93 wrap: DEPENDABOT-PR7, CI-91, KIT-ROLLOUT-READ, RESPONDER-STATE, KIT-SCAN-STALE closed; docs-only).**
    DEPENDABOT-PR7: 93189fe re-applies pytest 9.2.0 + ruff 0.17.3 as an operator commit (path B); PR 7 read back CLOSED;
    suite 4461 passed 20 skipped. CI-91: run 41704024983 on c728dc9 read success. KIT-ROLLOUT-READ: headless_usage.jsonl

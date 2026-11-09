@@ -276,6 +276,11 @@ def directive_payload(cycle: int, body: str, src: str, clear_each_cycle: bool = 
 
 JOURNAL_ENV = "LW_BRIDGE_JOURNAL"
 
+# Reasoning effort for a loop-executor cycle (MAIN ORDER 2026-11-08, model and
+# effort fit the task): a cycle writes and commits code, so high by default;
+# `executor_effort` in ops/loop/config.json overrides it.
+EXECUTOR_EFFORT = "high"
+
 
 def default_journal_path() -> Path:
     env = os.environ.get(JOURNAL_ENV, "").strip()
@@ -550,6 +555,10 @@ class SdkExecutor:
         model = self.cfg.get("executor_model")
         if model:
             argv += ["--model", str(model)]
+        # MAIN ORDER 2026-11-08 (model and effort fit the task): an explicit
+        # effort on every cycle, never the CLI default. A cycle writes code, so
+        # high unless the config names another.
+        argv += ["--effort", str(self.cfg.get("executor_effort") or EXECUTOR_EFFORT)]
         # OFF BY DEFAULT (operator 2026-07-26). On a Claude Code Max subscription
         # the CLI's total_cost_usd is NOTIONAL API-equivalent pricing, not what
         # the plan is billed - so capping on it throttles real work against a
@@ -580,7 +589,8 @@ class SdkExecutor:
         """The kit's usage line + idle status for this run; never the failure."""
         try:
             he.end_run(started, note=f"loop-executor cycle {cycle}", model=model,
-                       effort="", rc=rc, stdout=out)
+                       effort=str(self.cfg.get("executor_effort") or EXECUTOR_EFFORT),
+                       rc=rc, stdout=out)
         except OSError as exc:
             self.log(f"cycle {cycle}: usage line not written ({type(exc).__name__})")
 

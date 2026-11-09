@@ -126,6 +126,22 @@ def test_claude_oracle_puts_body_and_instruction_on_stdin_with_the_exact_model(m
     assert not any("Output ONLY the directive." in a for a in argv), "never in argv"
 
 
+def test_claude_oracle_sets_effort_deliberately(monkeypatch):
+    """MAIN ORDER 2026-11-08: an explicit effort, configurable, medium by
+    default for a read-only director/auditor call."""
+    seen = {}
+    _seam_spawn(monkeypatch, _kit_seams(seen))
+    monkeypatch.setattr(lc, "CFG", {"oracle_model": "claude-opus-5"})
+    lc.claude_oracle("b", "i")
+    (argv, _kw), = seen["calls"]
+    assert argv[argv.index("--effort") + 1] == "medium"
+    seen.clear()
+    monkeypatch.setattr(lc, "CFG", {"oracle_model": "claude-opus-5", "oracle_effort": "high"})
+    lc.claude_oracle("b", "i")
+    (argv, _kw), = seen["calls"]
+    assert argv[argv.index("--effort") + 1] == "high"
+
+
 # ---- dispatch --------------------------------------------------------------
 
 def test_oracle_routes_to_gemini_when_the_backend_says_so(monkeypatch):

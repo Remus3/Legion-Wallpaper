@@ -894,6 +894,10 @@ def claude_oracle_extra(cfg):
 
 # The kit's `note` for an oracle run: names it in the usage log.
 ORACLE_NOTE = "loop-oracle"
+# Reasoning effort for a director/auditor call (MAIN ORDER 2026-11-08, model
+# and effort fit the task): read-only judgement, medium by default;
+# `oracle_effort` in ops/loop/config.json overrides it.
+ORACLE_EFFORT = "medium"
 
 
 def claude_oracle(prompt_body, instruction):
@@ -920,11 +924,13 @@ def claude_oracle(prompt_body, instruction):
     prompt = f"{prompt_body}\n\n{instruction}"
     timeout = float(CFG.get("oracle_timeout_sec", 900))
     model = CFG.get("oracle_model") or None
+    effort = CFG.get("oracle_effort") or ORACLE_EFFORT
     out = ""
     for tryn in range(1, 4):
         try:
             line = headless_env.spawn(prompt, note=ORACLE_NOTE, kind="build", writes_code=False,
-                                      model=model, stdin=True, return_stderr=True,
+                                      model=model, effort=effort,
+                                      stdin=True, return_stderr=True,
                                       timeout=timeout, extra=claude_oracle_extra(CFG))
         except headless_env.HeadlessRefused as exc:
             log(f"claude oracle: headless spawn refused: {exc} - call fails, no fallback")

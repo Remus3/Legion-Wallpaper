@@ -164,6 +164,24 @@ def test_argv_carries_the_flags_the_contract_depends_on(tmp_path: Path):
     assert set(schema["required"]) == {"sha", "tests_pass", "regressions", "summary"}
 
 
+def test_argv_sets_effort_deliberately_from_config(tmp_path: Path):
+    """MAIN ORDER 2026-11-08 (model and effort fit the task): the executor
+    passes an explicit --effort, never the CLI default."""
+    out = json.dumps({"structured_output": OK_STRUCT})
+    cfg = _cfg(tmp_path, _shim(tmp_path, stdout=out), executor_effort="xhigh")
+    _build(cfg, tmp_path).run(1, "b", "fixed")
+    argv = json.loads((tmp_path / "argv.json").read_text(encoding="utf-8"))
+    assert argv[argv.index("--effort") + 1] == "xhigh"
+
+
+def test_argv_effort_defaults_to_high_for_a_code_writing_cycle(tmp_path: Path):
+    out = json.dumps({"structured_output": OK_STRUCT})
+    cfg = _cfg(tmp_path, _shim(tmp_path, stdout=out))
+    _build(cfg, tmp_path).run(1, "b", "fixed")
+    argv = json.loads((tmp_path / "argv.json").read_text(encoding="utf-8"))
+    assert argv[argv.index("--effort") + 1] == "high"
+
+
 def test_fresh_session_per_cycle_when_clear_each_cycle(tmp_path: Path):
     """clear_each_cycle True reproduces the AHK channel's /clear semantics."""
     out = json.dumps({"session_id": "s1", "structured_output": OK_STRUCT})
