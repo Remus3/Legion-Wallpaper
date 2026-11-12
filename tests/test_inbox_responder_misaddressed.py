@@ -12,6 +12,13 @@ prose `...-owed-to-LL-...` in a slug never counts. The note is SKIPPED when
 that run names neither LW nor ALL, and is not just the sender's own code (a
 `-from-SS-CORRECTION-to-SS-1700-` corrects SS's own earlier note; it is
 broadcast). No addressee at all keeps the note.
+
+KIT v30: fleet_inbox.classify() itself now SKIPs `-from-XX-<CLASS>-to-<CODE>-`
+with reason "addressed to <CODE>" (KIT-LW-PROPOSALS-1105 (a)), whatever its
+class - including a sender addressing itself (`-CORRECTION-to-SS-`), which
+LW's local rule kept as broadcast. The kit rule wins; LW's local skip still
+covers the shapes the kit's parse does not anchor (no class word, several
+codes) and either reason reads as misaddressed.
 """
 from __future__ import annotations
 
@@ -44,6 +51,8 @@ SKIPPED = [
     ("2026-10-18-1230-from-SS-OPERATOR-REQUEST-to-MAIN-hold-SS-tree-writes.md", "MAIN"),
     ("2026-09-21-1330-from-SS-to-MAIN-ACTION-DONE-ruling-recorded.md", "MAIN"),
     ("2026-11-05-0100-from-MAIN-ORDER-to-RC-EW-two-trees-not-lw.md", "RC"),
+    # kit v30: a sender addressing itself after a class word is skipped by the kit.
+    ("2026-09-21-1800-from-SS-CORRECTION-to-SS-1700-an-ordered-script.md", "SS"),
 ]
 
 KEPT = [
@@ -57,8 +66,6 @@ KEPT = [
     # Prose `to-<CODE>` inside a slug is not an addressee.
     "2026-09-20-1502-from-SS-no-objection-to-CS-joining-a-reserved-floor.md",
     "2026-09-07-1013-from-CS-ACTION-whole-channel-read-a-retraction-owed-to-LL-and-more.md",
-    # A sender correcting its own earlier note is broadcast.
-    "2026-09-21-1800-from-SS-CORRECTION-to-SS-1700-an-ordered-script.md",
 ]
 
 
@@ -66,7 +73,7 @@ KEPT = [
 def test_a_note_addressed_to_another_tree_is_skipped(tmp_path, name, dest):
     d, why = responder.decide(_note(tmp_path, name))
     assert d.action == fleet_inbox.SKIP
-    assert d.reason == "misaddressed"
+    assert d.reason in ("misaddressed", f"addressed to {dest}")
     assert why and why.startswith("misaddressed:") and dest in why
 
 

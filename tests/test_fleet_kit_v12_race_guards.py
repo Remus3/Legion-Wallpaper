@@ -84,9 +84,10 @@ def test_conftest_installs_the_test_guard_with_lw_runtime_roots():
 def test_the_guard_ignores_the_pending_marker_a_live_responder_rewrites():
     """FLEET-9 (MAIN 2026-11-01-1223 item 6). A PT5M responder tick that queues or
     closes an ORDER rewrites this file (fleet_inbox.write_pending_marker), so a tick
-    during a whole suite would read as the suite touching live state."""
-    text = (ROOT / "tests" / "conftest.py").read_text(encoding="utf-8")
-    assert '"ops/loop/control/inbox_pending_orders.json"' in text
+    during a whole suite would read as the suite touching live state. Since kit v30
+    the kit's own IGNORE carries it (LW dropped its extra_ignore at adoption)."""
+    import fleet_test_guard
+    assert "ops/loop/control/inbox_pending_orders.json" in fleet_test_guard.IGNORE
 
 
 def test_env_roots_cover_every_runtime_root_env_var_lw_reads():

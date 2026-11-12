@@ -484,6 +484,10 @@ def decide(path: Path):
                 skip_reason(path))
     d = fleet_inbox.classify(path.name, SELF_CODE, inbox_head(path))
     if d.action == fleet_inbox.SKIP:
+        if str(d.reason or "").startswith(KIT_ADDRESSED):
+            # kit v30 classify() skips a note addressed to another tree itself
+            return d, (f"misaddressed: {d.reason}, not {SELF_CODE} or {ALL_CODE}"
+                       f" - a copy of another tree's mail")
         return d, (SELF_WHY if d.reason == "self" else TERMINAL_WHY)
     codes = addressees(path.name)
     if (codes and SELF_CODE not in codes and ALL_CODE not in codes
@@ -503,6 +507,7 @@ def decide(path: Path):
 # note). `-to-ALL-SIX-` / `-to-ALL-SEVEN-` parse as ALL.
 ALL_CODE = "ALL"
 MISADDRESSED = "misaddressed"
+KIT_ADDRESSED = "addressed to "  # kit v30 fleet_inbox.classify() SKIP reason prefix
 FLEET_CODES = frozenset({"MAIN", "RC", "CS", "LW", "SS", "RSC", "EW", "LL", "RM", ALL_CODE})
 _ADDRESSEE = re.compile(r"(?:^|[-_])(?i:from)-[A-Z]+-(?:[A-Z]+-){0,3}to-((?:[A-Z]+-)*[A-Z]+)"
                         r"(?=[-_.]|$)")
