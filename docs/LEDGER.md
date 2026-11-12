@@ -31,6 +31,33 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+368. DONE **2026-11-12 (session 95: CI-94, v30 ANSWER re-sent, inbox triage, FLEET9-READ closed, Pinterest GC, ORIGINALS-DUPS).**
+   CI-94: b89d086 ci 42551320229 success; c79d975 (kit v30 adoption, no LEDGER row of its own - recorded here) ci 43198051683 +
+   codeql 43198051919 success; nightlies 11-09..11-12 success (gh run list). KIT-IGNORE-GAP closed by c79d975 (tests/conftest.py
+   extra_ignore dropped, kit IGNORE pins it). V30 ANSWER: the 04:11 outbox copy was NOT delivered (sender refusal: the PT5M
+   responder child claimed the answer channel at 04:01:59, ran 1800.1 s to timeout, sent nothing; MAIN inbox held no LW note
+   after 11-05). Re-sent the same answer body (plus delivery note + HOM ack) via the send_answers steps: 2026-11-12-1443-from-
+   LW-ANSWER-to-MAIN-batched-1-answers.md, reached 1/1 (re-hashed), cap 1/12. Finding: Maint-KitRollout and the responder both
+   worked the v30 ORDER (double run, opus 713 s + sonnet 1800 s); filed as KITROLL-RESPONDER-RACE. The stale kit-rollout-v30
+   progress row (5 pct, running) marked done. INBOX: 6 unread classified with fleet_inbox.classify(): MAIN 1200 ORDER (work done,
+   LEDGER 367; executor_effort high / oracle_effort medium read back in ops/loop/config.json), SS 1607 + SS 2052 ANSWER (skip,
+   addressed to MAIN), MAIN 0340 HOM INFORMATION (TERMINAL, mechanical ack here), MAIN 0345 v30 ORDER (done c79d975 + ANSWER
+   above); marked seen 673. MAIN-NOTE-2104 CLOSED: v30 ships (a) INBOX ADDRESSEE and (b) PYTHON FIRST; (c) SS fan-out is SS's
+   tree and its cost to LW is gone (kit addressee skip). GATE-FIFO-WATCH, KIT-PUBLIC-GIT: v30 suite-gate diff is held_readonly +
+   free_ram_mb only, no verify_kit_commit helper - carried. FLEET9-READ CLOSED: durations.jsonl LW rows 2026-11-05..11-12 = 10
+   gated runs, 7 exit 0; 3 non-zero all 11-12 during the v30 double run (04:02 exit 1 = 6 classify-addressee tests, adoption-
+   caused, fixed in c79d975; 04:03 exit 1 hold 300 s and 04:38 exit 143 hold 13 s = the responder child's contended/killed runs);
+   0 fleet_test_guard hits and 0 budget() misses in logs/ and the responder run log. FIRSTPASS-HOLDS (adjudicated): the 3
+   Pinterest thumbs are 236 px wide, so a 16:9 crop after ONE 4x upscale is 944x531 - below 2560x1440 by construction (ADR-003
+   single upscale); decision GC with --keep-backup (alternatives: keep held forever; second upscale - forbidden). Method: folder
+   copies sent to the Recycle Bin first, _firstinitial sha256 == 9.Image Backup original (3/3), then lw_pipeline remove --yes
+   --keep-backup; read back 0 in 1.First Pass Scratch, 3 backups kept. The 4 alphacoders crop holds (crop placement = operator
+   pixels) and the 3 lap_ratio fails (source-limited) carried. ORIGINALS-DUPS: both -pre files sha256-equal to their 9.Image
+   Backup copies and intaken slugs; no consumer of 0.Originals but intake (which refuses them); sent to the Recycle Bin
+   (Microsoft.VisualBasic DeleteFile SendToRecycleBin); read back 0.Originals holds only .gitkeep; operator task
+   physical.lux-coven-pre-duplicate-2 closed (its check passed). Gated items probed, none fired: gallery-dl config absent, no
+   readback-2237.ok, no R4 votes file (park date 11-14), watch-swap tripwire 3 passed, repo-review progress file gone.
+
 367. DONE **2026-11-08 (responder: MAIN ORDER 2026-11-08-1200 model-and-effort-fit-the-task).**
    Inbox copy re-hashed: sha256 bc9731aecac1365118f2a3b704df4fb416c163fe19fbc4dafe5d4ca63df219dd, 2178 bytes;
    verify_main True (MAIN committed outbox copy). Memory: no prior memory covered model/effort (grep of the
