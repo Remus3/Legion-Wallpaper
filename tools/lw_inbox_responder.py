@@ -949,6 +949,22 @@ def adoption_prompt(adoption: dict) -> str:
             f"that stage was written. Do the note's steps yourself. Result: {result}")
 
 
+def child_progress(root: Path | None = None) -> str:
+    """MAIN ORDER 2026-11-14-0935 item 2: the child's last progress step and pct
+    (progress/<CHILD_TASK>.json under the fleet root), for a timed-out run's
+    disposition and its run-log line. Never raises."""
+    root = Path(lw_headless_env.FLEET_ROOT) if root is None else Path(root)
+    path = root / "ops" / "loop" / "control" / "progress" / f"{CHILD_TASK}.json"
+    if not path.is_file():
+        return f"no progress file {CHILD_TASK}.json"
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        return (f"last progress step {str(doc.get('step'))[:80]} "
+                f"pct {doc.get('pct')} at {doc.get('updated')}")
+    except (OSError, ValueError, AttributeError) as exc:
+        return f"progress file unreadable ({type(exc).__name__})"
+
+
 def spawn(note_path: Path, dry_run: bool = False, *,
           kit_seams: dict | None = None, kind: str = "inbox") -> Disposition:
     """One headless run for one note, through `kit.spawn`. Waits for it.
@@ -1003,7 +1019,8 @@ def spawn(note_path: Path, dry_run: bool = False, *,
         return Disposition(UNAVAILABLE, "spawn",
                            f"could not start claude ({type(exc).__name__})", False)
     if line.get("error") == "timeout":
-        return _auto("spawn", f"kit.spawn run timed out after {RUN_TIMEOUT_S}s{tail}")
+        return _auto("spawn", f"kit.spawn run timed out after {RUN_TIMEOUT_S}s; "
+                              f"{child_progress()}{tail}")
     return _auto("spawn", f"kit.spawn run rc {line.get('rc')} model {line.get('model')} "
                           f"effort {line.get('effort')} {line.get('duration_s')}s{tail}")
 

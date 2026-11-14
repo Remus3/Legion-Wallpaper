@@ -2,6 +2,8 @@
 name: verifier
 description: Ground-truth verification subagent. Independently re-runs the test suite from a clean state, confirms cited test files exist on disk, and cross-checks an implementing agent's claims (test counts, green CI, file existence) against what actually happened. Use BEFORE trusting any "green" or "shipped" claim from a parallel slice agent or from your own earlier run when the tool pipe may have replayed stale results. Read-only - it reports a verdict, it never edits.
 tools: Bash, Read, Grep, Glob
+model: sonnet
+effort: medium
 ---
 
 # Verifier - independent ground-truth re-check

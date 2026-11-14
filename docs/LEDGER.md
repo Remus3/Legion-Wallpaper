@@ -31,6 +31,21 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+369. DONE **2026-11-14 (responder-authored worker: MAIN ORDER 2026-11-14-0935 renditions cap, timeout progress, reopen events, agent pins).**
+   Provenance: inbox copy and MAIN's committed outbox copy MATCH (verify_main True; 3281 bytes). Item 1: tools/lw_first_pass.py
+   cap_needauth_renditions + `--cap-renditions` (RENDITION_CAP 10, newest by mtime kept, older MOVED never deleted into
+   ~/Pictures/_needauth_hold, which rotation does not scan; a name clash in the hold is left in place); a non-dry batch that
+   submits re-applies it. Run live: found=146 kept=10 moved=136, read back 10 in Pictures, 136 in the hold, 565 images in the
+   rotation folder (10/565 = 1.8 pct of the deck), log line in logs/2026-11-14.log. Item 2: lw_inbox_responder.child_progress
+   reads progress/responder-run.json under FLEET_ROOT; a timeout disposition (= the run-log reason) now carries its step and pct.
+   Item 3: LW-NEXT-SESSION.txt gains a `Parked:` section; GATE-FIFO-WATCH, RETIRE-JUNCTION, READBACK-2237, R5c, REVIEW-DRIVER
+   and R4 moved there, each with PARKED 2026-11-14 + its REOPEN ON event. R4 park: lw_ab_r4.py tally refused 2026-11-14
+   (operator has not finished the A/B) - reopen on vote (MAIN W44 2026-10-31-2215 park rule). CHECKLIST now 8 open
+   (lw_checklist.handoff_items parses 6: ids over 16 chars, KITROLL-RESPONDER-RACE and FIRSTPASS-APPROVE, are skipped by _ITEM).
+   Item 4 (D5, MAIN-authorized): .claude/agents/verifier.md pins model: sonnet, effort: medium (read-only, reasons over code);
+   tests/test_agent_pins.py mutation-proven (unpinned file -> 2 failed). Tests: test_first_pass_rendition_cap.py (7),
+   test_responder_timeout_progress.py (5). Suite via fleet_suite_gate: exit 0, 4512 passed, 19 skipped. ANSWER HOP 2 to MAIN.
+
 368. DONE **2026-11-12 (session 95: CI-94, v30 ANSWER re-sent, inbox triage, FLEET9-READ closed, Pinterest GC, ORIGINALS-DUPS).**
    CI-94: b89d086 ci 42551320229 success; c79d975 (kit v30 adoption, no LEDGER row of its own - recorded here) ci 43198051683 +
    codeql 43198051919 success; nightlies 11-09..11-12 success (gh run list). KIT-IGNORE-GAP closed by c79d975 (tests/conftest.py

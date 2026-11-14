@@ -853,6 +853,60 @@ def process_slug(slug, source_urls, tmp_dir, dry_run=False, crop_sides=None):
 # ==========================================================================
 # Batch runner + CLI
 # ==========================================================================
+# --------------------------------------------------------------------------
+# Rendition cap (MAIN ORDER 2026-11-14-0935 item 1). Picks naming a
+# _firstneedauth file ran 19-22 percent of desktop picks while the queue sat at
+# 146. Keep only the RENDITION_CAP newest copies in the pictures folder; MOVE
+# (never delete) the rest into RENDITION_HOLD_DIR, a subfolder the rotation does
+# not scan (lw_wallpaper_rotate.scan_source lists files directly under it).
+# --------------------------------------------------------------------------
+RENDITION_CAP = 10
+RENDITION_HOLD_DIR = "_needauth_hold"
+RENDITION_GLOB = "*_firstneedauth.*"
+
+
+def _log(msg):
+    """Append one line to logs/YYYY-MM-DD.log. Never raises."""
+    import datetime as _dt
+    try:
+        stamp = _dt.datetime.now()
+        log_dir = lw_paths.log_dir(Path(ROOT) / "logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        with open(log_dir / f"{stamp:%Y-%m-%d}.log", "a", encoding="utf-8") as fo:
+            fo.write(f"{stamp:%Y-%m-%d %H:%M:%S} lw_first_pass: {msg}\n")
+    except OSError:
+        pass
+
+
+def cap_needauth_renditions(pictures, keep=RENDITION_CAP, dry_run=False):
+    """Keep the `keep` newest _firstneedauth files directly under `pictures`;
+    move the older ones into pictures/RENDITION_HOLD_DIR. A name already in the
+    hold is never overwritten (counted as a clash, left in place)."""
+    pictures = Path(pictures)
+    hold = pictures / RENDITION_HOLD_DIR
+    try:
+        found = [p for p in pictures.glob(RENDITION_GLOB) if p.is_file()]
+    except OSError:
+        found = []
+    found.sort(key=lambda p: (p.stat().st_mtime, p.name), reverse=True)
+    older = found[keep:]
+    moved = clashes = 0
+    for src in older:
+        dst = hold / src.name
+        if dst.exists():
+            clashes += 1
+            continue
+        if not dry_run:
+            hold.mkdir(exist_ok=True)
+            src.replace(dst)
+        moved += 1
+    res = {"found": len(found), "kept": len(found) - moved, "moved": moved,
+           "hold": str(hold)}
+    if clashes:
+        res["clashes"] = clashes
+    return res
+
+
 def _all_scratch_slugs():
     """Slugs in 1.First Pass Scratch that are in the EDITING state."""
     base = Path(FIRST_SCRATCH)
@@ -933,7 +987,25 @@ def main(argv=None):
                    help="operator directed-crop file: {slug: 'top,left'} for "
                         "permitted sides or {slug: {'top': 125}} for an exact "
                         "offset; anchors the crop and reopens a HELD slug")
+    p.add_argument("--cap-renditions", action="store_true",
+                   help=f"keep only the {RENDITION_CAP} newest _firstneedauth "
+                        f"copies in the pictures folder; move the rest to "
+                        f"{RENDITION_HOLD_DIR}/ and log the count")
+    p.add_argument("--pictures", metavar="DIR",
+                   help="pictures folder for --cap-renditions (default: the "
+                        "operator's Pictures)")
     args = p.parse_args(argv)
+
+    if args.cap_renditions:
+        pics = Path(args.pictures) if args.pictures else lw_paths.pictures_dir()
+        res = cap_needauth_renditions(pics, dry_run=args.dry_run)
+        line = ("rendition cap: found={found} kept={kept} moved={moved}".format(**res)
+                + (f" clashes={res['clashes']}" if res.get("clashes") else "")
+                + (" dry_run" if args.dry_run else ""))
+        if not args.dry_run:
+            _log(line)
+        print(line)
+        return 0
 
     overrides = (parse_crop_overrides(args.crop_overrides)
                  if args.crop_overrides else {})
@@ -949,8 +1021,12 @@ def main(argv=None):
             text = Path(args.batch).read_text(encoding="utf-8")
             slugs = [ln.strip() for ln in text.splitlines()
                      if ln.strip() and not ln.strip().startswith("#")]
-        run_batch(slugs, limit=args.limit, dry_run=args.dry_run,
-                  crop_overrides=overrides)
+        counts = run_batch(slugs, limit=args.limit, dry_run=args.dry_run,
+                           crop_overrides=overrides)
+        if not args.dry_run and (counts.get("pass") or counts.get("flag")):
+            # a batch that submitted new renditions re-applies the cap
+            res = cap_needauth_renditions(lw_paths.pictures_dir())
+            _log("rendition cap: found={found} kept={kept} moved={moved}".format(**res))
         return 0
 
     if not args.slug:
