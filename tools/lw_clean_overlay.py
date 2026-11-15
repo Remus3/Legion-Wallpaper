@@ -1275,6 +1275,97 @@ def search_pair_registration(image, pm, scales=PAIR_SEARCH_SCALES,
             "score": float(best[0])}
 
 
+# ---------------------------------------------------------------------------
+# BATCH GATE RESIDUAL (2026-11-15, docs/_archive/2026-11/VEIL_RESID_GATE_2026-11-15.md)
+# The batch gate graded candidates with `pair_veil_alpha_hat` (inner 2-6 px vs
+# outer 8-14 px strip step). On the purchased ground-truth frames A/B/C that
+# reads 0.01-0.04 LOW with known removal errors, and the error is set by the
+# art (asymmetric strips turn any lighting gradient across the edge into
+# "veil"; the un-inverted halo darkens the outer strip). It also shares its
+# kind of measurement with the fit (a strip-mean step). The gate now uses a
+# different instrument: a colour MATCHED FILTER. The residual veil after an
+# inversion at `alpha_used` is r * [(W - J) cov - J halo] per channel (the halo
+# itself is divided out at alpha_used first - it is left in the image by
+# design and is not fill residue). Box high-pass both the candidate and that
+# signature at PAIR_RESID_HP ref px, weight each pixel by 1 / (local art energy
+# left after the signature's local share + PAIR_RESID_C0), and solve one r
+# shared by R, G, B: art edges of another hue or lighting that is locally
+# linear project away. It never reads the fit or the old step estimator.
+PAIR_RESID_HP = 12        # ref px half-width of the high-pass box
+PAIR_RESID_C0 = 16.0      # art-energy floor of the smooth-art weight (levels^2)
+PAIR_RESID_REACH = 40.0   # ref px around the logo the filter reads
+PAIR_RESID_GATE = 0.02    # |residual alpha| bar (noise floor: see the doc)
+
+
+def pair_residual_alpha(image, coverage, pm, alpha_used,
+                        k_ref=PAIR_RESID_HP, c0=PAIR_RESID_C0):
+    """Residual DA veil alpha left in a de-veiled candidate (the batch gate).
+
+    `coverage` is the pair matte where the inversion put it (the fitted
+    registration), `alpha_used` the alpha the inversion removed. > 0 means
+    veil left (under-removal), < 0 a dark imprint (over-removal), ~0 clean;
+    NaN when the coverage is empty. Read it on the ALGEBRAIC pre-pass frame
+    (`pair_gate_frame`), not on the LaMa output: LaMa repaints the edge ring
+    the filter reads (on A/B/C a post-LaMa read is 0.015 low on A and its
+    slope against the true residual drops), while the fill residual it grades
+    lives in the interior LaMa never touches. See the BATCH GATE RESIDUAL note.
+    """
+    cov_full = np.asarray(coverage, dtype=np.float64)
+    if not (cov_full >= 0.5).any():
+        return float("nan")
+    img = np.asarray(image, dtype=np.float64)
+    if img.ndim == 2:
+        img = np.repeat(img[..., None], 3, axis=2)
+    wv = np.broadcast_to(np.asarray(pm["W"], dtype=np.float64).reshape(-1),
+                         (3,))
+    fw = cov_full.shape[1]
+    y0, y1, x0, x1 = _crop_box(cov_full > 0, _ref_px(PAIR_RESID_REACH, fw),
+                               cov_full.shape)
+    cov = cov_full[y0:y1, x0:x1]
+    hal = pair_halo_map(cov, fw)
+    keep = np.maximum(1.0 - float(alpha_used) * hal, 1e-3)
+    k = 2 * _ref_px(k_ref, fw) + 1
+    hg, ht = [], []
+    for ch in range(3):
+        g = img[y0:y1, x0:x1, ch] / keep
+        bg = _box_mean(g, k)
+        t = (wv[ch] - bg) * cov - bg * hal
+        hg.append(g - bg)
+        ht.append(t - _box_mean(t, k))
+    sgt = hg[0] * ht[0] + hg[1] * ht[1] + hg[2] * ht[2]
+    stt = ht[0] * ht[0] + ht[1] * ht[1] + ht[2] * ht[2]
+    r0 = _box_mean(sgt, k) / np.maximum(_box_mean(stt, k), 1e-9)
+    art = sum(_box_mean((a - r0 * b) ** 2, k) for a, b in zip(hg, ht, strict=True)) / 3.0
+    wgt = 1.0 / (art + float(c0))
+    den = float((wgt * stt).sum())
+    if den <= 1e-9:
+        return float("nan")
+    return float((wgt * sgt).sum() / den)
+
+
+def pair_gate_frame(candidate, prepass_roi, region, lama_mask_roi):
+    """(pre-pass full frame, px where the candidate is NOT the pre-pass outside
+    the LaMa mask) - the frame `pair_residual_alpha` grades.
+
+    `prepass_roi` is the lane's `<slug>_iopaint_before.png` (the ROI after the
+    algebraic pre-pass, before LaMa), `region` its (x0, y0, x1, y1) and
+    `lama_mask_roi` the LaMa mask over that ROI. The candidate equals the
+    pre-pass everywhere LaMa did not paint, so a residual read on the pre-pass
+    IS the candidate's residual there; the mismatch count must be 0 or the
+    reading does not describe the candidate (the gate then fails).
+    """
+    cand = np.asarray(candidate)
+    x0, y0, x1, y1 = (int(v) for v in region)
+    roi = np.asarray(prepass_roi)
+    lm = np.asarray(lama_mask_roi).astype(bool)
+    if roi.shape[:2] != (y1 - y0, x1 - x0) or lm.shape != roi.shape[:2]:
+        raise ValueError("pre-pass ROI / mask do not match the region")
+    frame = cand.copy()
+    frame[y0:y1, x0:x1] = roi
+    diff = np.any(cand[y0:y1, x0:x1] != roi, axis=-1) & ~lm
+    return frame, int(diff.sum())
+
+
 def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
                    pair=None, require_present=False, pair_shift=None,
                    pair_scale=None, pair_centre=None):

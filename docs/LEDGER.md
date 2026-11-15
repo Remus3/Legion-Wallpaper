@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+373. DONE **2026-11-15 (veil-gate: batch gate residual estimator replaced - colour matched filter on the pre-pass; batch 3 over 22 slugs).**
+   DECISION (order, recorded): the gate must not grade the fitter with itself and must track ground truth on A/B/C.
+   lw_clean_overlay.pair_residual_alpha: box high-pass (12 ref px) of the frame and of the veil signature
+   r[(W - J)cov - J halo] (halo divided out at alpha_used), smooth-art weights 1/(art energy + 16), one r shared by
+   R/G/B; never calls fit_pair_alpha / pair_veil_alpha_hat / _strips. pair_gate_frame: graded on the ALGEBRAIC pre-pass
+   rebuilt from <slug>_iopaint_before.png, candidate-vs-pre-pass mismatch outside the LaMa mask must be 0 (post-LaMa
+   read rejected: A -0.017, slope 0.74-0.87). A/B/C known errors (0, +-0.01, +-0.02, +-0.04; 21 candidates): new |err|
+   median 0.0047 max 0.0069 (A -0.006, B +0.005, C +0.000 offsets; +-0.005 met on C only, missed by 0.002 on A/B);
+   old step median 0.026 max 0.044 (A -0.026, B -0.009, C -0.043). 30 real arts x synthetic veil (300): new median
+   0.0035 p95 0.019 max 0.027; old median 0.0125 p95 0.078. Threshold kept 0.02 = p95 of the new noise floor on 30
+   veil-free / cleandone frames (16 veil-free max 0.0195). Batch 3 (15 batch-2 manual + 4 registration + 3 search-found;
+   0 NEEDAUTH skipped): G2 outside 0 px 22/22 (281-cleanup no_op), gate 17 -> 15 NEEDAUTH, 2 ADR-009 refused
+   (the-ruined-king-viego, fury-tempest-sona); manual 5 (225f -0.040, fantasy-design -0.026, 285f -0.025, ashe -0.023,
+   281-cleanup). 225f caught. Nothing approved. tests/test_lw_veil_resid_gate.py (55). Details:
+   docs/_archive/2026-11/VEIL_RESID_GATE_2026-11-15.md.
+
 372. DONE **2026-11-15 (veil-alpha: per-frame amplitude + sub-pixel / own registration for the DA logo pair matte; batch 2 over 24 slugs).**
    lw_clean_overlay: fit_pair_alpha (zero-step fit, fill + PAIR_HALO halo model, strips 2-6 ref px both sides, smoother
    half of 15 ref px windows, bisection in PAIR_FIT_BOUNDS 0.03-0.30, clamped fit flagged), refine_pair_shift (integer
