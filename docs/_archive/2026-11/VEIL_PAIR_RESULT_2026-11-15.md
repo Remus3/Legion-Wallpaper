@@ -195,3 +195,88 @@ Untracked (images/ is gitignored, `.gitignore`:58): `images/_veil_pairs/2026-11-
 removal outputs, side-by-side crops, and `register.json`, `analyze.json`,
 `eval.json`, `eval_v1_rescored.json`, `eval_v2.json`, `eval_synth.json`,
 `edge_profile*.json`, `model_AB.npz`.
+
+## Wired into production (2026-11-15, second slice)
+
+**Verdict.** The pair matte is wired as the preferred veil path and removes the
+DA logo fill on held-out C (residual alpha 0.0015, logo PSNR 34.4 dB vs the old
+production path's 23.4 dB end-to-end). The edge ring handed to LaMa removes most
+of the outline ghost, but **zero residue is NOT reached**: at 2x, faint 1 px
+traces remain along parts of the logo outline (and LaMa leaves small seams where
+the ring crosses line art). It still fails the zero-watermark bar; it is much
+closer than anything before.
+
+What shipped:
+
+- Asset `ops/runtime/clean/da_veil_pair_matte.npz` (gitignored, like every
+  overlay cache: a derivative of a third party's watermark, and `data/reference/`
+  is gitignored too). Numbers only: coverage shape 393x294 float32 on the
+  frame-normalized window (0.4234, 0.3185, 0.5766, 0.6824) of a 1920x1080 ref
+  grid, fill alpha 0.1511, W 245.1 (achromatic). Regenerated deterministically
+  by `tools/lw_veil_pair_matte.py --pair <veiled> <clean> ...` (pooled LSQ
+  sigma 2, consensus logo of the pairs, blur sigma 1 ref px; pair A's W fit
+  307/290/254 is dropped as unphysical > 258, B gives 245/244/247). Built from
+  A + B with `<clean>` = the registered `images/_veil_pairs/2026-11-15/{A,B}_clean_registered.npy`
+  (the console-drop clean PNGs are no longer on disk; the registered arrays are
+  their resize+ECC+tone output).
+- `lw_clean_overlay`: `save/load_pair_matte` (absent or corrupt -> None ->
+  today's path), `register_pair_matte` (frame geometry, then the template's
+  scale about the REMOVAL_BAND centre and shift; area-supersampled when
+  downscaling), `pair_veil_alpha_hat` / `pair_veil_present`, `pair_edge_ring`,
+  and `remove_overlay(..., pair=)`. With the pair active the collection matte
+  adds nothing algebraic and VEIL_FEATHER does not apply (the pair's own
+  antialiased edge is the ramp; the feather only compensated a support that
+  stops inside the edge). pair=None is byte-identical to before.
+- `lw_clean_iopaint.overlay_prepass(..., pair=, return_ring=)` and
+  `clean_slug --overlay`: the pair is used only when the frame shows the veil;
+  the ring (1 ref px in, 3 out) joins the LaMa mask AFTER completion (it never
+  widens the completion gate); the collection seed inside the logo box (+12 ref
+  px) is dropped, the credit line keeps its seed.
+- Presence: a global inner/outer strip mean read -0.03 on veiled C (the art is
+  22 levels darker under the logo), so it is a LOCAL step (31 ref px windows,
+  median along the edge): veiled A/B/C 0.123 / 0.142 / 0.112, clean -0.021 /
+  -0.013 / -0.073; gate 0.05.
+
+**Root-cause find: `lw_clean_pass.inpaint_lama` resampled LaMa's padded
+output.** simple-lama pads bottom/right to a multiple of 8 and returns the
+padded frame; `inpaint_lama` RESIZED it back to the ROI, stretching the fill by
+up to 7 px across the ROI. Every simple-lama caller of `inpaint_lama`
+(cleaning pass, iopaint lanes) was affected on any ROI not a multiple of 8. On C it made a 1-2 px
+ring cost 6 dB at the edge (29.4 -> 23.2) and wrecked line art. Fixed (crop the
+padding; a genuine rescale is still resized), pinned by
+`tests/test_lw_clean_pass.py::test_inpaint_lama_crops_the_mod8_padding_instead_of_resampling`.
+Earlier LaMa-lane results were measured with this bug and may be worth
+re-running.
+
+Held-out C, graded vs the registered clean (logo = logo +3 px, edge = logo
+boundary +-3 px, near = out to 3 percent of width minus credit, far = the rest;
+edge_hp = RMS of the 5 px high-pass of (output - clean) in the edge band;
+residual alpha = pooled alpha re-estimated vs the clean in the eroded interior).
+`images/_veil_pairs/2026-11-15/eval_pairwire.json`:
+
+- input: logo 21.59 / edge 24.71 / near 35.63 / far 39.24 dB, edge_hp 5.00, resid 0.151
+- old pre-pass: 25.20 / 24.41 / 32.17 / 39.14, edge_hp 5.65, resid 0.036
+- NEW pre-pass (pair, before ring): **34.65 / 29.37 / 35.61 / 39.24**, edge_hp 5.09, resid **0.0015**; 0 px changed in far
+- NEW + LaMa ring only (1/3): 34.34 / 28.83 / 35.50 / 39.24, edge_hp 5.79, resid 0.0014; 0 px changed in far
+- NEW full lane (ring + credit seed + completion): 34.38 / 28.89 / 34.55 / 39.27, edge_hp 5.74; 3136 far px changed (the credit line lane)
+- old full lane (old pre-pass + its LaMa mask): 23.36 / 21.76 / 28.96 / 39.25, edge_hp 8.70, resid 0.039
+
+Ring sweep (edge PSNR / edge_hp, after the crop fix): 1/2 27.72 / 6.20; 1/3
+28.75 / 5.53; 2/3 26.75 / 6.47; 2/5 25.36 / 7.21; 3/7 23.84 / 8.40. Every ring
+costs edge PSNR against this reference (LaMa invents texture; the reference is
+a JPEG-noisy registered clean) - the ring is kept for the VISUAL ghost, which
+the metric does not isolate. A smooth-only ring (local gradient < 12) scores
+29.07 / 5.32 but visibly leaves the outline where it crosses texture. Template
+shift on C was (0, 0) at scale 1.0, so "tplshift" and "noshift" are identical.
+
+Operator eyeball: `images/_veil_pairs/2026-11-15/C_pairwire_logo_crop_input_prepass_lama_clean_2x.png`
+(input | pair pre-pass | full new lane | clean, 2x) and
+`C_pairwire_final_logo_3x.png`.
+
+Open: (1) residual 1 px outline traces - candidates: a sub-pixel registration
+of the pair matte per frame against the edge (the doc above rejected a blind
+high-pass search; a step-based fit is untried), or the halo term in the
+inversion; (2) C is the only held-out pair and is at preview resolution - the
+lane runs on 2560x1440 firstdones, where the matte is upscaled; (3) re-run the
+LaMa-lane measurements that predate the crop fix; (4) `lw_clean_overlay_schedule`
+still calls `overlay_prepass` without the pair (unchanged behaviour).

@@ -760,8 +760,29 @@ def complete_overlay_mask(roi_bgr, seed_mask_u8, gate_k: int = OVERLAY_GATE_K,
     return (out.astype(np.uint8) * 255)
 
 
+# Ref px (1920 grid) around the pair logo's bbox where the collection seed is
+# dropped once the pair is active. 12 px stays clear of the credit line, which
+# starts 0.030 h (32 px) below the logo on all three measured pairs.
+PAIR_SEED_GUARD = 12
+
+
+def _union_box(box, mask_bool, pad, shape):
+    """`box` grown to cover `mask_bool` (+pad, clamped); `box` may be None."""
+    ys, xs = np.nonzero(mask_bool)
+    if not len(ys):
+        return box
+    h, w = int(shape[0]), int(shape[1])
+    nb = (max(int(xs.min()) - pad, 0), max(int(ys.min()) - pad, 0),
+          min(int(xs.max()) + 1 + pad, w), min(int(ys.max()) + 1 + pad, h))
+    if box is None:
+        return nb
+    return (min(box[0], nb[0]), min(box[1], nb[1]),
+            max(box[2], nb[2]), max(box[3], nb[3]))
+
+
 def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
-                    alpha_thr=OVERLAY_ALPHA_THR, pad: int = OVERLAY_PAD):
+                    alpha_thr=OVERLAY_ALPHA_THR, pad: int = OVERLAY_PAD,
+                    pair=None, return_ring: bool = False):
     """ALGEBRAIC removal first, then the mask for what it could not invert.
 
     Order is the design (see `tests/test_lw_clean_iopaint_overlay.py`): the
@@ -771,7 +792,15 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     W cannot both add white fill and darken an edge (LEDGER 29 + 94). That thin
     residual is what the mask hands to LaMa.
 
-    Returns (pre_bgr, mask_full, roi_box, info). `info` carries the registration
+    `pair` (`lw_clean_overlay.load_pair_matte`) is the preferred veil when this
+    frame shows it (`pair_veil_alpha_hat` >= PAIR_PRESENT_MIN): the whole logo
+    is inverted from the pair matte, and its EDGE RING (`pair_edge_ring`: the
+    1-2 px edge + the dark halo just outside) joins the LaMa mask - the one
+    residue the inversion leaves (docs/_archive/2026-11/VEIL_PAIR_RESULT_2026-11-15.md). Absent
+    or not detected -> today's collection-veil path, unchanged.
+
+    Returns (pre_bgr, mask_full, roi_box, info), plus the ring (full-frame
+    bool) as a 5th item when `return_ring`. `info` carries the registration
     shift and the DETECTOR's score before the pre-pass, both for the manifest.
     """
     rgb = np.asarray(full_bgr)[:, :, ::-1].astype(np.float64)
@@ -786,14 +815,46 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     else:
         sc = 1.0
     before = OV.overlay_score(rgb, score_tpl) if score_tpl else float("nan")
-    pre_rgb, changed = OV.remove_overlay(rgb, matte, shift=(dy, dx), scale=sc)
+    ring = np.zeros(rgb.shape[:2], dtype=bool)
+    pair_info = None
+    use_pair = None
+    if pair:
+        cov = OV.register_pair_matte(rgb.shape[:2], pair, shift=(dy, dx),
+                                     scale=sc)
+        a_hat = (OV.pair_veil_alpha_hat(rgb, cov, pair["W"])
+                 if cov.any() else 0.0)
+        used = bool(cov.any()) and a_hat >= OV.PAIR_PRESENT_MIN
+        pair_info = {"used": used, "alpha_hat": round(float(a_hat), 4),
+                     "alpha": round(float(pair["alpha"]), 4)}
+        if used:
+            use_pair = pair
+            ring = OV.pair_edge_ring(cov)
+            pair_info["ring_px"] = int(ring.sum())
+    pre_rgb, changed = OV.remove_overlay(rgb, matte, shift=(dy, dx), scale=sc,
+                                         pair=use_pair)
     pre_bgr = np.ascontiguousarray(np.asarray(pre_rgb)[:, :, ::-1])
     mask_full, roi_box = overlay_mask(pre_bgr.shape, matte, shift=(dy, dx),
                                       alpha_thr=alpha_thr, pad=pad, scale=sc)
+    if ring.any():
+        # With the pair carrying the logo, the collection matte's seed INSIDE
+        # the logo's box (its outline traced at the old, partial support) is
+        # not a stroke to fill but art: measured on held-out C, keeping it (and
+        # the completion it gates) cost the logo 7.9 dB (34.34 -> 26.48) once
+        # LaMa ran. The credit line sits below the box and keeps its seed.
+        ys, xs = np.nonzero(cov > 0)
+        g = OV._ref_px(PAIR_SEED_GUARD, rgb.shape[1])
+        mask_full[max(ys.min() - g, 0):ys.max() + 1 + g,
+                  max(xs.min() - g, 0):xs.max() + 1 + g] = 0
+        mask_full[ring] = 255
+        roi_box = _union_box(None, mask_full > 0, pad, rgb.shape[:2])
     info = {"shift": [int(dy), int(dx)], "scale": float(sc),
             "score_before": round(float(before), 4),
             "prepass_changed_px": int(np.asarray(changed).sum()),
             "gain": matte.get("gain") if matte else None}
+    if pair_info is not None:
+        info["pair"] = pair_info
+    if return_ring:
+        return pre_bgr, mask_full, roi_box, info, ring
     return pre_bgr, mask_full, roi_box, info
 
 
@@ -877,15 +938,19 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
         # derived rather than declared (every preset region in this file was
         # hand-measured for a corner mark; the DA overlay sits mid-frame).
         tpl, ov_matte = load_overlay_pair()
-        if ov_matte is None:
+        # The pair matte (purchased clean pairs) is the preferred veil; absent,
+        # the collection matte's veil runs exactly as before.
+        pair_matte = OV.load_pair_matte()
+        if ov_matte is None and pair_matte is None:
             return {"slug": slug, "status": "error",
                     "reason": "no centre-overlay matte cached - run "
                               "lw_clean_detector_probe.py --wide "
                               "--build-overlay-matte <confirmed slugs>"}
         orig_full = full
-        full, mask_full, roi_box, ov_info = overlay_prepass(
+        full, mask_full, roi_box, ov_info, ov_ring = overlay_prepass(
             full, ov_matte, tpl, score_tpl=OV.load_template(),
-            alpha_thr=alpha_thr, pad=pad if pad != DEFAULT_PAD else OVERLAY_PAD)
+            alpha_thr=alpha_thr, pad=pad if pad != DEFAULT_PAD else OVERLAY_PAD,
+            pair=pair_matte, return_ring=True)
         if roi_box is None:
             return {"slug": slug, "status": "error",
                     "reason": f"the overlay matte is empty above alpha "
@@ -929,7 +994,13 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     if ov_info is not None:
         # The seed is a cross-image SHAPE; this frame's own residual completes it.
         seeded = int((mask > 127).sum())
-        mask = complete_overlay_mask(roi, mask, chroma_thr=chroma_thr)
+        # The pair edge ring is a GEOMETRIC mask, not a stroke seed: it must not
+        # widen the completion gate (which would OR in art edges near the logo),
+        # so it is held out of the seed and OR-ed back after completion.
+        ring_roi = overlay_roi_mask(ov_ring, roi_box)
+        stroke = np.where(ring_roi, 0, mask).astype(np.uint8)
+        mask = complete_overlay_mask(roi, stroke, chroma_thr=chroma_thr)
+        mask[ring_roi] = 255
         ov_info["seed_px"] = seeded
         ov_info["mask_px"] = int((mask > 127).sum())
 

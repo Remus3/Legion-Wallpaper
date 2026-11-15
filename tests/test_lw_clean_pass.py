@@ -639,3 +639,34 @@ def test_probe_residue_reports_the_exception_type():
     residue, err = cp.probe_residue(img, img, [(0, 0, 16, 16)], Boom())
     assert residue is None
     assert err == "RuntimeError"
+
+
+class _PadToMod8Lama:
+    """Fake simple-lama: pads bottom/right to a multiple of 8 (symmetric), as
+    simple_lama_inpainting.prepare_img_and_mask does, and 'inpaints' by
+    returning the padded image unchanged - a perfect filler."""
+
+    def __call__(self, image, mask):
+        arr = np.asarray(image.convert("RGB"))
+        h, w = arr.shape[:2]
+        ph, pw = (-h) % 8, (-w) % 8
+        return Image.fromarray(np.pad(arr, ((0, ph), (0, pw), (0, 0)),
+                                      mode="symmetric"))
+
+
+@pytest.mark.parametrize("hw", [(270, 401), (64, 64), (301, 400)])
+def test_inpaint_lama_crops_the_mod8_padding_instead_of_resampling(hw):
+    # 2026-11-15 root cause: simple-lama returns the PADDED frame (401 -> 408
+    # wide) and inpaint_lama RESIZED it back, stretching the fill by up to
+    # 7 px across the ROI - measured on held-out C, a 1-2 px LaMa ring around
+    # the DA logo dropped edge PSNR 29.4 -> 23.2 dB. The padding is
+    # bottom/right, so the fix is a crop.
+    h, w = hw
+    yy, xx = np.mgrid[0:h, 0:w]
+    base = np.stack([(xx * 7) % 256, (yy * 5) % 256, ((xx + yy) * 3) % 256],
+                    axis=-1).astype(np.uint8)
+    mask = np.zeros((h, w), dtype=np.uint8)
+    mask[:, w - 20:w - 10] = 255
+    mask[h - 12:h - 6, :] = 255
+    out = np.asarray(cp.inpaint_lama(base, mask, _PadToMod8Lama()))
+    assert np.array_equal(out, base)

@@ -1136,9 +1136,16 @@ def inpaint_lama(image, mask, lama):
     else:
         mask_img = mask
     mask_img = mask_img.convert("L")
-    lama_out = lama(image, mask_img)
-    lam = np.asarray(lama_out.convert("RGB").resize(image.size),
-                     dtype=np.float64)
+    lama_out = lama(image, mask_img).convert("RGB")
+    # simple-lama pads bottom/right to a multiple of 8 and returns the PADDED
+    # frame. Crop it back; resizing (the pre-2026-11-15 code) stretched the
+    # fill by up to 7 px across the ROI and broke thin masks at line art.
+    # Any other size mismatch is a genuine rescale and is still resized.
+    w, h = image.size
+    lw_, lh_ = lama_out.size
+    if (w <= lw_ < w + 8) and (h <= lh_ < h + 8):
+        lama_out = lama_out.crop((0, 0, w, h))
+    lam = np.asarray(lama_out.resize(image.size), dtype=np.float64)
     inp = np.asarray(image, dtype=np.float64)
     m01 = (np.asarray(mask_img, dtype=np.float64) / 255.0)[:, :, None]
     out = inp * (1.0 - m01) + lam * m01

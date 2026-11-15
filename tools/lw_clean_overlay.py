@@ -768,7 +768,202 @@ def veil_alpha_map(veil, shape=None, feather: int = VEIL_FEATHER):
     return float(veil["alpha"]) * _feather_out(sup, feather)
 
 
-def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0):
+# ---------------------------------------------------------------------------
+# PAIR MATTE (2026-11-15, docs/_archive/2026-11/VEIL_PAIR_RESULT_2026-11-15.md). The DA logo veil
+# measured DIRECTLY from purchased clean originals against their DA previews:
+# one solid achromatic fill (alpha ~0.14, W ~248), centred on the frame and
+# scaled with it, identical across three artists. Stored frame-normalized - a
+# coverage map over a small window of the frame, plus a scalar alpha and W - so
+# one asset fits every frame size. Held-out pair: residual alpha 0.002 vs the
+# collection veil's 0.051, whose support covers only 44 percent of the logo.
+# A derivative of a third party's watermark, so it lives under ops/runtime/
+# (gitignored) and is rebuilt by tools/lw_veil_pair_matte.py from the pairs.
+PAIR_MATTE_PATH = os.path.join(
+    _ROOT, "ops", "runtime", "clean", "da_veil_pair_matte.npz")
+PAIR_REF = (1920, 1080)          # (w, h) of the grid the pixel knobs are in
+PAIR_COV_FLOOR = 1e-3            # below this coverage the pixel is untouched
+# Presence: alpha read from the veil's OWN boundary step, LOCALLY: inner strip
+# vs outer strip means in a window along the edge, then the MEDIAN over the
+# boundary. A global strip mean is not enough - on held-out C the art is 22
+# levels darker inside the logo than around it, so the global estimator read
+# -0.03 on the veiled frame. The local median, measured on the three purchased
+# pairs: veiled 0.123 / 0.142 / 0.112, clean -0.021 / -0.013 / -0.073 (A/B/C).
+PAIR_PRESENT_MIN = 0.05
+PAIR_IN_STRIP = (2, 6)           # ref px inside the logo edge
+PAIR_OUT_STRIP = (8, 14)         # ref px outside - past most of the halo
+PAIR_STEP_WIN = 15               # ref px half-window of the local means
+# The edge ring handed to LaMa AFTER de-veiling: the 1-2 px antialiased edge the
+# shape cannot place to sub-pixel accuracy, plus the inner dark halo just
+# outside (black-layer alpha 0.05 at -3 px). Ref px, scaled with the frame
+# width. Swept on held-out C (after the inpaint_lama crop fix) - edge-band PSNR
+# / high-pass RMS vs the clean: de-veiled only 29.37 / 5.09; ring 1/2 27.72 /
+# 6.20; 1/3 28.75 / 5.53; 2/3 26.75 / 6.47; 2/5 25.36 / 7.21; 3/7 23.84 /
+# 8.40. Every ring costs PSNR (LaMa invents, the clean is a JPEG-noisy
+# reference); 1/3 is the cheapest one that visibly removes the outline ghost.
+EDGE_RING_IN = 1
+EDGE_RING_OUT = 3
+
+
+def save_pair_matte(path, pm):
+    """Atomic write of a frame-normalized pair matte (numbers only, no image)."""
+    d = os.path.dirname(os.path.abspath(path))
+    if d:
+        os.makedirs(d, exist_ok=True)
+    tmp = str(path) + ".tmp.npz"
+    np.savez_compressed(
+        tmp, shape=np.asarray(pm["shape"], dtype=np.float32),
+        alpha=np.asarray([float(pm["alpha"])]),
+        W=np.asarray(pm["W"], dtype=np.float64).reshape(3),
+        window=np.asarray(pm["window"], dtype=np.float64).reshape(4),
+        ref=np.asarray(pm["ref"], dtype=np.int64).reshape(2),
+        sources=np.asarray(str(pm.get("sources", ""))))
+    os.replace(tmp, path)
+    return path
+
+
+def load_pair_matte(path=PAIR_MATTE_PATH):
+    """The pair matte, or None when absent / unreadable (caller falls back)."""
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        with np.load(path) as z:
+            pm = {"shape": z["shape"].astype(np.float64),
+                  "alpha": float(z["alpha"][0]),
+                  "W": z["W"].astype(np.float64).reshape(3),
+                  "window": tuple(float(v) for v in z["window"]),
+                  "ref": tuple(int(v) for v in z["ref"]),
+                  "sources": str(z["sources"]) if "sources" in z else ""}
+    except Exception:   # noqa: BLE001 - a bad cache must degrade, not crash
+        return None
+    if pm["shape"].ndim != 2 or not 0.0 < pm["alpha"] < ALPHA_MAX:
+        return None
+    return pm
+
+
+def _ref_px(n, frame_w, ref_w=PAIR_REF[0]):
+    """A knob given in ref-grid px, in this frame's px (at least 1)."""
+    return max(int(round(float(n) * float(frame_w) / float(ref_w))), 1)
+
+
+def _span(a0, a1, n, c, d, s):
+    """Output pixel range a normalized interval [a0, a1] can touch."""
+    lo = c + s * (a0 * n - c) + d
+    hi = c + s * (a1 * n - c) + d
+    return max(int(np.floor(lo)) - 1, 0), min(int(np.ceil(hi)) + 1, n)
+
+
+def register_pair_matte(frame_shape, pm, shift=(0, 0), scale=1.0, centre=None):
+    """Coverage map (h, w) in [0, 1] of the pair matte on this frame.
+
+    Frame geometry first (the window is frame-normalized), then the template's
+    registration: `scale` about `centre` (default: the REMOVAL_BAND centre, the
+    point `scale2d_centered` scales the band template about), then `shift`
+    (dy, dx) in frame px - the order `remove_overlay` applies them to the
+    collection matte. Bilinear, pixel-centre convention, exact zero outside.
+    """
+    h, w = int(frame_shape[0]), int(frame_shape[1])
+    shape = np.asarray(pm["shape"], dtype=np.float64)
+    gh, gw = shape.shape
+    x0, y0, x1, y1 = (float(v) for v in pm["window"])
+    s = float(scale) if scale else 1.0
+    if centre is None:
+        centre = (h * (REMOVAL_BAND[0] + REMOVAL_BAND[1]) / 2.0, w / 2.0)
+    cy, cx = float(centre[0]), float(centre[1])
+    dy, dx = (float(shift[0]), float(shift[1])) if shift else (0.0, 0.0)
+    ox0, ox1 = _span(x0, x1, w, cx, dx, s)
+    oy0, oy1 = _span(y0, y1, h, cy, dy, s)
+    out = np.zeros((h, w), dtype=np.float64)
+    if ox1 <= ox0 or oy1 <= oy0:
+        return out
+    # Downscaling (frame coarser than the grid) supersamples k x k per output
+    # pixel so the result is AREA coverage, not a point sample that aliases
+    # the edge; upscaling is plain bilinear (k = 1).
+    kx = max(int(np.ceil(gw / max((x1 - x0) * w * s, 1e-9))), 1)
+    ky = max(int(np.ceil(gh / max((y1 - y0) * h * s, 1e-9))), 1)
+    padded = np.pad(shape, 1, mode="constant")
+    val = np.zeros((oy1 - oy0, ox1 - ox0), dtype=np.float64)
+    for sy in range(ky):
+        v = np.arange(oy0, oy1, dtype=np.float64) + (sy + 0.5) / ky
+        yn = (cy + (v - dy - cy) / s) / h
+        # Window coords, +1 into a zero-padded copy of the shape so the
+        # bilinear ramp falls to exactly 0 one grid cell past the window.
+        iyc = np.clip((yn - y0) / (y1 - y0) * gh - 0.5 + 1.0, 0.0, gh + 1.0)
+        jy = np.minimum(np.floor(iyc).astype(int), gh)
+        fy = (iyc - jy)[:, None]
+        for sx in range(kx):
+            u = np.arange(ox0, ox1, dtype=np.float64) + (sx + 0.5) / kx
+            xn = (cx + (u - dx - cx) / s) / w
+            ixc = np.clip((xn - x0) / (x1 - x0) * gw - 0.5 + 1.0, 0.0, gw + 1.0)
+            jx = np.minimum(np.floor(ixc).astype(int), gw)
+            fx = (ixc - jx)[None, :]
+            val += ((1 - fy) * (1 - fx) * padded[np.ix_(jy, jx)]
+                    + (1 - fy) * fx * padded[np.ix_(jy, jx + 1)]
+                    + fy * (1 - fx) * padded[np.ix_(jy + 1, jx)]
+                    + fy * fx * padded[np.ix_(jy + 1, jx + 1)])
+    val /= float(kx * ky)
+    val[val < PAIR_COV_FLOOR] = 0.0
+    out[oy0:oy1, ox0:ox1] = np.clip(val, 0.0, 1.0)
+    return out
+
+
+def _strips(coverage, inner, outer):
+    """(inner strip, outer strip) masks around the coverage>=0.5 boundary."""
+    w = coverage.shape[1]
+    core = np.asarray(coverage) >= 0.5
+    i0, i1 = (_ref_px(n, w) for n in inner)
+    o0, o1 = (_ref_px(n, w) for n in outer)
+    ins = _erode_bool(core, 2 * i0 + 1) & ~_erode_bool(core, 2 * i1 + 1)
+    outs = _dilate_bool(core, 2 * o1 + 1) & ~_dilate_bool(core, 2 * o0 + 1)
+    return ins, outs
+
+
+def pair_veil_alpha_hat(image, coverage, w_mark):
+    """Veil alpha read from THIS frame's boundary step; ~0 on a clean frame.
+
+    Inside `I = J(1-a) + aW`; the art is continuous across the edge, so the
+    local inner-vs-outer luma step is `a (W - I_out)`. Local means in a window
+    along the edge, then the median over the boundary - robust to the art
+    being darker or brighter under the logo as a whole.
+    """
+    g = np.asarray(image, dtype=np.float64)
+    g = g.mean(axis=2) if g.ndim == 3 else g
+    cov = np.asarray(coverage, dtype=np.float64)
+    ins, outs = _strips(cov, PAIR_IN_STRIP, PAIR_OUT_STRIP)
+    if not ins.any() or not outs.any():
+        return 0.0
+    k = 2 * _ref_px(PAIR_STEP_WIN, g.shape[1]) + 1
+    ni = _box_mean(ins.astype(np.float64), k)
+    no = _box_mean(outs.astype(np.float64), k)
+    mi = _box_mean(g * ins, k) / np.maximum(ni, 1e-9)
+    mo = _box_mean(g * outs, k) / np.maximum(no, 1e-9)
+    core = cov >= 0.5
+    edge = _dilate_bool(core, 3) & ~_erode_bool(core, 3)
+    ok = edge & (ni > 0.05) & (no > 0.05)
+    if not ok.any():
+        return 0.0
+    a = (mi - mo) / np.maximum(float(np.mean(w_mark)) - mo, 1.0)
+    return float(np.median(a[ok]))
+
+
+def pair_veil_present(image, coverage, w_mark, min_alpha=PAIR_PRESENT_MIN):
+    """Is the DA logo veil on this frame where the pair matte says it is?"""
+    return pair_veil_alpha_hat(image, coverage, w_mark) >= float(min_alpha)
+
+
+def pair_edge_ring(coverage, inner: int = EDGE_RING_IN,
+                   outer: int = EDGE_RING_OUT):
+    """Bool ring `inner` ref px inside to `outer` ref px outside the logo edge."""
+    cov = np.asarray(coverage, dtype=np.float64)
+    core = cov >= 0.5
+    if not core.any():
+        return np.zeros(cov.shape, dtype=bool)
+    w = cov.shape[1]
+    ri, ro = _ref_px(inner, w), _ref_px(outer, w)
+    return _dilate_bool(core, 2 * ro + 1) & ~_erode_bool(core, 2 * ri + 1)
+
+
+def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
+                   pair=None, require_present=False):
     """Invert the matting equation -> (uint8 RGB, changed-pixel mask).
 
     `J = (I - a*W) / (1 - a)` reconstructs the partial-alpha ramp EXACTLY
@@ -778,50 +973,78 @@ def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0):
     Pixels with alpha 0 - everything outside the matte - are copied through
     byte-for-byte, so AG 1.3's outside-region identity holds by construction
     rather than by measurement. A missing matte is a no-op.
+
+    `pair` (a `load_pair_matte` dict) is the PREFERRED veil: when given (and,
+    with `require_present`, when this frame's boundary step shows the veil) it
+    REPLACES the collection veil - full logo, frame geometry, no feather (its
+    own antialiased edge is the ramp; VEIL_FEATHER exists only because the
+    collection support stops inside the true edge). With the pair active the
+    collection matte contributes NOTHING algebraic: measured on held-out C its
+    low-alpha band-wide strokes cost 1.3 dB around the logo and 0.1 dB across
+    the band (near 35.61 -> 34.31, far 39.24 -> 39.14 dB) and 1.8 dB on the logo
+    itself; the credit line and edge go to the LaMa mask instead
+    (`lw_clean_iopaint.overlay_prepass`), which still reads the collection
+    matte. pair=None is today's path, byte for byte.
     """
     arr = np.asarray(image, dtype=np.float64)
     out = np.clip(np.rint(arr), 0, 255).astype(np.uint8)
-    changed = np.zeros(arr.shape[:2], dtype=bool)
-    if not matte:
+    h, w = arr.shape[:2]
+    changed = np.zeros((h, w), dtype=bool)
+    pair_cov = None
+    if pair:
+        pair_cov = register_pair_matte((h, w), pair, shift=shift, scale=scale)
+        if not pair_cov.any() or (require_present and not pair_veil_present(
+                arr, pair_cov, pair["W"])):
+            pair_cov = None
+    if pair_cov is not None:
+        matte = None
+    if not matte and pair_cov is None:
         return out, changed
 
-    band = tuple(matte["band"])
-    h = arr.shape[0]
-    y0, y1 = int(h * band[0]), int(h * band[1])
-    b = arr[y0:y1, :, :]
-    alpha = np.asarray(matte["alpha"], dtype=np.float64)
-    w = np.asarray(matte["W"], dtype=np.float64)
-    if alpha.shape != b.shape[:2]:
-        alpha = _resize2d(alpha, b.shape[:2])
-        w = np.stack([_resize2d(w[..., c], b.shape[:2])
-                      for c in range(w.shape[-1])], axis=-1)
-    # The FLAT VEIL rides along here and NOWHERE else: the inversion must fix it
-    # (a filler cannot invent 310x240px of face), while the LaMa mask must never
-    # see it. Combining by max keeps a stroke that crosses the veil at its own,
-    # higher alpha rather than averaging the two.
-    veil_map = veil_alpha_map(matte.get("veil"), b.shape[:2])
-    if veil_map is not None:
-        alpha = np.maximum(alpha, veil_map)
-    # The registered SCALE is applied after the veil joins the alpha and before
-    # the shift, because both were measured in template coordinates: rescale
-    # first, then translate the rescaled mark into place. W rides along
-    # per-channel so the inversion still subtracts the right colour.
-    if float(scale) != 1.0:
-        alpha = scale2d_centered(alpha, scale)
-        w = np.stack([scale2d_centered(w[..., c], scale)
-                      for c in range(w.shape[-1])], axis=-1)
-    dy, dx = (int(shift[0]), int(shift[1])) if shift else (0, 0)
-    if dy or dx:
-        alpha = np.roll(alpha, (dy, dx), axis=(0, 1))
-        w = np.roll(w, (dy, dx), axis=(0, 1))
+    alpha_f = np.zeros((h, w), dtype=np.float64)
+    w_f = np.zeros((h, w, 3), dtype=np.float64)
+    if matte:
+        band = tuple(matte["band"])
+        y0, y1 = int(h * band[0]), int(h * band[1])
+        bshape = (y1 - y0, w)
+        alpha = np.asarray(matte["alpha"], dtype=np.float64)
+        wm = np.asarray(matte["W"], dtype=np.float64)
+        if alpha.shape != bshape:
+            alpha = _resize2d(alpha, bshape)
+            wm = np.stack([_resize2d(wm[..., c], bshape)
+                           for c in range(wm.shape[-1])], axis=-1)
+        # The FLAT VEIL rides along here and NOWHERE else: the inversion must
+        # fix it (a filler cannot invent 310x240px of face), while the LaMa mask
+        # must never see it. Combining by max keeps a stroke that crosses the
+        # veil at its own, higher alpha rather than averaging the two.
+        veil_map = veil_alpha_map(matte.get("veil"), bshape)
+        if veil_map is not None:
+            alpha = np.maximum(alpha, veil_map)
+        # The registered SCALE is applied after the veil joins the alpha and
+        # before the shift, because both were measured in template coordinates:
+        # rescale first, then translate the rescaled mark into place. W rides
+        # along per-channel so the inversion still subtracts the right colour.
+        if float(scale) != 1.0:
+            alpha = scale2d_centered(alpha, scale)
+            wm = np.stack([scale2d_centered(wm[..., c], scale)
+                           for c in range(wm.shape[-1])], axis=-1)
+        dy, dx = (int(shift[0]), int(shift[1])) if shift else (0, 0)
+        if dy or dx:
+            alpha = np.roll(alpha, (dy, dx), axis=(0, 1))
+            wm = np.roll(wm, (dy, dx), axis=(0, 1))
+        alpha_f[y0:y1] = alpha
+        w_f[y0:y1] = wm
+    if pair_cov is not None:
+        pa = float(pair["alpha"]) * pair_cov
+        take = pa > alpha_f
+        alpha_f[take] = pa[take]
+        w_f[take] = np.asarray(pair["W"], dtype=np.float64).reshape(1, 3)
 
-    a = np.clip(alpha, 0.0, alpha_max)[:, :, None]
-    clean = np.clip((b - a * w) / np.maximum(1.0 - a, 1e-3), 0.0, 255.0)
-    hit = alpha > 0.0
-    band_out = out[y0:y1, :, :]
-    band_out[hit] = np.clip(np.rint(clean), 0, 255).astype(np.uint8)[hit]
-    out[y0:y1, :, :] = band_out
-    changed[y0:y1, :][hit] = True
+    a = np.clip(alpha_f, 0.0, alpha_max)[:, :, None]
+    clean = np.clip((arr - a * w_f) / np.maximum(1.0 - a, 1e-3), 0.0, 255.0)
+    hit = alpha_f > 0.0
+    out[hit] = np.clip(np.rint(clean), 0, 255).astype(np.uint8)[hit]
+    changed[hit] = True
     return out, changed
 
 

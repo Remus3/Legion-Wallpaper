@@ -31,6 +31,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+370. DONE **2026-11-15 (veil-wire: DA logo pair matte wired as the preferred veil path + LaMa edge ring; inpaint_lama mod-8 padding root cause; commit in this entry's commit).**
+   Premise VERIFIED from docs/_archive/2026-11/VEIL_PAIR_RESULT_2026-11-15.md (149ce0d). Shipped: lw_clean_overlay
+   save/load/register_pair_matte, pair_veil_alpha_hat/present, pair_edge_ring, remove_overlay(pair=); lw_clean_iopaint
+   overlay_prepass(pair=, return_ring=) + clean_slug --overlay wiring (ring OR-ed after completion; collection seed
+   dropped inside the logo box + PAIR_SEED_GUARD 12 ref px; credit line keeps its seed); tools/lw_veil_pair_matte.py
+   builder. Asset ops/runtime/clean/da_veil_pair_matte.npz is GITIGNORED (third-party watermark derivative; numbers
+   only: alpha 0.1511, W 245.1, 393x294 window shape), regenerated from pairs A+B by the builder. pair=None is the old
+   path byte for byte. CORRECTED on the way: (1) a global strip-mean presence check read -0.03 on veiled C -> local
+   median step (veiled A/B/C 0.123/0.142/0.112, clean -0.021/-0.013/-0.073, gate 0.05); (2) collection strokes in the
+   algebra cost C 1.3 dB near the logo -> dropped when the pair is active; (3) ROOT CAUSE lw_clean_pass.inpaint_lama
+   RESIZED simple-lama's mod-8-padded output, stretching every fill by up to 7 px on non-mod-8 ROIs -> crop; this made
+   a 1-2 px ring cost 6 dB; earlier LaMa-lane numbers predate the fix. Held-out C (edge PSNR / edge hp-RMS / logo PSNR /
+   residual alpha): input 24.71/5.00/21.59/0.151; old lane 21.76/8.70/23.36/0.039; new de-veil 29.37/5.09/34.65/0.0015;
+   new full lane (ring 1/3) 28.89/5.74/34.38/0.0014; 0 changed px in the far region from pair+ring. Zero residue NOT
+   reached: faint 1 px outline traces remain at 2x (operator crop images/_veil_pairs/2026-11-15/C_pairwire_logo_crop_*.png).
+   TDD: tests/test_lw_veil_pair_matte.py (28) RED first (module missing), then green; mod8 test RED (270x401, 301x400)
+   then green. Suite via fleet_suite_gate: parallel 4360 passed 19 skipped + serial 183 passed 1 skipped, rc 0 (first
+   run RED only on test_docs_root_layout: the 149ce0d doc sat in docs/ root -> moved to docs/_archive/2026-11/).
+   FUTURE: residual outline (step-based sub-pixel pair registration or halo term), grade on 2560 firstdones, re-run
+   pre-fix LaMa-lane measurements, lw_clean_overlay_schedule still calls overlay_prepass without the pair.
+
 369. DONE **2026-11-14 (responder-authored worker: MAIN ORDER 2026-11-14-0935 renditions cap, timeout progress, reopen events, agent pins).**
    Provenance: inbox copy and MAIN's committed outbox copy MATCH (verify_main True; 3281 bytes). Item 1: tools/lw_first_pass.py
    cap_needauth_renditions + `--cap-renditions` (RENDITION_CAP 10, newest by mtime kept, older MOVED never deleted into
