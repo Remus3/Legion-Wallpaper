@@ -51,6 +51,8 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    run RED only on test_docs_root_layout: the 149ce0d doc sat in docs/ root -> moved to docs/_archive/2026-11/).
    FUTURE: residual outline (step-based sub-pixel pair registration or halo term), grade on 2560 firstdones, re-run
    pre-fix LaMa-lane measurements, lw_clean_overlay_schedule still calls overlay_prepass without the pair.
+   OPERATOR VERDICT 2026-11-15: PASS on images/_veil_pairs/2026-11-15/C_pairwire_logo_crop_input_prepass_lama_clean_2x.png
+   (held-out C dmax7wo, full new lane; a2eb6c3), recorded in VEIL_PAIR_RESULT_2026-11-15.md "Operator verdict".
 
 369. DONE **2026-11-14 (responder-authored worker: MAIN ORDER 2026-11-14-0935 renditions cap, timeout progress, reopen events, agent pins).**
    Provenance: inbox copy and MAIN's committed outbox copy MATCH (verify_main True; 3281 bytes). Item 1: tools/lw_first_pass.py

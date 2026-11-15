@@ -280,3 +280,11 @@ inversion; (2) C is the only held-out pair and is at preview resolution - the
 lane runs on 2560x1440 firstdones, where the matte is upscaled; (3) re-run the
 LaMa-lane measurements that predate the crop fix; (4) `lw_clean_overlay_schedule`
 still calls `overlay_prepass` without the pair (unchanged behaviour).
+
+## Operator verdict (2026-11-15)
+
+- Date: 2026-11-15
+- File: `images/_veil_pairs/2026-11-15/C_pairwire_logo_crop_input_prepass_lama_clean_2x.png`
+  (held-out C, dmax7wo: input | pair pre-pass | full new lane | clean, 2x)
+- Verdict: **PASS** (operator visual review). The batch over the DA logo-veil
+  family follows in `docs/_archive/2026-11/VEIL_BATCH_2026-11-15.md`.
