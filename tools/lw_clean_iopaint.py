@@ -780,9 +780,44 @@ def _union_box(box, mask_bool, pad, shape):
             max(box[2], nb[2]), max(box[3], nb[3]))
 
 
+def pair_registration(rgb, pair, shift, scale):
+    """Where the pair matte sits on this frame, for the inversion and the fit.
+
+    The template's registration refined sub-pixel (`refine_pair_shift`),
+    unless the pair's OWN search (`search_pair_registration`: scale about the
+    frame centre x shift) scores PAIR_SEARCH_MARGIN better - art dragged the
+    template on bamboo-gal (dx +30 px, logo at +4) and it missed
+    fantasy-design's 1.2x zoom. Returns {"shift", "scale", "centre", "cov",
+    "source": "template" | "search", "score": [template, search]}.
+
+    With the template kept, the sub-pixel shift drives the INVERSION and the
+    fit only; the LaMa ring stays on the template registration it was swept on
+    (moving it with the refined shift cost held-out C 0.7 dB logo / 1.1 dB
+    edge after LaMa; left in place the lane is within 0.05 dB of the
+    fixed-alpha lane - docs/_archive/2026-11/VEIL_ALPHA_FIT_2026-11-15.md).
+    """
+    pshift, t_score = OV.refine_pair_shift(rgb, pair, shift=shift, scale=scale,
+                                           return_score=True)
+    out = {"shift": pshift, "scale": float(scale), "centre": None,
+           "source": "template"}
+    found = OV.search_pair_registration(rgb, pair)
+    s_shift, s_score = OV.refine_pair_shift(
+        rgb, pair, shift=found["shift"], scale=found["scale"],
+        centre=found["centre"], return_score=True)
+    if s_score > OV.PAIR_SEARCH_MARGIN * max(t_score, 0.0):
+        out = {"shift": s_shift, "scale": float(found["scale"]),
+               "centre": found["centre"], "source": "search"}
+    out["cov"] = OV.register_pair_matte(rgb.shape[:2], pair,
+                                        shift=out["shift"], scale=out["scale"],
+                                        centre=out["centre"])
+    out["score"] = [round(float(t_score), 3), round(float(s_score), 3)]
+    return out
+
+
 def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
                     alpha_thr=OVERLAY_ALPHA_THR, pad: int = OVERLAY_PAD,
-                    pair=None, return_ring: bool = False):
+                    pair=None, return_ring: bool = False,
+                    pair_fit: bool = True):
     """ALGEBRAIC removal first, then the mask for what it could not invert.
 
     Order is the design (see `tests/test_lw_clean_iopaint_overlay.py`): the
@@ -798,6 +833,14 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     1-2 px edge + the dark halo just outside) joins the LaMa mask - the one
     residue the inversion leaves (docs/_archive/2026-11/VEIL_PAIR_RESULT_2026-11-15.md). Absent
     or not detected -> today's collection-veil path, unchanged.
+
+    `pair_fit` (default on) keeps the pair's SHAPE but fits its AMPLITUDE and a
+    sub-pixel shift to THIS frame (`lw_clean_overlay.refine_pair_shift` +
+    `fit_pair_alpha`): the fixed alpha left 225f under-removed and
+    fantasy-design over-removed (docs/_archive/2026-11/VEIL_BATCH_2026-11-15.md).
+    `info["pair"]` then carries `alpha_fit`, `at_bound` (a clamped fit is
+    flagged, never silently used as fine), `fit_windows` and `shift_fit`.
+    pair_fit=False is the fixed-alpha path, byte for byte.
 
     Returns (pre_bgr, mask_full, roi_box, info), plus the ring (full-frame
     bool) as a 5th item when `return_ring`. `info` carries the registration
@@ -818,6 +861,7 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     ring = np.zeros(rgb.shape[:2], dtype=bool)
     pair_info = None
     use_pair = None
+    pshift = pscale = pcentre = None
     if pair:
         cov = OV.register_pair_matte(rgb.shape[:2], pair, shift=(dy, dx),
                                      scale=sc)
@@ -826,12 +870,46 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
         used = bool(cov.any()) and a_hat >= OV.PAIR_PRESENT_MIN
         pair_info = {"used": used, "alpha_hat": round(float(a_hat), 4),
                      "alpha": round(float(pair["alpha"]), 4)}
+        reg = (pair_registration(rgb, pair, (dy, dx), sc)
+               if pair_fit and cov.any() else None)
+        if reg is not None and reg["source"] == "search":
+            # The template position is not the logo's, so presence is read
+            # where the pair's own search put it too.
+            cov = reg["cov"]
+            a_s = OV.pair_veil_alpha_hat(rgb, cov, pair["W"])
+            pair_info["alpha_hat_search"] = round(float(a_s), 4)
+            searched_only = not used and a_s >= OV.PAIR_PRESENT_MIN
+            used = used or searched_only
+            if searched_only:
+                # Read at a searched registration only, presence also needs the
+                # fitted amplitude off the LOWER bound: the one false hit
+                # among batch 1's 19 veil-free frames (caitlyn-love, no logo)
+                # fitted 0.03; the three real ones 0.09-0.17.
+                fit0 = OV.fit_pair_alpha(rgb, reg["cov"], pair)
+                if fit0["at_bound"] == "low":
+                    used = False
+                    pair_info["at_bound"] = "low"
+            pair_info["used"] = used
         if used:
             use_pair = pair
+            if reg is not None:
+                pshift, pscale, pcentre = reg["shift"], reg["scale"], reg["centre"]
+                fit = OV.fit_pair_alpha(rgb, reg["cov"], pair)
+                use_pair = dict(pair, alpha=float(fit["alpha"]))
+                pair_info.update({
+                    "alpha_fit": round(float(fit["alpha"]), 4),
+                    "at_bound": fit["at_bound"],
+                    "fit_windows": int(fit["windows"]),
+                    "shift_fit": [float(pshift[0]), float(pshift[1])],
+                    "scale_fit": float(pscale),
+                    "reg_source": reg["source"],
+                    "reg_score": reg["score"]})
             ring = OV.pair_edge_ring(cov)
             pair_info["ring_px"] = int(ring.sum())
     pre_rgb, changed = OV.remove_overlay(rgb, matte, shift=(dy, dx), scale=sc,
-                                         pair=use_pair)
+                                         pair=use_pair, pair_shift=pshift,
+                                         pair_scale=pscale,
+                                         pair_centre=pcentre)
     pre_bgr = np.ascontiguousarray(np.asarray(pre_rgb)[:, :, ::-1])
     mask_full, roi_box = overlay_mask(pre_bgr.shape, matte, shift=(dy, dx),
                                       alpha_thr=alpha_thr, pad=pad, scale=sc)
@@ -901,7 +979,8 @@ def _sibling_fulls(cluster, target_slug):
 def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                pad=DEFAULT_PAD, progressive=False, use_matte=None, out_dir=None,
                dry_run=False, max_iter=25, overlay=False,
-               alpha_thr=OVERLAY_ALPHA_THR, faint=False, log=print):
+               alpha_thr=OVERLAY_ALPHA_THR, faint=False, log=print,
+               pair_fit=True):
     """IOPaint-emulation clean for one slug. Returns a result dict.
 
     Never mutates pipeline state: writes the candidate full PNG + before/after
@@ -950,7 +1029,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
         full, mask_full, roi_box, ov_info, ov_ring = overlay_prepass(
             full, ov_matte, tpl, score_tpl=OV.load_template(),
             alpha_thr=alpha_thr, pad=pad if pad != DEFAULT_PAD else OVERLAY_PAD,
-            pair=pair_matte, return_ring=True)
+            pair=pair_matte, return_ring=True, pair_fit=pair_fit)
         if roi_box is None:
             return {"slug": slug, "status": "error",
                     "reason": f"the overlay matte is empty above alpha "

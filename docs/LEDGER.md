@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+372. DONE **2026-11-15 (veil-alpha: per-frame amplitude + sub-pixel / own registration for the DA logo pair matte; batch 2 over 24 slugs).**
+   lw_clean_overlay: fit_pair_alpha (zero-step fit, fill + PAIR_HALO halo model, strips 2-6 ref px both sides, smoother
+   half of 15 ref px windows, bisection in PAIR_FIT_BOUNDS 0.03-0.30, clamped fit flagged), refine_pair_shift (integer
+   grad-correlation grid + parabola), search_pair_registration (scale about frame centre x shift, 1/4 res);
+   lw_clean_iopaint.overlay_prepass(pair_fit=True) + pair_registration (search wins at 1.25x template score; LaMa ring
+   kept on the template registration); pair_fit=False = a2eb6c3 path byte for byte. Pairs A/B/C fit - oracle (W 245.1)
+   +0.0039 / -0.0005 / -0.0035 (W255-equivalent vs cited 0.1435/0.1396/0.1406: +0.0006 / +0.0007 / -0.0043). Held-out C
+   pre-pass 35.19 / 30.46 dB logo / edge (fixed 34.65 / 29.37); full lane 34.34 / 28.86 (fixed 34.38 / 28.89, within
+   0.05 dB). The batch-1 step estimator is art-biased (-0.01..-0.04 on the purchased 2560 frames; fit -0.004). Batch 2
+   (22 manual + 2 ladder slugs): G2 24/24 outside 0, gate 9 pass -> 6 NEEDAUTH, 3 ADR-009 refused; 15 manual; fits
+   0.121-0.187 (median 0.154). 11 NEEDAUTH slugs with |resid| > 0.01 skipped (no clean re-submit). Registration
+   "failures": 110-cleanup/122 were amplitude (1.12x zoom registered right); bamboo-gal (template dragged dx +30) and
+   fantasy-design (1.2x zoom missed) fixed by own registration; 3 missed family members found (281-cleanup,
+   258-cleanup, fury-tempest-sona). Nothing approved. tests/test_lw_veil_alpha_fit.py (29). Details:
+   docs/_archive/2026-11/VEIL_ALPHA_FIT_2026-11-15.md.
+
 371. DONE **2026-11-15 (veil-batch: pair-matte overlay lane over the DA logo-veil family in 3.Cleaning Scratch; docs-only).**
    Family by the lane's own presence gate (pair_veil_alpha_hat >= 0.05): 66 of 85 frames (0.088-0.223 vs -0.050..+0.034,
    no frame between); 3 purchased excluded, 63 run. Dry-run all, then clean_slug(overlay=True): 63 cleaned, G2 vs the

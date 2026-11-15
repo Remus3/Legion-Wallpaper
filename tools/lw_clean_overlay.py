@@ -962,8 +962,322 @@ def pair_edge_ring(coverage, inner: int = EDGE_RING_IN,
     return _dilate_bool(core, 2 * ro + 1) & ~_erode_bool(core, 2 * ri + 1)
 
 
+# ---------------------------------------------------------------------------
+# PER-FRAME AMPLITUDE (2026-11-15, docs/_archive/2026-11/VEIL_ALPHA_FIT_2026-11-15.md)
+# The 63-slug batch showed the pair matte's SHAPE is right and its fixed alpha
+# is not: each frame's residual tracked its own veil step (225f +0.085 under-
+# removed, fantasy-design -0.075 over-removed). So the shape stays and the
+# amplitude is fitted per frame, from the frame's own logo edge:
+#   1. `refine_pair_shift`: sub-pixel registration of the coverage, maximizing
+#      the correlation of the image gradient with the coverage gradient. On the
+#      purchased pairs the logo sits up to 2 px off the consensus matte (C: +0.5,
+#      +2.0 px at 1920) and a narrow step read through that offset is ~0.03 low.
+#   2. `fit_pair_alpha`: the alpha whose inversion (fill + the measured dark
+#      halo) leaves NO step across the edge: local means in a strip 2-6 ref px
+#      inside vs 2-6 outside, windowed along the edge, median over the smoother
+#      half of the windows (rough art across the edge is where art, not veil,
+#      sets the step). Bisection inside PAIR_FIT_BOUNDS; a clamped fit is
+#      flagged. Pairs A/B/C: fit - oracle +0.004 / -0.000 / +0.001.
+# The halo is the black-layer alpha just outside the logo edge, per unit FILL
+# alpha, by distance outside the edge in ref px - pairs B and C, VEIL_PAIR_RESULT
+# step 5 (e.g. 0.052 / 0.062 black alpha at 2-3 px for fill ~0.148). It is used
+# by the FIT only: inverting it was measured to cost the logo 1 dB on C, and the
+# LaMa edge ring covers its strongest 3 px.
+PAIR_HALO = ((0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 13.0, 16.0, 20.0,
+              24.0, 30.0),
+             (0.10, 0.19, 0.35, 0.31, 0.235, 0.176, 0.137, 0.118, 0.095, 0.056,
+              0.036, 0.029, 0.011, 0.0))
+PAIR_FIT_BOUNDS = (0.03, 0.30)   # outside this a frame is not the DA veil we know
+PAIR_FIT_STRIP = (2.0, 6.0)      # ref px from the edge, same on both sides
+PAIR_FIT_WIN = 15                # ref px half-window of the local means
+PAIR_FIT_SMOOTH_Q = 50.0         # keep the smoother half of the windows
+PAIR_FIT_ITERS = 18              # bisection steps (0.27 / 2^18: far below 1e-4)
+PAIR_SHIFT_REACH = 2.5           # ref px searched around the given registration
+
+
+def _edt_capped(feat, cap):
+    """Euclidean distance to the nearest True of `feat`, exact up to `cap` px.
+
+    Two separable brute-force passes (column distance, then the row minimum of
+    g^2 + d^2) - numpy only, cost O(cap) array ops. Beyond `cap` it reads > cap.
+    """
+    feat = np.asarray(feat, dtype=bool)
+    r = max(int(np.ceil(cap)), 1)
+    big = float(r + 1)
+    g = np.where(feat, 0.0, big)
+    for d in range(1, r + 1):
+        g[d:] = np.minimum(g[d:], np.where(feat[:-d], float(d), big))
+        g[:-d] = np.minimum(g[:-d], np.where(feat[d:], float(d), big))
+    g2 = g * g
+    out = g2.copy()
+    for d in range(1, r + 1):
+        dd = float(d * d)
+        out[:, d:] = np.minimum(out[:, d:], g2[:, :-d] + dd)
+        out[:, :-d] = np.minimum(out[:, :-d], g2[:, d:] + dd)
+    return np.sqrt(out)
+
+
+def _halo_profile(halo):
+    """(distances, values) arrays, or None for 'no halo' (an empty profile)."""
+    if halo is None:
+        halo = PAIR_HALO
+    if len(halo) != 2 or not len(halo[0]):
+        return None
+    return (np.asarray(halo[0], dtype=np.float64),
+            np.asarray(halo[1], dtype=np.float64))
+
+
+def _signed_geometry(coverage, frame_w, cap_ref):
+    """(core, distance inside, distance outside) in ref px, capped at cap_ref."""
+    cov = np.asarray(coverage, dtype=np.float64)
+    core = cov >= 0.5
+    sc = float(PAIR_REF[0]) / float(frame_w)
+    cap = cap_ref / sc + 2.0
+    din = np.where(core, _edt_capped(~core, cap) * sc, 0.0)
+    dout = np.where(core, 0.0, _edt_capped(core, cap) * sc)
+    return core, din, dout
+
+
+def pair_halo_map(coverage, frame_w, halo=None):
+    """Black-layer alpha of the veil's dark halo per unit fill alpha, (h, w).
+
+    Zero inside the logo and past the profile's reach; the profile is in ref px
+    (scaled with `frame_w`). halo=() means a veil without a halo.
+    """
+    cov = np.asarray(coverage, dtype=np.float64)
+    prof = _halo_profile(halo)
+    if prof is None or not (cov >= 0.5).any():
+        return np.zeros(cov.shape, dtype=np.float64)
+    core, _din, dout = _signed_geometry(cov, frame_w, float(prof[0][-1]) + 1.0)
+    h = np.interp(dout, prof[0], prof[1], right=0.0)
+    return np.where(core, 0.0, h * (1.0 - cov))
+
+
+def _luma(image):
+    g = np.asarray(image, dtype=np.float64)
+    return g.mean(axis=2) if g.ndim == 3 else g
+
+
+def _crop_box(mask, pad, shape):
+    ys, xs = np.nonzero(mask)
+    h, w = int(shape[0]), int(shape[1])
+    return (max(int(ys.min()) - pad, 0), min(int(ys.max()) + 1 + pad, h),
+            max(int(xs.min()) - pad, 0), min(int(xs.max()) + 1 + pad, w))
+
+
+def fit_pair_alpha(image, coverage, pm, halo=None, bounds=PAIR_FIT_BOUNDS):
+    """Fit THIS frame's veil amplitude for the pair matte's shape.
+
+    Returns {"alpha", "at_bound" (None | "low" | "high" | "no_edge"),
+    "windows"}. The alpha is the one whose inversion - fill over `coverage`
+    plus the halo (`pm["halo"]`, else PAIR_HALO; () for none) - leaves a zero
+    median step across the logo edge (see the PER-FRAME AMPLITUDE note above).
+    A fit that would leave `bounds` is clamped and flagged; a coverage with no
+    usable edge returns the matte's own alpha, flagged "no_edge".
+    """
+    prior = float(pm["alpha"])
+    wv = float(np.mean(pm["W"]))
+    cov_full = np.asarray(coverage, dtype=np.float64)
+    if halo is None:
+        halo = pm.get("halo", None)
+    prof = _halo_profile(halo)
+    nothing = {"alpha": prior, "at_bound": "no_edge", "windows": 0}
+    if not (cov_full >= 0.5).any():
+        return nothing
+    fw = cov_full.shape[1]
+    reach = max(PAIR_FIT_STRIP[1] + PAIR_FIT_WIN,
+                float(prof[0][-1]) if prof is not None else 0.0) + 4.0
+    y0, y1, x0, x1 = _crop_box(cov_full > 0, _ref_px(reach, fw),
+                               cov_full.shape)
+    cov = cov_full[y0:y1, x0:x1]
+    g = _luma(image)[y0:y1, x0:x1]
+    core, din, dout = _signed_geometry(cov, fw, reach)
+    if prof is not None:
+        hal = np.where(core, 0.0, np.interp(dout, prof[0], prof[1], right=0.0)
+                       * (1.0 - cov))
+    else:
+        hal = np.zeros(cov.shape)
+    s0, s1 = PAIR_FIT_STRIP
+    ins = core & (din >= s0) & (din < s1)
+    outs = ~core & (dout >= s0) & (dout < s1)
+    k = 2 * _ref_px(PAIR_FIT_WIN, fw) + 1
+    ni = _box_mean(ins.astype(np.float64), k)
+    no = _box_mean(outs.astype(np.float64), k)
+    edge = core & (din <= 2.0)
+    ok = edge & (ni > 0.02) & (no > 0.02)
+    if int(ok.sum()) < 10:
+        return nothing
+
+    def deveil(a):
+        return np.clip((g - a * cov * wv)
+                       / np.maximum(1.0 - a * cov - a * hal, 1e-3), 0.0, 255.0)
+
+    def strip_stats(j):
+        mi = _box_mean(j * ins, k) / np.maximum(ni, 1e-9)
+        mo = _box_mean(j * outs, k) / np.maximum(no, 1e-9)
+        return mi, mo
+
+    # Smoothness weights are fixed ONCE, at the matte's prior alpha, so the
+    # window set does not move with the candidate alpha.
+    j0 = deveil(prior)
+    mi0, mo0 = strip_stats(j0)
+    vi = _box_mean(j0 * j0 * ins, k) / np.maximum(ni, 1e-9) - mi0 ** 2
+    vo = _box_mean(j0 * j0 * outs, k) / np.maximum(no, 1e-9) - mo0 ** 2
+    rough = (np.sqrt(np.maximum(vi, 0.0)) + np.sqrt(np.maximum(vo, 0.0)))[ok]
+    keep = rough <= np.percentile(rough, PAIR_FIT_SMOOTH_Q)
+    n_win = int(keep.sum())
+
+    def step(a):
+        mi, mo = strip_stats(deveil(a))
+        d = ((mi - mo) / np.maximum(wv - mo, 1.0))[ok][keep]
+        return float(np.median(d))
+
+    lo, hi = float(bounds[0]), float(bounds[1])
+    if step(lo) <= 0.0:
+        return {"alpha": lo, "at_bound": "low", "windows": n_win}
+    if step(hi) >= 0.0:
+        return {"alpha": hi, "at_bound": "high", "windows": n_win}
+    for _ in range(PAIR_FIT_ITERS):
+        mid = 0.5 * (lo + hi)
+        if step(mid) > 0.0:
+            lo = mid
+        else:
+            hi = mid
+    return {"alpha": round(0.5 * (lo + hi), 5), "at_bound": None,
+            "windows": n_win}
+
+
+def _shift_int(a, dy, dx):
+    """out(y, x) = a(y - dy, x - dx) for integer dy, dx; zero outside."""
+    h, w = a.shape
+    out = np.zeros_like(a)
+    ys, yd = (slice(0, h - dy), slice(dy, h)) if dy >= 0 else (
+        slice(-dy, h), slice(0, h + dy))
+    xs, xd = (slice(0, w - dx), slice(dx, w)) if dx >= 0 else (
+        slice(-dx, w), slice(0, w + dx))
+    out[yd, xd] = a[ys, xs]
+    return out
+
+
+def _parabola_peak(sm, s0, sp):
+    """Offset in (-0.5, 0.5) of the vertex of the parabola through 3 samples."""
+    den = sm - 2.0 * s0 + sp
+    if den >= 0.0:
+        return 0.0
+    return float(np.clip(0.5 * (sm - sp) / den, -0.5, 0.5))
+
+
+def _grad_setup(g, c, clip_band_r):
+    """Smoothed, clipped image gradient and coverage gradient for the score."""
+    g = _box_mean(_box_mean(g, 3), 3)
+    c = _box_mean(_box_mean(c, 3), 3)
+    gy, gx = np.gradient(g)
+    cy, cx = np.gradient(c)
+    band = _dilate_bool(np.hypot(cy, cx) > 1e-3, 2 * clip_band_r + 3)
+    mag = np.hypot(gy, gx)
+    cap = float(np.percentile(mag[band], 90)) if band.any() else 0.0
+    if cap <= 0:
+        return None
+    k = np.minimum(1.0, cap / np.maximum(mag, 1e-9))
+    norm = float(np.sqrt((cy * cy + cx * cx).sum()))
+    return gy * k * band, gx * k * band, cy, cx, max(norm, 1e-9)
+
+
+def _score_grid(setup, r):
+    """{(dy, dx): normalized sum(grad I . grad cov shifted)} for |d| <= r."""
+    gy, gx, cy, cx, norm = setup
+    return {(a, b): float((gy * _shift_int(cy, a, b)
+                           + gx * _shift_int(cx, a, b)).sum()) / norm
+            for a in range(-r, r + 1) for b in range(-r, r + 1)}
+
+
+def refine_pair_shift(image, pm, shift=(0, 0), scale=1.0,
+                      reach=PAIR_SHIFT_REACH, centre=None,
+                      return_score: bool = False):
+    """Sub-pixel (dy, dx) of the pair matte on this frame, near `shift`.
+
+    The veil is the one image structure shaped like the coverage, so the shift
+    that maximizes sum(grad I . grad coverage) over the edge band is the one
+    that lines the matte up with it. Art gradients are clipped at their 90th
+    percentile in the band so one strong art edge cannot steer the search.
+    Integer shifts over +-`reach` ref px (exact, no resampling - an
+    interpolated shift blurs the gradient and so biases the peak toward whole
+    pixels), then a parabola through the peak's neighbours on each axis.
+    `return_score` adds the peak score (normalized by the coverage gradient's
+    norm, so registrations at different scales compare).
+    """
+    dy0, dx0 = (float(shift[0]), float(shift[1])) if shift else (0.0, 0.0)
+    h, w = np.asarray(image).shape[:2]
+    cov = register_pair_matte((h, w), pm, shift=(dy0, dx0), scale=scale,
+                              centre=centre)
+    if not (cov >= 0.5).any():
+        return ((dy0, dx0), 0.0) if return_score else (dy0, dx0)
+    r = max(int(np.ceil(reach * w / float(PAIR_REF[0]))), 1)
+    y0, y1, x0, x1 = _crop_box(cov > 0, r + 6, (h, w))
+    setup = _grad_setup(_luma(image)[y0:y1, x0:x1], cov[y0:y1, x0:x1], r)
+    if setup is None:
+        return ((dy0, dx0), 0.0) if return_score else (dy0, dx0)
+    grid = _score_grid(setup, r + 1)
+    by, bx = max(((a, b) for a in range(-r, r + 1) for b in range(-r, r + 1)),
+                 key=lambda t: grid[t])
+    fy = _parabola_peak(grid[(by - 1, bx)], grid[(by, bx)], grid[(by + 1, bx)])
+    fx = _parabola_peak(grid[(by, bx - 1)], grid[(by, bx)], grid[(by, bx + 1)])
+    out = (round(dy0 + by + fy, 3), round(dx0 + bx + fx, 3))
+    return (out, grid[(by, bx)]) if return_score else out
+
+
+# Pair-own registration (2026-11-15): batch 1's four "registration failures"
+# were the COLLECTION template's registration, borrowed by the pair - art
+# dragged it (bamboo-gal: dx +30 px, the logo sits at +4) or it missed a zoomed
+# frame (fantasy-design is a 1.2x centre crop; the template said (43, -10) at
+# 1.0). The pair registers itself too: scale about the FRAME centre (a zoom
+# crop scales the logo about the frame centre, not about REMOVAL_BAND's) x a
+# shift up to PAIR_SEARCH_REACH of the width, coarse at 1/PAIR_SEARCH_DS. It
+# replaces the template only when it scores PAIR_SEARCH_MARGIN better, so the
+# 59 frames the template already registered are not moved.
+PAIR_SEARCH_SCALES = (0.88, 0.92, 0.96, 1.0, 1.04, 1.08, 1.12, 1.16, 1.20,
+                      1.25, 1.33)
+PAIR_SEARCH_REACH = 0.03
+PAIR_SEARCH_DS = 4
+PAIR_SEARCH_MARGIN = 1.25
+
+
+def search_pair_registration(image, pm, scales=PAIR_SEARCH_SCALES,
+                             reach=PAIR_SEARCH_REACH, ds=PAIR_SEARCH_DS):
+    """Coarse pair-own registration -> {"shift", "scale", "centre", "score"}.
+
+    Shift in full-frame px (multiples of `ds`), scale about the frame centre.
+    """
+    g = _luma(image)
+    h, w = g.shape
+    hs, ws = h // ds, w // ds
+    small = g[:hs * ds, :ws * ds].reshape(hs, ds, ws, ds).mean(axis=(1, 3))
+    r = max(int(np.ceil(reach * ws)), 1)
+    best = None
+    for sc in scales:
+        cov = register_pair_matte((hs, ws), pm, scale=sc,
+                                  centre=(hs / 2.0, ws / 2.0))
+        if not (cov >= 0.5).any():
+            continue
+        y0, y1, x0, x1 = _crop_box(cov > 0, r + 4, (hs, ws))
+        setup = _grad_setup(small[y0:y1, x0:x1], cov[y0:y1, x0:x1], 1)
+        if setup is None:
+            continue
+        grid = _score_grid(setup, r)
+        (a, b), v = max(grid.items(), key=lambda t: t[1])
+        if best is None or v > best[0]:
+            best = (v, sc, a, b)
+    if best is None:
+        return {"shift": (0.0, 0.0), "scale": 1.0, "centre": (h / 2.0, w / 2.0),
+                "score": 0.0}
+    return {"shift": (float(best[2] * ds), float(best[3] * ds)),
+            "scale": float(best[1]), "centre": (h / 2.0, w / 2.0),
+            "score": float(best[0])}
+
+
 def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
-                   pair=None, require_present=False):
+                   pair=None, require_present=False, pair_shift=None,
+                   pair_scale=None, pair_centre=None):
     """Invert the matting equation -> (uint8 RGB, changed-pixel mask).
 
     `J = (I - a*W) / (1 - a)` reconstructs the partial-alpha ramp EXACTLY
@@ -985,6 +1299,10 @@ def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
     itself; the credit line and edge go to the LaMa mask instead
     (`lw_clean_iopaint.overlay_prepass`), which still reads the collection
     matte. pair=None is today's path, byte for byte.
+
+    `pair_shift` (dy, dx), float frame px, `pair_scale` and `pair_centre`
+    register the pair on its own (the `refine_pair_shift` /
+    `search_pair_registration` result) instead of the template's shift/scale.
     """
     arr = np.asarray(image, dtype=np.float64)
     out = np.clip(np.rint(arr), 0, 255).astype(np.uint8)
@@ -992,7 +1310,10 @@ def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
     changed = np.zeros((h, w), dtype=bool)
     pair_cov = None
     if pair:
-        pair_cov = register_pair_matte((h, w), pair, shift=shift, scale=scale)
+        pair_cov = register_pair_matte(
+            (h, w), pair, shift=shift if pair_shift is None else pair_shift,
+            scale=scale if pair_scale is None else pair_scale,
+            centre=pair_centre)
         if not pair_cov.any() or (require_present and not pair_veil_present(
                 arr, pair_cov, pair["W"])):
             pair_cov = None
