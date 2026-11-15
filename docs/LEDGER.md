@@ -31,6 +31,17 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+371. DONE **2026-11-15 (veil-batch: pair-matte overlay lane over the DA logo-veil family in 3.Cleaning Scratch; docs-only).**
+   Family by the lane's own presence gate (pair_veil_alpha_hat >= 0.05): 66 of 85 frames (0.088-0.223 vs -0.050..+0.034,
+   no frame between); 3 purchased excluded, 63 run. Dry-run all, then clean_slug(overlay=True): 63 cleaned, G2 vs the
+   original input 63/63 pass with 0 px changed outside pair coverage + LaMa mask. Batch gate (G2 + registration +
+   |residual alpha| <= 0.02, the p75 of the estimator on veil-free frames): 37 pass -> 33 save-working + submit (NEEDAUTH,
+   nothing approved), 4 refused by ADR-009 (prior engine; left for an operator --allow-ladder); 26 -> manual IOPaint queue
+   (annotate --tool qa), 4 of them registration failures (110-cleanup, 122, bamboo-gal, fantasy-design). Finding: residual
+   = frame veil step - 0.151 (median dev 0.002) -> the fixed pair alpha is the limit on upscaled firstdones; per-frame alpha
+   is the next slice. Table + method: docs/_archive/2026-11/VEIL_BATCH_2026-11-15.md; crops + contact sheets gitignored
+   under images/_veil_pairs/2026-11-15/batch/.
+
 370. DONE **2026-11-15 (veil-wire: DA logo pair matte wired as the preferred veil path + LaMa edge ring; inpaint_lama mod-8 padding root cause; commit in this entry's commit).**
    Premise VERIFIED from docs/_archive/2026-11/VEIL_PAIR_RESULT_2026-11-15.md (149ce0d). Shipped: lw_clean_overlay
    save/load/register_pair_matte, pair_veil_alpha_hat/present, pair_edge_ring, remove_overlay(pair=); lw_clean_iopaint
