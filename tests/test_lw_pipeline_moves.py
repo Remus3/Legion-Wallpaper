@@ -247,6 +247,32 @@ def test_reject_renumbers_max_plus_one(root: Path, tmp_path: Path):
     assert "too soft" in (man["transitions"][-1].get("note") or "")
 
 
+def test_submit_after_reject_skips_the_rejected_working(root: Path, tmp_path: Path):
+    # Veil pass 2 (2026-11-15): an ADDITIONAL candidate is saved as a working
+    # while the current submission waits. If the operator rejects the current
+    # one, reject renames it to max+1 - ABOVE the pass-2 working - and submit
+    # must not hand the refused bytes straight back for review.
+    _drop(root, "ahri.png", b"orig")
+    assert run(root, "intake", "--all") == 0
+    _edit(root, "ahri", "first", b"w1", tmp_path)
+    scratch = root / "1.First Pass Scratch" / "ahri"
+    alt = tmp_path / "pass2.png"
+    alt.write_bytes(b"pass-two")
+    assert run(root, "save-working", "ahri", "--from", str(alt)) == 0
+    assert (scratch / "ahri_firstneedauth.png").read_bytes() == b"edited-w1"
+    assert run(root, "reject", "ahri", "--note", "prefer pass 2") == 0
+    assert run(root, "submit", "ahri") == 0
+    assert (scratch / "ahri_firstneedauth.png").read_bytes() == b"pass-two"
+
+
+def test_submit_refuses_when_every_working_was_rejected(root: Path, tmp_path: Path):
+    _drop(root, "ahri.png", b"orig")
+    assert run(root, "intake", "--all") == 0
+    _edit(root, "ahri", "first", b"w1", tmp_path)
+    assert run(root, "reject", "ahri", "--note", "no") == 0
+    assert run(root, "submit", "ahri") == 2
+
+
 def test_reject_without_needauth_errors(root: Path):
     _drop(root, "ahri.png", b"orig")
     assert run(root, "intake", "--all") == 0

@@ -1500,6 +1500,14 @@ def cmd_save_working(ctx, slug, from_path, adopt, tool, params_json,
 SUBMIT_DEFAULT_ACTOR = "unattributed"
 
 
+def _rejected_shas(man):
+    """sha256s a manifest records as REJECTED (empty for no manifest)."""
+    if not man:
+        return set()
+    return {t.get("sha256_in") for t in man.get("transitions") or []
+            if t.get("op") == "REJECT" and t.get("sha256_in")}
+
+
 def cmd_submit(ctx, slug, actor=SUBMIT_DEFAULT_ACTOR):
     """T4. `actor` defaults to "unattributed": the pipeline cannot know who
     ran the command, so it never claims "operator" (LEDGER 268 defect 4).
@@ -1513,10 +1521,20 @@ def cmd_submit(ctx, slug, actor=SUBMIT_DEFAULT_ACTOR):
     workings = scratch_workings(folder, slug, stage)
     if not workings:
         raise PipelineError(f"submit: {slug} has no working file", code=2)
+    # Never re-submit bytes the operator already REJECTED: reject renames the
+    # needauth to max+1, which can sit ABOVE a newer candidate saved while it
+    # waited (veil pass 2, 2026-11-15). Same rule as
+    # lw_clean_pass.select_working_image (incident 2026-10-04).
+    rejected = _rejected_shas(load_manifest(folder))
+    live = [(n, p) for n, p in workings if sha256_file(p) not in rejected]
+    if not live:
+        raise PipelineError(
+            f"submit: every working file of {slug} was rejected - save a new "
+            "working first", code=2)
     ops = Ops(ctx.dry)
     lock = acquire_lock(folder, ctx.dry)
     try:
-        _, src = workings[-1]
+        _, src = live[-1]
         sha = sha256_file(src)
         ops.rename(src, needauth)
         man = load_manifest(folder)

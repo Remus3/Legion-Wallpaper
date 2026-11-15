@@ -1366,6 +1366,291 @@ def pair_gate_frame(candidate, prepass_roi, region, lama_mask_roi):
     return frame, int(diff.sum())
 
 
+# ---------------------------------------------------------------------------
+# PASS-2 EDGE PROFILE (2026-11-15, docs/_archive/2026-11/VEIL_PASS2_2026-11-15.md)
+# The operator passed the per-frame alpha but the logo BORDER still ghosts.
+# Measured on the purchased pairs run through the real first-pass chain (veiled
+# and clean preview, both upscaled by IllustrationJaNai V3 + USM to 2560): the
+# upscaled veil edge is ~1 px wide (the matte's bilinear ramp is ~3 px), it
+# sits 0.5-1 px OUTSIDE the matte's 0.5 contour and ~0.4 px off vertically, the
+# per-edge position wobbles by up to +-1 px against the consensus shape, and
+# the dark halo outside reaches ~20 px (black alpha 0.03-0.06 at 4-8 px) - and
+# was never inverted. So the pre-pass left a bright 2 px line on the edge, a
+# faint bright line just inside the LaMa ring and a dark band outside it.
+# Pass 2 re-renders the coverage from a SUB-PIXEL signed distance to the
+# matte's contour, fits per frame a shift, an outward offset, an edge blur and
+# the halo's amplitude / reach (alpha stays `fit_pair_alpha`'s), then a
+# per-pixel offset along the contour, and inverts fill AND halo:
+#   J = (I - a W P) / (1 - a P - a k h(d / t))
+# Fit objective: art is locally PLANAR across the edge, so in windows centred
+# near the edge J must be a plane - the SSE of a per-window plane fit to the
+# de-veiled frame (robust log loss over the windows). The ghost gate
+# (`lw_veil_ghost.edge_ghost`) is a different instrument on the OUTPUT frame.
+PAIR_EDGE_SS = 4                  # supersampling of the contour render
+PAIR_EDGE_REACH = 40.0            # ref px around the logo the model covers
+PAIR_EDGE_WIN = 8.0               # ref px half-window of the planar-art fit
+PAIR_EDGE_BAND = 10.0             # ref px from the edge the windows sit in
+PAIR_EDGE_STEP = 3                # window-centre grid (frame px)
+PAIR_EDGE_SIGMA0 = 0.8            # starting edge blur (frame px)
+# (lo, hi) per parameter: dy, dx, d0, sigma in FRAME px; halo k, t unitless.
+PAIR_EDGE_BOUNDS = ((-1.5, 1.5), (-1.5, 1.5), (-1.5, 2.0), (0.0, 2.0),
+                    (0.0, 3.0), (0.6, 2.0))
+PAIR_EDGE_ROUNDS = 3
+PAIR_EDGE_ITERS = 14
+# Local offset: per pixel along the contour, from aggregated local SSE curves.
+PAIR_EDGE_LOCAL_GRID = tuple(round(-1.25 + 0.25 * i, 2) for i in range(11))
+PAIR_EDGE_LOCAL_WIN = 6.0         # ref px half-window
+PAIR_EDGE_LOCAL_BAND = 4.0        # ref px from the edge
+PAIR_EDGE_LOCAL_AGG = 10.0        # ref px aggregation along the contour
+
+_EDGE_Z = np.linspace(-3.0, 3.0, 25)
+_EDGE_WZ = np.exp(-0.5 * _EDGE_Z * _EDGE_Z)
+_EDGE_WZ /= _EDGE_WZ.sum()
+
+
+def pair_signed_distance(frame_shape, pm, shift=(0, 0), scale=1.0, centre=None,
+                         reach=PAIR_EDGE_REACH):
+    """Sub-pixel signed distance (frame px, + inside) to the pair contour.
+
+    Returns {"box": (y0, y1, x0, x1), "sd", "ny", "nx"} over a crop `reach`
+    ref px around the logo. The contour is the 0.5 level of the registered
+    coverage rendered PAIR_EDGE_SS times finer; near the edge the distance is
+    the area mean of the fine distance (sub-pixel), further out the frame-res
+    distance. (ny, nx) is the unit normal pointing into the logo.
+    """
+    h, w = int(frame_shape[0]), int(frame_shape[1])
+    if centre is None:
+        centre = (h * (REMOVAL_BAND[0] + REMOVAL_BAND[1]) / 2.0, w / 2.0)
+    cov = register_pair_matte((h, w), pm, shift=shift, scale=scale, centre=centre)
+    if not (cov >= 0.5).any():
+        return None
+    capf = float(reach) * w / float(PAIR_REF[0])
+    y0, y1, x0, x1 = _crop_box(cov > 0, int(np.ceil(capf)) + 4, (h, w))
+    ss = PAIR_EDGE_SS
+    hi = register_pair_matte(
+        (h * ss, w * ss), pm, shift=(float(shift[0]) * ss, float(shift[1]) * ss),
+        scale=scale, centre=(float(centre[0]) * ss, float(centre[1]) * ss))
+    hb = hi[y0 * ss:y1 * ss, x0 * ss:x1 * ss] >= 0.5
+    capn = 3 * ss
+    sdh = np.where(hb, _edt_capped(~hb, capn) - 0.5,
+                   -(_edt_capped(hb, capn) - 0.5)) / ss
+    hh, ww = y1 - y0, x1 - x0
+    fine = sdh.reshape(hh, ss, ww, ss).mean(axis=(1, 3))
+    core = cov[y0:y1, x0:x1] >= 0.5
+    cf = capf + 2.0
+    coarse = np.where(core, _edt_capped(~core, cf) - 0.5,
+                      -(_edt_capped(core, cf) - 0.5))
+    sd = np.where(np.abs(fine) < capn / ss - 0.6, fine, coarse)
+    gy, gx = np.gradient(_box_mean(sd, 3))
+    n = np.maximum(np.hypot(gy, gx), 1e-6)
+    return {"box": (y0, y1, x0, x1), "sd": sd, "ny": gy / n, "nx": gx / n}
+
+
+def pair_edge_profile(x, sigma):
+    """Coverage of a hard edge at signed distance x (px), Gaussian-blurred."""
+    x = np.asarray(x, dtype=np.float64)
+    if sigma <= 1e-3:
+        return np.clip(x + 0.5, 0.0, 1.0)
+    out = np.zeros_like(x)
+    for zi, wi in zip(_EDGE_Z, _EDGE_WZ, strict=True):
+        out += wi * np.clip(x + 0.5 + float(sigma) * zi, 0.0, 1.0)
+    return out
+
+
+def _edge_sdp(geom, theta, offset=None):
+    dy, dx, d0 = theta[0], theta[1], theta[2]
+    sdp = geom["sd"] - (geom["ny"] * dy + geom["nx"] * dx) + d0
+    return sdp if offset is None else sdp + offset
+
+
+def pair_edge_maps(geom, frame_w, theta, alpha, offset=None):
+    """(P fill coverage, G halo black alpha) over the geometry crop.
+
+    theta = (dy, dx, d0, sigma, halo_k, halo_t); `offset` an optional
+    per-pixel extra outward offset (frame px).
+    """
+    sdp = _edge_sdp(geom, theta, offset)
+    p = pair_edge_profile(sdp, theta[3])
+    prof = _halo_profile(None)
+    dout = np.maximum(-sdp, 0.0) * float(PAIR_REF[0]) / float(frame_w)
+    t = max(float(theta[5]), 1e-3)
+    g = (float(alpha) * float(theta[4])
+         * np.interp(dout / t, prof[0], prof[1], right=0.0)
+         * (sdp < 0) * (1.0 - p))
+    return p, g
+
+
+class _PlanarSSE:
+    """Per-window SSE of a plane fitted to the de-veiled luma (box sums)."""
+
+    def __init__(self, g, geom, frame_w, w_mark, alpha, win_ref, band_ref, step):
+        self.g, self.geom, self.fw = g, geom, frame_w
+        self.wv, self.alpha = float(w_mark), float(alpha)
+        self.k = 2 * _ref_px(win_ref, frame_w) + 1
+        hh, ww = g.shape
+        yy, xx = np.mgrid[0:hh, 0:ww].astype(np.float64)
+        self.yy, self.xx = yy - hh / 2.0, xx - ww / 2.0
+        sel = np.zeros((hh, ww), dtype=bool)
+        sel[::step, ::step] = True
+        bd = float(band_ref) * frame_w / float(PAIR_REF[0])
+        self.cent = sel & (np.abs(geom["sd"]) < bd)
+
+    def sse(self, theta, offset=None):
+        p, gh = pair_edge_maps(self.geom, self.fw, theta, self.alpha, offset)
+        m = 1.0 - self.alpha * p - gh
+        t = self.g - self.alpha * self.wv * p
+        u = (m, m * self.yy, m * self.xx)
+        s = np.empty((int(self.cent.sum()), 3, 3))
+        for i in range(3):
+            for j in range(i, 3):
+                v = _box_mean(u[i] * u[j], self.k)[self.cent]
+                s[:, i, j] = v
+                s[:, j, i] = v
+        b = np.stack([_box_mean(ui * t, self.k)[self.cent] for ui in u], axis=-1)
+        tt = _box_mean(t * t, self.k)[self.cent]
+        sol = np.linalg.solve(s + np.eye(3) * 1e-6, b[..., None])[..., 0]
+        return np.maximum(tt - (b * sol).sum(-1), 0.0)
+
+
+def _golden(f, lo, hi, iters):
+    gr = 0.6180339887498949
+    a, b = float(lo), float(hi)
+    c, d = b - gr * (b - a), a + gr * (b - a)
+    fc, fd = f(c), f(d)
+    for _ in range(int(iters)):
+        if fc < fd:
+            b, d, fd = d, c, fc
+            c = b - gr * (b - a)
+            fc = f(c)
+        else:
+            a, c, fc = c, d, fd
+            d = a + gr * (b - a)
+            fd = f(d)
+    return 0.5 * (a + b)
+
+
+def fit_pair_edge(image, geom, pm, alpha, rounds=PAIR_EDGE_ROUNDS,
+                  iters=PAIR_EDGE_ITERS, bounds=PAIR_EDGE_BOUNDS):
+    """Fit this frame's veil EDGE: shift, outward offset, blur, halo k / t.
+
+    Alpha is given (the `fit_pair_alpha` result) and held. Coordinate descent,
+    a golden-section search per parameter inside `bounds`, on a robust loss
+    (mean log(sse + median start sse)) over every window. Returns {"theta": [dy, dx,
+    d0, sigma, halo_k, halo_t], "cost", "cost0", "windows"}.
+    """
+    y0, y1, x0, x1 = geom["box"]
+    fw = np.asarray(image).shape[1]
+    g = _luma(image)[y0:y1, x0:x1]
+    obj = _PlanarSSE(g, geom, fw, float(np.mean(pm["W"])), alpha,
+                     PAIR_EDGE_WIN, PAIR_EDGE_BAND, PAIR_EDGE_STEP)
+    theta = [0.0, 0.0, 0.0, PAIR_EDGE_SIGMA0, 1.0, 1.0]
+    s0 = obj.sse(theta)
+    if s0.size < 10:
+        return {"theta": theta, "cost": float("nan"), "cost0": float("nan"),
+                "windows": int(s0.size)}
+    # Robust over ALL windows: log(sse + c). A fixed "smoother half" picked
+    # at the start point keeps the windows the start model already explains,
+    # which are the ones blind to the edge parameters (measured on the
+    # fixture: dy -0.03 found for a true -0.4).
+    c_floor = max(float(np.median(s0)), 1e-6)
+
+    def cost(th):
+        return float(np.mean(np.log(obj.sse(th) + c_floor)))
+    c0 = cost(theta)
+    for r in range(int(rounds)):
+        for i in (2, 3, 0, 1, 4, 5):
+            def f(v, i=i):
+                th = list(theta)
+                th[i] = v
+                return cost(th)
+            theta[i] = _golden(f, bounds[i][0], bounds[i][1],
+                               iters if r == 0 else max(int(iters) - 2, 4))
+    return {"theta": [round(float(v), 4) for v in theta], "cost": cost(theta),
+            "cost0": c0, "windows": int(s0.size)}
+
+
+def pair_edge_offsets(image, geom, pm, alpha, theta,
+                      grid=PAIR_EDGE_LOCAL_GRID, agg_ref=PAIR_EDGE_LOCAL_AGG):
+    """Per-pixel extra outward offset (frame px) along the contour.
+
+    For each offset in `grid` the planar-window SSE is read at every pixel
+    near the edge; the SSE curves are averaged along the contour (weight
+    1 / (curve minimum + floor), so busy art counts less) and the minimum is
+    refined by a parabola. Off the band the offset is carried outward by a
+    wide masked mean, so the halo moves with its edge.
+    """
+    y0, y1, x0, x1 = geom["box"]
+    fw = np.asarray(image).shape[1]
+    g = _luma(image)[y0:y1, x0:x1]
+    obj = _PlanarSSE(g, geom, fw, float(np.mean(pm["W"])), alpha,
+                     PAIR_EDGE_LOCAL_WIN, PAIR_EDGE_LOCAL_BAND, 1)
+    c = obj.cent
+    grid = np.asarray(grid, dtype=np.float64)
+    curves = np.zeros((len(grid),) + g.shape)
+    for n, v in enumerate(grid):
+        th = list(theta)
+        th[2] = float(theta[2]) + float(v)
+        curves[n][c] = obj.sse(th)
+    smin = curves.min(axis=0)
+    wgt = np.where(c, 1.0 / (smin / float(obj.k * obj.k) + 4.0), 0.0)
+    ka = 2 * _ref_px(agg_ref, fw) + 1
+    den = _box_mean(wgt, ka)
+    agg = np.stack([_box_mean(cv * wgt, ka) / np.maximum(den, 1e-9)
+                    for cv in curves])
+    i = np.clip(np.argmin(agg, axis=0), 1, len(grid) - 2)
+    yy, xx = np.indices(i.shape)
+    sm, s0, sp = agg[i - 1, yy, xx], agg[i, yy, xx], agg[i + 1, yy, xx]
+    dn = sm - 2.0 * s0 + sp
+    frac = np.where(dn > 1e-12,
+                    np.clip(0.5 * (sm - sp) / np.maximum(dn, 1e-12), -0.5, 0.5),
+                    0.0)
+    has = den > 1e-6
+    off = np.where(has, grid[i] + frac * (grid[1] - grid[0]), 0.0)
+    reach = 2 * _ref_px(30.0, fw) + 1
+    num = _box_mean(off * has, reach)
+    dd = _box_mean(has.astype(np.float64), reach)
+    far = np.where(dd > 1e-6, num / np.maximum(dd, 1e-9), 0.0)
+    return np.where(has, off, far)
+
+
+def remove_pair_edge(image, pm, geom, alpha, theta, offset=None):
+    """Invert fill AND halo with the fitted edge -> (uint8, changed, sd_adj).
+
+    Pixels outside the geometry crop, and inside it where neither the fill
+    nor the halo reaches, are copied through byte-for-byte; `changed` marks
+    the support the inversion was allowed to touch. `sd_adj` is the fitted
+    signed distance (frame px, full frame, -inf off the crop) - the LaMa ring
+    is cut from it (`pair_edge_ring_sd`).
+    """
+    arr = np.asarray(image, dtype=np.float64)
+    out = np.clip(np.rint(arr), 0, 255).astype(np.uint8)
+    h, w = arr.shape[:2]
+    changed = np.zeros((h, w), dtype=bool)
+    sd_full = np.full((h, w), -np.inf)
+    if geom is None:
+        return out, changed, sd_full
+    y0, y1, x0, x1 = geom["box"]
+    p, gh = pair_edge_maps(geom, w, theta, alpha, offset)
+    sd_full[y0:y1, x0:x1] = _edge_sdp(geom, theta, offset)
+    a = float(alpha)
+    wv = np.asarray(pm["W"], dtype=np.float64).reshape(1, 1, -1)
+    crop = arr[y0:y1, x0:x1]
+    keep = np.maximum(1.0 - a * p - gh, 1e-3)[..., None]
+    j = np.clip((crop - a * wv * p[..., None]) / keep, 0.0, 255.0)
+    hit = (p > PAIR_COV_FLOOR) | (gh > 1e-4)
+    sub = out[y0:y1, x0:x1]
+    sub[hit] = np.clip(np.rint(j), 0, 255).astype(np.uint8)[hit]
+    changed[y0:y1, x0:x1] = hit
+    return out, changed, sd_full
+
+
+def pair_edge_ring_sd(sd_full, frame_w, inner=EDGE_RING_IN, outer=EDGE_RING_OUT):
+    """The LaMa edge ring cut from the FITTED signed distance (ref px knobs)."""
+    r = float(frame_w) / float(PAIR_REF[0])
+    sd = np.asarray(sd_full)
+    return (sd < inner * r) & (sd > -outer * r)
+
+
 def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
                    pair=None, require_present=False, pair_shift=None,
                    pair_scale=None, pair_centre=None):

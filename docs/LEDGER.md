@@ -31,6 +31,34 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+374. DONE **2026-11-15 (veil-pass2: border ghost root cause, edge-ghost metric, per-frame edge-profile fit; pass 2 as an ADDITIONAL candidate on 55 slugs; submit skips rejected workings).**
+   ORDER (operator): one more pass on the DA-veil NEEDAUTHs for border ghosting / artifacts, KEEP the NEEDAUTHs.
+   ROOT CAUSE (measured): purchased pairs A/B/C pushed through the real first-pass chain (veiled and clean preview ->
+   IllustrationJaNai V3 + USM -> 2560) give lane-resolution truth. The veil edge there is ~1 px wide vs the matte's ~3 px
+   ramp, 0.5-1 px OUTSIDE the matte contour, ~0.3-0.4 px off vertically, wobbles +-1 px per edge segment; the dark halo
+   reaches ~20 px (black alpha 0.03-0.06 at 4-8 px) and was never inverted. Lane pre-pass residual +0.04-0.05 alpha on
+   the edge, +0.01-0.02 just inside the ring, dark band outside it. Visual on the 55 current candidates: faint outline
+   lines 55, dark blotch/dot at the left-arm tip 31, strong dark edge line 22.
+   METRIC tools/lw_veil_ghost.py edge_ghost (per edge octant x side bin, smooth-art weighted MEDIAN of the high-pass,
+   line_rms): injected errors on the truth pairs (shift/offset/halo/blur, 23 per pair) Spearman 0.92/0.98/0.95; veil-free
+   floor (30 frames) median 0.19 p95 2.00 -> GHOST_LINE_GATE 2.0; halo statistic info only (floor p95 4.3); never calls a fit.
+   FIX lw_clean_overlay PASS-2 EDGE PROFILE: sub-pixel signed distance, fit_pair_edge (dy, dx, d0, sigma, halo k/t;
+   planar-art windows, robust log loss; a start-point "smoother half" found dy -0.03 for a true -0.4 and was replaced),
+   pair_edge_offsets (per-pixel offset along the contour), remove_pair_edge (fill AND halo), ring from the fitted edge.
+   overlay_prepass/clean_slug edge_fit=False default (byte-identical), --edge-fit. Truth pre-pass edge dB A 25.55->26.29,
+   B 28.00->29.94, C 28.74->32.21; held-out C full lane at preview logo 34.34->34.78, edge 28.86->29.64, far unchanged.
+   PASS 2 (55 = 54 NEEDAUTH + 225f): G2 outside 0 px 55/55; resid median +0.0007; ghost median 1.50 -> 0.54 (over gate
+   15 -> 1); gate pass 53 (fail 262f resid -0.025, blood-moon ghost 2.12). Visual: 29 clean, 13 better but faint line,
+   8 new LaMa ring blotch, 4 same/still ghost, 1 worse (blood-moon). STORAGE: save-working writes the next working beside
+   a waiting needauth (lw_pipeline.py:1433; scan keeps NEEDAUTH, :467): 52 NEEDAUTH slugs carry _cleanworking_01 = pass 2,
+   all 54 needauth files byte-identical after (sha256), scan anomalies 0; 225f saved + submitted. TRAP CLOSED: reject puts
+   the needauth at max+1 ABOVE the pass-2 working; cmd_submit now skips REJECTed shas and refuses if all are rejected.
+   Operator: approve keeps current; reject + submit takes pass 2. Nothing approved, never --allow-ladder.
+   TDD: test_lw_veil_edge_profile.py (11, RED on missing API first), test_lw_veil_ghost.py (7), 2 submit cases in
+   test_lw_pipeline_moves.py (RED first). OPEN: left-arm-tip dark dot (LaMa grows 2-3 dark pre-pass px at the ring's
+   inner boundary), LaMa ring blotches at the right arm's bottom edge, faint top-edge line on ~13.
+   Details: docs/_archive/2026-11/VEIL_PASS2_2026-11-15.md.
+
 373. DONE **2026-11-15 (veil-gate: batch gate residual estimator replaced - colour matched filter on the pre-pass; batch 3 over 22 slugs).**
    DECISION (order, recorded): the gate must not grade the fitter with itself and must track ground truth on A/B/C.
    lw_clean_overlay.pair_residual_alpha: box high-pass (12 ref px) of the frame and of the veil signature
