@@ -1,32 +1,34 @@
 NEXT SESSION
 ------------
-SESSION: 96
-Task: CI-95 first, then KITROLL-RESPONDER-RACE, then FIRSTPASS-APPROVE (operator) and every remaining item in order.
+SESSION: 97
+Task: CI-96 first, then FINAL-PASS on the ~70 newly approved cleaning slugs, then CLEAN-REST and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
-  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v30 (c79d975, LEDGER 368;
-  v28 dcec270, LEDGER 361); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified()
+  serve, proxy RC-TeamClaudeProxy on localhost:3456. Fleet kit is v31 (323641d, LEDGER 378;
+  v30 c79d975, LEDGER 368); v18+ MAIN notes are verified at KIT-COMMIT by bundle_verified()
   (LEDGER 328). Commit/push via fleet_gitlock.py run --owner <session_id>.<agent_id>, whole
   suites via fleet_suite_gate.py (a gate may queue 20-30 min - budget for it; --lf over
   tests/ counts as a whole suite). Full suite is tools/lw_suite.py (xdist parallel pass +
   -n0 serial pass, RRF-2.1). The project slug resolves via lw_paths.project_slug() (LEDGER
   325). SUBAGENT-FIRST ARMED (deny, LEDGER 304). Inbox responder: Enabled/Running every 5
-  min at session 93 (LEDGER 366); its children COMMIT in this tree, so check its progress
-  file before editing shared files. Headless child PATH is sanitized by
-  lw_headless_env.sane_path (b7ce5df, LEDGER 365). Kill: HALT file or delete the proxy user
-  variable. MAIN notes carry operator authority after a sha256 check against MAIN's
-  outbox. Never put a 64-hex digest here.
-Acceptance: CI-95 read; every other checklist item acted on or carried with a reason.
+  min (LEDGER 366); its children COMMIT in this tree, so check its progress file before
+  editing shared files. Headless child PATH is sanitized by lw_headless_env.sane_path
+  (b7ce5df, LEDGER 365). Kill: HALT file or delete the proxy user variable. MAIN notes carry
+  operator authority after a sha256 check against MAIN's outbox. Veil work and the 70
+  approvals: LEDGER 370-379, docs/_archive/2026-11/VEIL_*.md. Purchased clean originals sit
+  at <console-drops> (never write a home path). Operator: no manual IOPaint by hand.
+  Never put a 64-hex digest here.
+Acceptance: CI-96 read; FINAL-PASS run or carried with a reason; every other checklist item acted on or carried with a reason.
 CHECKLIST:
-  - CI-95: Read CI on the tip of the session 95 push (the /done commit after b89d086/c79d975: LEDGER 368 + hand-off, docs only) with gh run list --branch main; pending at write time
-  - KITROLL-RESPONDER-RACE: Stop the PT5M responder from claiming a FLEET-KIT ORDER's answer channel while Maint-KitRollout works it (v30: both ran, child timed out at 1800 s and sent nothing, rollout's ANSWER refused; LEDGER 368); TDD in tools/lw_inbox_responder.py
-  - FIRSTPASS-APPROVE: Operator approves/rejects the 148 _firstneedauth items (lw_pipeline approve/reject); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures so rotation keeps one per slug; the 136 older copies sit in ~/Pictures/_needauth_hold since the rendition cap of 2026-11-14 (LEDGER 369) - restore or drop them from there
-  - FIRSTPASS-HOLDS: Decide the 4 alphacoders aspect holds (1109171, 1125535, 663779, 706844; crop placement via lw_first_pass --crop-overrides, operator pixels) and the 3 lap_ratio fails (1000040081 375w-2x, alphacoders 420408, lolwallpapers 13182; need better source); 3 Pinterest thumbs GC'd session 95 (LEDGER 368)
-  - GALLERYDL-CONFIG: Restore %APPDATA%\gallery-dl\config.json for DeviantArt recovery (register as operator ask via tools/lw_ops_tasks.py request if it needs an OAuth/credential)
-  - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; asked in the v19 ANSWER 2026-10-18-1246), swap to it when shipped
-  - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
-  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 93)
+  - CI-96: Read CI on the session 96 push tip (the /done commit after c14f1fc: LEDGER 380 + docs + hand-off) with gh run list --branch main; pending at write time
+  - FINAL-PASS: Run the final pass (stage 3, /final-pass skill) on the ~70 newly approved cleaning slugs (c14f1fc, LEDGER 379)
+  - CLEAN-REST: Decide/run cleaning on the 22 cleaning-scratch slugs not processed: caitlyn-love-confession (awaits operator approval only); dark-cosmic-ahri / mecha-ahri / yuumi (re-source from the operator's purchased clean copies at <console-drops> instead of cleaning); 15 unwatermarked slugs (106-cleanup, 219-cleanup, akali-godly-deer, brair, dfz5w2g, dfzlox4, dfzypoo, dfzypou, dfzypp1, dgk8f8n, dragon-slayer-pantheon, image3, karthasbasefinal, kayle-new-splash, spirit-blossom-ahri); 4 alphacoders now in cleaning
+  - FIRSTPASS-QUEUE: 148 first-pass slugs await operator approval in NEEDAUTH (lw_pipeline approve/reject; never self-approve); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures; the 136 older copies sit in ~/Pictures/_needauth_hold (LEDGER 369) - restore or drop them from there
+  - KITROLL-RACE: Report to MAIN (one note, within the outbound cap) the v31 04:00 auto-roll memory starvation (gate memory admission 31 min, no suite) + KITROLL-RESPONDER-RACE recurrence (PT5M responder claimed the answer channel; LEDGER 378), unless already reported; the LW-side fix stays TDD in tools/lw_inbox_responder.py
+  - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; v31 ships none, LEDGER 378), swap to it when shipped
+  - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324, unchanged LEDGER 378); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
+  - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 96, LEDGER 378)
 Parked: not open; each line names its reopen event - move it back into CHECKLIST when that event lands.
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply at session 93; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close; PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a MAIN reply to the GATE-FIFO note, or a kit version that changes fleet_suite_gate.py
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new at session 93, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a new sibling re-point confirmation in the inbox (4/6 or more)
@@ -35,6 +37,11 @@ Parked: not open; each line names its reopen event - move it back into CHECKLIST
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a fresh IOPaint hand capture newer than 2026-08-22
   - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a MAIN note or operator ask for the repo-review result
 Carried forward:
+  - Session 96 /done: CI-95 closed (2fbefc2 ci 43729919039 success, read back via gh run list); FIRSTPASS-HOLDS closed
+    (4 alphacoders approved into cleaning, c14f1fc); GALLERYDL-CONFIG closed (LEDGER 378); LEDGER 380. Pre-flight: ruff clean,
+    drift_guard 0 breaches, --lf via suite gate 4685 passed 19 skipped. Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base main).
+    No restart_trigger.txt, no ops/runtime/health.json. Memory dir unchanged since 2026-11-08. Newest session jsonl 2.1 MB
+    (< 10 MB). The /done agent started no background work. CI for the /done push: pending (CI-96).
   - Session 95 /done: CI-94 closed (b89d086 ci 42551320229, c79d975 ci 43198051683 + codeql 43198051919 success); v30 ANSWER
     re-sent 2026-11-12-1443 reached 1/1 (04:11 copy undelivered); inbox 6 triaged, marked seen 673; MAIN-NOTE-2104,
     FLEET9-READ, KIT-IGNORE-GAP, ORIGINALS-DUPS closed; 3 Pinterest slugs GC'd --keep-backup (LEDGER 368). Docs-only.
@@ -110,7 +117,7 @@ Carried forward:
     branch d65067f, local only.
   - Next round (LW supports, not in C4): CS 0002's D205/D209 docstring form for
     is_stale; hold()'s AMBIGUOUS "reaping stale locks each pass".
-  - PIPELINE: 148 slugs at _firstneedauth awaiting OPERATOR approval (never self-approve; see FIRSTPASS-APPROVE),
+  - PIPELINE: 148 slugs at _firstneedauth awaiting OPERATOR approval (never self-approve; see FIRSTPASS-QUEUE),
     incl. the older 6 (akali/janna/mel coven, diana x2, miss-fortune). Check banding on the five -pre slugs
     (+0.008..+0.014) via cambi_delta. Miss Fortune DA fetch 403 (manual_queue.csv). 0.Originals: see ORIGINALS-DUPS.
   - SYNC INBOX: drained 220 -> 0 session 68 (mark clears only shown notes). Keep
@@ -121,12 +128,8 @@ Carried forward:
   - Gate-board validation rows "reads like the original art" and "no ghost/band/faint
     residue at 1:1" stay with the operator and never count toward done. Re-prove after
     any gate change: python tools/lw_gate_board.py prove --golden --env all (~4 min).
-  - yuumi-by-narumicsibe-dmax7wo-fullview: CLEAN_SCRATCH / EDITING, w0 - awaiting the
-    OPERATOR's IOPaint hand clean (gate qa: centre_overlay 0.277 + faint credit line;
-    never auto-inpaint). Targets: credit line x1138-1490 y983-1011, veil ~[1142,585];
-    3 operator seeds at ops/runtime/clean/<slug>/<slug>_review_seeds.json. After save:
-    `python tools/lw_pipeline.py save-working <slug> --adopt` (G2 verify), render
-    after-crops, set the 3 review threads, then `submit --actor operator`.
+  - yuumi-by-narumicsibe-dmax7wo-fullview: SUPERSEDED session 96 - re-source from the operator's purchased clean copy
+    (see CLEAN-REST); operator will not hand-clean in IOPaint.
   - IOPaint QA lane on 127.0.0.1:8080 - re-probe before telling the operator to use it.
   - PHONE ACCESS: `tailscale serve --bg http://127.0.0.1:8901` -> https://<tailnet
     host>/review. Hostname NEVER written in tracked files. Re-run serve before phone use.
@@ -143,7 +146,11 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 95 - CI-94, v30 ANSWER delivery, inbox 6-note triage, MAIN-NOTE-2104, FLEET9-READ, KIT-IGNORE-GAP,
+Do NOT redo: session 96 - DA logo veil pair/matte + passes 2-5 (149ce0d a2eb6c3 144609a b4df897 8aa837f b85fcc9 10b0f48 182758c
+  784e120 5c67b81, LEDGER 370-377), the 70 operator approvals (c14f1fc, LEDGER 379), kit v31 adoption (323641d, LEDGER 378),
+  gallery-dl config restore (LEDGER 378), CI-95 (43729919039 success) - read back via git log on main, LEDGER 370-380 and
+  gh run list.
+  session 95 - CI-94, v30 ANSWER delivery, inbox 6-note triage, MAIN-NOTE-2104, FLEET9-READ, KIT-IGNORE-GAP,
   ORIGINALS-DUPS, Pinterest GC (LEDGER 368) - read back via gh run list, MAIN inbox re-hash 1/1, lw_facts 0 unread,
   durations.jsonl LW rows, ls images/0.Originals (only .gitkeep) and ls 1.First Pass Scratch (0 pintrest-com).
   session 94 - MAIN ORDER 2026-11-08-1200 + CI-92 (9e92feb, LEDGER 367; ci 42550710283 + codeql
@@ -186,16 +193,16 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (8452 tries)
+      last check: not done (9400 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (8452 tries)
+      last check: not done (9400 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   - decision.d4-tag-archive decision/d4-tag-archive: D4 deletion floor: delete-or-keep the local-only tag archive/mig-1-v6-wip (abandoned MIG-1 v6 WIP b29005e, not reachable from main, never pushed; LEDGER 327)
       steps: 1) Tell the next session 'delete tag' (it runs git tag -d archive/mig-1-v6-wip) or 'keep tag' (it writes ops/runtime/d4-tag-archive-keep.ok)
       open first: Claude Code session > reply 'delete tag' or 'keep tag'
-      last check: not done (6708 tries)
+      last check: not done (7656 tries)
       close: python tools/lw_ops_tasks.py done decision.d4-tag-archive (closes only when its check passes)
   (end operator asks)

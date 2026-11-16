@@ -511,6 +511,20 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Now
 
+- **DA logo veil from purchased clean pairs - DONE 2026-11-15 (149ce0d a2eb6c3 8aa837f
+  b85fcc9 10b0f48 182758c 784e120 5c67b81; LEDGER 370-377).** Pair-derived veil matte
+  (alpha ~0.14) replaced the pooled estimate; passes 2-5 over the 55 DA-veil slugs.
+  Operator passed it: 70 slugs approved as operator in c14f1fc (LEDGER 379), incl. the
+  4 alphacoders aspect holds. No manual IOPaint will be done by hand (operator).
+
+- **Final pass on the ~70 newly approved cleaning slugs - OPEN (next).** Stage 3
+  (`/final-pass`): masked face/eye repair, deband, 2560x1440 conformance, G1+G2.
+
+- **Cleaning-scratch remainder - OPEN.** 22 slugs not processed: caitlyn-love-confession
+  (operator approval only); dark-cosmic-ahri / mecha-ahri / yuumi re-source from the
+  operator's purchased clean copies at <console-drops>; 15 unwatermarked slugs; the 4
+  alphacoders now in cleaning.
+
 - **Session 93 maintenance - DONE 2026-11-05 (93189fe, b7ce5df; LEDGER 365/366).**
   Dependabot PR 7 re-applied path B (pytest 9.2.0, ruff 0.17.3); headless child PATH
   sanitizer + launch_loop direct launch (PY-ON-PATH root cause: Python Manager App

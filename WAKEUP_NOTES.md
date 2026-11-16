@@ -79,6 +79,20 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-15, session 96) - DA logo veil solved from purchased clean originals; 70 slugs approved
+
+Operator bought clean originals of 3 DA-veiled wallpapers (dlnxav6, dia857d, dmax7wo; held at <console-drops>). A
+pair-derived DA logo veil matte (alpha ~0.14, consistent across artists) replaced the pooled estimate, then per-frame
+alpha, an independent gate estimator, edge-ghost / shading / ring-hue metrics, static edge correction and a whole
+credit-line box: 149ce0d a2eb6c3 144609a b4df897 8aa837f b85fcc9 10b0f48 182758c 784e120 5c67b81 (LEDGER 370-377;
+docs/_archive/2026-11/VEIL_*.md). Operator passed the results: VEIL-FINAL c14f1fc (LEDGER 379) approved 70 slugs as
+operator (55 picks: pass 5 on 50, pass 4 on 5; 7 ladder grants; 4 rest; 4 alphacoders holds advanced to cleaning).
+259f captures moved to images/_operator_captures/259f/. Operator: no manual IOPaint will be done by hand.
+Kit v31 adopted 323641d (LEDGER 378); GALLERYDL-CONFIG restored; the 04:00 auto kit-roll starved for memory and
+KITROLL-RESPONDER-RACE recurred (open). CI-95 closed (2fbefc2 ci 43729919039 success).
+Next: CI-96, then FINAL-PASS on the ~70 approved slugs, then CLEAN-REST. Do NOT redo: veil pair/matte/passes 2-5,
+the 70 approvals, kit v31 adoption, gallery-dl config.
+
 ## PREVIOUS SESSION (2026-11-05, session 93) - intake + first pass + rotation, PATH fix, Dependabot PR 7
 
 Operator ask done in 540da5b (LEDGER 364): intake 17/19 (2 exact dups refused, left in 0.Originals); first pass 17/17 G1
