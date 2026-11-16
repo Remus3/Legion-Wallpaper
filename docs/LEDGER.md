@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+378. DONE **2026-11-15 (attended fleet-items run: FLEET-KIT v31 adopted, ANSWER, KIT-PUBLIC-GIT / PUBPATH-D1 / WATCH-SWAP checked, GALLERYDL-CONFIG restored, stale done-ritual row recycled).**
+   MAIN ORDER 2026-11-14-0936 v31: inbox copy verify_main True (sha256 1296ada9...); bundle_verified True (KIT-COMMIT 8929738).
+   tools/lw_kit_adopt.py adopt: ok, 25/25 sha256 equal section 1, conformance() == [], KIT_VERSION pins 30 -> 31 (4 files).
+   /done command gains `fleet_done.py archive --auto` before the hand-off commit (archive skipped at 20521 B). MF-4: every
+   agent file pins. The 04:00 Maint-KitRollout attempt failed (gate memory admission 31 min, no suite) and its ANSWER was
+   refused by the sender (answer channel owned by the responder child - KITROLL-RESPONDER-RACE again). Gated suite this run
+   (logs/kit-v31-suite-2.log): parallel 4502 passed 19 skipped + serial 183 passed 1 skipped, rc 0. ANSWER re-sent by hand.
+   KIT-PUBLIC-GIT: v31 ships no public verify_kit_commit helper (grep of ops/fleet_kit: none) - stays on _git, carried.
+   PUBPATH-D1: no MAIN note since LEDGER 324 changes the no-rewrite ruling (1223 W44: "No history rewrite") - HELD.
+   WATCH-SWAP: tests/test_fleet_watch_swap_tripwire.py 3 passed (kit fleet_watch has no prune) - no swap.
+   GALLERYDL-CONFIG: %APPDATA%/gallery-dl/config.json was absent; rebuilt from the gitignored API-Key-DeviantArt.txt
+   (client-id/secret + original=false intermediary=true quality=100; no refresh-token, as before). Read back:
+   lw_recover_campaign._assemble_config() sees deviantart; `gallery-dl -j` minted a public token and returned metadata.
+   No operator ask needed. ops/loop/control/progress/done-ritual.json (untracked, silent since 2026-10-31, no reference)
+   moved to the Recycle Bin (VisualBasic FileSystem.DeleteFile SendToRecycleBin).
+
 377. DONE **2026-11-15 (veil-pass5: taller/wider credit box, membrane seam fix of every LaMa fill, contour profile subtraction, ring-hue metric; pass 5 as the next working on all 55 DA-veil slugs).**
    ORDER (operator review of pass 4): credit bottom-edge smudge (meramora, anime-poster-of-soraka, seraphine-by-pebano1),
    inkshadow top-left shadow + ghost lines, 122 ghosting (122_logo_1x.png frame 3 = the pass-4 column: faint outline
