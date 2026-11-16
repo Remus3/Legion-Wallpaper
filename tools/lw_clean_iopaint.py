@@ -817,7 +817,8 @@ def pair_registration(rgb, pair, shift, scale):
 def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
                     alpha_thr=OVERLAY_ALPHA_THR, pad: int = OVERLAY_PAD,
                     pair=None, return_ring: bool = False,
-                    pair_fit: bool = True, edge_fit: bool = False):
+                    pair_fit: bool = True, edge_fit: bool = False,
+                    edge_corr=None, ring_bound: bool = False):
     """ALGEBRAIC removal first, then the mask for what it could not invert.
 
     Order is the design (see `tests/test_lw_clean_iopaint_overlay.py`): the
@@ -851,6 +852,14 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     support the inversion touched and `info["_edge_cov"]` (float32) the fitted
     fill coverage - both arrays, popped by the caller before JSON.
     docs/_archive/2026-11/VEIL_PASS2_2026-11-15.md.
+
+    Pass 3 (with `edge_fit`): `edge_corr` (a grid from
+    `lw_clean_overlay.load_pair_edge_corr`) moves the contour by the STATIC
+    correction learned from the purchased pairs before the fit, and
+    `ring_bound` returns `info["_ring_env"]` = (lo, hi) in the frame's BGR
+    order - the band `apply_ring_bound` clamps the LaMa ring fill to
+    (`lw_clean_overlay.pair_ring_envelope`). Both default off: the pass-2
+    path, byte for byte. docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md.
 
     Returns (pre_bgr, mask_full, roi_box, info), plus the ring (full-frame
     bool) as a 5th item when `return_ring`. `info` carries the registration
@@ -904,6 +913,21 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
             use_pair = pair
             if reg is not None:
                 pshift, pscale, pcentre = reg["shift"], reg["scale"], reg["centre"]
+                if edge_corr is not None:
+                    # Pass 3: the scale too (the search and the template
+                    # registration are scale-quantized; blood-moon sat 0.015
+                    # off). The static correction was learned the same way.
+                    rs = OV.refine_pair_scale(rgb, pair, shift=pshift,
+                                              scale=pscale, centre=pcentre)
+                    pshift, pscale = rs["shift"], rs["scale"]
+                    reg = dict(reg, shift=pshift, scale=pscale,
+                               cov=OV.register_pair_matte(
+                                   rgb.shape[:2], pair, shift=pshift,
+                                   scale=pscale, centre=pcentre))
+                    pair_info["scale_refined"] = {
+                        "scale": round(float(pscale), 5),
+                        "score0": round(rs["score0"], 3),
+                        "score": round(rs["score"], 3)}
                 fit = OV.fit_pair_alpha(rgb, reg["cov"], pair)
                 use_pair = dict(pair, alpha=float(fit["alpha"]))
                 pair_info.update({
@@ -918,10 +942,12 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
             pair_info["ring_px"] = int(ring.sum())
     edge_support = None
     edge_cov = None
+    ring_env = None
     geom = None
     if edge_fit and use_pair is not None and pshift is not None:
         geom = OV.pair_signed_distance(rgb.shape[:2], pair, shift=pshift,
-                                       scale=pscale, centre=pcentre)
+                                       scale=pscale, centre=pcentre,
+                                       edge_corr=edge_corr)
     if geom is not None:
         a_use = float(use_pair["alpha"])
         ef = OV.fit_pair_edge(rgb, geom, pair, a_use)
@@ -933,7 +959,7 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
         pair_info["edge_fit"] = {
             "theta": ef["theta"], "cost": round(float(ef["cost"]), 4),
             "cost0": round(float(ef["cost0"]), 4), "windows": ef["windows"],
-            "local_offsets": True,
+            "local_offsets": True, "edge_corr": edge_corr is not None,
             "offset_p5_p50_p95": [round(float(np.percentile(off[near], q)), 3)
                                   for q in (5, 50, 95)] if near.any() else None}
         pair_info["ring_px"] = int(ring.sum())
@@ -942,6 +968,11 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
         edge_cov = np.zeros(rgb.shape[:2], dtype=np.float32)
         gy0, gy1, gx0, gx1 = geom["box"]
         edge_cov[gy0:gy1, gx0:gx1] = pf
+        if ring_bound:
+            lo, hi = OV.pair_ring_envelope(rgb, pair, geom, a_use, ef["theta"],
+                                           offset=off)
+            ring_env = (np.ascontiguousarray(lo[:, :, ::-1]),
+                        np.ascontiguousarray(hi[:, :, ::-1]))
     else:
         pre_rgb, changed = OV.remove_overlay(rgb, matte, shift=(dy, dx), scale=sc,
                                              pair=use_pair, pair_shift=pshift,
@@ -971,9 +1002,21 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     if edge_support is not None:
         info["_edge_support"] = edge_support
         info["_edge_cov"] = edge_cov
+    if ring_env is not None:
+        info["_ring_env"] = ring_env
     if return_ring:
         return pre_bgr, mask_full, roi_box, info, ring
     return pre_bgr, mask_full, roi_box, info
+
+
+def apply_ring_bound(frame_bgr, ring_env, region):
+    """Clamp the LaMa-filled frame to the pass-3 envelope inside `region`.
+
+    `ring_env` is `info["_ring_env"]` from `overlay_prepass` (BGR order);
+    outside `region` the frame comes back byte for byte.
+    """
+    lo, hi = ring_env
+    return OV.bound_ring_fill(frame_bgr, lo, hi, region)
 
 
 def load_overlay_pair():
@@ -1020,7 +1063,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                pad=DEFAULT_PAD, progressive=False, use_matte=None, out_dir=None,
                dry_run=False, max_iter=25, overlay=False,
                alpha_thr=OVERLAY_ALPHA_THR, faint=False, log=print,
-               pair_fit=True, edge_fit=False):
+               pair_fit=True, edge_fit=False, pass3=False):
     """IOPaint-emulation clean for one slug. Returns a result dict.
 
     Never mutates pipeline state: writes the candidate full PNG + before/after
@@ -1031,6 +1074,10 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     sub-floor boxes instead of a preset, the bright threshold is raised to
     FAINT_BRIGHT_THR, and the run REFUSES with status `manual` when the mask
     covers more of the ROI than a mark can (FAINT_COVERAGE_MAX).
+
+    `pass3` (overlay lane): the edge fit with the static edge correction
+    (`lw_clean_overlay.load_pair_edge_corr`) and the LaMa ring fill clamped
+    to the veil model's envelope (docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md).
     """
     if not overlay and not faint:
         region, chroma_thr, preset_src = resolve_preset(
@@ -1052,6 +1099,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     mask = None
     ov_info = None
     edge_support = None
+    ring_env = None
     if overlay:
         # The centre-overlay lane: no preset region at all. The mark's place on
         # THIS frame comes from the matte's own registration, so the ROI is
@@ -1066,14 +1114,25 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                     "reason": "no centre-overlay matte cached - run "
                               "lw_clean_detector_probe.py --wide "
                               "--build-overlay-matte <confirmed slugs>"}
+        corr_grid = None
+        if pass3:
+            corr = OV.load_pair_edge_corr()
+            if corr is None or pair_matte is None:
+                return {"slug": slug, "status": "error",
+                        "reason": "pass 3 needs the pair matte and its static "
+                                  "edge correction - run "
+                                  "lw_veil_edge_corr.py to build it"}
+            corr_grid = corr["grid"]
+            edge_fit = True
         orig_full = full
         full, mask_full, roi_box, ov_info, ov_ring = overlay_prepass(
             full, ov_matte, tpl, score_tpl=OV.load_template(),
             alpha_thr=alpha_thr, pad=pad if pad != DEFAULT_PAD else OVERLAY_PAD,
             pair=pair_matte, return_ring=True, pair_fit=pair_fit,
-            edge_fit=edge_fit)
+            edge_fit=edge_fit, edge_corr=corr_grid, ring_bound=pass3)
         edge_support = ov_info.pop("_edge_support", None)
         edge_cov = ov_info.pop("_edge_cov", None)
+        ring_env = ov_info.pop("_ring_env", None)
         if roi_box is None:
             return {"slug": slug, "status": "error",
                     "reason": f"the overlay matte is empty above alpha "
@@ -1237,6 +1296,22 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                 "detail": str(exc)}
 
     full_after = paste_region_back(full, roi_after, roi_box)
+    if ring_env is not None:
+        # Pass 3: the ring fill may not leave the band of values the veil
+        # model allows there (LaMa smears colour across art edges the ring
+        # runs along). Only ring pixels LaMa painted are touched.
+        # (not `region`: that name is the ROI the manifest params record)
+        bound_px = np.zeros(full.shape[:2], dtype=bool)
+        bound_px[roi_box[1]:roi_box[3], roi_box[0]:roi_box[2]] = mask > 127
+        bound_px &= ov_ring
+        bounded = apply_ring_bound(full_after, ring_env, bound_px)
+        ov_info["ring_bound"] = {
+            "delta": OV.PAIR_RING_DELTA, "halo_tol": OV.PAIR_RING_HALO_TOL,
+            "slack": OV.PAIR_RING_SLACK, "region_px": int(bound_px.sum()),
+            "clamped_px": int(np.any(bounded != full_after, axis=-1).sum())}
+        full_after = bounded
+        rx0, ry0, rx1, ry1 = roi_box
+        roi_after = full_after[ry0:ry1, rx0:rx1, :].copy()
     # For the overlay lane `full` is the PRE-PASS frame, which is the right
     # baseline: the matting inversion legitimately edits sub-threshold alpha
     # outside the ROI, and the tripwire is about the paste-back, not about it.
@@ -1345,6 +1420,10 @@ def main(argv=None):
     p.add_argument("--edge-fit", action="store_true",
                    help="overlay lane pass 2: fit the DA veil's edge (shift, "
                         "offset, blur, halo) per frame and invert the halo too")
+    p.add_argument("--pass3", action="store_true",
+                   help="overlay lane pass 3: edge fit with the static edge "
+                        "correction, LaMa ring fill clamped to the veil "
+                        "model's envelope")
     p.add_argument("--alpha-thr", type=float, default=OVERLAY_ALPHA_THR,
                    help="overlay-lane matte threshold that becomes the mask")
     p.add_argument("--faint", action="store_true",
@@ -1368,7 +1447,7 @@ def main(argv=None):
                      out_dir=args.out_dir, dry_run=args.dry_run,
                      max_iter=args.max_iter, overlay=args.overlay,
                      alpha_thr=args.alpha_thr, faint=args.faint,
-                     edge_fit=args.edge_fit)
+                     edge_fit=args.edge_fit, pass3=args.pass3)
     print(json.dumps({k: v for k, v in res.items() if k != "commands"},
                      indent=2, default=str))
     # gpu_busy is a non-zero exit like error: nothing was produced, and a batch

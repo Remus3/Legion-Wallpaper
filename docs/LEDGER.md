@@ -31,6 +31,29 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+375. DONE **2026-11-15 (veil-pass3: static edge correction + fine scale + bounded LaMa ring; pass 3 as the next working on 25 of the 26 non-clean DA-veil slugs).**
+   ORDER (operator): one more pass for the border ghosting/artifacts, KEEP the NEEDAUTHs. ROOT CAUSES (measured on the
+   purchased pairs at 2560, clean frame known): (1) TIP DOT = model fill ~0.7 px too far into the bay end (error -11..-16
+   levels at sd +0.4..+1.7 px) -> dark px at the ring's inner edge, grown by LaMa; the true local edge offset is ~85 pct
+   STATIC along the contour (LOO corr 0.86/0.87/0.90, p10/p90 -0.6/+0.8 ref px) and the per-frame field tracks it only at
+   corr 0.66-0.79 - also the faint per-side line; (2) SCALE never refined (search steps 0.04): blood-moon at 1.08 vs a
+   score peak at 1.065 (390 -> 495), fit dy/d0 at bounds; truth pairs peak at ~1.005; (3) BLOTCHES = LaMa in the 5 px ring
+   along a shallow art edge smears colour tens of levels off the right pre-pass. FIX (lw_clean_overlay PASS-3 block,
+   lw_clean_iopaint --pass3, default off = pass 2 byte for byte): static field (pair_true_edge_offsets builder-only,
+   build/save/load_pair_edge_corr, render_pair_grid, pair_signed_distance(edge_corr=)), refine_pair_scale, ring fill
+   clamped to pair_ring_envelope (edge +-0.75 px, halo +-50 pct, never narrower than pre-pass +-16 levels: tol 0 put
+   261f's removed line back). tools/lw_veil_edge_corr.py builds ops/runtime/clean/da_veil_pair_edge_corr.npz (gitignored)
+   from A+B ONLY (C held out). Found live: clean_slug shadowed `region` with the clamp map -> json.dumps crash; renamed.
+   TRUTH full lane edge dB p2 -> p3: A 23.38 -> 26.93, B 29.94 -> 30.98, held-out C 29.19 -> 31.94, C1920 28.98 -> 31.60;
+   C ghost 0.64 -> 0.38; costs: C logo -0.20 / C1920 -0.12 dB, A ghost 0.51 -> 0.63. PASS 3 (26): G2 outside 0 px 26/26,
+   gate 25 pass (262f resid -0.028 not saved); visual vs pass 2: clean 7, faint line 15, still ghost 3 (224f, bamboo-gal,
+   262f), worse in a patch 1 (261f); zero residue still NOT met on 19. No-save sample of 5 clean slugs: never worse (245f
+   tip dot gone). STORAGE: save-working -> _cleanworking_02 x24 + blood-moon _01; 166 pre-existing scratch files sha256
+   identical; scan anomalies 0; nothing approved, never --allow-ladder. Picks (gitignored)
+   images/_veil_pairs/2026-11-15/PICKS.md: pass3 21, pass2 32, NEEDAUTH 2. TDD: tests/test_lw_veil_pass3.py (14; RED on
+   the missing API first), mutation-proven (start-scale refine, zero field, no-op clamp, field not added, region shadow).
+   Details: docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md.
+
 374. DONE **2026-11-15 (veil-pass2: border ghost root cause, edge-ghost metric, per-frame edge-profile fit; pass 2 as an ADDITIONAL candidate on 55 slugs; submit skips rejected workings).**
    ORDER (operator): one more pass on the DA-veil NEEDAUTHs for border ghosting / artifacts, KEEP the NEEDAUTHs.
    ROOT CAUSE (measured): purchased pairs A/B/C pushed through the real first-pass chain (veiled and clean preview ->

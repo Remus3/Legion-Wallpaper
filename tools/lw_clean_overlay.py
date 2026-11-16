@@ -1226,6 +1226,54 @@ def refine_pair_shift(image, pm, shift=(0, 0), scale=1.0,
     return (out, grid[(by, bx)]) if return_score else out
 
 
+# Fine scale (pass 3, 2026-11-15): the pair search steps scale by 0.04 and the
+# template registration is scale-quantized too, and nothing refined it: on
+# blood-moon the search said 1.08 for a frame whose gradient score peaks at
+# 1.065 (390 -> 495), i.e. the contour off by up to +-2 px across the logo,
+# which the edge fit then absorbed with dy and d0 at their bounds. The three
+# purchased pairs at 2560 all peak at ~1.006 (the upscale chain), a part of
+# the per-side offset pass 2 measured. Coarse-to-fine over the scale, the
+# shift refined at every candidate.
+PAIR_SCALE_REACH = 0.03
+PAIR_SCALE_STEPS = (0.01, 0.0025)
+
+
+def refine_pair_scale(image, pm, shift=(0, 0), scale=1.0, centre=None,
+                      reach=PAIR_SCALE_REACH, steps=PAIR_SCALE_STEPS):
+    """Fine registration scale near `scale` -> {"shift", "scale", "score",
+    "score0"}: `refine_pair_shift` score at each candidate (the shift
+    re-refined there), coarse-to-fine, a parabola through the best step."""
+    s0 = float(scale) if scale else 1.0
+    sh0, sc0 = refine_pair_shift(image, pm, shift=shift, scale=s0,
+                                 centre=centre, return_score=True)
+    seen = {round(s0, 6): (sc0, sh0)}
+
+    def ev(s):
+        k = round(float(s), 6)
+        if k not in seen:
+            sh, sc = refine_pair_shift(image, pm, shift=shift, scale=float(s),
+                                       centre=centre, return_score=True)
+            seen[k] = (sc, sh)
+        return seen[k][0]
+    best, lo, hi = s0, s0 - float(reach), s0 + float(reach)
+    for st in steps:
+        n = int(round((hi - lo) / st))
+        cands = [lo + st * i for i in range(n + 1)]
+        best = max(cands, key=ev)
+        lo, hi = max(best - st, s0 - reach), min(best + st, s0 + reach)
+    st = steps[-1]
+    frac = 0.0
+    if s0 - reach < best - st and best + st < s0 + reach:
+        frac = _parabola_peak(ev(best - st), ev(best), ev(best + st))
+    s_fin = round(best + frac * st, 5)
+    sh, sc = refine_pair_shift(image, pm, shift=shift, scale=s_fin,
+                               centre=centre, return_score=True)
+    if sc < seen[round(best, 6)][0]:
+        s_fin, (sc, sh) = best, seen[round(best, 6)]
+    return {"shift": sh, "scale": float(s_fin), "score": float(sc),
+            "score0": float(sc0)}
+
+
 # Pair-own registration (2026-11-15): batch 1's four "registration failures"
 # were the COLLECTION template's registration, borrowed by the pair - art
 # dragged it (bamboo-gal: dx +30 px, the logo sits at +4) or it missed a zoomed
@@ -1409,7 +1457,7 @@ _EDGE_WZ /= _EDGE_WZ.sum()
 
 
 def pair_signed_distance(frame_shape, pm, shift=(0, 0), scale=1.0, centre=None,
-                         reach=PAIR_EDGE_REACH):
+                         reach=PAIR_EDGE_REACH, edge_corr=None):
     """Sub-pixel signed distance (frame px, + inside) to the pair contour.
 
     Returns {"box": (y0, y1, x0, x1), "sd", "ny", "nx"} over a crop `reach`
@@ -1417,6 +1465,10 @@ def pair_signed_distance(frame_shape, pm, shift=(0, 0), scale=1.0, centre=None,
     coverage rendered PAIR_EDGE_SS times finer; near the edge the distance is
     the area mean of the fine distance (sub-pixel), further out the frame-res
     distance. (ny, nx) is the unit normal pointing into the logo.
+
+    `edge_corr` (pass 3): a static correction field on the matte grid (ref
+    px, + outward; `build_pair_edge_corr`) added to the distance, so the
+    contour follows the measured true edge. None is the pass-2 geometry.
     """
     h, w = int(frame_shape[0]), int(frame_shape[1])
     if centre is None:
@@ -1441,6 +1493,9 @@ def pair_signed_distance(frame_shape, pm, shift=(0, 0), scale=1.0, centre=None,
     coarse = np.where(core, _edt_capped(~core, cf) - 0.5,
                       -(_edt_capped(core, cf) - 0.5))
     sd = np.where(np.abs(fine) < capn / ss - 0.6, fine, coarse)
+    if edge_corr is not None:
+        sd = sd + render_pair_grid((h, w), pm, edge_corr, shift=shift,
+                                   scale=scale, centre=centre)[y0:y1, x0:x1]
     gy, gx = np.gradient(_box_mean(sd, 3))
     n = np.maximum(np.hypot(gy, gx), 1e-6)
     return {"box": (y0, y1, x0, x1), "sd": sd, "ny": gy / n, "nx": gx / n}
@@ -1649,6 +1704,257 @@ def pair_edge_ring_sd(sd_full, frame_w, inner=EDGE_RING_IN, outer=EDGE_RING_OUT)
     r = float(frame_w) / float(PAIR_REF[0])
     sd = np.asarray(sd_full)
     return (sd < inner * r) & (sd > -outer * r)
+
+
+# ---------------------------------------------------------------------------
+# PASS-3 STATIC EDGE CORRECTION + BOUNDED RING (2026-11-15,
+# docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md). Pass 2 left LOCAL border
+# defects. Measured against the ground-truth clean frames of the purchased
+# pairs at 2560: the true local edge position along the contour is ~85
+# percent STATIC (leave-one-out correlation 0.84-0.89 between pairs; p10/p90
+# -0.6/+0.8 ref px): the matte's contour is off by a location-dependent
+# amount, most at tight features (the tip's bay end, ~0.7 px), which the
+# per-frame offset (aggregated 10 ref px along the contour, read from the art)
+# recovers only in part. A static field learned from the pairs fixes it for
+# every frame; the per-frame fit then runs on top. Separately, where the LaMa
+# ring lies over a strong art edge at a shallow angle LaMa smears colour across
+# it - far outside what the veil could have done there. The ring fill is
+# therefore clamped to the band of de-veiled values the veil model allows when
+# the edge is off by up to PAIR_RING_DELTA and the halo by PAIR_RING_HALO_TOL.
+PAIR_EDGE_CORR_PATH = os.path.join(
+    _ROOT, "ops", "runtime", "clean", "da_veil_pair_edge_corr.npz")
+PAIR_CORR_GRID = tuple(round(-2.0 + 0.125 * i, 3) for i in range(33))
+PAIR_CORR_BAND = 3.0          # frame px around the edge the true SSE reads
+PAIR_CORR_BOX = 5             # frame px box of the local true SSE
+PAIR_CORR_MIN_SIGNAL = 6.0    # levels: a |W - J| below this carries no edge
+PAIR_CORR_SMOOTH = 2          # grid cells (ref px) half-width, per frame
+PAIR_CORR_FILL = 12           # grid cells the field is carried off the contour
+PAIR_RING_DELTA = 0.75        # frame px of edge position the envelope admits
+PAIR_RING_HALO_TOL = 0.5      # relative halo amplitude the envelope admits
+PAIR_RING_SLACK = 2.0         # levels of noise slack on both sides
+PAIR_RING_TOL = 16.0          # levels around the pre-pass value always allowed
+
+
+def _grid_transform(frame_shape, pm, shift, scale, centre):
+    h, w = int(frame_shape[0]), int(frame_shape[1])
+    gh, gw = np.asarray(pm["shape"]).shape
+    x0, y0, x1, y1 = (float(v) for v in pm["window"])
+    s = float(scale) if scale else 1.0
+    if centre is None:
+        centre = (h * (REMOVAL_BAND[0] + REMOVAL_BAND[1]) / 2.0, w / 2.0)
+    cy, cx = float(centre[0]), float(centre[1])
+    dy, dx = (float(shift[0]), float(shift[1])) if shift else (0.0, 0.0)
+
+    def gy(ys):
+        yn = (cy + (np.asarray(ys, dtype=np.float64) + 0.5 - dy - cy) / s) / h
+        return (yn - y0) / (y1 - y0) * gh - 0.5
+
+    def gx(xs):
+        xn = (cx + (np.asarray(xs, dtype=np.float64) + 0.5 - dx - cx) / s) / w
+        return (xn - x0) / (x1 - x0) * gw - 0.5
+    return gy, gx, s, (gh, gw)
+
+
+def pair_grid_coords(ys, xs, frame_shape, pm, shift=(0, 0), scale=1.0,
+                     centre=None):
+    """Matte-grid coordinates (row, col; cell centres at integers) of frame
+    pixels (ys, xs) under the registration `register_pair_matte` uses."""
+    gy, gx, _s, _g = _grid_transform(frame_shape, pm, shift, scale, centre)
+    return gy(ys), gx(xs)
+
+
+def render_pair_grid(frame_shape, pm, grid, shift=(0, 0), scale=1.0,
+                     centre=None):
+    """A field on the matte grid (ref px) rendered onto the frame, in FRAME px.
+
+    Bilinear at pixel centres under the matte's registration; values are
+    scaled by frame_w / ref_w and the registration scale; zero off the window.
+    """
+    h, w = int(frame_shape[0]), int(frame_shape[1])
+    fgy, fgx, s, (gh, gw) = _grid_transform(frame_shape, pm, shift, scale, centre)
+    g = np.asarray(grid, dtype=np.float64)
+    if g.shape != (gh, gw):
+        raise ValueError(f"grid {g.shape} does not match the matte {(gh, gw)}")
+    gy, gx = fgy(np.arange(h)), fgx(np.arange(w))
+    iy = np.clip(np.floor(gy).astype(int), 0, gh - 2)
+    ix = np.clip(np.floor(gx).astype(int), 0, gw - 2)
+    fy = np.clip(gy - iy, 0.0, 1.0)[:, None]
+    fx = np.clip(gx - ix, 0.0, 1.0)[None, :]
+    out = ((1 - fy) * (1 - fx) * g[np.ix_(iy, ix)]
+           + (1 - fy) * fx * g[np.ix_(iy, ix + 1)]
+           + fy * (1 - fx) * g[np.ix_(iy + 1, ix)]
+           + fy * fx * g[np.ix_(iy + 1, ix + 1)])
+    inside = (((gy >= -0.5) & (gy <= gh - 0.5))[:, None]
+              & ((gx >= -0.5) & (gx <= gw - 0.5))[None, :])
+    return np.where(inside, out, 0.0) * (float(w) / float(PAIR_REF[0])) * s
+
+
+def pair_true_edge_offsets(veiled, clean, geom, pm, alpha, theta,
+                           grid=PAIR_CORR_GRID, min_signal=PAIR_CORR_MIN_SIGNAL):
+    """BUILDER ONLY (needs the ground-truth clean frame): the true residual
+    outward edge offset (frame px) at each contour pixel against the fit.
+
+    For each offset in `grid` the veil model at theta + offset is applied to
+    the CLEAN frame and compared with the veiled one; the local SSE (box
+    PAIR_CORR_BOX within PAIR_CORR_BAND of the edge) is minimized per pixel
+    and refined by a parabola. Pixels whose local contrast a |W - J| is below
+    `min_signal` carry no edge information and are dropped. Returns
+    {"ys", "xs" (full-frame ints), "v" (frame px)}.
+    """
+    y0, y1, x0, x1 = geom["box"]
+    fw = np.asarray(veiled).shape[1]
+    big_i = _luma(veiled)[y0:y1, x0:x1]
+    big_j = _luma(clean)[y0:y1, x0:x1]
+    wv = float(np.mean(pm["W"]))
+    a = float(alpha)
+    sd0 = _edge_sdp(geom, theta)
+    band = np.abs(sd0) < PAIR_CORR_BAND
+    grid = np.asarray(grid, dtype=np.float64)
+    sse = np.empty((len(grid),) + big_i.shape)
+    for n, v in enumerate(grid):
+        p, g = pair_edge_maps(geom, fw, theta, a, np.full(sd0.shape, float(v)))
+        e = (big_i - (big_j * (1.0 - a * p - g) + a * wv * p)) * band
+        sse[n] = _box_mean(e * e, PAIR_CORR_BOX)
+    i = np.clip(np.argmin(sse, axis=0), 1, len(grid) - 2)
+    yy, xx = np.indices(i.shape)
+    sm, s0, sp = sse[i - 1, yy, xx], sse[i, yy, xx], sse[i + 1, yy, xx]
+    dn = sm - 2.0 * s0 + sp
+    frac = np.where(dn > 1e-12,
+                    np.clip(0.5 * (sm - sp) / np.maximum(dn, 1e-12), -0.5, 0.5),
+                    0.0)
+    best = grid[i] + frac * (grid[1] - grid[0])
+    strength = _box_mean(a * np.abs(wv - big_j), PAIR_CORR_BOX)
+    ok = (np.abs(sd0) < 0.5) & (strength > float(min_signal))
+    ys, xs = np.nonzero(ok)
+    return {"ys": ys + y0, "xs": xs + x0, "v": best[ys, xs]}
+
+
+def build_pair_edge_corr(samples, grid_shape, smooth=PAIR_CORR_SMOOTH,
+                         fill=PAIR_CORR_FILL):
+    """Static edge correction field (ref px, + outward) on the matte grid.
+
+    `samples`: one (gy, gx, v_ref) per training frame - grid coordinates of
+    its contour pixels and their true offsets in ref px. Each frame is pooled
+    on its own (box mean, `smooth` cells), the frames are averaged where they
+    have data, and the field is carried `fill` cells off the contour by a
+    masked 3x3 mean so it covers the whole edge band. Zero beyond.
+    """
+    gh, gw = int(grid_shape[0]), int(grid_shape[1])
+    k = 2 * int(smooth) + 1
+    acc = np.zeros((gh, gw))
+    cnt = np.zeros((gh, gw))
+    for gy, gx, v in samples:
+        iy = np.clip(np.rint(np.asarray(gy)).astype(int), 0, gh - 1)
+        ix = np.clip(np.rint(np.asarray(gx)).astype(int), 0, gw - 1)
+        s = np.zeros((gh, gw))
+        c = np.zeros((gh, gw))
+        np.add.at(s, (iy, ix), np.asarray(v, dtype=np.float64))
+        np.add.at(c, (iy, ix), 1.0)
+        bs, bc = _box_mean(s, k), _box_mean(c, k)
+        has = bc > 1e-9
+        acc += np.where(has, bs / np.maximum(bc, 1e-9), 0.0)
+        cnt += has
+    known = cnt > 0
+    val = np.where(known, acc / np.maximum(cnt, 1.0), 0.0)
+    for _ in range(int(fill)):
+        bs = _box_mean(val * known, 3)
+        bc = _box_mean(known.astype(np.float64), 3)
+        new = ~known & (bc > 1e-9)
+        val = np.where(new, bs / np.maximum(bc, 1e-9), val)
+        known = known | new
+    return np.where(known, val, 0.0)
+
+
+def save_pair_edge_corr(path, grid, sources="", n_frames=0):
+    """Atomic write of the static edge correction (numbers only)."""
+    d = os.path.dirname(os.path.abspath(path))
+    if d:
+        os.makedirs(d, exist_ok=True)
+    tmp = str(path) + ".tmp.npz"
+    np.savez_compressed(tmp, grid=np.asarray(grid, dtype=np.float32),
+                        sources=np.asarray(str(sources)),
+                        n_frames=np.asarray([int(n_frames)]))
+    os.replace(tmp, path)
+    return path
+
+
+def load_pair_edge_corr(path=PAIR_EDGE_CORR_PATH):
+    """{"grid", "sources", "n_frames"} or None when absent / unreadable."""
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        with np.load(path) as z:
+            out = {"grid": z["grid"].astype(np.float64),
+                   "sources": str(z["sources"]),
+                   "n_frames": int(z["n_frames"][0])}
+    except Exception:   # noqa: BLE001 - a bad cache must degrade, not crash
+        return None
+    if out["grid"].ndim != 2 or not np.isfinite(out["grid"]).all():
+        return None
+    return out
+
+
+def pair_ring_envelope(image, pm, geom, alpha, theta, offset=None,
+                       delta=PAIR_RING_DELTA, halo_tol=PAIR_RING_HALO_TOL,
+                       slack=PAIR_RING_SLACK, tol=PAIR_RING_TOL):
+    """(lo, hi) per channel: the de-veiled values the veil model allows.
+
+    J = (I - a W P) / (1 - a P - G) evaluated with the edge moved by -delta,
+    0, +delta frame px and the halo scaled by 1 -+ halo_tol; the min / max
+    over those, widened by `slack` levels, and never narrower than the
+    pre-pass value (the fitted model) +- `tol` levels: the model's own
+    residue at the edge reaches ~16 levels on the purchased pairs (the tip's
+    bay end before the static correction), and a band that excludes the true
+    value clamps the fill back onto the residual line it is there to remove
+    (seen on 261f with tol 0). Full-frame float arrays shaped like `image`;
+    off the geometry crop the band is unbounded.
+    """
+    arr = np.asarray(image, dtype=np.float64)
+    if arr.ndim == 2:
+        arr = arr[..., None]
+    lo = np.full(arr.shape, -np.inf)
+    hi = np.full(arr.shape, np.inf)
+    if geom is None:
+        return lo, hi
+    y0, y1, x0, x1 = geom["box"]
+    fw = arr.shape[1]
+    crop = arr[y0:y1, x0:x1]
+    a = float(alpha)
+    wv = np.broadcast_to(np.asarray(pm["W"], dtype=np.float64).reshape(-1),
+                         (crop.shape[-1],)).reshape(1, 1, -1)
+    base = np.zeros(crop.shape[:2]) if offset is None else np.asarray(offset)
+    clo = np.full(crop.shape, np.inf)
+    chi = np.full(crop.shape, -np.inf)
+    p0, g0 = pair_edge_maps(geom, fw, theta, a, base)
+    j0 = (crop - a * wv * p0[..., None]) / np.maximum(1.0 - a * p0 - g0, 1e-3)[..., None]
+    clo = np.minimum(clo, j0 - float(tol) + float(slack))
+    chi = np.maximum(chi, j0 + float(tol) - float(slack))
+    for d in (-float(delta), 0.0, float(delta)):
+        p, g = pair_edge_maps(geom, fw, theta, a, base + d)
+        for f in (1.0 - float(halo_tol), 1.0 + float(halo_tol)):
+            keep = np.maximum(1.0 - a * p - g * f, 1e-3)[..., None]
+            j = (crop - a * wv * p[..., None]) / keep
+            clo = np.minimum(clo, j)
+            chi = np.maximum(chi, j)
+    lo[y0:y1, x0:x1] = np.clip(clo - float(slack), 0.0, 255.0)
+    hi[y0:y1, x0:x1] = np.clip(chi + float(slack), 0.0, 255.0)
+    return lo, hi
+
+
+def bound_ring_fill(candidate, lo, hi, region):
+    """Clamp a filled frame to the envelope inside `region` only (uint8).
+
+    Outside `region` the candidate is returned byte for byte.
+    """
+    cand = np.asarray(candidate)
+    out = cand.copy()
+    reg = np.asarray(region, dtype=bool)
+    if not reg.any():
+        return out
+    v = np.clip(cand[reg].astype(np.float64), np.asarray(lo)[reg],
+                np.asarray(hi)[reg])
+    out[reg] = np.clip(np.rint(v), 0, 255).astype(cand.dtype)
+    return out
 
 
 def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,
