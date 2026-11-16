@@ -31,6 +31,36 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+376. DONE **2026-11-15 (veil-pass4: static alpha field + shading metric + whole credit-line box; pass 4 as the next working on all 55 DA-veil slugs incl. 224f / bamboo-gal / 262f).**
+   ORDER (operator, after pass 3): "still some off color on the veil - and the signature line needs work ... still
+   after edit shading and inconsistency remaining"; follow-up: include 224f / bamboo-gal / 262f. ROOT CAUSES (purchased
+   pairs at 2560, clean frame known, C held out): (1)+(2) ONE cause - the fill alpha is not a scalar: it falls top->foot
+   (grid plane slope -0.033..-0.040 on A/B/C, field corr A-C 0.976, C rms vs A+B field 0.0033) and the per-frame fit
+   reads it 4-11 pct low (kappa 1.040 / 1.111 / 1.084); a scalar inversion leaves top under / foot over and an e (W - J)
+   tint on chromatic art. NOT chromatic (per-channel alpha within 1 pct; gains measured worse), NOT gamma (linear-light
+   model rms 5.0 vs sRGB 3.5 on C, tone-dependent), no tone curve needed. (3) credit line = white fill alpha ~0.14-0.15
+   + dark rim, FIXED row 0.06-0.13 logo heights under the logo, CENTRED; pass 3's seed+completion missed end glyphs and
+   whole words. FIX (lw_clean_overlay PASS-4 block, lw_clean_iopaint --pass4, defaults = pass 3 byte for byte):
+   pair_true_alpha_sums (builder) / build/save/load_pair_alpha_field / render_pair_ratio / pair_alpha_field_crop,
+   remove_pair_edge + pair_ring_envelope(alpha_field=); tools/lw_veil_alpha_field.py builds
+   ops/runtime/clean/da_veil_pair_alpha_field.npz (gitignored) from A+B ONLY (kappa mean 1.0758); tools/lw_veil_credit.py
+   (row from the logo, half-width = the lane's own detection's farthest reach, mirrored, +0.12 lh; the whole box to
+   LaMa). Rejected with numbers: per-glyph analytic de-blend (outline stays visible), glyph-support mask (fragments).
+   METRIC tools/lw_veil_shading.py (independent; Lab plane+step across the contour per logo third): Spearman 0.91 / 0.96
+   / 0.86 vs true LF deltaE on 15 injected candidates per pair; veil-free floor p95 3.17 -> SHADING_GATE 3.2 (reported).
+   TRUTH C held out, full lane: logo 35.41 -> 36.19 dB, deltaE 1.86 -> 1.70 (floor 1.65), shading 1.43 -> 1.06, ghost
+   0.33 -> 0.37; pre-pass LF error 1.83 -> 0.54. A not improved (lowest kappa). RUN 55 / 55 (5 workers): gates pass 55
+   (5 via a kappa-free retry after a negative resid fail), outside_max_abs 0, ghost max 1.86; credit removed 55 / 55;
+   border classes clean 34 / faint 20 / worse 1 (258-cleanup outline); saved as the next _cleanworking (dry run then
+   real), 191 pre-existing scratch files byte-identical, 55 new = candidates, scan anomalies 0, NEEDAUTH kept, nothing
+   approved, never --allow-ladder. PICKS.md: PASS4 on all 55 (+ manual IOPaint note on 258-cleanup, 224f, bamboo-gal,
+   262f). Tests tests/test_lw_veil_pass4.py (12, mutation-proven). Doc docs/_archive/2026-11/VEIL_PASS4_2026-11-15.md.
+   SUITE (fleet_suite_gate --exclusive, tools/lw_suite.py -q): parallel 4489 passed 19 skipped 1 failed
+   (test_every_cited_docs_path_resolves: the new doc was not yet tracked) -> staged, that file re-run 3 passed;
+   serial 183 passed 1 skipped.
+   OPEN: local faint border lines (20 + 258-cleanup) - manual IOPaint or a local-patch lane; resid gate shares the
+   edge-read bias (-0.01 on C).
+
 375. DONE **2026-11-15 (veil-pass3: static edge correction + fine scale + bounded LaMa ring; pass 3 as the next working on 25 of the 26 non-clean DA-veil slugs).**
    ORDER (operator): one more pass for the border ghosting/artifacts, KEEP the NEEDAUTHs. ROOT CAUSES (measured on the
    purchased pairs at 2560, clean frame known): (1) TIP DOT = model fill ~0.7 px too far into the bay end (error -11..-16

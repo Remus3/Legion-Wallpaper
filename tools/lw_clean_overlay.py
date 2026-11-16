@@ -1668,7 +1668,8 @@ def pair_edge_offsets(image, geom, pm, alpha, theta,
     return np.where(has, off, far)
 
 
-def remove_pair_edge(image, pm, geom, alpha, theta, offset=None):
+def remove_pair_edge(image, pm, geom, alpha, theta, offset=None,
+                     alpha_field=None):
     """Invert fill AND halo with the fitted edge -> (uint8, changed, sd_adj).
 
     Pixels outside the geometry crop, and inside it where neither the fill
@@ -1676,6 +1677,10 @@ def remove_pair_edge(image, pm, geom, alpha, theta, offset=None):
     the support the inversion was allowed to touch. `sd_adj` is the fitted
     signed distance (frame px, full frame, -inf off the crop) - the LaMa ring
     is cut from it (`pair_edge_ring_sd`).
+
+    Pass 4: `alpha_field` (geometry-crop shaped, `pair_alpha_field_crop`)
+    multiplies the scalar alpha per pixel, fill AND halo; None is the pass-3
+    inversion byte for byte.
     """
     arr = np.asarray(image, dtype=np.float64)
     out = np.clip(np.rint(arr), 0, 255).astype(np.uint8)
@@ -1690,8 +1695,14 @@ def remove_pair_edge(image, pm, geom, alpha, theta, offset=None):
     a = float(alpha)
     wv = np.asarray(pm["W"], dtype=np.float64).reshape(1, 1, -1)
     crop = arr[y0:y1, x0:x1]
-    keep = np.maximum(1.0 - a * p - gh, 1e-3)[..., None]
-    j = np.clip((crop - a * wv * p[..., None]) / keep, 0.0, 255.0)
+    if alpha_field is None:
+        keep = np.maximum(1.0 - a * p - gh, 1e-3)[..., None]
+        j = np.clip((crop - a * wv * p[..., None]) / keep, 0.0, 255.0)
+    else:
+        f = np.asarray(alpha_field, dtype=np.float64)
+        af, gh = a * f, gh * f
+        keep = np.maximum(1.0 - af * p - gh, 1e-3)[..., None]
+        j = np.clip((crop - (af * p)[..., None] * wv) / keep, 0.0, 255.0)
     hit = (p > PAIR_COV_FLOOR) | (gh > 1e-4)
     sub = out[y0:y1, x0:x1]
     sub[hit] = np.clip(np.rint(j), 0, 255).astype(np.uint8)[hit]
@@ -1896,7 +1907,8 @@ def load_pair_edge_corr(path=PAIR_EDGE_CORR_PATH):
 
 def pair_ring_envelope(image, pm, geom, alpha, theta, offset=None,
                        delta=PAIR_RING_DELTA, halo_tol=PAIR_RING_HALO_TOL,
-                       slack=PAIR_RING_SLACK, tol=PAIR_RING_TOL):
+                       slack=PAIR_RING_SLACK, tol=PAIR_RING_TOL,
+                       alpha_field=None):
     """(lo, hi) per channel: the de-veiled values the veil model allows.
 
     J = (I - a W P) / (1 - a P - G) evaluated with the edge moved by -delta,
@@ -1907,7 +1919,8 @@ def pair_ring_envelope(image, pm, geom, alpha, theta, offset=None,
     bay end before the static correction), and a band that excludes the true
     value clamps the fill back onto the residual line it is there to remove
     (seen on 261f with tol 0). Full-frame float arrays shaped like `image`;
-    off the geometry crop the band is unbounded.
+    off the geometry crop the band is unbounded. `alpha_field` as in
+    `remove_pair_edge` (None: the pass-3 band byte for byte).
     """
     arr = np.asarray(image, dtype=np.float64)
     if arr.ndim == 2:
@@ -1920,20 +1933,30 @@ def pair_ring_envelope(image, pm, geom, alpha, theta, offset=None,
     fw = arr.shape[1]
     crop = arr[y0:y1, x0:x1]
     a = float(alpha)
+    fld = 1.0 if alpha_field is None else np.asarray(alpha_field, dtype=np.float64)
+    af = a * fld
     wv = np.broadcast_to(np.asarray(pm["W"], dtype=np.float64).reshape(-1),
                          (crop.shape[-1],)).reshape(1, 1, -1)
     base = np.zeros(crop.shape[:2]) if offset is None else np.asarray(offset)
     clo = np.full(crop.shape, np.inf)
     chi = np.full(crop.shape, -np.inf)
+    def fill(p):
+        # scalar path keeps the pass-3 expression order (byte-identical band)
+        if alpha_field is None:
+            return a * wv * p[..., None]
+        return (af * p)[..., None] * wv
+
     p0, g0 = pair_edge_maps(geom, fw, theta, a, base)
-    j0 = (crop - a * wv * p0[..., None]) / np.maximum(1.0 - a * p0 - g0, 1e-3)[..., None]
+    g0 = g0 * fld
+    j0 = (crop - fill(p0)) / np.maximum(1.0 - af * p0 - g0, 1e-3)[..., None]
     clo = np.minimum(clo, j0 - float(tol) + float(slack))
     chi = np.maximum(chi, j0 + float(tol) - float(slack))
     for d in (-float(delta), 0.0, float(delta)):
         p, g = pair_edge_maps(geom, fw, theta, a, base + d)
+        g = g * fld
         for f in (1.0 - float(halo_tol), 1.0 + float(halo_tol)):
-            keep = np.maximum(1.0 - a * p - g * f, 1e-3)[..., None]
-            j = (crop - a * wv * p[..., None]) / keep
+            keep = np.maximum(1.0 - af * p - g * f, 1e-3)[..., None]
+            j = (crop - fill(p)) / keep
             clo = np.minimum(clo, j)
             chi = np.maximum(chi, j)
     lo[y0:y1, x0:x1] = np.clip(clo - float(slack), 0.0, 255.0)
@@ -1955,6 +1978,160 @@ def bound_ring_fill(candidate, lo, hi, region):
                 np.asarray(hi)[reg])
     out[reg] = np.clip(np.rint(v), 0, 255).astype(cand.dtype)
     return out
+
+
+# ---------------------------------------------------------------------------
+# PASS-4 STATIC ALPHA FIELD (2026-11-15, operator review after pass 3: "still
+# some off color on the veil ... after edit shading and inconsistency").
+#
+# Measured on the purchased pairs through the real first-pass chain
+# (docs/_archive/2026-11/VEIL_PASS4_2026-11-15.md): the fill alpha is NOT
+# one scalar. It falls from ~0.16 at the logo's top to ~0.125 at its foot
+# (plane fit on the matte grid, y slope -0.035..-0.041 on A, B and C alike),
+# and the per-frame scalar fit, read at the edge, sits ~4-11 percent under
+# the true alpha there. A scalar inversion therefore leaves the top
+# under-removed and the foot over-removed - on chromatic art an alpha error e
+# leaves e (W - J) per channel, a washed-out or over-saturated tint: the
+# operator's "off colour" and "shading" are this one field. Compositing is in
+# sRGB (a linear-light model fits worse: rms 5.0 vs 3.5 levels on C, with a
+# tone-dependent residual) and the per-channel alpha differs by under 1
+# percent (applying it measured worse), so the field is ONE luma multiplier.
+# ---------------------------------------------------------------------------
+PAIR_ALPHA_FIELD_PATH = os.path.join(
+    _ROOT, "ops", "runtime", "clean", "da_veil_pair_alpha_field.npz")
+PAIR_FIELD_SIGMA = 12.0         # grid cells (ref px) of the field's smoothing
+PAIR_FIELD_MIN_DW = 40.0        # levels: W - J below this carries no alpha
+PAIR_FIELD_STRIP = (2.0, 6.0)   # ref px inside the edge: where the fit reads
+PAIR_FIELD_BOUNDS = (0.6, 1.6)  # a field value outside this is not the veil
+
+
+def render_pair_ratio(frame_shape, pm, grid, shift=(0, 0), scale=1.0,
+                      centre=None):
+    """A unitless field on the matte grid rendered onto the frame.
+
+    Same bilinear registration as `render_pair_grid`, but the values are not
+    scaled to frame px, and the field reads 1.0 off the matte window.
+    """
+    h, w = int(frame_shape[0]), int(frame_shape[1])
+    fgy, fgx, s, (gh, gw) = _grid_transform(frame_shape, pm, shift, scale, centre)
+    px = render_pair_grid(frame_shape, pm, np.asarray(grid, dtype=np.float64),
+                          shift=shift, scale=scale, centre=centre)
+    gy, gx = fgy(np.arange(h)), fgx(np.arange(w))
+    inside = (((gy >= -0.5) & (gy <= gh - 0.5))[:, None]
+              & ((gx >= -0.5) & (gx <= gw - 0.5))[None, :])
+    return np.where(inside, px / ((float(w) / float(PAIR_REF[0])) * s), 1.0)
+
+
+def pair_true_alpha_sums(veiled, clean, interior, frame_shape, pm, shift=(0, 0),
+                         scale=1.0, centre=None, min_dw=PAIR_FIELD_MIN_DW):
+    """BUILDER ONLY (needs the ground-truth clean frame): per matte-grid cell,
+    the least-squares sums (num, den) of the true fill alpha,
+    a = sum d (I - J) / sum d^2 with d = W - J on luma, over `interior`
+    (frame pixels with full coverage and no halo). W is the matte's mean W.
+    """
+    gh, gw = np.asarray(pm["shape"]).shape
+    wv = float(np.mean(pm["W"]))
+    ys, xs = np.nonzero(np.asarray(interior, dtype=bool))
+    num = np.zeros((gh, gw))
+    den = np.zeros((gh, gw))
+    if not len(ys):
+        return num, den
+    gy, gx = pair_grid_coords(ys, xs, frame_shape, pm, shift=shift,
+                              scale=scale, centre=centre)
+    iy = np.clip(np.rint(gy).astype(int), 0, gh - 1)
+    ix = np.clip(np.rint(gx).astype(int), 0, gw - 1)
+    li = _luma(veiled)[ys, xs]
+    lj = _luma(clean)[ys, xs]
+    d = wv - lj
+    ok = d > float(min_dw)
+    np.add.at(num, (iy[ok], ix[ok]), (d * (li - lj))[ok])
+    np.add.at(den, (iy[ok], ix[ok]), (d * d)[ok])
+    return num, den
+
+
+def _gauss2(a, sigma):
+    from scipy import ndimage as ndi
+    return ndi.gaussian_filter(np.asarray(a, dtype=np.float64), float(sigma))
+
+
+def build_pair_alpha_field(frames, logo, sigma=PAIR_FIELD_SIGMA,
+                           strip=PAIR_FIELD_STRIP):
+    """Static alpha field (a multiplier of the per-frame alpha fit) on the grid.
+
+    `frames`: one (num, den, alpha_fit) per training frame
+    (`pair_true_alpha_sums` + the lane's `fit_pair_alpha`); `logo` the
+    matte's boolean logo on the grid. The pooled true alpha is smoothed
+    (`sigma` cells), carried off the logo by nearest value, normalized to
+    median 1 over the edge strip the fit reads (`strip` ref px inside), then
+    scaled by the mean over frames of (true strip alpha / fitted alpha): the
+    fit's bias. Returns (grid, info).
+    """
+    from scipy import ndimage as ndi
+    logo = np.asarray(logo, dtype=bool)
+    din = ndi.distance_transform_edt(logo)
+    st = logo & (din >= float(strip[0])) & (din < float(strip[1]))
+    num = sum(np.asarray(f[0], dtype=np.float64) for f in frames)
+    den = sum(np.asarray(f[1], dtype=np.float64) for f in frames)
+    sd = _gauss2(den, sigma)
+    fld = _gauss2(num, sigma) / np.maximum(sd, 1e-9)
+    valid = sd > 0.05 * float(np.median(sd[logo]))
+    _d, (iy, ix) = ndi.distance_transform_edt(~valid, return_indices=True)
+    fld = fld[iy, ix]
+    rel = fld / float(np.median(fld[st & valid]))
+    kap = []
+    for n, d, a in frames:
+        sdf = _gauss2(d, sigma)
+        own = _gauss2(n, sigma) / np.maximum(sdf, 1e-9)
+        m = st & (sdf > 0.05 * float(np.median(sdf[logo])))
+        kap.append(float(np.median(own[m])) / float(a))
+    k = float(np.mean(kap))
+    grid = np.clip(rel * k, PAIR_FIELD_BOUNDS[0], PAIR_FIELD_BOUNDS[1])
+    return grid, {"kappa": [round(v, 4) for v in kap], "kappa_mean": round(k, 4),
+                  "p5_p95": [round(float(np.percentile(grid[logo], q)), 4)
+                             for q in (5, 95)]}
+
+
+def save_pair_alpha_field(path, grid, sources="", n_frames=0, kappa=1.0):
+    """Atomic write of the static alpha field (numbers only)."""
+    d = os.path.dirname(os.path.abspath(path))
+    if d:
+        os.makedirs(d, exist_ok=True)
+    tmp = str(path) + ".tmp.npz"
+    np.savez_compressed(tmp, grid=np.asarray(grid, dtype=np.float32),
+                        sources=np.asarray(str(sources)),
+                        n_frames=np.asarray([int(n_frames)]),
+                        kappa=np.asarray([float(kappa)]))
+    os.replace(tmp, path)
+    return path
+
+
+def load_pair_alpha_field(path=PAIR_ALPHA_FIELD_PATH):
+    """{"grid", "sources", "n_frames", "kappa"} or None when absent / bad."""
+    if not path or not os.path.isfile(path):
+        return None
+    try:
+        with np.load(path) as z:
+            out = {"grid": z["grid"].astype(np.float64),
+                   "sources": str(z["sources"]),
+                   "n_frames": int(z["n_frames"][0]),
+                   "kappa": float(z["kappa"][0])}
+    except Exception:   # noqa: BLE001 - a bad cache must degrade, not crash
+        return None
+    g = out["grid"]
+    if (g.ndim != 2 or not np.isfinite(g).all()
+            or g.min() < PAIR_FIELD_BOUNDS[0] - 1e-6
+            or g.max() > PAIR_FIELD_BOUNDS[1] + 1e-6):
+        return None
+    return out
+
+
+def pair_alpha_field_crop(frame_shape, pm, grid, geom, shift=(0, 0), scale=1.0,
+                          centre=None):
+    """The alpha field over the geometry crop (what `remove_pair_edge` takes)."""
+    y0, y1, x0, x1 = geom["box"]
+    full = render_pair_ratio(frame_shape, pm, grid, shift=shift, scale=scale,
+                             centre=centre)
+    return np.ascontiguousarray(full[y0:y1, x0:x1])
 
 
 def remove_overlay(image, matte, shift=(0, 0), alpha_max=ALPHA_MAX, scale=1.0,

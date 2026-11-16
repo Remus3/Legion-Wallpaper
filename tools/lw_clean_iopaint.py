@@ -62,6 +62,7 @@ import lw_clean_pass as C  # noqa: E402
 # Same import discipline: lw_clean_overlay is stdlib + numpy + PIL + lw_clean_pass,
 # so the centre-overlay matte + its algebraic pre-pass are CI-safe here.
 import lw_clean_overlay as OV  # noqa: E402
+import lw_veil_credit as CR  # noqa: E402
 
 # --------------------------------------------------------------------------
 # Paths + cluster presets (Legion machine).
@@ -818,7 +819,8 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
                     alpha_thr=OVERLAY_ALPHA_THR, pad: int = OVERLAY_PAD,
                     pair=None, return_ring: bool = False,
                     pair_fit: bool = True, edge_fit: bool = False,
-                    edge_corr=None, ring_bound: bool = False):
+                    edge_corr=None, ring_bound: bool = False,
+                    alpha_field=None):
     """ALGEBRAIC removal first, then the mask for what it could not invert.
 
     Order is the design (see `tests/test_lw_clean_iopaint_overlay.py`): the
@@ -860,6 +862,12 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
     order - the band `apply_ring_bound` clamps the LaMa ring fill to
     (`lw_clean_overlay.pair_ring_envelope`). Both default off: the pass-2
     path, byte for byte. docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md.
+
+    Pass 4 (with `edge_fit`): `alpha_field` (a grid from
+    `lw_clean_overlay.load_pair_alpha_field`) multiplies the fitted alpha per
+    pixel in the inversion and the ring envelope - the veil's static
+    top-to-foot fall and the fit's bias. None: the pass-3 path, byte for
+    byte. docs/_archive/2026-11/VEIL_PASS4_2026-11-15.md.
 
     Returns (pre_bgr, mask_full, roi_box, info), plus the ring (full-frame
     bool) as a 5th item when `return_ring`. `info` carries the registration
@@ -952,8 +960,13 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
         a_use = float(use_pair["alpha"])
         ef = OV.fit_pair_edge(rgb, geom, pair, a_use)
         off = OV.pair_edge_offsets(rgb, geom, pair, a_use, ef["theta"])
+        afc = None
+        if alpha_field is not None:
+            afc = OV.pair_alpha_field_crop(rgb.shape[:2], pair, alpha_field,
+                                           geom, shift=pshift, scale=pscale,
+                                           centre=pcentre)
         pre_rgb, changed, sd_adj = OV.remove_pair_edge(
-            rgb, pair, geom, a_use, ef["theta"], offset=off)
+            rgb, pair, geom, a_use, ef["theta"], offset=off, alpha_field=afc)
         ring = OV.pair_edge_ring_sd(sd_adj, rgb.shape[1])
         near = np.abs(geom["sd"]) < 2.0
         pair_info["edge_fit"] = {
@@ -962,6 +975,11 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
             "local_offsets": True, "edge_corr": edge_corr is not None,
             "offset_p5_p50_p95": [round(float(np.percentile(off[near], q)), 3)
                                   for q in (5, 50, 95)] if near.any() else None}
+        if afc is not None:
+            inl = geom["sd"] > 0
+            pair_info["alpha_field"] = {
+                "p5_p50_p95": [round(float(np.percentile(afc[inl], q)), 4)
+                               for q in (5, 50, 95)] if inl.any() else None}
         pair_info["ring_px"] = int(ring.sum())
         edge_support = changed
         pf, _gh = OV.pair_edge_maps(geom, rgb.shape[1], ef["theta"], a_use, off)
@@ -970,7 +988,7 @@ def overlay_prepass(full_bgr, matte, tpl, score_tpl=None,
         edge_cov[gy0:gy1, gx0:gx1] = pf
         if ring_bound:
             lo, hi = OV.pair_ring_envelope(rgb, pair, geom, a_use, ef["theta"],
-                                           offset=off)
+                                           offset=off, alpha_field=afc)
             ring_env = (np.ascontiguousarray(lo[:, :, ::-1]),
                         np.ascontiguousarray(hi[:, :, ::-1]))
     else:
@@ -1063,7 +1081,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                pad=DEFAULT_PAD, progressive=False, use_matte=None, out_dir=None,
                dry_run=False, max_iter=25, overlay=False,
                alpha_thr=OVERLAY_ALPHA_THR, faint=False, log=print,
-               pair_fit=True, edge_fit=False, pass3=False):
+               pair_fit=True, edge_fit=False, pass3=False, pass4=False):
     """IOPaint-emulation clean for one slug. Returns a result dict.
 
     Never mutates pipeline state: writes the candidate full PNG + before/after
@@ -1078,6 +1096,13 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     `pass3` (overlay lane): the edge fit with the static edge correction
     (`lw_clean_overlay.load_pair_edge_corr`) and the LaMa ring fill clamped
     to the veil model's envelope (docs/_archive/2026-11/VEIL_PASS3_2026-11-15.md).
+
+    `pass4` (overlay lane, implies `pass3`): the static ALPHA FIELD
+    (`lw_clean_overlay.load_pair_alpha_field`) in the inversion and the ring
+    envelope, and the credit line through `lw_veil_credit`: the whole text
+    box (row fixed by the logo, half-width read from the lane's own detection
+    and mirrored, the text being centred) replaces the old seed there and
+    goes to LaMa. docs/_archive/2026-11/VEIL_PASS4_2026-11-15.md.
     """
     if not overlay and not faint:
         region, chroma_thr, preset_src = resolve_preset(
@@ -1100,6 +1125,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     ov_info = None
     edge_support = None
     ring_env = None
+    credit_box = credit_zone = None
     if overlay:
         # The centre-overlay lane: no preset region at all. The mark's place on
         # THIS frame comes from the matte's own registration, so the ROI is
@@ -1115,6 +1141,16 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                               "lw_clean_detector_probe.py --wide "
                               "--build-overlay-matte <confirmed slugs>"}
         corr_grid = None
+        field_grid = None
+        if pass4:
+            fld = OV.load_pair_alpha_field()
+            if fld is None or pair_matte is None:
+                return {"slug": slug, "status": "error",
+                        "reason": "pass 4 needs the pair matte and its static "
+                                  "alpha field - run lw_veil_alpha_field.py "
+                                  "to build it"}
+            field_grid = fld["grid"]
+            pass3 = True
         if pass3:
             corr = OV.load_pair_edge_corr()
             if corr is None or pair_matte is None:
@@ -1129,10 +1165,16 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
             full, ov_matte, tpl, score_tpl=OV.load_template(),
             alpha_thr=alpha_thr, pad=pad if pad != DEFAULT_PAD else OVERLAY_PAD,
             pair=pair_matte, return_ring=True, pair_fit=pair_fit,
-            edge_fit=edge_fit, edge_corr=corr_grid, ring_bound=pass3)
+            edge_fit=edge_fit, edge_corr=corr_grid, ring_bound=pass3,
+            alpha_field=field_grid)
         edge_support = ov_info.pop("_edge_support", None)
         edge_cov = ov_info.pop("_edge_cov", None)
         ring_env = ov_info.pop("_ring_env", None)
+        if pass4 and edge_cov is not None and roi_box is not None:
+            # the ROI must hold the widest text box the credit lane may mask
+            roi_box = _union_box(roi_box, CR.search_box(full.shape, edge_cov),
+                                 pad if pad != DEFAULT_PAD else OVERLAY_PAD,
+                                 full.shape[:2])
         if roi_box is None:
             return {"slug": slug, "status": "error",
                     "reason": f"the overlay matte is empty above alpha "
@@ -1183,6 +1225,31 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
         stroke = np.where(ring_roi, 0, mask).astype(np.uint8)
         mask = complete_overlay_mask(roi, stroke, chroma_thr=chroma_thr)
         mask[ring_roi] = 255
+        if pass4 and edge_cov is not None:
+            # Pass 4 credit line: the lane's own detection (seed + completion,
+            # ring excluded) gives the text's reach from the logo's centre
+            # column; the text is centred, so that reach on either side sets
+            # the box on both (`lw_veil_credit.locate_credit`).
+            seed = np.zeros(full.shape[:2], dtype=bool)
+            seed[ry0:ry1, rx0:rx1] = (mask > 127) & ~ring_roi
+            loc = CR.locate_credit(seed, edge_cov)
+            ov_info["credit"] = (
+                {"found": False} if loc is None else
+                {"found": True, "rows": [int(v) for v in loc["rows"]],
+                 "cols": [int(v) for v in loc["cols"]],
+                 "text_h": int(loc["text_h"]), "half_w": loc["half_w"],
+                 "seed_px": loc["seed_px"]})
+            if loc is not None:
+                credit_box = CR.credit_box_mask(full.shape, loc)
+                th = int(loc["text_h"])
+                credit_zone = np.zeros(full.shape[:2], dtype=bool)
+                credit_zone[max(loc["rows"][0] - th // 3, 0):loc["rows"][1] + th,
+                            max(loc["cols"][0] - th, 0):loc["cols"][1] + th] = True
+                # the old seed's credit pixels are replaced by the box; the
+                # logo's edge ring (its foot sits just above) always stays
+                mask[overlay_roi_mask(credit_zone, roi_box)] = 0
+                mask[overlay_roi_mask(credit_box, roi_box)] = 255
+                mask[ring_roi] = 255
         ov_info["seed_px"] = seeded
         ov_info["mask_px"] = int((mask > 127).sum())
 
@@ -1424,6 +1491,9 @@ def main(argv=None):
                    help="overlay lane pass 3: edge fit with the static edge "
                         "correction, LaMa ring fill clamped to the veil "
                         "model's envelope")
+    p.add_argument("--pass4", action="store_true",
+                   help="overlay lane pass 4: pass 3 plus the static alpha "
+                        "field and the credit-line de-blend")
     p.add_argument("--alpha-thr", type=float, default=OVERLAY_ALPHA_THR,
                    help="overlay-lane matte threshold that becomes the mask")
     p.add_argument("--faint", action="store_true",
@@ -1447,7 +1517,8 @@ def main(argv=None):
                      out_dir=args.out_dir, dry_run=args.dry_run,
                      max_iter=args.max_iter, overlay=args.overlay,
                      alpha_thr=args.alpha_thr, faint=args.faint,
-                     edge_fit=args.edge_fit, pass3=args.pass3)
+                     edge_fit=args.edge_fit, pass3=args.pass3,
+                     pass4=args.pass4)
     print(json.dumps({k: v for k, v in res.items() if k != "commands"},
                      indent=2, default=str))
     # gpu_busy is a non-zero exit like error: nothing was produced, and a batch
