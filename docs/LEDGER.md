@@ -31,6 +31,39 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+377. DONE **2026-11-15 (veil-pass5: taller/wider credit box, membrane seam fix of every LaMa fill, contour profile subtraction, ring-hue metric; pass 5 as the next working on all 55 DA-veil slugs).**
+   ORDER (operator review of pass 4): credit bottom-edge smudge (meramora, anime-poster-of-soraka, seraphine-by-pebano1),
+   inkshadow top-left shadow + ghost lines, 122 ghosting (122_logo_1x.png frame 3 = the pass-4 column: faint outline
+   lines on flat skin), hue step where the veil edge sits on background. ROOT CAUSES (measured): (1) credit font is not
+   one size - the big font (A, meramora) reaches 63 px + ~3 px drop shadow under the logo foot (0.143 lh) where pass 4's
+   box ended at 64 px, and its "(c)" sits ~0.72 lh from the centre where pass 4's reach was the seed's fixed 0.70; LaMa
+   extended the cut glyphs (bottom smear, soraka's grey disc). (2)+(3) LaMa's ring fill comes back with a level /
+   colour step at its seams - a GREEN deficit of 1-2 levels on the truth pairs (C ring a*/b* bias +0.79 / -0.67) the
+   pre-pass does not have - plus a thin coherent edge profile; on 122 the lines sit at the ring seams (-4.75 / +3.5 px).
+   NOT JPEG chroma blur (input chroma ratio steps within 2 px on A/B/C). FIX: tools/lw_veil_pass5.py (CREDIT_ROWS
+   0.050-0.160, CREDIT_HALF floor 0.78; membrane_fill: harmonic correction from the capped, art-edge down-weighted
+   boundary step; contour_profile_fix: per 32 px cell quadratic art + tent profile -5..+5 px, Tukey IRLS, 3x3 coherence
+   median, cap 3 levels; seam_fix), lw_veil_credit.locate_credit(rows=, half=, seed_rows=) (defaults = pass 4; the
+   reach is read in the text rows only - reading it in the taller box widened C to 1.05 lh, caught), clean_slug(pass5=True)
+   / --pass5. METRIC tools/lw_veil_hue.py ring_hue_step (independent, output + coverage only): Spearman 0.986 / 0.994 /
+   0.901 vs true ring chroma error on 18 injected tints per pair; veil-free floor p95 2.35 -> HUE_GATE 2.4 (reported).
+   TRUTH full lane, pass 4 -> pass 5 (C held out; A/B LOO): edge +-3 ref px C 31.78 -> 32.07, A 26.96 -> 27.19, B
+   30.91 -> 31.07 dB; ring deltaE C 3.04 -> 2.60; logo unchanged (36.19 -> 36.17); credit band PSNR lower (C 29.26 ->
+   26.84: LaMa fills a larger box, no text on any). Rejected with numbers: wide profile (C 30.09), octant profile vs
+   linear trend (C 29.59), local halo-gain refit, interior boundary harmonization (C logo 35.67), per-frame text
+   detector (~15 / 55 misses). RUN 55 / 55 from source (6 workers): G2 outside 0, change_ssim max 0.871, resid
+   -0.018..+0.013, gate pass 55 (pre-pass mismatch rule now outside LaMa mask OR edge support: 0 on 55); ghost lower on
+   55 / 55 (median 0.53 -> 0.34), ring hue lower on 52 (median 0.97 -> 0.49), shading median 1.58 -> 1.33. VISUAL all
+   55 at 3x: clean 38, faint border residue 12 (incl. 122 fainter, inkshadow top-left unchanged), worse than pass 4 5
+   (credit box LaMa invention: 284f, 286f, ahri-khanzaaiart, yunara, bayonetta-dm7iirw), credit smudge 0; meramora /
+   soraka / seraphine-by-pebano1 credit fixed. Saved as the next _cleanworking (dry then real, 55 rc 0); 246
+   pre-existing scratch files byte-identical, 55 new = candidates, scan anomalies 0, nothing approved, never
+   --allow-ladder. PICKS.md: PASS5 on 50, PASS4 on the 5 regressions. Tests tests/test_lw_veil_pass5.py (12,
+   mutation-proven: 5 mutants). Doc docs/_archive/2026-11/VEIL_PASS5_2026-11-15.md.
+   SUITE (fleet_suite_gate --exclusive, tools/lw_suite.py -q): parallel 4502 passed 19 skipped, serial 183 passed 1
+   skipped, rc 0.
+   OPEN: faint border lines on 12 (manual IOPaint); credit box could shrink on small-font lines with a reliable detector.
+
 376. DONE **2026-11-15 (veil-pass4: static alpha field + shading metric + whole credit-line box; pass 4 as the next working on all 55 DA-veil slugs incl. 224f / bamboo-gal / 262f).**
    ORDER (operator, after pass 3): "still some off color on the veil - and the signature line needs work ... still
    after edit shading and inconsistency remaining"; follow-up: include 224f / bamboo-gal / 262f. ROOT CAUSES (purchased

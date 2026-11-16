@@ -68,30 +68,31 @@ def logo_box(coverage):
     return int(ys.min()), int(ys.max()) + 1, int(xs.min()), int(xs.max()) + 1
 
 
-def credit_rows(coverage):
+def credit_rows(coverage, rows=CREDIT_ROWS):
     """(r0, r1, cx, lh): the text row and the logo's centre column / height."""
     lb = logo_box(coverage)
     if lb is None:
         return None
     ly0, ly1, lx0, lx1 = lb
     lh = float(ly1 - ly0)
-    return (int(round(ly1 + CREDIT_ROWS[0] * lh)),
-            int(round(ly1 + CREDIT_ROWS[1] * lh)), 0.5 * (lx0 + lx1), lh)
+    return (int(round(ly1 + rows[0] * lh)),
+            int(round(ly1 + rows[1] * lh)), 0.5 * (lx0 + lx1), lh)
 
 
-def search_box(shape, coverage):
+def search_box(shape, coverage, rows=CREDIT_ROWS, half=CREDIT_HALF):
     """Full-frame bool: the widest box the text can occupy (for the ROI)."""
     m = np.zeros(tuple(shape[:2]), dtype=bool)
-    cr = credit_rows(coverage)
+    cr = credit_rows(coverage, rows)
     if cr is None:
         return m
     r0, r1, cx, lh = cr
-    hw = CREDIT_HALF[1] * lh
+    hw = half[1] * lh
     m[max(r0, 0):r1, max(int(cx - hw), 0):int(cx + hw) + 1] = True
     return m
 
 
-def locate_credit(seed, coverage):
+def locate_credit(seed, coverage, rows=CREDIT_ROWS, half=CREDIT_HALF,
+                  seed_rows=CREDIT_ROWS):
     """{"rows", "cols", "text_h", "half_w", "seed_px"} or None.
 
     The text row is fixed by the logo (CREDIT_ROWS). The text is CENTRED on
@@ -101,23 +102,30 @@ def locate_credit(seed, coverage):
     from the centre, on EITHER side, plus CREDIT_MARGIN - and applied to both
     sides: the first and last glyphs the detection misses on one side are
     covered by the other side's reach. None when nothing was detected there.
+
+    `rows` / `half` (logo heights) default to the pass-4 box; pass 5 passes
+    `lw_veil_pass5.CREDIT_ROWS` / `CREDIT_HALF` (the big-font credit lines
+    reach lower and wider - docs/_archive/2026-11/VEIL_PASS5_2026-11-15.md).
+    The reach is always read in `seed_rows` (the text's core rows): a taller
+    box's extra rows hold art the detection also marks, not text.
     """
-    cr = credit_rows(coverage)
-    if cr is None:
+    cr = credit_rows(coverage, rows)
+    sr = credit_rows(coverage, seed_rows)
+    if cr is None or sr is None:
         return None
     r0, r1, cx, lh = cr
+    s0, s1 = sr[0], sr[1]
     sd = np.asarray(seed, dtype=bool)
     h, w = sd.shape
-    if r0 < 0 or r1 > h:
+    if r0 < 0 or r1 > h or s0 < 0 or s1 > h:
         return None
-    x0 = max(int(cx - CREDIT_HALF[1] * lh), 0)
-    x1 = min(int(cx + CREDIT_HALF[1] * lh) + 1, w)
-    ys, xs = np.nonzero(sd[r0:r1, x0:x1])
+    x0 = max(int(cx - half[1] * lh), 0)
+    x1 = min(int(cx + half[1] * lh) + 1, w)
+    ys, xs = np.nonzero(sd[s0:s1, x0:x1])
     if len(xs) < 20:
         return None
     reach = float(np.max(np.abs(xs + x0 - cx)))
-    hw = float(np.clip(reach + CREDIT_MARGIN * lh, CREDIT_HALF[0] * lh,
-                       CREDIT_HALF[1] * lh))
+    hw = float(np.clip(reach + CREDIT_MARGIN * lh, half[0] * lh, half[1] * lh))
     return {"rows": (r0, r1), "cols": (max(int(cx - hw), 0),
                                        min(int(cx + hw) + 1, w)),
             "text_h": r1 - r0, "half_w": round(hw / lh, 3),

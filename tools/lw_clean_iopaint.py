@@ -63,6 +63,7 @@ import lw_clean_pass as C  # noqa: E402
 # so the centre-overlay matte + its algebraic pre-pass are CI-safe here.
 import lw_clean_overlay as OV  # noqa: E402
 import lw_veil_credit as CR  # noqa: E402
+import lw_veil_pass5 as P5  # noqa: E402
 
 # --------------------------------------------------------------------------
 # Paths + cluster presets (Legion machine).
@@ -1081,7 +1082,8 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
                pad=DEFAULT_PAD, progressive=False, use_matte=None, out_dir=None,
                dry_run=False, max_iter=25, overlay=False,
                alpha_thr=OVERLAY_ALPHA_THR, faint=False, log=print,
-               pair_fit=True, edge_fit=False, pass3=False, pass4=False):
+               pair_fit=True, edge_fit=False, pass3=False, pass4=False,
+               pass5=False):
     """IOPaint-emulation clean for one slug. Returns a result dict.
 
     Never mutates pipeline state: writes the candidate full PNG + before/after
@@ -1103,7 +1105,19 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
     box (row fixed by the logo, half-width read from the lane's own detection
     and mirrored, the text being centred) replaces the old seed there and
     goes to LaMa. docs/_archive/2026-11/VEIL_PASS4_2026-11-15.md.
+
+    `pass5` (overlay lane, implies `pass4`): the credit box with the pass-5
+    bounds (`lw_veil_pass5.CREDIT_ROWS` / `CREDIT_HALF`: lower and wider, for
+    the big-font credit lines), and after LaMa `lw_veil_pass5.seam_fix`: a
+    membrane (harmonic) correction of the ring fill and of the credit fill at
+    their seams, then the contour profile subtraction, on the declared
+    support (edge support OR LaMa mask) inside the ROI only.
+    docs/_archive/2026-11/VEIL_PASS5_2026-11-15.md.
     """
+    if pass5:
+        pass4 = True
+    cr_rows = P5.CREDIT_ROWS if pass5 else CR.CREDIT_ROWS
+    cr_half = P5.CREDIT_HALF if pass5 else CR.CREDIT_HALF
     if not overlay and not faint:
         region, chroma_thr, preset_src = resolve_preset(
             slug, region, cluster, chroma_thr)
@@ -1172,7 +1186,8 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
         ring_env = ov_info.pop("_ring_env", None)
         if pass4 and edge_cov is not None and roi_box is not None:
             # the ROI must hold the widest text box the credit lane may mask
-            roi_box = _union_box(roi_box, CR.search_box(full.shape, edge_cov),
+            roi_box = _union_box(roi_box, CR.search_box(full.shape, edge_cov,
+                                                        cr_rows, cr_half),
                                  pad if pad != DEFAULT_PAD else OVERLAY_PAD,
                                  full.shape[:2])
         if roi_box is None:
@@ -1232,7 +1247,7 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
             # the box on both (`lw_veil_credit.locate_credit`).
             seed = np.zeros(full.shape[:2], dtype=bool)
             seed[ry0:ry1, rx0:rx1] = (mask > 127) & ~ring_roi
-            loc = CR.locate_credit(seed, edge_cov)
+            loc = CR.locate_credit(seed, edge_cov, rows=cr_rows, half=cr_half)
             ov_info["credit"] = (
                 {"found": False} if loc is None else
                 {"found": True, "rows": [int(v) for v in loc["rows"]],
@@ -1379,6 +1394,24 @@ def clean_slug(slug, image=None, region=None, cluster=None, chroma_thr=None,
         full_after = bounded
         rx0, ry0, rx1, ry1 = roi_box
         roi_after = full_after[ry0:ry1, rx0:rx1, :].copy()
+    if pass5 and ov_info is not None and edge_cov is not None:
+        # Pass 5: seam + profile fixes on the declared support only (edge
+        # support OR the LaMa mask), never outside the ROI (the tripwire).
+        rx0, ry0, rx1, ry1 = roi_box
+        lama_full = np.zeros(full.shape[:2], dtype=bool)
+        lama_full[ry0:ry1, rx0:rx1] = mask > 127
+        allowed = lama_full.copy()
+        if edge_support is not None:
+            allowed |= np.asarray(edge_support) > 0.5
+        in_roi = np.zeros(full.shape[:2], dtype=bool)
+        in_roi[ry0:ry1, rx0:rx1] = True
+        allowed &= in_roi
+        full_after, p5info = P5.seam_fix(full_after, lama_full, edge_cov,
+                                         allowed, credit_box=credit_box)
+        p5info["credit_rows"] = list(P5.CREDIT_ROWS)
+        p5info["credit_half"] = list(P5.CREDIT_HALF)
+        ov_info["pass5"] = p5info
+        roi_after = full_after[ry0:ry1, rx0:rx1, :].copy()
     # For the overlay lane `full` is the PRE-PASS frame, which is the right
     # baseline: the matting inversion legitimately edits sub-threshold alpha
     # outside the ROI, and the tripwire is about the paste-back, not about it.
@@ -1494,6 +1527,10 @@ def main(argv=None):
     p.add_argument("--pass4", action="store_true",
                    help="overlay lane pass 4: pass 3 plus the static alpha "
                         "field and the credit-line de-blend")
+    p.add_argument("--pass5", action="store_true",
+                   help="overlay lane pass 5: pass 4 with the wider credit "
+                        "box, the membrane seam fix of every LaMa fill and "
+                        "the contour profile subtraction")
     p.add_argument("--alpha-thr", type=float, default=OVERLAY_ALPHA_THR,
                    help="overlay-lane matte threshold that becomes the mask")
     p.add_argument("--faint", action="store_true",
@@ -1518,7 +1555,7 @@ def main(argv=None):
                      max_iter=args.max_iter, overlay=args.overlay,
                      alpha_thr=args.alpha_thr, faint=args.faint,
                      edge_fit=args.edge_fit, pass3=args.pass3,
-                     pass4=args.pass4)
+                     pass4=args.pass4, pass5=args.pass5)
     print(json.dumps({k: v for k, v in res.items() if k != "commands"},
                      indent=2, default=str))
     # gpu_busy is a non-zero exit like error: nothing was produced, and a batch
