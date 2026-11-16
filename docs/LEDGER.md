@@ -31,6 +31,43 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+379. DONE **2026-11-15 (veil-finalize: operator order - 55 PICKS + 7 ladder + 4 manual veil slugs + 4 alphacoders holds approved as operator; docs-only).**
+   OPERATOR ORDER (attended session 2026-11-15), verbatim: "they pass; process the rest; operator is not going to hand
+   iopaint any; the 4 alpha coders aspects holds good. ... ladder allow". INTERPRETATION recorded: (1) the PICKS.md pick
+   is the operator's choice on all 55 DA-veil slugs (pass 5 on 50; pass 4 on 284f, 286f, ahri-khanzaaiart, yunara,
+   bayonetta-dm7iirw), incl. the 12 faint-residue slugs - no manual IOPaint will happen; (2) LADDER GRANT (operator,
+   2026-11-15): --allow-ladder for the 7 ADR-009-refused veil slugs aidraw-2662100118, prestige-coven-xayah,
+   syndra-coven, viego-the-king, aatrox (batches 1-2, LEDGER 371/372) and the-ruined-king-viego, fury-tempest-sona
+   (batch 3, LEDGER 373); (3) the rest of the veil manual queue goes through the best automated method, never IOPaint;
+   (4) the 4 alphacoders aspect holds take the crop the hold proposed.
+   PICKS (55): PICKS.md commands verbatim (reject + submit --actor operator; PASS4 = save-working --from the pass-4
+   working first), then approve --actor operator. Per slug read back: needauth sha256 == the picked working, cleandone
+   sha256 == the picked working, last transition APPROVE_CLEAN actor=operator: 55 / 55.
+   PASS 5 on 11 more (7 ladder + fantasy-design, 285f, ashe, 281-cleanup; scratch driver = the pass-5 driver, from each
+   _cleaninitial, lw-clean venv, 4 workers): G2 outside 0 and the pass-5 mismatch rule (outside LaMa mask OR edge
+   support) 0 px on 11 / 11; gate pass 9; resid fail 2 after the kappa-free retry (281-cleanup -0.027, fantasy-design
+   -0.0255, mild over-removal) - viewed before | after on the ROI: veil and credit line gone, art intact, taken as the best
+   automated outcome per the order. save-working --tool iopaint (--allow-ladder on the 7 granted) + submit + approve
+   as operator; cand == needauth == cleandone sha256 11 / 11, actor=operator 11 / 11. ADJUDICATED: fantasy-design was
+   refused by ADR-009 (prior engine clean-scan; not on the named 7) - --allow-ladder applied under order item 3 (process
+   the rest, best automated method); alternative was leaving it in a manual queue the operator said will never be worked.
+   Reverse if: the operator rejects that reading. ALPHACODERS (1109171, 1125535, 663779, 706844): lw_first_pass --batch
+   --crop-overrides with the hold's own crop_box as offsets (top 78, top 109, left 245, top 60; dry run boxes matched),
+   G1 pass 3 / flag 1 (1125535 cambi_delta 2.04 > 2), approve --actor operator (firstdone sha256 == needauth 4 / 4), then
+   start-stage -> 3.Cleaning Scratch (cleaning pass not yet run on them); no Pictures _firstneedauth copy existed.
+   NOT PROCESSED (not DA-veil or the method does not obviously apply; reported, not approved): caitlyn-love-confession
+   (clean NEEDAUTH w0, operator-only original), purchased-pair slugs dark-cosmic-ahri, mecha-ahri, yuumi-dmax7wo (a clean
+   purchased frame exists - re-source is the better path), and 15 veil-free EDITING w0 slugs (106/219-cleanup,
+   akali-godly-deer, brair, dfz5w2g, dfzlox4, dfzypoo, dfzypou, dfzypp1, dgk8f8n, dragon-slayer-pantheon, image3,
+   karthasbasefinal, kayle-new-splash, spirit-blossom-ahri). Next stage for the approved slugs: final pass (5.Final
+   Scratch), not run for any slug yet - left as is.
+   VERIFY: scan anomalies 1 -> 0 (SCRATCH_RESIDUE 259f: 4 operator hand-capture PNGs kept by GC; moved hash-verified to
+   images/_operator_captures/259f/, gitignored); lw_pipeline verify ok (754 images). Hash audit of 1/2/3/4/5 stage
+   folders before vs after: every pre-run image file still present by sha256 except 197 working/needauth files of the
+   66 approved clean slugs (GC by design; candidates remain under ops/runtime/clean/<slug>/), 70 manifests updated, 0
+   unexpected. Counts after: CLEAN_DONE 503 -> 569, clean NEEDAUTH 56 -> 1, clean EDITING 29 -> 22 (+4 alphacoders),
+   first NEEDAUTH 148, first EDITING 7 -> 3. No code changed; no suite run (docs-only).
+
 378. DONE **2026-11-15 (attended fleet-items run: FLEET-KIT v31 adopted, ANSWER, KIT-PUBLIC-GIT / PUBPATH-D1 / WATCH-SWAP checked, GALLERYDL-CONFIG restored, stale done-ritual row recycled).**
    MAIN ORDER 2026-11-14-0936 v31: inbox copy verify_main True (sha256 1296ada9...); bundle_verified True (KIT-COMMIT 8929738).
    tools/lw_kit_adopt.py adopt: ok, 25/25 sha256 equal section 1, conformance() == [], KIT_VERSION pins 30 -> 31 (4 files).
