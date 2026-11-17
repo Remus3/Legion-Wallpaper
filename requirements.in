@@ -15,6 +15,11 @@ pytest
 ruff
 numpy
 Pillow
+# scipy (MAIN ORDER 2026-11-16-2005 item 3): tools/lw_veil_pass5.py imports
+# scipy.ndimage lazily and tests/test_lw_veil_pass4.py exercises it, so both
+# suite jobs need it. Pinned in requirements.txt to the cv lane's version
+# (tests/test_requirements_scipy.py holds the two in step).
+scipy
 # RRF-2.1: parallel suite (tools/lw_suite.py) + per-test timeout (pytest.ini).
 pytest-xdist
 pytest-timeout
