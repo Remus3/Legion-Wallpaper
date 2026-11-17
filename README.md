@@ -4,27 +4,64 @@
 
 # Legion Wallpaper
 
-**An AI image restoration pipeline - staged, self-auditing, gate-ladder verified - and the multi-agent Claude Code orchestration system that builds it.**
+**A staged, self-auditing image restoration pipeline, and the Claude Code agent system that builds it.**
 
 [![ci](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml/badge.svg)](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg)](https://www.python.org/)
-[![platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6.svg)](#requirements)
+[![platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6.svg)](#development-and-tests)
 
 </div>
 
 Drop an illustration into `images\0.Originals`. The pipeline finds the best
-full-resolution source, upscales it exactly once with an illustration-tuned
-super-resolution model, removes watermarks and generation artifacts by masked
-LaMa inpainting, repairs anime faces and eyes, audits its own output at every
-stage through a metric-plus-vision gate ladder, and delivers an approved
-2560x1440 PNG.
+full-resolution source and upscales it exactly once. It removes watermarks and
+artifacts by masked LaMa inpainting, repairs faces and eyes, and delivers an
+approved 2560x1440 PNG. Every stage audits its own output through a gate ladder
+of metrics and a vision reviewer. Nothing advances on an unbacked claim: an
+agent never approves its own output.
 
-Nothing advances on an unbacked claim. Autonomy is earned through a calibration
-ladder - shadow, then spot-check, then full auto - and every promotion is backed
-by a measured census.
+## The images are not here
 
-## The pipeline
+They never will be. The wallpapers are third-party illustrations, `images/**`
+is gitignored, and the restored output stays private. This repo publishes the
+pipeline code, the gate ladder, the provenance manifests and the agent operating
+system that produced them.
+
+## Quick start
+
+Try the code without the corpus or the GPU stack:
+
+```powershell
+git clone https://github.com/Remus3/Legion-Wallpaper.git
+cd Legion-Wallpaper
+python -m pip install -r requirements.txt
+python tools\install_git_hooks.py           # arm the commit gates
+python tools\lw_suite.py -q                   # GPU-only tests skip
+```
+
+`requirements.txt` is hash-pinned and compiled from `requirements.in`. The
+super-resolution, inpainting and face-repair stacks (torch, spandrel, LaMa,
+IOPaint, ComfyUI) live in virtualenvs outside the repo. Built around one
+machine, one corpus and one operator: treat it as a reference implementation,
+not a turnkey tool.
+
+## Usage
+
+On a provisioned machine, `tools\lw_pipeline.py` is the single writer. It moves
+images between stages; nothing is dragged by hand.
+
+```powershell
+python tools\lw_pipeline.py scan           # refresh pipeline_state.json
+python tools\lw_pipeline.py status         # per-stage counts and needs-attention list
+python tools\lw_pipeline.py intake --all   # pull new files out of 0.Originals
+python tools\lw_pipeline.py approve <slug> # operator approval of a submission
+```
+
+Each stage also has a Claude Code slash command under `.claude/commands/`
+(`/intake`, `/first-pass`, `/cleaning-pass`, `/final-pass`, `/last-pass`,
+`/end-review`).
+
+## Architecture and layout
 
 ```mermaid
 flowchart LR
@@ -46,189 +83,24 @@ append-only transition log and an atomic state file. Every advance is gated:
 | **G0** intake | Is this file real, stable, and worth a slot? |
 | **G1** fidelity | Full-reference metrics (MS-SSIM, LPIPS, DISTS) at a common scale, plus sharpness and halo checks |
 | **G2** style | Does the result still look like the corpus it came from? |
-| **Vision** | A Claude reviewer that may FLAG but never REJECT ([ADR-008: a reviewer may flag, never reject](docs/adr/ADR-008-vision-reviewer-flags-never-rejects.md)) |
+| **Vision** | A Claude reviewer that may FLAG but never REJECT ([ADR-008](docs/adr/ADR-008-vision-reviewer-flags-never-rejects.md)) |
 
 A rejection demotes the image to the previous stage with the reason logged, or
-routes it to a human QA queue. The single-writer rule has no exceptions:
-`lw_pipeline` moves images, never a hand-drag in Explorer.
+routes it to a human QA queue. Autonomy is earned through a calibration ladder:
+shadow, then spot-check, then full auto, each promotion backed by a measured
+window ([`docs/RESTORATION_PLAN.md`](docs/RESTORATION_PLAN.md)).
 
-## Where it stands
-
-_Probed live 2026-10-03. A static status table goes stale, so the machine-readable version is `ops/runtime/pipeline_state.json`, refreshed by `lw_pipeline scan`._
-
-| Area | Status |
-|---|---|
-| **Running on the corpus** | Intake, source recovery, first pass (spandrel DAT2 super-resolution plus the G1 fidelity gate), and cleaning (detect, mask, LaMa inpaint, verify, with IOPaint as the human QA lane) |
-| **Built, not yet exercised end to end** | Final pass, last pass and end review are coded, tested and gated, but no image has been carried through to delivery yet |
-| **Corpus** | Tracked illustrations on one Windows workstation; per-stage counts live in `ops/runtime/pipeline_state.json` (`lw_pipeline status`) |
-| **Approval** | First-pass results wait for the operator. An agent never approves its own output |
-| **Code** | Tools in `tools/`, tests in `tests/`, decisions in `docs/adr/`, ledger in `docs/LEDGER.md`; counts are read live (`git rev-list --count HEAD`, `pytest --collect-only -q`), never typed here |
-| **Autonomy** | Phase A (shadow). Promotion needs a window of 50 or more operator-reviewed images |
-
-## What is next
-
-The roadmap lives in [`ROADMAP.md`](ROADMAP.md), highest priority at the top.
-The headline items:
-
-- **Carry the first image through stages 5 to 9.** The back half of the ladder
-  has never run on a real submission. That is the next proof the product owes.
-- **Earn autonomy phase B.** Accumulate the shadow window, then promote by the
-  calibration ladder rather than by confidence.
-- **Gate `dists` on something.** It is computed on every audit and binds nothing.
-- **An art-damage measure for `scoped_revert`.** Cleaning can win on seam and
-  lose on art. Today only the first half is measured.
-- **One glyph engine.** The banned-glyph rule is declared in three places. They
-  agree today, and nothing makes them agree tomorrow.
-- **Package the process as the deliverable.** Pipeline, gate ladder, rubric,
-  golden-set protocol and manifests. Never the images.
-- **The tooling-tier lane.** Sibling agent projects each audited their own
-  history for "done" claims that a later session refuted, then asked what share
-  a better gate or a tighter contract would have caught. Four landed on 78 to 83
-  percent; one dissents hard at 31. No tooling gets built until that
-  disagreement is resolved, because the lane is only worth it if the answer is
-  high.
-
-## What is reusable
-
-The corpus stays private. The process is what ships: a Claude Code agent
-operating system - orchestrator, worktree subagents, hooks and gates - that is
-not specific to images at all.
+The agent side is not specific to images. Claude Code sessions work under an
+operating contract ([`CLAUDE.md`](CLAUDE.md)); hooks and git gates enforce it.
 
 | Piece | Where | What it does |
 |---|---|---|
-| **Agent operating contract** | `CLAUDE.md` | The rules, tiers, gates and rituals an AI agent must follow to work in this repo |
-| **Multi-agent framework** | `docs/AGENTS.md`, `.claude/` | Orchestrator plus worktree subagent slices plus a read-only verifier that must CONFIRM before any merge |
-| **Verifier subagent** | `.claude/agents/verifier.md` | Independently re-runs the suite and tries to falsify an implementing agent's "green" claim |
-| **Commit and hygiene gates** | `tools/precommit_gate.py`, `tools/install_git_hooks.py` | Blocks banned glyphs and net-new lint on staged lines. `--check` proves the hooks actually fire |
-| **Drift guard** | `tools/drift_guard.py` | Wrap-up probe for doc and repo drift: budgets, memory index, cited SHAs, untracked authored files, and whether the hooks fire |
-| **Agent-config scanner** | `tools/drift_guard.py` | Parses `.claude/settings.json` (invalid JSON is a breach, since an unparsed config presents exactly as one with no hooks) and reports directories whose `~/.claude.json` spellings disagree on trust |
-| **Publication guards** | `tests/test_no_secret_literals.py`, `tests/test_no_account_paths.py`, `tests/test_no_split_identity.py` | Sweep every tracked file for credential literals, account home paths and personal identity, including values split across lines or written in reverse. Pinned by sha256, never spelled out |
-| **Headless run loop** | `ops/loop/` | Self-continuing `claude -p` executor with slot arbitration and a truth gate |
-| **Pipeline state machine** | `tools/lw_pipeline.py` | Atomic stage transitions, per-image manifests, append-only transition log |
-
-The recurring theme: **an agent's claim is not evidence.** Most of the code
-above exists to make a machine prove its own work before a human is asked to
-believe it. The same instinct runs through the publication guards, which pin
-every forbidden value by hash rather than writing it down, because a guard that
-names what it forbids publishes it.
-
-## How this repo is built
-
-This repo is developed by Claude Code agents working under an operating contract
-([`CLAUDE.md`](CLAUDE.md)), steered by one human operator. The interesting part is
-not that agents write the code; it is what stops them from shipping a claim they
-have not proven. The agent files are tracked on purpose: they are the documented
-process, not leftovers.
-
-- **[`CLAUDE.md`](CLAUDE.md)** is the operating contract every agent session
-  loads first: the fleet-wide common block (identical in every sibling repo and
-  pinned by a test), then this repo's own rules and its settled decisions, each
-  with the condition that would reopen it.
-- **[`.claude/`](.claude/)** holds the harness configuration: `settings.json`
-  wiring the hooks that enforce the contract at tool-call time, agent definitions (the
-  read-only verifier among them) and the slash commands for each pipeline stage
-  and session ritual.
-- **[`ops/`](ops/)** holds the operational side: the vendored fleet kit pinned
-  by a manifest (`ops/fleet_kit/`), the loop controller and its control files
-  (`ops/loop/`), and runtime state, most of it gitignored.
-- **[`.githooks/`](.githooks/)** is the authoritative gate, run by git itself:
-  `pre-commit` (banned glyphs, net-new lint, generated-map drift), `commit-msg` (Conventional Commits
-  subjects, `merge: <topic>` merge subjects with no agent worktree names, AI
-  attribution stripped) and `pre-push` (operator identity only).
-- **The hand-off** ([`LW-NEXT-SESSION.txt`](LW-NEXT-SESSION.txt)) is the only
-  continuity between sessions: each session starts by reading it and ends by
-  rewriting it, carrying forward every item it did not act on.
-
-The license is stated plainly in [License](#license): Apache License 2.0, an
-open-source license, covering the code and docs only, never the image corpus.
-
-```mermaid
-flowchart LR
-  OP["Operator"] --> MS["Main session<br/><i>plans, dispatches,<br/>reports</i>"]
-  MS --> SA["Worktree subagents<br/><i>TDD, RED first</i>"]
-  SA --> VF["Verifier subagent<br/><i>tries to falsify<br/>the green claim</i>"]
-  VF --> GH["Git hooks + CI<br/><i>glyph, lint, leak<br/>and drift gates</i>"]
-  GH --> MAINB["main"]
-  INB["Sync inbox<br/><i>notes from sibling repos</i>"] --> RESP["Inbox responder<br/><i>every 5 min</i>"]
-  RESP --> HL["Headless lane<br/><i>detached claude -p</i>"]
-  HL --> GH
-  CIW["CI watchdog"] --> HL
-```
-
-- **Subagent first.** The main session plans, dispatches and reports. Work beyond
-  a one-line fix runs in background subagents that write a progress file as they
-  go, so status is read from a file, never by interrupting the worker.
-- **Cross-repo note sync, end to end.** This repo is one of several sibling projects
-  on the same machine that talk through a file-based channel
-  ([`docs/CHANNEL.md`](docs/CHANNEL.md)). Notes land in a gitignored inbox; shared
-  files are pinned by sha256 and a change lands only when every carrier reports
-  the same digest from its own disk.
-- **Headless background lanes.** Scheduled tasks run unattended work without
-  touching the operator's window: `LW-InboxResponder` answers new channel notes
-  in a detached headless session, `LW-CIWatchdog` repairs a red `main` in an
-  isolated worktree and merges only on the fix's own green CI, and
-  `LW-WeeklyHygiene` runs a weekly sweep. Every headless spawn goes through one
-  vendored helper (`ops/fleet_kit/`) that fails closed, hides its console, caps
-  runs per rolling 24 hours and writes a live status file. Each lane has a HALT
-  file as its kill switch. Details: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
-- **Gates over good intentions.** `.githooks/` blocks banned glyphs and net-new
-  lint on staged lines; the fleet kit's identity hooks strip AI or bot
-  co-author / sign-off trailers at commit time and the pre-push hook refuses a
-  range holding a non-operator author or committer; CI re-runs the full
-  suite, including the publication guards, on every push to `main`.
-
-## Decisions are written down, including the wrong ones
-
-Every choice with lasting consequences becomes a numbered ADR in
-[`docs/adr/`](docs/adr/): the folder and state scheme, the upscaler chosen on a
-golden A/B sweep, signature removal, the comparison pixel budget, one cleaning
-engine per submission.
-
-[ADR-010: switch the SDXL generator base](docs/adr/ADR-010-gen-base-realvisxl.md)
-flipped the image-generation base after a CLIP similarity measure ranked a
-challenger first.
-[ADR-011: put the base back](docs/adr/ADR-011-gen-base-stays-animagine.md)
-reversed it the same day, once someone looked at the frames: the measure reads rendering register and is
-blind to hands, weapon canon and likeness, so it had ranked the two failing
-bases above the working one. A number that disagrees with the pixels loses, and
-the losing number stays in the record.
-
-## The images are not here
-
-They never will be. The wallpapers are third-party illustrations, `images/**` is
-gitignored, and the restored output stays private. What this repo publishes is
-the pipeline code, the gate ladder, the golden-set regression protocol, the
-provenance manifests, and the agent operating system that produced all of it.
-
-## Requirements
-
-Windows, Python 3.14, and GPU-backed super-resolution and inpainting virtualenvs
-provisioned outside the repo (spandrel plus torch for upscaling, LaMa and
-IOPaint for cleaning, ComfyUI with an SDXL illustration checkpoint for face
-repair and generation). Built around one machine, one corpus and one operator:
-treat it as a reference implementation, not a turnkey tool.
-
-Trying the code without the corpus or the GPU stack:
-
-```powershell
-git clone https://github.com/Remus3/Legion-Wallpaper.git
-cd Legion-Wallpaper
-python -m pip install -r requirements.txt
-python tools\install_git_hooks.py           # arm the commit gates
-python -m pytest tests -q                     # GPU-only tests skip
-```
-
-The three commands that drive the pipeline on a provisioned machine:
-
-```powershell
-python tools\lw_pipeline.py scan      # refresh pipeline_state.json
-python tools\lw_pipeline.py status    # per-stage counts and the needs-attention list
-python tools\lw_pipeline.py intake --all   # pull new files out of 0.Originals
-```
-
-[`CONTRIBUTING.md`](CONTRIBUTING.md) states what an invited change would have to
-clear. Security or privacy problems go through the private channel in
-[`SECURITY.md`](SECURITY.md), never a public issue.
+| Operating contract | `CLAUDE.md` | Rules, verification tiers, gates and session rituals every agent session loads first |
+| Multi-agent framework | `docs/AGENTS.md`, `.claude/` | Orchestrator, worktree subagents, and a read-only verifier that must confirm before a merge |
+| Commit gates | `.githooks/`, `tools/precommit_gate.py` | Banned glyphs, net-new lint, AI attribution stripped, operator identity only on push |
+| Publication guards | `tests/test_no_secret_literals.py`, `tests/test_no_account_paths.py` | Sweep every tracked file for credentials and account paths, pinned by sha256 |
+| Headless lanes | `ops/loop/`, `ops/fleet_kit/` | Scheduled inbox responder, CI watchdog and weekly hygiene, all spawned through one vendored, fail-closed kit |
+| Pipeline state machine | `tools/lw_pipeline.py` | Atomic stage transitions, per-image manifests, append-only log |
 
 <details>
 <summary><b>Where things live</b></summary>
@@ -241,50 +113,68 @@ clear. Security or privacy problems go through the private channel in
 | Decisions | `docs/adr/` |
 | Roadmap (highest priority at top) | `ROADMAP.md` |
 | Aspirational backlog | `BACKLOG.md` |
-| Per-item completion ledger (append-only, newest-first) | `docs/LEDGER.md` |
+| Completion ledger (append-only) | `docs/LEDGER.md` |
 | Session hand-off (the only continuity) | `LW-NEXT-SESSION.txt` |
-| Older session notes (newest-first) | `WAKEUP_NOTES.md` |
 | Cross-repo channel conventions | `docs/CHANNEL.md` |
 | Vendored headless-spawn kit (pinned) | `ops/fleet_kit/` |
-| Operating rules (per-session auto-load) | `CLAUDE.md` |
 | Harness config, hooks, agents, commands | `.claude/` |
 | Pipeline stage folders (content gitignored) | `images\0.Originals` .. `images\9.Image Backup` |
 | Pipeline machine state (atomic) | `ops/runtime/pipeline_state.json` |
-| Pipeline transition log (append-only, gitignored) | `PIPELINE_LOG.md` |
-| Runtime health (written by the supervisor, TBD) | `ops/runtime/health.json` |
-| Daily logs | `logs/YYYY-MM-DD.log` |
 
 </details>
 
-<details>
-<summary><b>How this repo operates</b></summary>
+Decisions with lasting consequences are numbered ADRs in
+[`docs/adr/`](docs/adr/), including the reversed ones:
+[ADR-010](docs/adr/ADR-010-gen-base-realvisxl.md) switched the generator base
+on a similarity score, and [ADR-011](docs/adr/ADR-011-gen-base-stays-animagine.md)
+put it back the same day once the frames were inspected. A number that
+disagrees with the pixels loses.
 
-Inherited 1:1 from a prior project
-([ADR-001: inherit the operating system](docs/adr/ADR-001-inherit-rc-operating-system.md)) and enforced by
-hooks, not by good intentions.
+## Where it stands
 
-- **TDD, RED first.** Every feature or bugfix starts with a failing test. No
-  implementation before the test is observed RED.
-- **Tiered verification.** Changes are classified by tier, and each tier carries
-  its own mandatory gate, from docs-only up to full suite plus restart plus
-  health confirm.
-- **Subagent-first delegation.** Non-trivial work fans out to worktree subagent
-  slices. An independent read-only verifier must CONFIRM before the orchestrator
-  merges, and the orchestrator is the sole merger.
-- **Session rituals.** Wake by reading `LW-NEXT-SESSION.txt`, the single
-  hand-off file. Wrap with `/done`: tests, commit, push, a ledger entry in
-  `docs/LEDGER.md`, CI confirmed green, and a rewritten hand-off that carries
-  every unfinished item forward.
-- **Ledger discipline.** Every completed item gets a numbered, append-only entry
-  in `docs/LEDGER.md`, never in `CLAUDE.md` (it has a hard size budget).
-- **7-bit ASCII only** in authored content: no em or en dashes, no smart quotes.
+Live counts come from `python tools\lw_pipeline.py status`, never from this file.
 
-Full rules: [`CLAUDE.md`](CLAUDE.md).
+- **Running on the corpus:** intake, source recovery, first pass (DAT2
+  super-resolution plus the G1 gate) and cleaning (detect, mask, LaMa inpaint,
+  verify; a logo-veil pass for semi-transparent marks; IOPaint as the human QA
+  lane).
+- **Built, not yet run end to end:** final pass, last pass and end review are
+  coded, tested and gated. No image has reached delivery yet.
+- **Approval:** first-pass and cleaning results wait for the operator.
+- **Autonomy:** phase A (shadow). The auto verdict is recorded and decides
+  nothing.
 
-</details>
+## What is next
+
+From [`ROADMAP.md`](ROADMAP.md), highest priority first:
+
+- **Final pass on the newly approved cleaning set.** The first real images
+  through stages 5 to 9.
+- **Finish the cleaning-scratch remainder** and clear the first-pass approval
+  queue (operator decisions).
+- **Gate repair.** `dists` is computed and gates nothing; `scoped_revert` has
+  no art-damage measure; the banned-glyph rule is declared in three places.
+- **Earn autonomy phase B** by the calibration ladder, not by confidence.
+
+## Development and tests
+
+Windows, Python 3.14. TDD: a failing test first, then the change.
+
+```powershell
+python tools\lw_suite.py -q        # whole suite: parallel pass, then the serial set
+ruff check .
+python tools\install_git_hooks.py --check
+```
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs py_compile,
+ruff and the whole suite on every push to `main`, a nightly full run, and a CV
+lane that fails on any skipped test. Dependencies are hash-pinned; Dependabot
+bumps are re-applied as operator commits, never merged on GitHub.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) states what an invited change must clear.
+Security or privacy problems go through [`SECURITY.md`](SECURITY.md), never a
+public issue.
 
 ## License
 
-Apache License 2.0, see [`LICENSE`](LICENSE). The license covers the PROCESS
-shipped in this repo: pipeline code, gate ladder, docs, agent framework. It does
-not and cannot grant any right to the image corpus.
+Apache License 2.0, see [`LICENSE`](LICENSE). It covers the code and docs in
+this repo. It grants no right to the image corpus.
