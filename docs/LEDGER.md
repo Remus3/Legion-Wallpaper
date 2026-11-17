@@ -31,6 +31,22 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+383. DONE **2026-11-16 (session 97: wallpaper folder rebuilt from cleaning-done; no repo code change, docs-only).**
+   The desktop wallpaper folder <account>\Pictures (the LW-Wallpaper scheduled task runs tools\lw_wallpaper_rotate.py
+   tick every 3 min, reads only the root, shuffles and shows each image once per cycle; the Windows slideshow stays off)
+   was rebuilt. Before: 565 root images plus 136 in the _needauth_hold subfolder. 327 <slug>_cleandone.png were added from
+   images\4.Cleaning Done; the other 242 were already in the root, byte-identical. 295 uncleaned root duplicates
+   (_cleaninitial and ref_*_cleanup) and the 136 held candidates (each has an identical copy in images\1.First Pass
+   Scratch) went to the Recycle Bin: 431 files, 0 failures. After: 597 images in the root, 0 in subfolders, 0 sha256
+   duplicates, 0 pHash near-duplicates; the task is Ready and the rotator cycle holds all 597. OPEN: WALLPAPER-SYNC - no
+   LW tool copies newly cleaned images into the wallpaper folder; build one TDD (rotator subcommand or a cleaning-done
+   promotion step: copy <slug>_cleandone.png, Recycle-Bin the slug's uncleaned copy, dedupe sha256 + pHash). The MAIN
+   ORDER 2026-11-16-2005 note is carried as MAIN-ORDER-2005 for the next session to verify and close; this /done
+   did not act on it or mark it seen, the PT5M responder worked it concurrently and marked it seen (LEDGER 381, 382).
+   CI-96 was closed by that responder wrap; read back again here (5bf0dcb ci 43924762164 failure, e76f1fc ci
+   43999028949 success). Pre-flight --lf via suite gate: 4689 passed, 19 skipped, 1 setup/teardown error in
+   tests/test_usm_fidelity_probe.py (passes 8/8 alone; load flake, watch).
+
 382. DONE **2026-11-16 (session 97 wrap: CI-96 closed, DEPBRANCH-D4 opened; docs-only).**
    CI-96: the session 96 tip 5bf0dcb went red (ci 43804112760 and 43924762164, ModuleNotFoundError scipy in the veil
    pass4 tests); fixed by cd939e6 (LEDGER 381); e76f1fc ci 43999028949 + nightly 43999056088 success (read back via gh
@@ -409,12 +425,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    scheduled tick: status present 555 -> 701, deck 701 entries (146 `_firstneedauth`), cycle 125 position
    547/701, last_shown a newly delivered file. FUTURE: when one of these slugs advances, retire its
    `_firstneedauth` twin from Pictures (one entry per slug, LEDGER 121); restore the gallery-dl DA config.
-
-363. DONE **2026-11-03 (responder-authored: SS FIX to MAIN 2026-11-03-1324 kit checklist caps; mechanical ack, no reply; docs-only).**
-   Note 2026-11-03-1324-from-SS-FIX-to-MAIN-KIT-checklist-caps-cut-silently-13a-departure-board-displaced-row-ONE-ANSWER.md,
-   sha256 7e6976a9533f71f6a9edc47f28fa775956c0df7e0c2500e94e84b08891f34810, 2920 bytes, HOP: 1. Class FIX, sender SS,
-   addressee MAIN only (kit defect: ROWS_MAX/CHECKLIST_MAX/[:120] silent cuts, an item 13a ruling, fleet_board displaced row
-   marked done); not from MAIN, so no verify_main match applies. Asks nothing of LW; "ONE ANSWER" is MAIN's kit version note.
-   No A-action, no kit file touched, no reply (LW never answers for MAIN). SS-MAIL observation: one more SS note addressed
-   to MAIN landed in LW's inbox (count 6 since the session-90 tally of 5). FUTURE: vendor the kit version that fixes it (A3/A4).
 

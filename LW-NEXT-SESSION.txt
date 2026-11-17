@@ -1,7 +1,7 @@
 NEXT SESSION
 ------------
 SESSION: 98
-Task: FINAL-PASS on the ~70 newly approved cleaning slugs first, then CLEAN-REST and every remaining item in order.
+Task: MAIN-ORDER-2005 first, then WALLPAPER-SYNC, CI-97, FINAL-PASS on the ~70 newly approved cleaning slugs, CLEAN-REST and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
@@ -19,12 +19,14 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   approvals: LEDGER 370-379, docs/_archive/2026-11/VEIL_*.md. Purchased clean originals sit
   at <console-drops> (never write a home path). Operator: no manual IOPaint by hand.
   Never put a 64-hex digest here.
-Acceptance: CI-97 read; FINAL-PASS run or carried with a reason; every other checklist item acted on or carried with a reason.
+Acceptance: MAIN-ORDER-2005 verified and closed; WALLPAPER-SYNC shipped TDD; CI-97 read; FINAL-PASS run or carried with a reason; every other checklist item acted on or carried with a reason.
 CHECKLIST:
-  - CI-97: Read CI on the session 97 /done push tip (LEDGER 381-382 + hand-off) with gh run list --branch main; pending at write time
+  - MAIN-ORDER-2005: Read the sync-inbox note 2026-11-16-2005-from-MAIN-ORDER-to-LW-github-refresh-readme-scipy-ci-dependabot-ONE-ANSWER.md, verify it against MAIN's outbox (fleet_headless.verify_main) and carry out the order. The session 97 interactive /done did NOT act on it or mark it seen; the PT5M responder (run 225) ran it concurrently and marked the inbox seen (cd939e6 9e6e10c d70d81e e76f1fc 1a4c566, LEDGER 381: items 1/3/4 done, 2 NA, 5 waits kit v32; ANSWER 1958 reached 1/1) - read each item back against the note and close or finish what is left
+  - WALLPAPER-SYNC: Build (TDD) the missing copy of newly cleaned images into the wallpaper folder <account>\Pictures (the LW-Wallpaper rotator reads only the root) - a tools/lw_wallpaper_rotate.py subcommand or a step at cleaning-done promotion: copy <slug>_cleandone.png into the Pictures root, Recycle-Bin that slug's uncleaned copy (_cleaninitial, ref_*_cleanup, _firstneedauth), dedupe by sha256 plus pHash; no LW tool does this today (session 97 did it by hand, LEDGER 383)
+  - CI-97: Read CI on the session 97 interactive /done push tip (the LEDGER 383 docs commit) with gh run list --branch main; pending at write time. The responder wrap tip 165fd1a ci 44000834230 is success (read back via gh run view before this push)
   - FINAL-PASS: Run the final pass (stage 3, /final-pass skill) on the ~70 newly approved cleaning slugs (c14f1fc, LEDGER 379)
   - CLEAN-REST: Decide/run cleaning on the 22 cleaning-scratch slugs not processed: caitlyn-love-confession (awaits operator approval only); dark-cosmic-ahri / mecha-ahri / yuumi (re-source from the operator's purchased clean copies at <console-drops> instead of cleaning); 15 unwatermarked slugs (106-cleanup, 219-cleanup, akali-godly-deer, brair, dfz5w2g, dfzlox4, dfzypoo, dfzypou, dfzypp1, dgk8f8n, dragon-slayer-pantheon, image3, karthasbasefinal, kayle-new-splash, spirit-blossom-ahri); 4 alphacoders now in cleaning
-  - FIRSTPASS-QUEUE: 148 first-pass slugs await operator approval in NEEDAUTH (lw_pipeline approve/reject; never self-approve); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures; the 136 older copies sit in ~/Pictures/_needauth_hold (LEDGER 369) - restore or drop them from there
+  - FIRSTPASS-QUEUE: 148 first-pass slugs await operator approval in NEEDAUTH (lw_pipeline approve/reject; never self-approve); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures; the 136 older held copies in the _needauth_hold subfolder were Recycle-Binned in session 97 (each has an identical copy in images\1.First Pass Scratch; LEDGER 383)
   - KITROLL-RACE: Report to MAIN (one note, within the outbound cap) the v31 04:00 auto-roll memory starvation (gate memory admission 31 min, no suite) + KITROLL-RESPONDER-RACE recurrence (PT5M responder claimed the answer channel; LEDGER 378), unless already reported; the LW-side fix stays TDD in tools/lw_inbox_responder.py
   - KIT-PUBLIC-GIT: Wait for MAIN's public verify_kit_commit kit helper (V18-PROVENANCE fix uses private fleet_headless._git, LEDGER 328; v31 ships none, LEDGER 378), swap to it when shipped
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324, unchanged LEDGER 378); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
@@ -38,13 +40,23 @@ Parked: not open; each line names its reopen event - move it back into CHECKLIST
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a fresh IOPaint hand capture newer than 2026-08-22
   - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a MAIN note or operator ask for the repo-review result
 Carried forward:
+  - Session 97 (interactive) /done: wallpaper folder <account>\Pictures rebuilt by hand, no repo code change (LEDGER 383):
+    327 <slug>_cleandone.png added from images\4.Cleaning Done (242 already there, byte-identical); 295 uncleaned root
+    duplicates + 136 _needauth_hold candidates Recycle-Binned (431, 0 failures); now 597 root images, 0 subfolders,
+    0 sha256 / 0 pHash duplicates; LW-Wallpaper task Ready, rotator cycle holds 597. CI-96 had been closed by the
+    responder's wrap (read back again: 5bf0dcb ci 43924762164 failure, e76f1fc ci 43999028949 success). Pre-flight: ruff
+    clean, drift_guard 0 breaches, --lf via suite gate 4689 passed 19 skipped 1 error (setup/teardown error in
+    tests/test_usm_fidelity_probe.py::test_fidelity_summary_is_empty_when_nothing_was_measured under load; the file
+    passes 8/8 alone - watch for a recurrence). The /done waited for the concurrent responder run (done 20:09) before
+    any doc edit. Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base main). SESSION stays 98: the responder wrap
+    165fd1a stamped 98 for this same session, so this write stamps against the 5bf0dcb hand-off (SESSION: 97).
   - Session 97 (inbox responder 225) /done: MAIN ORDER 2026-11-16-2005 github refresh done by the responder (cd939e6
     scipy pin, 9e6e10c + d70d81e Dependabot PRs 9/8 path B, e76f1fc README; LEDGER 381); ANSWER 2026-11-16-1958 reached
     1/1. CI-96 closed: 5bf0dcb red (ci 43804112760, scipy missing) fixed by cd939e6; e76f1fc ci 43999028949 + nightly
     43999056088 success, read back via gh run list. Pre-flight: ruff clean, drift_guard 0 breaches, --lf via suite
     gate 1 passed. Inbox marked seen 677. Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base main).
     No restart_trigger.txt, no ops/runtime/health.json. Memory dir unchanged since 2026-11-08. Newest session jsonl
-    0.7 MB (< 10 MB). The /done agent started no background work. LEDGER 382. CI for the /done push: pending (CI-97).
+    0.7 MB (< 10 MB). The /done agent started no background work. LEDGER 382. CI for that push: 165fd1a ci 44000834230 success.
   - Session 96 /done: CI-95 closed (2fbefc2 ci 43729919039 success, read back via gh run list); FIRSTPASS-HOLDS closed
     (4 alphacoders approved into cleaning, c14f1fc); GALLERYDL-CONFIG closed (LEDGER 378); LEDGER 380. Pre-flight: ruff clean,
     drift_guard 0 breaches, --lf via suite gate 4685 passed 19 skipped. Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base main).
@@ -154,7 +166,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 97 - scipy 1.18.1 CI pin (cd939e6), ruff 0.17.5 (9e6e10c), codeql-action 4.39.3 (d70d81e),
+Do NOT redo: session 97 - wallpaper folder rebuild (597 root images, 0 duplicates, LEDGER 383) - read back via the
+  rotator cycle count and a sha256 + pHash sweep of the Pictures root;
+  session 97 - scipy 1.18.1 CI pin (cd939e6), ruff 0.17.5 (9e6e10c), codeql-action 4.39.3 (d70d81e),
   README rewrite (e76f1fc), PRs 8/9 closed - read back via git log on main and gh run list (43999028949 success).
   session 96 - DA logo veil pair/matte + passes 2-5 (149ce0d a2eb6c3 144609a b4df897 8aa837f b85fcc9 10b0f48 182758c
   784e120 5c67b81, LEDGER 370-377), the 70 operator approvals (c14f1fc, LEDGER 379), kit v31 adoption (323641d, LEDGER 378),

@@ -511,6 +511,15 @@ _Now + Next only. Highest priority at the TOP. Full history in `docs/history_not
 
 ## Now
 
+- **Wallpaper folder rebuilt from cleaning-done - DONE 2026-11-16 (session 97, no repo
+  code change; LEDGER 383).** <account>\Pictures root: 597 images, 0 subfolders, 0 sha256 /
+  0 pHash duplicates; 327 cleandone added, 431 uncleaned/held copies Recycle-Binned.
+
+- **WALLPAPER-SYNC - OPEN (2026-11-16, session 97).** No LW tool copies newly cleaned
+  images into the wallpaper folder. Build one TDD (a `tools/lw_wallpaper_rotate.py`
+  subcommand or a cleaning-done promotion step): copy `<slug>_cleandone.png` into the
+  Pictures root, Recycle-Bin that slug's uncleaned copy, dedupe by sha256 plus pHash.
+
 - **DA logo veil from purchased clean pairs - DONE 2026-11-15 (149ce0d a2eb6c3 8aa837f
   b85fcc9 10b0f48 182758c 784e120 5c67b81; LEDGER 370-377).** Pair-derived veil matte
   (alpha ~0.14) replaced the pooled estimate; passes 2-5 over the 55 DA-veil slugs.

@@ -79,6 +79,18 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-16, session 97) - wallpaper folder rebuilt from cleaning-done
+
+The desktop wallpaper folder <account>\Pictures (root only; LW-Wallpaper task, lw_wallpaper_rotate.py tick every 3 min)
+was rebuilt by hand, no repo code change: 327 <slug>_cleandone.png added from images\4.Cleaning Done (242 more already
+there, byte-identical); 295 uncleaned root duplicates and the 136 _needauth_hold candidates (identical copies stay in
+1.First Pass Scratch) Recycle-Binned, 431 files, 0 failures. Now 597 root images, 0 subfolders, 0 sha256 / 0 pHash
+duplicates; task Ready, rotator cycle holds 597 (LEDGER 383). The PT5M responder worked MAIN ORDER 2026-11-16-2005
+concurrently (cd939e6 9e6e10c d70d81e e76f1fc 1a4c566, LEDGER 381-382) and closed CI-96; this /done did not act on
+the note, carried as MAIN-ORDER-2005.
+Next: MAIN-ORDER-2005 verify/close, WALLPAPER-SYNC (TDD tool for cleaned -> Pictures, dedupe sha256 + pHash), CI-97,
+FINAL-PASS, CLEAN-REST. Do NOT redo: the wallpaper folder rebuild (597 images, 0 duplicates).
+
 ## PREVIOUS SESSION (2026-11-16, session 97 / inbox responder 225) - MAIN ORDER github refresh
 
 MAIN ORDER 2026-11-16-2005 (digest MATCH) handled by the responder fork: cd939e6 scipy 1.18.1 pinned in
