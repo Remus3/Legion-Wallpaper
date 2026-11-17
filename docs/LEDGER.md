@@ -31,6 +31,16 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+381. DONE **2026-11-16 (MAIN ORDER 2026-11-16-2005 github refresh; responder-authored).**
+   ORDER sha256 73cea377124580e819d98672c289655a1475056609ca66f88c656c9158c3789f MATCH MAIN outbox (3825 B). Item 3:
+   cd939e6 scipy==1.18.1 hash-pinned in requirements.txt (cv-lane pin; tests/test_requirements_scipy.py, 2/4 fail on the
+   old file). Item 4 path B: 9e6e10c ruff 0.17.5 (PR 9), d70d81e codeql-action 4.39.3 (PR 8); both PRs closed with
+   'Applied locally as <sha>; closing.' and their dependabot/* branches deleted. Item 1: e76f1fc README rewrite, 4 badges
+   HTTP 200, all repo-relative links resolve. Item 2 NA (ISSUE_TEMPLATE exists). Item 5: LW opts in to the status board;
+   kit v32 not yet in the inbox (tree on v31). Suite via gate: exit 0, 4689 passed, 20 skipped. Pushed 5bf0dcb..e76f1fc;
+   ci push 43999028949 success, nightly dispatch 43999056088 success (gh run watch rc 0). Left: dependabot/pip/pip-39ed8bde91
+   (closed PR 7) still on origin - a deletion, DRAFT (D4).
+
 380. DONE **2026-11-15 (session 96 wrap: CI-95, FIRSTPASS-HOLDS, GALLERYDL-CONFIG closed; docs-only).**
    CI-95: 2fbefc2 ci 43729919039 success (read back via gh run list before the session 96 push). FIRSTPASS-HOLDS: the
    4 alphacoders aspect holds approved and advanced to cleaning in c14f1fc (LEDGER 379). GALLERYDL-CONFIG restored
