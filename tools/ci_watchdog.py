@@ -297,6 +297,8 @@ def _fix_in_worktree(wt, sha, runs, model, timeout, kit_seams=None):
     # FLEET-COMMON item 13 d (kit v7): the fix run keeps its own checklist.
     # A fix run is its own fire: run count 1.
     prompt = f"{prompt}\n{_bind_checklist().child_rule(FIX_NOTE, 1)}\n"
+    # E-ROOT (MAIN ORDER 2026-11-16-2145): scratch goes under the LW sidecar.
+    prompt = f"{prompt}{lw_race_guards.SCRATCH_RULE}\n"
     try:
         line = he.spawn(prompt, note=FIX_NOTE, kind="build", writes_code=True, model=model or None,
                         effort=FIX_EFFORT, cwd=wt, return_stderr=True, timeout=timeout,

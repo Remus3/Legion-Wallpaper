@@ -31,6 +31,27 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+385. DONE **2026-11-16 (responder-authored worker: MAIN ORDER 2026-11-16-2145 e-root items to sidecar; named scratch root + guard test).**
+   PROVENANCE: lw_inbox_responder.main_provenance -> MATCH, sha256
+   f2c8b16c2c1713226157bacc2e48c460afc753cd00d963ca77c73df9149c23cf, 3070 bytes (MAIN's committed outbox copy).
+   ITEMS (section 1, 4 items, 9 files, 99230 bytes): consumer check read-only - 0 hits in tracked files, 0 env
+   vars, 0 scheduled tasks, 0 worktree registrations (`git worktree list` = main only), none a reparse point.
+   The shared drive-root tmp folder also holds `ho.txt`, which is RC's hand-off (SESSION 165), not LW's: left.
+   COPIED non-destructively with sha256 read-back (9/9 files match): items 1-2 + the hand-off copy ->
+   `<sidecar-drive>:\Sidecars\LW\Scratch\e-root-2026-11-16\`, the empty item 3 -> `...\LW\Temp\tmp_lwdone`.
+   DRAFT (D4, a safety floor a MAIN note cannot lift): the originals go to the Recycle Bin via
+   Microsoft.VisualBasic.FileIO.FileSystem DeleteDirectory/DeleteFile with SendToRecycleBin, never an unlink;
+   read back = a drive-root listing shows none of the 4. Waits for the operator.
+   ROOT-CAUSE FIX (D3, authorized by the verified MAIN note): tools/lw_paths.py scratch_root() / scratch_dir()
+   + CLI `python tools/lw_paths.py scratch [name]` ($LW_SCRATCH_DIR, else the kit sidecar_dir LW/Scratch, else
+   <repo>/ops/runtime/scratch; never a drive-root child; live read-back prints the sidecar Scratch dir);
+   lw_race_guards.SCRATCH_RULE joined to CHILD_RULE (responder child + loop executor sdk prompt) and appended
+   to the ci_watchdog fix prompt; LW_SCRATCH_DIR declared in ENV_ROOTS; CLAUDE.md Paths bullet.
+   TEST: tests/test_no_drive_root_scratch.py - tracked-file sweep for drive-root tmp/temp/scratch/worktree
+   paths (planted/innocent arms), scratch_root and fleet_lanes.worktree_path derived under <sidecar>/LW.
+   RED first (7 failed), then green; the sweep caught a comment in lw_paths.py mid-build (arm binds).
+   Kit part (lane worktree fallback, child TEMP/TMP) is MAIN's E-ROOT-KIT; ops/fleet_kit untouched.
+
 384. DONE **2026-11-16 (session 98: interactive /done only; docs-only).** The operator typed /done at session start;
    no code, data or runtime change. CI-97 closed: the session 97 interactive /done push tip fb9c2b0 ran ci 44001876893
    success (read back via gh run list --branch main). Pre-flight: ruff clean, drift_guard 0 breaches, --lf via the suite

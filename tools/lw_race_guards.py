@@ -36,6 +36,14 @@ GITLOCK = KIT / "fleet_gitlock.py"
 SLOT_ENV = "FLEET_SUITE_SLOT"
 OWNER_ENV = "FLEET_CLAIM_OWNER"
 
+# E-ROOT (MAIN ORDER 2026-11-16-2145): the named scratch root, carried by every
+# child prompt below and by the CI-fix prompt (tools/ci_watchdog.py).
+SCRATCH_RULE = (
+    "SCRATCH: put every helper script, commit-message file, log or copy you "
+    "write outside the repo ONLY under `python tools/lw_paths.py scratch <name>` "
+    "(the LW sidecar Scratch dir); never in a drive-root tmp, temp, scratch or "
+    "worktree folder.")
+
 # One sentence every headless child LW spawns carries (inbox responder child,
 # loop executor sdk prompt): the claims hook denies a bare commit / push /
 # whole suite anyway; saying it up front saves the child a denied turn.
@@ -44,7 +52,7 @@ CHILD_RULE = (
     "`python ops/fleet_kit/fleet_gitlock.py run --owner <id> -- git ...` and every "
     "WHOLE test suite as `python ops/fleet_kit/fleet_suite_gate.py run --owner <id> "
     "-- python -m pytest tests -q`; <id> is your claims-hook owner id (a denial "
-    "names it).")
+    "names it). " + SCRATCH_RULE)
 
 # {env var: subpath under the test's tmp_path}. Same subpaths as the older
 # per-var fixtures in tests/conftest.py, so fixture order never matters.
@@ -57,6 +65,8 @@ ENV_ROOTS = {
     # Every writer that defaults to the repo logs/ dir (lw_paths.log_dir):
     # LOG-LEAK (headless refusals) generalized by LOG-LEAK-2 (2026-10-10).
     "LW_LOG_DIR": "logs",
+    # E-ROOT (MAIN ORDER 2026-11-16-2145): lw_paths.scratch_root().
+    "LW_SCRATCH_DIR": "scratch",
 }
 
 

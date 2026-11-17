@@ -222,6 +222,7 @@ edit. Tree-specific rules go BELOW this block, never inside it.
 
 ## Paths
 - Root `<repo>\`. Python 3.14 = `python` on PATH. Health `ops/runtime/health.json`; logs `logs/YYYY-MM-DD.log`; API keys `API-Key-*.txt` (gitignored).
+- Scratch root (MAIN ORDER 2026-11-16-2145, E-ROOT): every helper script, commit-message file, log or copy written outside the repo - kit adoption, sessions, sub-agents, lanes - goes ONLY under `<sidecar-drive>:\Sidecars\LW\Scratch`, from `python tools/lw_paths.py scratch <name>`; never a drive-root tmp/temp/scratch/worktree folder (`tests/test_no_drive_root_scratch.py`). Child prompts carry `lw_race_guards.SCRATCH_RULE`.
 - Repo is PUBLIC: never write an account home path into a tracked file (`tests/test_no_account_paths.py`). Resolve via `tools/lw_paths.py`, `$LOCALAPPDATA` in hooks/.ps1, `~`/`%USERPROFILE%` in config, `<account>` in prose.
 
 ## Hard rules

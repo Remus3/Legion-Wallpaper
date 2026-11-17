@@ -84,6 +84,57 @@ def log_dir(default: str | os.PathLike[str] | None = None) -> Path:
     return Path(default) if default is not None else repo_root() / "logs"
 
 
+# E-ROOT (MAIN ORDER 2026-11-16-2145): the ONE named scratch root. Kit-adoption
+# and session runs used to drop helper scripts, commit messages, logs and
+# hand-off copies in ad-hoc tmp* folders at the drive root. Every
+# LW scratch file now goes under scratch_root(): $LW_SCRATCH_DIR when set, else
+# the kit's sidecar dir <sidecar root>/LW/Scratch (fleet_lanes.sidecar_dir,
+# which needs <root>/LW to exist), else <repo>/ops/runtime/scratch
+# (gitignored). Never a drive-root child. tests/test_no_drive_root_scratch.py.
+SCRATCH_ENV = "LW_SCRATCH_DIR"
+SCRATCH_CODE = "LW"
+
+
+def _fleet_lanes():
+    key = "fleet_kit_fleet_lanes"  # the kit's own sibling key: one module object
+    if key in sys.modules:
+        return sys.modules[key]
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        key, repo_root() / "ops" / "fleet_kit" / "fleet_lanes.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[key] = mod
+    try:
+        spec.loader.exec_module(mod)
+    except BaseException:
+        sys.modules.pop(key, None)
+        raise
+    return mod
+
+
+def scratch_root() -> Path:
+    """The LW scratch root, resolved at CALL time (see SCRATCH_ENV above)."""
+    env = os.environ.get(SCRATCH_ENV, "").strip()
+    if env:
+        return Path(env)
+    try:
+        side = _fleet_lanes().sidecar_dir(SCRATCH_CODE, "Scratch")
+    except (OSError, ImportError, AttributeError, ValueError, SyntaxError):  # degrade
+        side = None
+    if side is not None:
+        return Path(side)
+    return repo_root() / "ops" / "runtime" / "scratch"
+
+
+def scratch_dir(name: str) -> Path:
+    """<scratch_root()>/<name> for one run or task. `name` is one plain path
+    component (no separator, no drive, not . or ..); not created here."""
+    n = str(name)
+    if (not n or n in (".", "..") or "/" in n or "\\" in n or ":" in n):
+        raise ValueError(f"scratch name {name!r} must be one plain path component")
+    return scratch_root() / n
+
+
 def user_home() -> Path:
     """The operator profile directory. USERPROFILE, then Path.home()."""
     return Path(os.environ.get("USERPROFILE") or Path.home())
@@ -228,3 +279,24 @@ def expand(value: str | os.PathLike[str]) -> Path:
     likely to use one as the other.
     """
     return Path(os.path.expandvars(str(value))).expanduser()
+
+
+def main(argv: list[str] | None = None) -> int:
+    """`python tools/lw_paths.py scratch [name]` prints (and creates) the LW
+    scratch root, or <root>/<name>. Exit 0 ok, 2 usage."""
+    args = list(sys.argv[1:] if argv is None else argv)
+    if not args or args[0] != "scratch" or len(args) > 2:
+        print("usage: lw_paths.py scratch [name]", file=sys.stderr)
+        return 2
+    try:
+        target = scratch_dir(args[1]) if len(args) == 2 else scratch_root()
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    target.mkdir(parents=True, exist_ok=True)
+    print(target)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
