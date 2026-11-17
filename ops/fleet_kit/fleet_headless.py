@@ -388,6 +388,14 @@ v31 (ruling docs/rulings/2026-11-14-s76-model-effort.md D4):
   drift prints the same lines; the adoption ANSWER quotes them.
 - KIT-USAGE-RESET-MS lives in fleet_lanes.usage_pct (reset_s()).
 
+v32 (operator order 2026-11-16):
+- KIT-BOARD-OPT-IN: FLEET-COMMON 18 and fleet_board.py - the status board
+  renders only in a tree whose ops/status_board.json holds "opt_in": true;
+  elsewhere render / calls is a silent no-op (rc 0, no output, no files).
+- KIT-ID-GUARD (survey 2026-11-16): FLEET-COMMON 17 server side -
+  fleet_identity.py ci-check and the vendored workflow fleet_identity_guard.yml
+  (a required check); Dependabot PRs are re-applied locally, never merged.
+
 Pure stdlib. No machine path, account id or repo name appears in this file.
 """
 
@@ -407,7 +415,7 @@ import time
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-KIT_VERSION = 31
+KIT_VERSION = 32
 KIT_PATCH = 0
 TMPDIR_ENV = "CLAUDE_CODE_TMPDIR"  # v22: headless child temp root (sidecar)
 VAR = "CLAUDE_HEADLESS_BASE_URL"

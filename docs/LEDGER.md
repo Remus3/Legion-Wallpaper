@@ -31,6 +31,23 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+387. DONE **2026-11-17 (04:00 Maint-KitRollout: FLEET-KIT v32 adopted, MAIN ORDER 2026-11-16-1947).**
+   Inbox note verify_main True (MAIN committed outbox copy); bundle files are not in MAIN's committed outbox
+   (verify_main False per file), so each was hashed against the note's section 1 instead: 26/26 equal, manifest
+   25/25 equal, MANIFEST.json sha256 cede0b7c...c757d. Vendored byte-for-byte at ops/fleet_kit/ (new:
+   fleet_identity_guard.yml), FLEET-COMMON block re-embedded (items 17, 18), conformance() == []. G1: workflow copied
+   byte-for-byte to .github/workflows/fleet-identity-guard.yml (sha256 262be842... both copies). Section 4: only the
+   KIT_VERSION pins moved 31 -> 32 (tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
+   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py); no board/count/workflow-set test turned red.
+   Board: OPTED OUT (default; ops/status_board.json unchanged, render is now a silent no-op). Gated suite
+   (fleet_suite_gate, tools/lw_suite.py): parallel 4532 passed 19 skipped + serial 183 passed 1 skipped, rc 0.
+   No rotator/lane loop running (responder is per-tick --once, loads v32 on its next tick). G3 HELD: main protection
+   has enforce_admins=true and no required_status_checks (case b); adding a required check under enforced admins
+   would refuse every direct push to main (LW's push policy), and the note forbids touching enforce_admins - asked
+   MAIN for a ruling in the ANSWER (reverse if: MAIN rules add it anyway, or enforce_admins is lifted). G4: 0 open
+   Dependabot PRs, 0 remote dependabot/* branches. G5: vulnerability-alerts 204; automated-security-fixes
+   enabled=false (left as is, quoted).
+
 386. DONE **2026-11-16 (session 99 wrap: responder /done after MAIN ORDER 2145; docs-only).** This session's work
    was 57c8694 (LEDGER 385); its ANSWER 2026-11-16-2230 reached 1/1. CI read back via gh run view: 57c8694 ci
    44010759064 success + codeql 44010759058 success; CI-98 closed (609c661 ci 44009033052 success). Pre-flight:
