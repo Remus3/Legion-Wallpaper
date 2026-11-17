@@ -2,7 +2,7 @@
 
 Newest entries: docs/LEDGER.md. Older ones, by the month of their lead date:
 
-- 2026-11: 7 entries, items 357 to 363 (2026-11.md)
+- 2026-11: 8 entries, items 357 to 364 (2026-11.md)
 - 2026-10: 130 entries, items 227 to 356 (2026-10.md)
 - 2026-09: 85 entries, items 142 to 226 (2026-09.md)
 - 2026-08: 80 entries, items 62 to 141 (2026-08.md)

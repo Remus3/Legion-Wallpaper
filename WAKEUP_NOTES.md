@@ -79,6 +79,12 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-16, session 98) - interactive, no work; /done only
+
+The operator typed /done at session start; no code or data change. CI-97 closed: fb9c2b0 ci 44001876893 success
+(read back via gh run list). Docs-only wrap (LEDGER 384). Every other checklist item carried unchanged.
+Next: MAIN-ORDER-2005 verify/close, WALLPAPER-SYNC, FINAL-PASS, CLEAN-REST, CI-98.
+
 ## PREVIOUS SESSION (2026-11-16, session 97) - wallpaper folder rebuilt from cleaning-done
 
 The desktop wallpaper folder <account>\Pictures (root only; LW-Wallpaper task, lw_wallpaper_rotate.py tick every 3 min)
