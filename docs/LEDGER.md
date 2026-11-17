@@ -31,6 +31,15 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+386. DONE **2026-11-16 (session 99 wrap: responder /done after MAIN ORDER 2145; docs-only).** This session's work
+   was 57c8694 (LEDGER 385); its ANSWER 2026-11-16-2230 reached 1/1. CI read back via gh run view: 57c8694 ci
+   44010759064 success + codeql 44010759058 success; CI-98 closed (609c661 ci 44009033052 success). Pre-flight:
+   ruff clean, drift_guard 0 breaches (8 notes). Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base
+   main). Hand-off rewritten via tools/lw_next_session.py --write (SESSION 100; archive skipped, 27512 B < 27648 B):
+   every CHECKLIST item carried verbatim except CI-98 (closed); E-ROOT-D4 added (operator approve/refuse Recycle-Binning
+   the four drive-root originals whose sha256-verified sidecar copies LEDGER 385 made); CI-99 added for this push.
+   No deletions.
+
 385. DONE **2026-11-16 (responder-authored worker: MAIN ORDER 2026-11-16-2145 e-root items to sidecar; named scratch root + guard test).**
    PROVENANCE: lw_inbox_responder.main_provenance -> MATCH, sha256
    f2c8b16c2c1713226157bacc2e48c460afc753cd00d963ca77c73df9149c23cf, 3070 bytes (MAIN's committed outbox copy).
@@ -386,43 +395,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    CI-RED-PATHSEP: the push run on 35701f3 (42155626178) and nightlies 42245905502 / 42383018434 / 42491770307
    read failure: tests/test_headless_env_path.py PSF constant carried "C:", which splits on Linux's ":" pathsep
    into a stray "C" entry. Test-only fix (no drive colon off Windows); that file: 6 passed locally.
-
-366. DONE **2026-11-05 (session 93 wrap: DEPENDABOT-PR7, CI-91, KIT-ROLLOUT-READ, RESPONDER-STATE, KIT-SCAN-STALE closed; docs-only).**
-   DEPENDABOT-PR7: 93189fe re-applies pytest 9.2.0 + ruff 0.17.3 as an operator commit (path B); PR 7 read back CLOSED;
-   suite 4461 passed 20 skipped. CI-91: run 41704024983 on c728dc9 read success. KIT-ROLLOUT-READ: headless_usage.jsonl
-   line 64 is the `kit-rollout v28` row, 1020.3 s / 2.716 USD (v27 1647.4 s / 4.205 USD) - LW-3 done-when met.
-   RESPONDER-STATE: LW-InboxResponder read Enabled/Running every 5 min, no HALT file; the session-91 Disabled read was
-   MAIN's 2026-11-01 quiesce, re-enabled by MAIN Restore-Quiesce 2026-11-02 22:07:49 - CLAUDE.md ENABLED stands.
-   KIT-SCAN-STALE: 571 pre-ledger notes baselined as SKIP via fleet_inbox mark_seen (left 0, pending 0); the stray SS
-   FIX-to-MAIN pending row closed via mark_work_done. PY-ON-PATH + SS-MAIL: LEDGER 365 (b7ce5df). Inbox: 3 unread read,
-   none needs LW action (v28 closed in LEDGER 361/362; SS 1324 to MAIN, LEDGER 363; bundle 25 files byte-match
-   ops/fleet_kit); lw_facts --mark-inbox-seen run at /done (667 marked). OUTBOUND: INFORMATION
-   2026-11-05-2104-from-LW-INFORMATION-to-MAIN-classify-addressee-child-env-PATH-SS-deliver-fanout.md (sha256 485dd5c0...)
-   reached 1/1; LW has no SS carrier, so the SS deliver fan-out item is relayed via MAIN. Unchanged: GATE-FIFO-WATCH (no
-   reply), RETIRE-JUNCTION (3/6), WATCH-SWAP tripwire green. /done pre-flight: ruff clean, drift_guard 0 breaches,
-   pytest --lf via fleet_suite_gate 4494 passed 19 skipped exit 0.
-
-365. DONE **2026-11-05 (PY-ON-PATH child PATH sanitizer + launch_loop direct launch; SS-MAIL misaddressed-note skip).**
-   PY-ON-PATH ROOT CAUSE (investigation this session): Python Manager registers App Paths python.exe /
-   pythonw.exe / py.exe (HKCU+HKLM) with Path = its WindowsApps PythonSoftwareFoundation.PythonManager_* dir;
-   every ShellExecute launch of a python.exe prepends it to the child PATH, so bare `python` in descendants
-   resolved to pythoncore-3.14-64 without pytest. kit child_env (fleet_headless.py:510) copies os.environ as-is.
-   FIX 1: tools/lw_headless_env.py sane_path (:153) drops every PATH entry containing
-   `\windowsapps\pythonsoftwarefoundation.` (case-insensitive), puts dirname(sys.executable) + its Scripts dir
-   (Windows) first, dedupes, keeps the key spelling; child_env (:178) and spawn (:259, via the _sane_run runner
-   wrapper :185 - kit.spawn builds its env from os.environ with no parent seam) both apply it; os.environ is
-   never mutated. FIX 2: ops/loop/launch_loop.ps1 Start-Direct (:30) = ProcessStartInfo UseShellExecute
-   $false + CreateNoWindow $true, replacing both `Start-Process $py` calls (:57 dry stub, :124 controller).
-   powershell.exe 5.1 ParseFile: 0 errors; smoke launch through Start-Direct: child PATH had no PSF entry.
-   SS-MAIL: SS's responder copies every note to every participant. tools/lw_inbox_responder.py decide (:476)
-   now returns SKIP reason `misaddressed` (why `misaddressed: addressed to <CODES> ...`) when addressees()
-   (:511) - the fleet-code run anchored right after `-from-<SNDR>-[<CLASS-WORDS>-]to-` (:507) - names neither
-   LW nor ALL and is not just the sender (self-correction broadcast); prose `...-owed-to-LL-...` never counts,
-   `-to-ALL-SIX-`/`-to-ALL-SEVEN-` parse as ALL, an unknown code ends the run (fail open). Kit SKIP reasons
-   (self/terminal) still win. Dry scan of the live inbox (read-only): 14 notes would be misaddressed, all
-   addressed to MAIN/RC/LL/RSC, 0 to LW or ALL.
-   TDD: tests/test_headless_env_path.py (6), tests/test_inbox_responder_misaddressed.py (23),
-   tests/test_launch_loop_direct_launch.py (4) - RED first (18 + 2 failed), then green.
-   READ BACK: ruff clean; fleet_suite_gate run lw_suite.py -q exit 0: parallel 4311 passed 19 skipped,
-   serial 183 passed 1 skipped (4494 passed, 20 skipped, 0 failed).
 

@@ -1,7 +1,7 @@
 NEXT SESSION
 ------------
-SESSION: 99
-Task: MAIN-ORDER-2005 first, then WALLPAPER-SYNC, CI-98, FINAL-PASS on the ~70 newly approved cleaning slugs, CLEAN-REST and every remaining item in order.
+SESSION: 100
+Task: MAIN-ORDER-2005 first, then WALLPAPER-SYNC, CI-99, E-ROOT-D4 (operator), FINAL-PASS on the ~70 newly approved cleaning slugs, CLEAN-REST and every remaining item in order.
 Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LEDGER
   282/283/287); LW-Cutover-E stays DISABLED until the junction is retired. Re-probe live
   state before acting: schtasks LW-* state, LW Monitor :8901, IOPaint :8080, tailscale
@@ -19,11 +19,11 @@ Context: repo lives on the E: drive; its C: spelling is a junction to <repo> (LE
   approvals: LEDGER 370-379, docs/_archive/2026-11/VEIL_*.md. Purchased clean originals sit
   at <console-drops> (never write a home path). Operator: no manual IOPaint by hand.
   Never put a 64-hex digest here.
-Acceptance: MAIN-ORDER-2005 verified and closed; WALLPAPER-SYNC shipped TDD; CI-98 read; FINAL-PASS run or carried with a reason; every other checklist item acted on or carried with a reason.
+Acceptance: MAIN-ORDER-2005 verified and closed; WALLPAPER-SYNC shipped TDD; CI-99 read; E-ROOT-D4 asked of the operator; FINAL-PASS run or carried with a reason; every other checklist item acted on or carried with a reason.
 CHECKLIST:
   - MAIN-ORDER-2005: Read the sync-inbox note 2026-11-16-2005-from-MAIN-ORDER-to-LW-github-refresh-readme-scipy-ci-dependabot-ONE-ANSWER.md, verify it against MAIN's outbox (fleet_headless.verify_main) and carry out the order. The session 97 interactive /done did NOT act on it or mark it seen; the PT5M responder (run 225) ran it concurrently and marked the inbox seen (cd939e6 9e6e10c d70d81e e76f1fc 1a4c566, LEDGER 381: items 1/3/4 done, 2 NA, 5 waits kit v32; ANSWER 1958 reached 1/1) - read each item back against the note and close or finish what is left
   - WALLPAPER-SYNC: Build (TDD) the missing copy of newly cleaned images into the wallpaper folder <account>\Pictures (the LW-Wallpaper rotator reads only the root) - a tools/lw_wallpaper_rotate.py subcommand or a step at cleaning-done promotion: copy <slug>_cleandone.png into the Pictures root, Recycle-Bin that slug's uncleaned copy (_cleaninitial, ref_*_cleanup, _firstneedauth), dedupe by sha256 plus pHash; no LW tool does this today (session 97 did it by hand, LEDGER 383)
-  - CI-98: Read CI on the session 98 /done push tip (the LEDGER 384 docs commit) with gh run list --branch main; pending at write time. CI-97 closed: fb9c2b0 ci 44001876893 success (read back via gh run list before this push)
+  - CI-99: Read CI on the session 99 /done push tip (the LEDGER 386 docs commit) with gh run list --branch main; pending at write time. CI-98 closed: 609c661 ci 44009033052 success; 57c8694 ci 44010759064 + codeql 44010759058 success (read back via gh run list / gh run view before this push)
   - FINAL-PASS: Run the final pass (stage 3, /final-pass skill) on the ~70 newly approved cleaning slugs (c14f1fc, LEDGER 379)
   - CLEAN-REST: Decide/run cleaning on the 22 cleaning-scratch slugs not processed: caitlyn-love-confession (awaits operator approval only); dark-cosmic-ahri / mecha-ahri / yuumi (re-source from the operator's purchased clean copies at <console-drops> instead of cleaning); 15 unwatermarked slugs (106-cleanup, 219-cleanup, akali-godly-deer, brair, dfz5w2g, dfzlox4, dfzypoo, dfzypou, dfzypp1, dgk8f8n, dragon-slayer-pantheon, image3, karthasbasefinal, kayle-new-splash, spirit-blossom-ahri); 4 alphacoders now in cleaning
   - FIRSTPASS-QUEUE: 148 first-pass slugs await operator approval in NEEDAUTH (lw_pipeline approve/reject; never self-approve); on promotion remove each slug's `<slug>_firstneedauth.png` copy from ~/Pictures; the 136 older held copies in the _needauth_hold subfolder were Recycle-Binned in session 97 (each has an identical copy in images\1.First Pass Scratch; LEDGER 383)
@@ -32,6 +32,7 @@ CHECKLIST:
   - PUBPATH-D1: HELD - a dated design spec's admin profile path stays in public history; MAIN PUBREPO ruled no rewrite (LEDGER 324, unchanged LEDGER 378); purge only on a new MAIN ORDER via fleet_rewrite.py or the operator
   - WATCH-SWAP: Re-open the lw_watch -> kit fleet_watch swap when the tripwire goes red (kit gains `prune`, LEDGER 284; green 3/3 at session 96, LEDGER 378)
   - DEPBRANCH-D4: Operator approve/refuse deleting origin branch dependabot/pip/pip-39ed8bde91 (closed PR 7; D4 drafted in reply note 2026-11-16-1958-from-LW-ANSWER-to-MAIN; LEDGER 381); on approve delete it, read back git ls-remote
+  - E-ROOT-D4: Operator approve/refuse sending the E: drive-root originals to the Recycle Bin: folders tmp_kr, lwkit_tmp and tmp_lwdone, plus ho97.txt in the drive-root tmp folder (that file only; ho.txt beside it belongs to RC). sha256-verified copies sit in <sidecar-drive>:\Sidecars\LW\Scratch\e-root-2026-11-16 and <sidecar-drive>:\Sidecars\LW\Temp\tmp_lwdone (MAIN ORDER 2026-11-16-2145, 57c8694, LEDGER 385). On approve: Recycle Bin via Microsoft.VisualBasic.FileIO.FileSystem SendToRecycleBin, never an unlink; read back a drive-root listing showing none of the 4
 Parked: not open; each line names its reopen event - move it back into CHECKLIST when that event lands.
   - GATE-FIFO-WATCH: Read MAIN's reply to the GATE-FIFO INFORMATION note (2026-10-10-1120, LEDGER 303; no reply at session 93; v18 plan keeps FIFO); when a kit fix ships, re-read fleet_suite_gate.py (mixed --slots FIFO hole, lane path, v14 header) and close; PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a MAIN reply to the GATE-FIFO note, or a kit version that changes fleet_suite_gate.py
   - RETIRE-JUNCTION: Watch inbox for the sibling re-point confirmations (3/6, nothing new at session 93, LEDGER 311; still C:: RC + RSC moon_sync_repos.json, LL ops/outbox.py:193; note 1837), then rename the junction off for the soak (LEDGER 287); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a new sibling re-point confirmation in the inbox (4/6 or more)
@@ -40,6 +41,10 @@ Parked: not open; each line names its reopen event - move it back into CHECKLIST
   - R5c: Run R5c DINOv2 layer-12 check once a fresh IOPaint hand capture exists (G1.lpips alternative exhausted, LEDGER 277; newest capture still 2026-08-22); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a fresh IOPaint hand capture newer than 2026-08-22
   - REVIEW-DRIVER: (REPO-REVIEW-DRIVER) DEAD - ops/loop/control/progress/repo-review.json reads failed, "abandoned: marked by MAIN cleanup 2026-10-10" at 25 pct; finish by hand or relaunch from docs/REPO_REVIEW_PLAN_2026-10-08.md and send its result in the next batched MAIN ANSWER (LEDGER 292); PARKED 2026-11-14 (MAIN ORDER 2026-11-14-0935 item 3); REOPEN ON: a MAIN note or operator ask for the repo-review result
 Carried forward:
+  - Session 99 (inbox responder) /done: MAIN ORDER 2026-11-16-2145 e-root items to sidecar done (57c8694, LEDGER 385);
+    ANSWER 2026-11-16-2230 reached 1/1. CI-98 closed (609c661 ci 44009033052 success); 57c8694 ci 44010759064 +
+    codeql 44010759058 success, read back via gh run view. Pre-flight: ruff clean, drift_guard 0 breaches. Worktree
+    reap: reap applied: 0 removed, 0 kept, 0 listed (base main). No deletions this session. LEDGER 386. CI for this push: pending (CI-99).
   - Session 98 (interactive) /done: no work - the operator typed /done at session start. CI-97 closed (fb9c2b0 ci
     44001876893 success, read back via gh run list). Pre-flight: ruff clean, drift_guard 0 breaches, --lf via suite gate
     (see LEDGER 384). Worktree reap: reap applied: 0 removed, 0 kept, 0 listed (base main). LW-Cutover-E read Disabled
@@ -171,7 +176,9 @@ Carried forward:
     Notepad window (ahk_mode.txt=dry, title LW-LOOP-DRYRUN) with paired lines in
     ops/runtime/bridge/sends.jsonl - needs an attended desktop. P1-8 report_fact: MAIN
     0020 "later". lw_ops_tasks.py stays tree-local (the P0-1 gate is still open).
-Do NOT redo: session 98 - CI-97 (fb9c2b0 ci 44001876893 success) - read back via gh run list.
+Do NOT redo: session 99 - MAIN ORDER 2145 e-root copies + scratch root (57c8694, LEDGER 385), CI-98 - read back via
+  git log on main, sha256 9/9 copy match and gh run view 44010759064 success.
+  session 98 - CI-97 (fb9c2b0 ci 44001876893 success) - read back via gh run list.
   session 97 - wallpaper folder rebuild (597 root images, 0 duplicates, LEDGER 383) - read back via the
   rotator cycle count and a sha256 + pHash sweep of the Pictures root;
   session 97 - scipy 1.18.1 CI pin (cd939e6), ruff 0.17.5 (9e6e10c), codeql-action 4.39.3 (d70d81e),
@@ -223,16 +230,16 @@ Operator asks (generated by tools/lw_ops_tasks.py from the open-task log; do not
   - vote.r4-ab vote/r4-ab: R4 blind A/B anime-lama vs LaMa ready but unvoted (0/19 at 2026-10-12; LEDGER 277)
       steps: 1) Start LW Monitor, open http://127.0.0.1:8901/ab, vote all 19 slugs, press Finish
       open first: Browser > http://127.0.0.1:8901/ab
-      last check: not done (9665 tries)
+      last check: not done (9668 tries)
       close: python tools/lw_ops_tasks.py done vote.r4-ab (closes only when its check passes)
   - visual.readback-2237-statusline visual/readback-2237-statusline: READBACK-2237 status-line half unverified since session 68 (LEDGER 289): acct2 status line must show and no [Legion] line
       steps: 1) Open a Claude session on account 2 and look at the status line; tell the next session 'readback 2237 ok' (it writes ops/runtime/readback-2237.ok) or describe what you see
       open first: Claude Code terminal (account 2) > status line
-      last check: not done (9665 tries)
+      last check: not done (9668 tries)
       close: python tools/lw_ops_tasks.py done visual.readback-2237-statusline (closes only when its check passes)
   - decision.d4-tag-archive decision/d4-tag-archive: D4 deletion floor: delete-or-keep the local-only tag archive/mig-1-v6-wip (abandoned MIG-1 v6 WIP b29005e, not reachable from main, never pushed; LEDGER 327)
       steps: 1) Tell the next session 'delete tag' (it runs git tag -d archive/mig-1-v6-wip) or 'keep tag' (it writes ops/runtime/d4-tag-archive-keep.ok)
       open first: Claude Code session > reply 'delete tag' or 'keep tag'
-      last check: not done (7921 tries)
+      last check: not done (7924 tries)
       close: python tools/lw_ops_tasks.py done decision.d4-tag-archive (closes only when its check passes)
   (end operator asks)
