@@ -31,6 +31,12 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+382. DONE **2026-11-16 (session 97 wrap: CI-96 closed, DEPBRANCH-D4 opened; docs-only).**
+   CI-96: the session 96 tip 5bf0dcb went red (ci 43804112760 and 43924762164, ModuleNotFoundError scipy in the veil
+   pass4 tests); fixed by cd939e6 (LEDGER 381); e76f1fc ci 43999028949 + nightly 43999056088 success (read back via gh
+   run list). Pre-flight: ruff clean, drift_guard 0 breaches, --lf via suite gate 1 passed. Inbox ORDER 2026-11-16-2005
+   marked seen. Open: DEPBRANCH-D4 (operator delete/keep of origin dependabot/pip/pip-39ed8bde91). Next: FINAL-PASS.
+
 381. DONE **2026-11-16 (MAIN ORDER 2026-11-16-2005 github refresh; responder-authored).**
    ORDER sha256 73cea377124580e819d98672c289655a1475056609ca66f88c656c9158c3789f MATCH MAIN outbox (3825 B). Item 3:
    cd939e6 scipy==1.18.1 hash-pinned in requirements.txt (cv-lane pin; tests/test_requirements_scipy.py, 2/4 fail on the
@@ -411,29 +417,4 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    marked done); not from MAIN, so no verify_main match applies. Asks nothing of LW; "ONE ANSWER" is MAIN's kit version note.
    No A-action, no kit file touched, no reply (LW never answers for MAIN). SS-MAIL observation: one more SS note addressed
    to MAIN landed in LW's inbox (count 6 since the session-90 tally of 5). FUTURE: vendor the kit version that fixes it (A3/A4).
-
-362. DONE **2026-11-02 (session 216 responder-authored worker: MAIN ORDER 2026-11-01-0825 kit v28, residual check; docs-only).**
-   Inbox copy re-hashed sha256 7b2885f093f5099735976c6be56cc6786e76084ebb4a8dd40b09677908653f59, 7442 bytes, equals the parent's
-   MAIN-match digest. Residual wiring already landed by dcec270 / LEDGER 361: MANIFEST.json sha256 343471741c03... == section 1,
-   conformance() == [] at KIT_VERSION 28 (read back this run), KIT_VERSION pins 28 in tests/test_fleet_kit_conformance.py,
-   tests/test_headless_env.py, tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py. No kit recopy, no code change.
-   Gated suite this run (fleet_suite_gate, python -m pytest tests -q, log logs/responder-216-suite.log): exit 0, 4461 passed,
-   19 skipped. The 1848 ANSWER of session 91 already carried the sha; one short responder-authored HOP 2 note closes the
-   pending-ORDER row.
-
-361. DONE **2026-11-01 (session 91 Maint-KitRollout /done: fleet kit v28 adopted dcec270; MAIN ORDER 2026-11-01-0825).**
-   Kit v27 -> v28: MANIFEST.json, fleet_headless.py, fleet_identity.py changed (pre-push scans a push whose remote old tip is
-   absent locally). KIT_VERSION pins moved in tests/test_fleet_kit_conformance.py, tests/test_headless_env.py,
-   tests/test_promise_probe_fleet_kit.py, tools/lw_promise_probes.py. READ BACK at /done: MANIFEST version 28, 24/24 files hash
-   equal plus the manifest (25/25), conformance() == [], git show dcec270 author operator. Suite (adoption run, log
-   logs/kit-rollout-v28-suite.log): 4278 passed 19 skipped parallel, 183 passed 1 skipped serial, gated exit 0; the wrap bind is
-   the graded run. CI READ: dcec270 ci 41369084316 success, codeql 41369084350 success. CI-90 closed: a025932 ci 41364943000
-   success. ANSWER moon_sync_outbox/2026-11-01-1848-from-LW-ANSWER-to-MAIN-batched-1-answers.md, HOP 2, reached 1/1; MAIN's copy
-   re-hashed at /done equal to the outbox (d2b96815...6015). DEVIATIONS: (1) gitlock owner was the claims hook id instead of
-   the ordered kit-rollout.LW, the hook denied that id; the suite gate ran under kit-rollout.LW. (2) send_answers
-   (tools/lw_inbox_responder.py:1038) claims under channel "tick" though this was a rollout. (3) The ANSWER went out before CI on
-   dcec270 was read; CI read success afterwards. (4) LW-InboxResponder reads Disabled (schtasks 18:50, 18:51; last run 18:41:56,
-   result 0; no HALT file) while CLAUDE.md says ENABLED (read back 2026-10-03) and the hand-off said LIVE; not touched, carried as
-   RESPONDER-STATE. KIT-ROLLOUT-READ stays open: this run is that nightly but its usage row is not written until it exits.
-   Pre-flight: ruff clean, drift_guard 0 breaches; no code authored, --lf skipped.
 

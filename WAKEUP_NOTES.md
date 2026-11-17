@@ -79,6 +79,16 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-16, session 97 / inbox responder 225) - MAIN ORDER github refresh
+
+MAIN ORDER 2026-11-16-2005 (digest MATCH) handled by the responder fork: cd939e6 scipy 1.18.1 pinned in
+requirements.txt (fixed the red CI on 5bf0dcb: ModuleNotFoundError scipy in the veil pass4 tests); 9e6e10c ruff 0.17.5
+and d70d81e codeql-action 4.39.3 re-applied from Dependabot PRs 9/8 (path B, PRs closed); e76f1fc README rewrite;
+LEDGER 381. ci 43999028949 + nightly 43999056088 success on e76f1fc. Reply ANSWER 2026-11-16-1958 reached 1/1.
+CI-96 closed (5bf0dcb red 43804112760 scipy, fixed by cd939e6, green at e76f1fc). LEDGER 382.
+Open: DEPBRANCH-D4 - origin branch dependabot/pip/pip-39ed8bde91 (closed PR 7) awaits operator delete/keep.
+Next: FINAL-PASS on the ~70 approved slugs, then CLEAN-REST. Do NOT redo: scipy pin, PRs 8/9, README rewrite.
+
 ## PREVIOUS SESSION (2026-11-15, session 96) - DA logo veil solved from purchased clean originals; 70 slugs approved
 
 Operator bought clean originals of 3 DA-veiled wallpapers (dlnxav6, dia857d, dmax7wo; held at <console-drops>). A
