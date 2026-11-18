@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="t">
+<title id="t">Legion Wallpaper icon</title>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161b22"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+<linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="41.01" y1="99.39" x2="88.32" y2="221.72"><stop offset="0" stop-color="#1e2a78"/><stop offset="0.5" stop-color="#8957e5"/><stop offset="1" stop-color="#f2a65a"/></linearGradient>
+</defs>
+<rect x="0" y="0" width="256" height="256" rx="48" fill="url(#bg)"/>
+<clipPath id="clip"><rect x="28" y="65.75" width="200" height="112.5" rx="10"/></clipPath>
+<g clip-path="url(#clip)">
+<g id="restored">
+<rect x="28" y="65.75" width="200" height="112.5" fill="url(#sky)"/>
+<circle cx="132" cy="113" r="24.75" fill="#ffe3b3"/>
+<path d="M28 134.89 L34.25 133.75 L40.5 132.69 L46.75 131.74 L53 130.9 L59.25 130.18 L65.5 129.61 L71.75 129.17 L78 128.89 L84.25 128.76 L90.5 128.78 L96.75 128.97 L103 129.3 L109.25 129.78 L115.5 130.41 L121.75 131.17 L128 132.05 L134.25 133.04 L140.5 134.12 L146.75 135.29 L153 136.52 L159.25 137.81 L165.5 139.12 L171.75 140.44 L178 141.76 L184.25 143.05 L190.5 144.31 L196.75 145.5 L203 146.61 L209.25 147.64 L215.5 148.55 L221.75 149.35 L228 150.02 L228 178.25 L28 178.25 Z" fill="#4b3a8c"/>
+<path d="M28 149.38 L34.25 148.73 L40.5 148.26 L46.75 147.97 L53 147.88 L59.25 147.97 L65.5 148.26 L71.75 148.73 L78 149.38 L84.25 150.18 L90.5 151.12 L96.75 152.17 L103 153.32 L109.25 154.52 L115.5 155.75 L121.75 156.98 L128 158.18 L134.25 159.33 L140.5 160.38 L146.75 161.32 L153 162.12 L159.25 162.77 L165.5 163.24 L171.75 163.53 L178 163.62 L184.25 163.53 L190.5 163.24 L196.75 162.77 L203 162.12 L209.25 161.32 L215.5 160.38 L221.75 159.33 L228 158.18 L228 178.25 L28 178.25 Z" fill="#1a1f4a"/>
+</g>
+<g id="lowres">
+<rect x="28" y="65.75" width="19.05" height="19.05" fill="#1e2a78"/>
+<rect x="46.75" y="65.75" width="19.05" height="19.05" fill="#1e2a78"/>
+<rect x="65.5" y="65.75" width="19.05" height="19.05" fill="#1e2a78"/>
+<rect x="84.25" y="65.75" width="19.05" height="19.05" fill="#1e2a78"/>
+<rect x="103" y="65.75" width="19.05" height="19.05" fill="#232c7d"/>
+<rect x="121.75" y="65.75" width="10.55" height="19.05" fill="#2e3188"/>
+<rect x="28" y="84.5" width="19.05" height="19.05" fill="#1e2a78"/>
+<rect x="46.75" y="84.5" width="19.05" height="19.05" fill="#1f2a79"/>
+<rect x="65.5" y="84.5" width="19.05" height="19.05" fill="#2a2f84"/>
+<rect x="84.25" y="84.5" width="19.05" height="19.05" fill="#35338f"/>
+<rect x="103" y="84.5" width="19.05" height="19.05" fill="#40389a"/>
+<rect x="121.75" y="84.5" width="10.55" height="19.05" fill="#ffe3b3"/>
+<rect x="28" y="103.25" width="19.05" height="19.05" fill="#30328a"/>
+<rect x="46.75" y="103.25" width="19.05" height="19.05" fill="#3b3696"/>
+<rect x="65.5" y="103.25" width="19.05" height="19.05" fill="#463ba1"/>
+<rect x="84.25" y="103.25" width="19.05" height="19.05" fill="#513fac"/>
+<rect x="103" y="103.25" width="19.05" height="19.05" fill="#ffe3b3"/>
+<rect x="121.75" y="103.25" width="10.55" height="19.05" fill="#ffe3b3"/>
+<rect x="28" y="122" width="19.05" height="19.05" fill="#4d3ea7"/>
+<rect x="46.75" y="122" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="65.5" y="122" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="84.25" y="122" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="103" y="122" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="121.75" y="122" width="10.55" height="19.05" fill="#ffe3b3"/>
+<rect x="28" y="140.75" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="46.75" y="140.75" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="65.5" y="140.75" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="84.25" y="140.75" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="103" y="140.75" width="19.05" height="19.05" fill="#4b3a8c"/>
+<rect x="121.75" y="140.75" width="10.55" height="19.05" fill="#4b3a8c"/>
+<rect x="28" y="159.5" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="46.75" y="159.5" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="65.5" y="159.5" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="84.25" y="159.5" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="103" y="159.5" width="19.05" height="19.05" fill="#1a1f4a"/>
+<rect x="121.75" y="159.5" width="10.55" height="19.05" fill="#1a1f4a"/>
+</g>
+</g>
+<rect id="frame" x="28" y="65.75" width="200" height="112.5" rx="10" fill="none" stroke="#30363d" stroke-width="4"/>
+<g id="scanbar">
+<rect x="125" y="57.75" width="14" height="128.5" rx="7" fill="#58a6ff" opacity="0.25"/>
+<rect x="130" y="57.75" width="4" height="128.5" rx="2" fill="#58a6ff"/>
+</g>
+<g id="gate">
+<circle cx="220" cy="182.25" r="32" fill="#0d1117"/>
+<circle cx="220" cy="182.25" r="26" fill="#2ea44f"/>
+<path d="M208 183.25 L217 192.25 L233 173.25" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

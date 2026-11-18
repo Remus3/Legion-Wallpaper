@@ -1,12 +1,13 @@
 <div align="center">
 
-<img src="docs/assets/social-preview.png" width="100%" alt="Legion Wallpaper banner - staged, self-auditing AI image restoration pipeline">
+<img src="docs/assets/lw-banner.svg" width="100%" alt="Legion Wallpaper banner: a wallpaper frame, blocky on the left and restored on the right, with a gate check">
 
 # Legion Wallpaper
 
 **A staged, self-auditing image restoration pipeline, and the Claude Code agent system that builds it.**
 
 [![ci](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml/badge.svg)](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/ci.yml)
+[![codeql](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/codeql.yml/badge.svg)](https://github.com/Remus3/Legion-Wallpaper/actions/workflows/codeql.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776AB.svg)](https://www.python.org/)
 [![platform: Windows](https://img.shields.io/badge/platform-Windows-0078D6.svg)](#development-and-tests)
@@ -164,11 +165,13 @@ Windows, Python 3.14. TDD: a failing test first, then the change.
 python tools\lw_suite.py -q        # whole suite: parallel pass, then the serial set
 ruff check .
 python tools\install_git_hooks.py --check
+python tools\lw_brand_assets.py --check   # icon, banner and social card match their generator
 ```
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs py_compile,
 ruff and the whole suite on every push to `main`, a nightly full run, and a CV
-lane that fails on any skipped test. Dependencies are hash-pinned; Dependabot
+lane that fails on any skipped test. CodeQL scans the Python and the workflows
+on every code push and weekly. Dependencies are hash-pinned; Dependabot
 bumps are re-applied as operator commits, never merged on GitHub.
 [`CONTRIBUTING.md`](CONTRIBUTING.md) states what an invited change must clear.
 Security or privacy problems go through [`SECURITY.md`](SECURITY.md), never a

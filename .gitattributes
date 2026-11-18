@@ -32,3 +32,9 @@ data/**                           linguist-generated=true
 # (tests/test_fleet_kit_conformance.py). -text: no EOL conversion on any
 # checkout, so core.autocrlf can never turn a pinned file into a CRLF copy.
 ops/fleet_kit/** -text
+
+# Brand assets (tools/lw_brand_assets.py): the SVGs are pinned byte-for-byte
+# against the generator by tests/test_lw_brand_assets.py, so a CRLF checkout
+# would fail that pin for no content reason; the PNG is binary.
+*.svg text eol=lf
+docs/assets/*.png binary

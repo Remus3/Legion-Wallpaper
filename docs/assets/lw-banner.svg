@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t">
+<title id="t">Legion Wallpaper banner</title>
+<rect width="1280" height="320" rx="24" fill="#0d1117"/>
+<defs>
+<linearGradient id="bbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161b22"/><stop offset="1" stop-color="#0d1117"/></linearGradient>
+<linearGradient id="bsky" gradientUnits="userSpaceOnUse" x1="86.45" y1="133.18" x2="130.8" y2="247.86"><stop offset="0" stop-color="#1e2a78"/><stop offset="0.5" stop-color="#8957e5"/><stop offset="1" stop-color="#f2a65a"/></linearGradient>
+</defs>
+<rect x="48" y="40" width="240" height="240" rx="45" fill="url(#bbg)"/>
+<clipPath id="bclip"><rect x="74.25" y="101.64" width="187.5" height="105.47" rx="9.38"/></clipPath>
+<g clip-path="url(#bclip)">
+<g id="brestored">
+<rect x="74.25" y="101.64" width="187.5" height="105.47" fill="url(#bsky)"/>
+<circle cx="171.75" cy="145.94" r="23.2" fill="#ffe3b3"/>
+<path d="M74.25 166.46 L80.11 165.39 L85.97 164.4 L91.83 163.51 L97.69 162.72 L103.55 162.05 L109.41 161.51 L115.27 161.1 L121.12 160.83 L126.98 160.71 L132.84 160.74 L138.7 160.91 L144.56 161.22 L150.42 161.67 L156.28 162.26 L162.14 162.97 L168 163.79 L173.86 164.72 L179.72 165.74 L185.58 166.83 L191.44 167.99 L197.3 169.19 L203.16 170.42 L209.02 171.66 L214.88 172.9 L220.73 174.11 L226.59 175.29 L232.45 176.4 L238.31 177.45 L244.17 178.41 L250.03 179.27 L255.89 180.02 L261.75 180.65 L261.75 207.11 L74.25 207.11 Z" fill="#4b3a8c"/>
+<path d="M74.25 180.04 L80.11 179.44 L85.97 178.99 L91.83 178.72 L97.69 178.63 L103.55 178.72 L109.41 178.99 L115.27 179.44 L121.12 180.04 L126.98 180.8 L132.84 181.68 L138.7 182.66 L144.56 183.73 L150.42 184.86 L156.28 186.02 L162.14 187.17 L168 188.3 L173.86 189.37 L179.72 190.36 L185.58 191.24 L191.44 191.99 L197.3 192.59 L203.16 193.04 L209.02 193.31 L214.88 193.4 L220.73 193.31 L226.59 193.04 L232.45 192.59 L238.31 191.99 L244.17 191.24 L250.03 190.36 L255.89 189.37 L261.75 188.3 L261.75 207.11 L74.25 207.11 Z" fill="#1a1f4a"/>
+</g>
+<g id="blowres">
+<rect x="74.25" y="101.64" width="17.86" height="17.86" fill="#1e2a78"/>
+<rect x="91.83" y="101.64" width="17.86" height="17.86" fill="#1e2a78"/>
+<rect x="109.41" y="101.64" width="17.86" height="17.86" fill="#1e2a78"/>
+<rect x="126.98" y="101.64" width="17.86" height="17.86" fill="#1e2a78"/>
+<rect x="144.56" y="101.64" width="17.86" height="17.86" fill="#232c7d"/>
+<rect x="162.14" y="101.64" width="9.89" height="17.86" fill="#2e3188"/>
+<rect x="74.25" y="119.22" width="17.86" height="17.86" fill="#1e2a78"/>
+<rect x="91.83" y="119.22" width="17.86" height="17.86" fill="#1f2a79"/>
+<rect x="109.41" y="119.22" width="17.86" height="17.86" fill="#2a2f84"/>
+<rect x="126.98" y="119.22" width="17.86" height="17.86" fill="#35338f"/>
+<rect x="144.56" y="119.22" width="17.86" height="17.86" fill="#40389a"/>
+<rect x="162.14" y="119.22" width="9.89" height="17.86" fill="#ffe3b3"/>
+<rect x="74.25" y="136.8" width="17.86" height="17.86" fill="#30328a"/>
+<rect x="91.83" y="136.8" width="17.86" height="17.86" fill="#3b3696"/>
+<rect x="109.41" y="136.8" width="17.86" height="17.86" fill="#463ba1"/>
+<rect x="126.98" y="136.8" width="17.86" height="17.86" fill="#513fac"/>
+<rect x="144.56" y="136.8" width="17.86" height="17.86" fill="#ffe3b3"/>
+<rect x="162.14" y="136.8" width="9.89" height="17.86" fill="#ffe3b3"/>
+<rect x="74.25" y="154.38" width="17.86" height="17.86" fill="#4d3ea7"/>
+<rect x="91.83" y="154.38" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="109.41" y="154.38" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="126.98" y="154.38" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="144.56" y="154.38" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="162.14" y="154.38" width="9.89" height="17.86" fill="#ffe3b3"/>
+<rect x="74.25" y="171.95" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="91.83" y="171.95" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="109.41" y="171.95" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="126.98" y="171.95" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="144.56" y="171.95" width="17.86" height="17.86" fill="#4b3a8c"/>
+<rect x="162.14" y="171.95" width="9.89" height="17.86" fill="#4b3a8c"/>
+<rect x="74.25" y="189.53" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="91.83" y="189.53" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="109.41" y="189.53" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="126.98" y="189.53" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="144.56" y="189.53" width="17.86" height="17.86" fill="#1a1f4a"/>
+<rect x="162.14" y="189.53" width="9.89" height="17.86" fill="#1a1f4a"/>
+</g>
+</g>
+<rect id="bframe" x="74.25" y="101.64" width="187.5" height="105.47" rx="9.38" fill="none" stroke="#30363d" stroke-width="3.75"/>
+<g id="bscanbar">
+<rect x="165.19" y="94.14" width="13.12" height="120.47" rx="6.56" fill="#58a6ff" opacity="0.25"/>
+<rect x="169.88" y="94.14" width="3.75" height="120.47" rx="1.88" fill="#58a6ff"/>
+</g>
+<g id="bgate">
+<circle cx="254.25" cy="210.86" r="30" fill="#0d1117"/>
+<circle cx="254.25" cy="210.86" r="24.38" fill="#2ea44f"/>
+<path d="M243 211.8 L251.44 220.23 L266.44 202.42" fill="none" stroke="#ffffff" stroke-width="5.62" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text x="332" y="132" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="64" font-weight="700" fill="#f0f6fc">Legion Wallpaper</text>
+<text x="332" y="180" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="28" fill="#8b949e">Staged, self-auditing restoration for wallpaper art</text>
+<text x="332" y="222" font-family="Consolas, Menlo, monospace" font-size="19" fill="#58a6ff">one upscale - masked inpainting - face repair - gate ladder - 2560x1440</text>
+<rect x="332" y="246" width="81" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="372.5" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">intake</text>
+<text x="424" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#d29922">&gt;</text>
+<rect x="435" y="246" width="123" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="496.5" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">first pass</text>
+<text x="569" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#d29922">&gt;</text>
+<rect x="580" y="246" width="102" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="631" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">cleaning</text>
+<text x="693" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#d29922">&gt;</text>
+<rect x="704" y="246" width="70.5" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="739.25" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">final</text>
+<text x="785.5" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#d29922">&gt;</text>
+<rect x="796.5" y="246" width="112.5" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="852.75" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">last pass</text>
+<text x="920" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#d29922">&gt;</text>
+<rect x="931" y="246" width="123" height="30" rx="8" fill="#161b22" stroke="#30363d"/>
+<text x="992.5" y="266" font-family="Consolas, Menlo, monospace" font-size="16" text-anchor="middle" fill="#f0f6fc">end review</text>
+</svg>
