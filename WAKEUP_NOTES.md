@@ -79,6 +79,12 @@ The live queue is now the channel, not the gates. In priority order:
 
 ---
 
+## PREVIOUS SESSION (2026-11-17, session 100) - GitHub refresh closed (LEDGER 388-389)
+
+Commits 134dbf5 74a6a89 e355940 d3228b6 e3b0e13; CI 44231430274 green on d3228b6. Next: WALLPAPER-SYNC (TDD),
+FINAL-PASS on ~70 approved slugs, CLEAN-REST. Operator tasks registered: social preview upload, GitHub Support refresh.
+Do NOT redo: contributor rewrite (API shows only Remus3), Dependabot path B, brand assets.
+
 ## PREVIOUS SESSION (2026-11-16, session 98) - interactive, no work; /done only
 
 The operator typed /done at session start; no code or data change. CI-97 closed: fb9c2b0 ci 44001876893 success
