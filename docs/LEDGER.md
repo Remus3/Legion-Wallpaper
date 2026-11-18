@@ -69,7 +69,12 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
    VERIFICATION: the gated full suite did NOT run - it queued 20 min on memory admission (gate held by RC, 4-6 GB
    short) and the harness reaped the waiting command for low memory; not restarted. Local: the 10 touched/related
    test files 179 passed, ruff clean, hook gate active. CI on the push tip runs the whole suite (check job) and is
-   the full-suite verdict for these commits.
+   the full-suite verdict for these commits. READ BACK: e355940 ci 44228906887 FAILURE (1 failed:
+   tests/test_no_absolute_machine_paths.py - the font dir in tools/lw_brand_assets.py was a literal drive path;
+   the gated local suite would have caught it). Fixed d3228b6 (font dir from WINDIR): ci 44231430274 success
+   (4507 passed 60 skipped + serial 177 passed 7 skipped), codeql 44231430215 + fleet-identity-guard 44231430290
+   success; ci and codeql badges read "passing"; lw_postmerge_scan clean. After: code-scanning open 0 (alert 23
+   fixed), dependabot 0, secret-scanning 0, open PRs 0; contributors API = Remus3 only (921).
 
 387. DONE **2026-11-17 (04:00 Maint-KitRollout: FLEET-KIT v32 adopted, MAIN ORDER 2026-11-16-1947).**
    Inbox note verify_main True (MAIN committed outbox copy); bundle files are not in MAIN's committed outbox
