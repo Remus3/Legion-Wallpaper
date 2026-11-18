@@ -38,7 +38,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 DRIVE_ROOT_SCRATCH = re.compile(
     r"(?:(?<![A-Za-z0-9_])(?:[A-Za-z]|<[A-Za-z_-]*drive>):|%SystemDrive%|\$env:SystemDrive)"
-    r"(?:\\\\|\\|/)+[\w.-]*(?:tmp|temp|scratch|worktree)[\w.-]*(?![\w.-])",
+    r"[\\/]+[\w.-]*(?:tmp|temp|scratch|worktree)[\w.-]*(?![\w.-])",
     re.IGNORECASE)
 
 # Prefix (ends in "/") or exact file -> why it may name such a path.
@@ -131,6 +131,38 @@ def test_a_planted_drive_root_scratch_path_is_caught(planted):
 ])
 def test_a_legitimate_neighbour_survives(innocent):
     assert not scan_text(innocent), f"false positive: {innocent}"
+
+
+def test_the_separator_run_has_no_overlapping_alternation():
+    """CodeQL py/redos (alert 23): an alternation of a double and a single
+    backslash under `+` lets a backslash run split many ways - super-linear
+    backtracking on `a:` plus many backslashes. The separator run is ONE
+    character class, so each byte has one parse."""
+    pat = DRIVE_ROOT_SCRATCH.pattern
+    assert "(?:" + "\\\\" * 2 + "|" not in pat
+    assert "[" + "\\\\" + "/]+" in pat
+
+
+@pytest.mark.parametrize("sep", ["\\", "/", "\\\\", "\\/\\", "//"])
+def test_every_separator_run_still_matches(sep):
+    assert scan_text("E:" + sep + "tmp_kr")
+
+
+def test_a_long_backslash_run_scans_in_linear_time():
+    """Run in a child with a hard timeout so a regression fails, never hangs."""
+    import subprocess
+    code = (f"import sys, time; sys.path[:0] = [r'{ROOT / 'tests'}', r'{ROOT / 'tools'}'];"
+            "import test_no_drive_root_scratch as t; t0 = time.perf_counter();"
+            "[t.scan_text('a:' + chr(92) * 20000 + s) for s in ('', 'x', '!', 'tmpx')];"
+            "print(time.perf_counter() - t0)")
+    try:
+        out = subprocess.run([sys.executable, "-c", code], capture_output=True,
+                             text=True, timeout=30, cwd=ROOT / "tests",
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except subprocess.TimeoutExpired:
+        pytest.fail("scan_text backtracks: 20000 backslashes did not finish in 30 s")
+    assert out.returncode == 0, out.stderr[-2000:]
+    assert float(out.stdout.strip().splitlines()[-1]) < 5.0
 
 
 # ---- derived paths -------------------------------------------------------
