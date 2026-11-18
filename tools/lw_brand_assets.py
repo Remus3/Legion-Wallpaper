@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -242,7 +243,8 @@ def banner_svg() -> str:
 def _font(names: tuple[str, ...], px: int):
     from PIL import ImageFont
     for n in names:
-        for base in (Path("C:/Windows/Fonts"), Path("/usr/share/fonts/truetype/dejavu")):
+        win_fonts = Path(os.environ.get("WINDIR", "")) / "Fonts"
+        for base in (win_fonts, Path("/usr/share/fonts/truetype/dejavu")):
             p = base / n
             if p.is_file():
                 return ImageFont.truetype(str(p), px)
