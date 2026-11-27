@@ -31,6 +31,19 @@ Pointers: open work -> `ROADMAP.md` + `BACKLOG.md`; recent sessions ->
 
 ---
 
+390. DONE **2026-11-27 (MAIN FIX 2026-11-27-1610 answer sender dropped child-owned v32 ANSWER; responder-authored).**
+   MAIN verified (sha256 544d0ed1...2e68f5, inbox == MAIN outbox, 2470 bytes). Root cause: send_answers dropped a part
+   claimed by "child" and reconcile_orders closed the row "answered" on the outbox copy alone. Fix in
+   tools/lw_inbox_responder.py: deliver_outbox_answer (byte copy to the addressed inbox, re-hash, cap record once, never
+   overwrite, skip when the destination holds the same sha256 under any name); send_answers delivers an already-written
+   outbox answer for a part another channel owns (first-claim-wins kept); reconcile_orders closes a row only when that
+   answer reached its destination. TDD: 5 arms RED first (tests/test_inbox_responder_triage.py 3,
+   tests/test_inbox_responder_orders.py 2), then green. Suite via fleet_suite_gate: rc 0, 4739 passed, 19 skipped.
+   Stranded answer 2026-11-17-0412-from-LW-ANSWER-to-MAIN-batched-1-answers.md byte-copied to MAIN's inbox, read back
+   sha256 77d3167b...1036f both copies (2968 bytes). Backfill measured: 4 of 35 LW ANSWER-to-MAIN outbox files absent from
+   MAIN's inbox by sha256 (v28 2026-11-02-0000, v30 2026-11-12-0411, v31 2026-11-15-0437, v32 2026-11-17-0412); only the
+   v32 one delivered (ordered); the other 3 superseded kit answers left in the outbox and named in the reply. No re-adoption.
+
 389. DONE **2026-11-17 (session 100 /done; docs-only).** Closed the GitHub refresh: 134dbf5 (CodeQL alert 23), 74a6a89
    (brand assets), e355940 (LEDGER 388), d3228b6 (font dir), CI 44231430274 green on d3228b6. Alerts read back: code-scanning 0,
    dependabot 0, secret 0, open PRs 0. MAIN-ORDER-2005, CI-99, DEPBRANCH-D4 closed (origin has only main, no tags).

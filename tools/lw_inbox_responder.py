@@ -1093,6 +1093,87 @@ def claim_answer_channel(note: str, channel: str) -> str:
     return channel
 
 
+# MAIN FIX 2026-11-27-1610: LW's kit v32 ANSWER sat in the outbox ONLY. The
+# ORDER was claimed by "child", the child wrote the outbox copy, the tick's
+# sender dropped the child-owned part, and reconcile_orders closed the row as
+# "answered" on the outbox copy alone. Fix (first-claim-wins kept): the sender
+# delivers an ALREADY-WRITTEN outbox answer for a part another channel owns,
+# and a row closes only once the destination holds a byte copy. Exactly once:
+# a destination file with the same bytes (any name) counts as reached and is
+# never copied again; a different file under the same name is never
+# overwritten. Rejected: making the child deliver (its prompt cannot be
+# enforced, and a child that dies after the outbox write strands it again).
+_OUTBOX_ANSWER = re.compile(rf"-from-{SELF_CODE}-ANSWER-to-([A-Z][A-Z0-9]*)-")
+
+
+def outbox_answer_for(note: str, outbox: Path | None = None) -> Path | None:
+    """LW's outbox ANSWER whose body names `note` (its `## Re` line or file
+    name), oldest first; None when the outbox holds none."""
+    name = Path(str(note)).name
+    box = OUTBOX if outbox is None else Path(outbox)
+    if not box.is_dir():
+        return None
+    for path in sorted(box.glob(f"*-from-{SELF_CODE}-ANSWER-*")):
+        with contextlib.suppress(OSError):
+            if name in path.read_text(encoding="utf-8", errors="replace"):
+                return path
+    return None
+
+
+def _cap_recorded(cap, name: str) -> bool:
+    try:
+        lines = Path(cap.path).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    for ln in lines:
+        with contextlib.suppress(ValueError):
+            doc = json.loads(ln)
+            if isinstance(doc, dict) and Path(str(doc.get("note"))).stem == Path(name).stem:
+                return True
+    return False
+
+
+def deliver_outbox_answer(path: Path) -> dict:
+    """Byte-copy one outbox ANSWER into the inbox its file name addresses.
+
+    Re-hashed at the destination (reached N/M) and recorded against the cap
+    once. Never rewrites the file, never overwrites a destination note, never
+    sends what the destination already holds (same sha256 under any name).
+    """
+    path = Path(path)
+    m = _OUTBOX_ANSWER.search(path.name)
+    rec = {"note": path.name, "to": m.group(1) if m else None,
+           "delivered": False, "reached": "0/1"}
+    if m is None:
+        return {**rec, "why": "the file name addresses no destination"}
+    inbox = carrier_inbox(m.group(1))
+    if inbox is None:
+        return {**rec, "why": f"no carrier row for {m.group(1)}"}
+    data = path.read_bytes()
+    want = hashlib.sha256(data).hexdigest()
+    rec["sha256"] = want
+    for other in inbox.iterdir():
+        with contextlib.suppress(OSError):
+            if (other.is_file() and other.stat().st_size == len(data)
+                    and hashlib.sha256(other.read_bytes()).hexdigest() == want):
+                return {**rec, "reached": "1/1", "at": other.name}
+    target = inbox / path.name
+    if target.exists():
+        return {**rec, "why": f"{path.name} already exists with other bytes - never overwritten"}
+    cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
+    recorded = _cap_recorded(cap, path.name)
+    if not recorded and not cap.allow("ANSWER"):
+        return {**rec, "why": f"outbound cap: {cap.used()}/{cap.cap} notes today"}
+    tmp = target.with_name(target.name + ".tmp")
+    tmp.write_bytes(data)
+    tmp.replace(target)
+    if hashlib.sha256(target.read_bytes()).hexdigest() != want:
+        return {**rec, "why": "destination re-hash differs"}
+    if not recorded:
+        cap.record(path.name, "ANSWER", m.group(1))
+    return {**rec, "delivered": True, "reached": "1/1"}
+
+
 def send_answers(dest: str | None, parts: list[tuple[str, str, int]]) -> dict:
     """ONE batched ANSWER note to `dest` for parts = [(note, text, incoming hop)].
 
@@ -1116,6 +1197,14 @@ def send_answers(dest: str | None, parts: list[tuple[str, str, int]]) -> dict:
     rec = {"to": dest, "parts": len(parts), "sent": False, "answers": answers}
     if dropped:
         rec["dropped"] = dropped
+        stranded = []
+        for d in dropped:
+            found = outbox_answer_for(d["note"])
+            m = _OUTBOX_ANSWER.search(found.name) if found else None
+            if m and m.group(1) == dest:
+                stranded.append(deliver_outbox_answer(found))
+        if stranded:
+            rec["stranded"] = stranded
     if not parts:
         return {**rec, "why": "answer channel: every part is owned by another channel"}
     cap = fleet_inbox.OutboundCap(lw_headless_env.FLEET_ROOT)
@@ -1294,7 +1383,11 @@ def reconcile_orders(root: Path | None = None, outbox: Path | None = None,
             hit = next((name for name, body in replies
                         if str(row.get("sha256")) in body or str(row.get("note")) in body),
                        None)
-            if hit is not None and not dry_run:
+            if hit is None or dry_run:
+                continue
+            # MAIN FIX 2026-11-27-1610: never "answered" while the ANSWER sits
+            # only in the outbox - deliver it (or find it delivered) first.
+            if deliver_outbox_answer(outbox / hit)["reached"] == "1/1":
                 fleet_inbox.mark_work_done(root, row, outcome=f"answered: {hit}")
                 closed.append(str(row.get("note")))
     return {"pending_orders": [str(r.get("note")) for r in rows

@@ -310,6 +310,61 @@ def test_send_answers_holds_everything_when_every_part_is_owned_elsewhere(tmp_pa
     assert fi.OutboundCap(_fleet_root()).used() == 0
 
 
+# MAIN FIX 2026-11-27-1610: the v32 ANSWER sat in LW's outbox only. The note
+# was claimed by "child", the child wrote the outbox copy, the tick's sender
+# dropped the child-owned part and nothing delivered the file. The sender now
+# delivers an already-written outbox answer for an owned part, exactly once.
+
+def _child_wrote_outbox_answer(tmp_path, name: str, dest: str = "MAIN"):
+    box = tmp_path / f"{dest.lower()}_inbox"
+    box.mkdir(exist_ok=True)
+    (tmp_path / "carriers.json").write_text(json.dumps({dest: {"inbox": str(box)}}),
+                                            encoding="utf-8")
+    responder.OUTBOX.mkdir(parents=True, exist_ok=True)
+    reply = responder.OUTBOX / f"2026-11-17-0412-from-LW-ANSWER-to-{dest}-batched-1-answers.md"
+    reply.write_bytes(f"# From LW - ANSWER\n\nHOP: 2\n\n## Re {name}\n\nDONE\n".encode())
+    return box, reply
+
+
+def test_the_sender_delivers_a_child_owned_answer_already_in_the_outbox(tmp_path):
+    name = "2026-11-16-1947-from-MAIN-ORDER-to-ALL-EIGHT-FLEET-KIT-v32-ONE-ANSWER.md"
+    assert responder.claim_answer_channel(name, "child") == "child"
+    box, reply = _child_wrote_outbox_answer(tmp_path, name)
+    rec = responder.send_answers("MAIN", [(name, "tick text", 1)])
+    (copy,) = list(box.iterdir())
+    assert copy.name == reply.name and copy.read_bytes() == reply.read_bytes()
+    (st,) = rec["stranded"]
+    assert st["note"] == reply.name and st["reached"] == "1/1" and st["delivered"] is True
+    assert fi.OutboundCap(_fleet_root()).used() == 1
+    again = responder.send_answers("MAIN", [(name, "tick text", 1)])
+    assert len(list(box.iterdir())) == 1                       # exactly once
+    assert again["stranded"][0]["delivered"] is False
+    assert again["stranded"][0]["reached"] == "1/1"
+    assert fi.OutboundCap(_fleet_root()).used() == 1
+    assert responder.answer_channel(name) == "child"           # first claim still wins
+
+
+def test_a_copy_already_delivered_under_another_name_is_not_sent_twice(tmp_path):
+    name = "2026-11-16-1948-from-MAIN-ORDER-to-LW-x.md"
+    responder.claim_answer_channel(name, "child")
+    box, reply = _child_wrote_outbox_answer(tmp_path, name)
+    (box / "renamed-by-the-child.md").write_bytes(reply.read_bytes())
+    rec = responder.send_answers("MAIN", [(name, "t", 1)])
+    assert len(list(box.iterdir())) == 1
+    assert rec["stranded"][0]["delivered"] is False
+    assert fi.OutboundCap(_fleet_root()).used() == 0
+
+
+def test_a_different_file_under_the_same_name_is_never_overwritten(tmp_path):
+    name = "2026-11-16-1949-from-MAIN-ORDER-to-LW-y.md"
+    responder.claim_answer_channel(name, "child")
+    box, reply = _child_wrote_outbox_answer(tmp_path, name)
+    (box / reply.name).write_bytes(b"someone else")
+    rec = responder.send_answers("MAIN", [(name, "t", 1)])
+    assert (box / reply.name).read_bytes() == b"someone else"
+    assert rec["stranded"][0]["reached"] == "0/1"
+
+
 def test_the_first_claim_owns_the_note(tmp_path):
     name = "2026-10-05-0704-from-MAIN-ORDER-to-LW-y.md"
     assert responder.answer_channel(name) is None

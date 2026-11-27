@@ -33,6 +33,11 @@ def world(tmp_path, monkeypatch):
     outbox.mkdir()
     monkeypatch.setattr(responder, "OUTBOX", outbox)
     monkeypatch.setattr(responder, "HALT_PATH", tmp_path / "never-created-HALT")
+    main_box = tmp_path / "main_inbox"
+    main_box.mkdir()
+    carriers = tmp_path / "carriers.json"
+    carriers.write_text(json.dumps({"MAIN": {"inbox": str(main_box)}}), encoding="ascii")
+    monkeypatch.setattr(responder, "CARRIERS_PATH", carriers)
     return box, outbox
 
 
@@ -86,6 +91,32 @@ def test_an_answer_naming_the_order_closes_the_row_with_a_done_line(world, by):
     lines = (Path(he.FLEET_ROOT) / fi.WORK_REL).read_text(encoding="utf-8").splitlines()
     done = json.loads(lines[-1])
     assert (done["op"], done["outcome"]) == ("done", f"answered: {reply}")
+
+
+def test_an_answer_only_in_the_outbox_is_delivered_before_the_row_closes(world, tmp_path):
+    """MAIN FIX 2026-11-27-1610: a row was closed "answered" while its ANSWER
+    sat only in LW's outbox. The row now closes only once the destination
+    holds a byte copy, which reconcile delivers itself (re-hashed, cap record)."""
+    box, outbox = world
+    _queue(box)
+    reply = outbox / "2026-11-01-1300-from-LW-ANSWER-to-MAIN-batched-1-answers.md"
+    reply.write_text(f"HOP: 2\n## Re {NAME}\n", encoding="ascii")
+    res = responder.reconcile_orders()
+    assert res["orders_closed"] == [NAME]
+    copy = tmp_path / "main_inbox" / reply.name
+    assert copy.read_bytes() == reply.read_bytes()
+    assert fi.OutboundCap(he.FLEET_ROOT).used() == 1
+
+
+def test_an_undeliverable_answer_keeps_the_row_open(world, tmp_path):
+    box, outbox = world
+    _queue(box)
+    (tmp_path / "carriers.json").write_text("{}", encoding="ascii")
+    (outbox / "2026-11-01-1300-from-LW-ANSWER-to-MAIN-batched-1-answers.md").write_text(
+        f"HOP: 2\n## Re {NAME}\n", encoding="ascii")
+    res = responder.reconcile_orders()
+    assert res["orders_closed"] == [] and res["pending_orders"] == [NAME]
+    assert len(fi.pending_work(he.FLEET_ROOT)) == 1
 
 
 def test_a_dry_run_reads_the_list_and_closes_nothing(world):
